@@ -9,7 +9,7 @@
 [ext_resource type="Resource" path="res://data/weapons/sword.tres" id="6"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/player.png" id="8"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/shadow.png" id="9"]
-[ext_resource type="Texture2D" path="res://assets/stock/sword_diagonal.png" id="10"]
+[ext_resource type="Texture2D" path="res://assets/stock/sword_straight.png" id="10"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -45,13 +45,13 @@ script = ExtResource("7")
 weapon = ExtResource("6")
 blade_texture = ExtResource("10")
 blade_offset = Vector2(0, 0)
-rest_angle_degrees = -45.0
-hand_distance = 8.0
-art_angle_degrees = -45.0
+rest_angle_degrees = -20.0
+hand_distance = 6.0
+art_angle_degrees = -90.0
 
 [node name="Blade" type="Sprite2D" parent="WeaponVisual"]
 centered = false
-offset = Vector2(-6, -51)
+offset = Vector2(-8, -44)
 
 [node name="Hurtbox" type="Area2D" parent="."]
 collision_layer = 2
