@@ -11,8 +11,9 @@ Changes are **temporary** until you press Save.
 
 ### Steps
 
-1. Open the project in Godot.
-2. Press **F5** to play. The game window opens.
+1. Open the **editor**: `godot -e .` inside the project folder.
+   (`godot .` without `-e` runs the game instead of opening the editor.)
+2. Press **F5** to play. The game window opens next to the editor.
 3. Press **F3**.
    - Left side = live information (fps, position, weapon state, hit rate).
    - Right side = a list of sliders.
@@ -49,11 +50,21 @@ Press **F2** for slow motion — useful for checking swing timing.
 
 ---
 
-## Way 2 — In the editor (permanent)
+## Way 2 — In the editor (the usual way)
 
-Best for: positions and pictures, which are not sliders.
+Best for: everything. This is how Godot is normally used.
 
-### Steps
+### Live editing while the game runs (Remote tab)
+
+1. Open the editor: `godot -e .`
+2. Press **F5**. The game window opens beside the editor.
+3. In the editor's **Scene** panel (top left) a **Remote** tab appears while the game runs.
+4. Click **Remote**, then click a node. The **Inspector** on the right shows its live values.
+5. Change a value — **the running game updates instantly**.
+6. Remote changes are temporary. To keep one, switch to the **Local** tab and set the same
+   value there, then **Ctrl+S**.
+
+### Editing the scene directly
 
 1. In Godot, look at the **FileSystem** panel (bottom left).
 2. Double-click `scenes/player.tscn`. The scene opens.

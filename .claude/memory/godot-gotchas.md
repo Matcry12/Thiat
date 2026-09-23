@@ -27,3 +27,5 @@ Reference docs in `docs/reference/godot/` were researched against 4.3/4.4 — if
 - Downloaded pixel-art icons are usually upscaled (e.g. 608px for 19 art pixels). Resize DOWN to
   the true art-pixel grid with NEAREST (608 -> 19), then up by an integer factor. Non-integer
   resizing blurs pixel art.
+- `godot .` inside a project directory **runs the game**. To open the EDITOR use `godot -e .`
+  (or `godot --editor --path <dir>`). Told the user the wrong one on 2026-09-24.
