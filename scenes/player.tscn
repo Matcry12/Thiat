@@ -45,6 +45,8 @@ script = ExtResource("7")
 weapon = ExtResource("6")
 blade_texture = ExtResource("10")
 blade_offset = Vector2(0, 0)
+rest_angle_degrees = -45.0
+hand_distance = 10.0
 
 [node name="Blade" type="Sprite2D" parent="WeaponVisual"]
 centered = false

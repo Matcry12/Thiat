@@ -12,7 +12,10 @@ class_name WeaponVisual
 @export var blade_texture: Texture2D
 @export var blade_offset := Vector2.ZERO
 @export var hand_distance := 14.0          ## distance from body centre to the hand
-@export var rest_angle_degrees := -20.0    ## idle hold angle, relative to aim
+## Idle hold angle, relative to aim. -45 reads like a Minecraft item: the blade
+## is carried diagonally instead of pointing flat forward. The PNG itself always
+## points +X; this only changes how it is DISPLAYED, never the hit maths.
+@export var rest_angle_degrees := -45.0
 @export var windup_angle_degrees := 60.0   ## how far back the blade winds up, relative to aim
 @export var show_reach_telegraph := true   ## faint wedge during windup, reused from the old swing_arc draw code
 @export var telegraph_color := Color(1, 1, 1, 0.18)
