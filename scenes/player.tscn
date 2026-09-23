@@ -17,8 +17,8 @@ radius = 11.0
 [sub_resource type="CircleShape2D" id="HurtShape"]
 radius = 15.0
 
-[sub_resource type="CircleShape2D" id="HitShape"]
-radius = 76.0
+[sub_resource type="RectangleShape2D" id="HitShape"]
+size = Vector2(10, 34)
 
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1")
@@ -53,6 +53,15 @@ art_angle_degrees = -90.0
 centered = false
 offset = Vector2(-8, -44)
 
+[node name="Hitbox" type="Area2D" parent="WeaponVisual/Blade"]
+collision_layer = 8
+collision_mask = 4
+script = ExtResource("4")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WeaponVisual/Blade/Hitbox"]
+position = Vector2(-0.5, -27)
+shape = SubResource("HitShape")
+
 [node name="Hurtbox" type="Area2D" parent="."]
 collision_layer = 2
 collision_mask = 0
@@ -61,15 +70,7 @@ script = ExtResource("3")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
 shape = SubResource("HurtShape")
 
-[node name="Hitbox" type="Area2D" parent="."]
-collision_layer = 8
-collision_mask = 4
-script = ExtResource("4")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
-shape = SubResource("HitShape")
-
 [node name="WeaponHolder" type="Node" parent="."]
 script = ExtResource("5")
 weapon = ExtResource("6")
-hitbox_path = NodePath("../Hitbox")
+hitbox_path = NodePath("../WeaponVisual/Blade/Hitbox")

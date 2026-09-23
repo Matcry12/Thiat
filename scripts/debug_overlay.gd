@@ -1,6 +1,6 @@
 extends CanvasLayer
 ## F1 toggle (on by default), F2 slow-mo. Draws hurtbox/hitbox outlines, weapon-state
-## tint reference, the sword wedge, and top-left timing text.
+## tint reference, and top-left timing text.
 
 @export var player_path: NodePath
 
@@ -46,31 +46,54 @@ func _update_label() -> void:
 func _on_draw() -> void:
 	if not enabled:
 		return
-	var hitbox: Hitbox = _player.get_node("Hitbox")
+	var hitbox: Hitbox = _player.get_node("WeaponVisual/Blade/Hitbox")
 	var weapon_holder: WeaponHolder = _player.get_node("WeaponHolder")
-	var weapon: WeaponData = weapon_holder.weapon
 
 	# Hurtboxes: green outline.
 	for hurtbox in get_tree().get_nodes_in_group("hurtbox"):
 		_draw_hurtbox_outline(hurtbox)
 
-	# Hitbox: red outline, only while active.
+	# Hitbox: red outline of its ACTUAL shape at its ACTUAL transform, only
+	# while active. The shape IS the hit area (decision 0011) — this is the
+	# only honest picture of what can currently hit, no separate reach/arc math.
 	if weapon_holder.phase == WeaponHolder.Phase.ACTIVE:
-		_draw_ground_circle(hitbox.global_position, weapon.reach, Color.RED, 2.0)
-
-	# Sword wedge: whenever not idle.
-	if weapon != null and weapon_holder.phase != WeaponHolder.Phase.IDLE:
-		var aim: Vector2 = _player.aim_direction
-		var half_arc := deg_to_rad(weapon.arc_degrees / 2.0)
-		var from_angle := aim.angle() - half_arc
-		var to_angle := aim.angle() + half_arc
-		_draw_layer.draw_arc(_player.global_position, weapon.reach, from_angle, to_angle, 24, Color.WHITE, 1.5)
+		_draw_hitbox_outline(hitbox)
 
 func _draw_hurtbox_outline(hurtbox: Hurtbox) -> void:
 	var cs := hurtbox.get_node("CollisionShape2D") as CollisionShape2D
 	var shape := cs.shape as CircleShape2D
 	if shape:
 		_draw_ground_circle(cs.global_position, shape.radius, Color.GREEN, 2.0)
+
+## Draws the Hitbox's own CollisionShape2D, rotated and positioned exactly as
+## it sits in the world. Supports the two shape types decision 0011 allows.
+func _draw_hitbox_outline(hitbox: Hitbox) -> void:
+	var cs := hitbox.get_node("CollisionShape2D") as CollisionShape2D
+	if cs == null or cs.shape == null:
+		return
+	var xform := cs.global_transform
+	var points := PackedVector2Array()
+	if cs.shape is RectangleShape2D:
+		var half: Vector2 = (cs.shape as RectangleShape2D).size / 2.0
+		points = PackedVector2Array([
+			Vector2(-half.x, -half.y), Vector2(half.x, -half.y),
+			Vector2(half.x, half.y), Vector2(-half.x, half.y), Vector2(-half.x, -half.y),
+		])
+	elif cs.shape is CapsuleShape2D:
+		var capsule := cs.shape as CapsuleShape2D
+		var r: float = capsule.radius
+		var h: float = capsule.height / 2.0 - r
+		var steps := 12
+		for i in steps + 1:
+			points.append(Vector2(0, -h) + Vector2.RIGHT.rotated(lerpf(-PI / 2.0, PI / 2.0, float(i) / steps)) * r)
+		for i in steps + 1:
+			points.append(Vector2(0, h) + Vector2.RIGHT.rotated(lerpf(PI / 2.0, PI * 1.5, float(i) / steps)) * r)
+		points.append(points[0])
+	else:
+		return
+	for i in points.size():
+		points[i] = xform * points[i]
+	_draw_layer.draw_polyline(points, Color.RED, 2.0)
 
 ## Flat 2D circle. No perspective squashing — this game fakes depth only through
 ## draw order and upright sprites (decision 0009), never through projection.

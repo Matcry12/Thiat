@@ -1,7 +1,9 @@
 extends Node2D
 class_name WeaponVisual
-## The weapon sprite on a rotating pivot (decision 0010). Replaces the drawn
-## wedge that used to live in scripts/fx/swing_arc.gd (deleted).
+## The weapon sprite on a rotating pivot (decision 0010). The Hitbox now lives
+## under `Blade` and inherits this node's transform (decision 0011) — so a
+## change to the swing motion here also moves the hit area. There is no
+## separate telegraph draw any more: the visible blade IS the telegraph.
 ##
 ## The whole node rotates to the aim angle; `Blade` sits at `hand_distance`
 ## along +X (weapon sprites point +X at rotation 0, pivot at the LEFT edge —
@@ -22,8 +24,6 @@ class_name WeaponVisual
 ## points +X; this only changes how it is DISPLAYED, never the hit maths.
 @export var rest_angle_degrees := -45.0
 @export var windup_angle_degrees := 60.0   ## how far back the blade winds up, relative to aim
-@export var show_reach_telegraph := true   ## faint wedge during windup, reused from the old swing_arc draw code
-@export var telegraph_color := Color(1, 1, 1, 0.18)
 
 @onready var blade: Sprite2D = $Blade
 
@@ -60,7 +60,6 @@ func on_weapon_state(state: String) -> void:
 			_phase_target_angle = _phase_start_angle + arc
 		_:
 			_phase_target_angle = deg_to_rad(rest_angle_degrees)
-	queue_redraw()
 
 func _process(delta: float) -> void:
 	var duration := 0.0
@@ -72,19 +71,3 @@ func _process(delta: float) -> void:
 	_t = 1.0 if duration <= 0.0 else minf(1.0, _t + delta / duration)
 	_blade_angle = lerpf(_phase_start_angle, _phase_target_angle, _t)
 	blade.rotation = _blade_angle - deg_to_rad(art_angle_degrees)
-	if show_reach_telegraph and _phase == "windup":
-		queue_redraw()
-
-func _draw() -> void:
-	# Faint wedge telling the player where the swing will land. Adapted from
-	# the old swing_arc.gd `_draw_wedge` — drawn here in this node's local
-	# space, which is already rotated to aim_angle by set_aim_angle().
-	if not show_reach_telegraph or weapon == null or _phase != "windup":
-		return
-	var half := deg_to_rad(weapon.arc_degrees * 0.5)
-	var r: float = weapon.reach
-	var points := PackedVector2Array([Vector2.ZERO])
-	var steps := 16
-	for i in steps + 1:
-		points.append(Vector2.RIGHT.rotated(lerpf(-half, half, float(i) / steps)) * r)
-	draw_colored_polygon(points, telegraph_color)

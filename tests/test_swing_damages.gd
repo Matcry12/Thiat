@@ -1,5 +1,9 @@
 extends SceneTree
-# End-to-end: stand next to the dummy, aim at it, swing -> hp must drop exactly once.
+# End-to-end: stand next to the dummy so the swinging blade actually sweeps
+# over it, swing -> hp must drop exactly once (decision 0011: the hit area is
+# the Hitbox shape on the blade now, not a reach/arc number, so the test has
+# to place the dummy where the blade's motion really reaches, not just
+# within an old numeric "reach").
 func _init():
 	var arena = load("res://scenes/arena.tscn").instantiate()
 	root.add_child(arena)
@@ -7,17 +11,22 @@ func _init():
 	var player = arena.get_node("Player")
 	var dummy = arena.get_node("Dummy")
 	var holder = arena.get_node("Player/WeaponHolder")
-	var hitbox = arena.get_node("Player/Hitbox")
+	var weapon_visual = arena.get_node("Player/WeaponVisual")
 	var health = dummy.get_node("Health")
 
-	player.global_position = dummy.global_position - Vector2(50, 0)  # 50px away, within 76 reach
-	player.set_physics_process(false)  # stop it re-aiming at the (0,0) headless mouse
-	hitbox.aim_direction = Vector2.RIGHT                              # facing the dummy
+	# Disabling physics_process must happen AFTER _ready() (the node re-enables
+	# it on entering the tree), otherwise the player's own _physics_process
+	# keeps recomputing aim from the headless (0,0) mouse and overwrites our
+	# forced aim below.
+	player.set_physics_process(false)
+
+	player.global_position = dummy.global_position - Vector2(45, 0)  # blade tip reaches ~50px
+	weapon_visual.set_aim_angle(0.0)                                 # facing the dummy (+X)
 	await physics_frame
 	var hp_before: float = health.hp
 
 	holder.try_attack()
-	for i in 40:                                                      # ~0.66s covers all phases
+	for i in 40:                                                      # covers windup+active+recovery
 		await physics_frame
 
 	var dealt: float = hp_before - health.hp

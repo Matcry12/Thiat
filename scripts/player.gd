@@ -11,7 +11,6 @@ extends CharacterBody2D
 # delete the weapon with it (same trap as the shadow).
 @onready var weapon_visual: WeaponVisual = $WeaponVisual
 @onready var weapon_holder: WeaponHolder = $WeaponHolder
-@onready var hitbox: Hitbox = $Hitbox
 
 var aim_direction := Vector2.RIGHT
 var _move_state := "idle"
@@ -33,7 +32,6 @@ func _physics_process(_delta: float) -> void:
 	aim_direction = (get_global_mouse_position() - global_position).normalized()
 	if aim_direction == Vector2.ZERO:
 		aim_direction = Vector2.RIGHT
-	hitbox.aim_direction = aim_direction
 	visual.set_facing(aim_direction)
 	# 2.5D: the body stays upright, only the aim indicator/weapon turn (decision 0009).
 	visual.set_aim_angle(aim_direction.angle())
