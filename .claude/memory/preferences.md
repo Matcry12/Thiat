@@ -26,3 +26,9 @@
   combat code.
 - Timings live in data; art stretches to fit the tuned timing, never the reverse.
 - User cares about this specifically — flagged it unprompted on 2026-09-23.
+
+## Communication (CLAUDE.md §6)
+- English level B1, max B2. Short sentences, common words, one idea per sentence.
+- ALWAYS give a concrete example — user said explanations were "hard to imagine" without one.
+- Explain what breaks and what the user would SEE on screen, not what the code does.
+- No jargon without plain words beside it. Asked for this on 2026-09-23.

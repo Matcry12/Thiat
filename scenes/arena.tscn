@@ -11,6 +11,7 @@ size = Vector2(1152, 32)
 size = Vector2(32, 648)
 
 [node name="Arena" type="Node2D"]
+y_sort_enabled = true
 
 [node name="Background" type="ColorRect" parent="."]
 mouse_filter = 2

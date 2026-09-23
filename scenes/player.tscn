@@ -1,12 +1,15 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/circle_visual.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/visual/sprite_actor_visual.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/components/hurtbox.gd" id="3"]
-[ext_resource type="Script" path="res://scripts/fx/swing_arc.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/visual/weapon_visual.gd" id="7"]
 [ext_resource type="Script" path="res://scripts/components/hitbox.gd" id="4"]
 [ext_resource type="Script" path="res://scripts/weapons/weapon_holder.gd" id="5"]
 [ext_resource type="Resource" path="res://data/weapons/sword.tres" id="6"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/player.png" id="8"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/shadow.png" id="9"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/sword.png" id="10"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 16.0
@@ -26,13 +29,26 @@ shape = SubResource("BodyShape")
 
 [node name="Visual" type="Node2D" parent="."]
 script = ExtResource("2")
-radius = 16.0
-height = 34.0
-draw_aim_indicator = true
+body_texture = ExtResource("8")
+shadow_texture = ExtResource("9")
+body_offset = Vector2(0, -22)
+shadow_offset = Vector2(0, -2)
 
-[node name="SwingArc" type="Node2D" parent="Visual"]
+[node name="Body" type="Sprite2D" parent="Visual"]
+
+[node name="Shadow" type="Sprite2D" parent="Visual"]
+z_index = -1
+
+[node name="WeaponVisual" type="Node2D" parent="."]
+position = Vector2(0, -22)
 script = ExtResource("7")
 weapon = ExtResource("6")
+blade_texture = ExtResource("10")
+blade_offset = Vector2(0, 0)
+
+[node name="Blade" type="Sprite2D" parent="WeaponVisual"]
+centered = false
+offset = Vector2(0, -5)
 
 [node name="Hurtbox" type="Area2D" parent="."]
 collision_layer = 2

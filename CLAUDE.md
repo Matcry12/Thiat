@@ -71,7 +71,27 @@ Concretely, every time:
   something that will have to be rebuilt from scratch when art arrives is the failure this rule exists
   to prevent.
 
-## 6. Project: BossFight (Godot 4.7 top-down combat + RL bosses)
+## 6. How to talk to me (the user)
+
+Write so it can be understood **without reading the code**.
+
+- **English level B1, B2 at most.** Short sentences. Common words. One idea per sentence.
+- **Always give an example.** Not "the visual layer lacks a contract" but "if you drop in a sprite,
+  nothing tells you which functions it must have - like buying a plug without knowing which socket
+  it fits."
+- **Explain the problem before the solution.** What breaks, when it breaks, what the user would
+  actually see on screen.
+- **No jargon without a plain-words explanation right next to it.** "Y-sorting (which character is
+  drawn in front when two overlap)".
+- **Say what it means for the game**, not what it means for the code. "Two enemies will overlap
+  wrong" beats "the draw order is undefined".
+- Keep tables and short lists. Avoid long paragraphs.
+- Code snippets only when the user asks for code, or when a file must be edited by hand.
+
+If an explanation needs the user to understand the code to follow it, it is the wrong explanation -
+rewrite it.
+
+## 7. Project: BossFight (Godot 4.7 top-down combat + RL bosses)
 
 **Stack**
 - Game: **Godot 4.7**, GDScript (`~/.local/bin/godot`). Scenes in `scenes/`, scripts in `scripts/`
