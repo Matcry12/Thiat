@@ -24,3 +24,6 @@ Reference docs in `docs/reference/godot/` were researched against 4.3/4.4 — if
   screen. Set it to `IGNORE` (2).
 - Headless tests: the mouse reads as (0,0), so any script that aims at `get_global_mouse_position()`
   will fight the test. `set_physics_process(false)` on the player before asserting on aim.
+- Downloaded pixel-art icons are usually upscaled (e.g. 608px for 19 art pixels). Resize DOWN to
+  the true art-pixel grid with NEAREST (608 -> 19), then up by an integer factor. Non-integer
+  resizing blurs pixel art.

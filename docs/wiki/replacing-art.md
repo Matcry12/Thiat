@@ -87,3 +87,23 @@ Change the letters, run `python3 tools/make_placeholders.py`, and the picture up
 **Never use stock images from the internet** (Dreamstime, Shutterstock and similar).
 They are watermarked and not licensed for a game. Free and safe sources: Kenney.nl (CC0),
 itch.io asset packs, or art you make yourself.
+
+## Weapon art drawn diagonally
+
+Most downloaded weapon icons are drawn **diagonally** (blade pointing up-right), not flat.
+That is fine — do not rotate or redraw the picture.
+
+On the **WeaponVisual** node set **Art Angle Degrees** to the angle the blade points inside the
+image file:
+
+| Art in the file | Art Angle Degrees |
+|---|---|
+| Points right | `0` |
+| Points up-right (diagonal) | `-45` |
+| Points up | `-90` |
+
+The code cancels it out, so the swing still follows your mouse correctly.
+
+Then fix the grip position with **Offset** on the Blade sprite: the handle must sit at the pivot.
+For a diagonal sword the handle is the **bottom-left** of the picture, so Offset is roughly
+`(-6, -(height - 6))`.

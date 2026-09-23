@@ -12,6 +12,11 @@ class_name WeaponVisual
 @export var blade_texture: Texture2D
 @export var blade_offset := Vector2.ZERO
 @export var hand_distance := 14.0          ## distance from body centre to the hand
+## Which way the blade points INSIDE the image file, in degrees.
+## 0 = the art points right (our own placeholders). -45 = the art is drawn
+## diagonally, pointing up-right (most downloaded item icons look like this).
+## The code cancels this out, so diagonal art needs no rotating or redrawing.
+@export var art_angle_degrees := 0.0
 ## Idle hold angle, relative to aim. -45 reads like a Minecraft item: the blade
 ## is carried diagonally instead of pointing flat forward. The PNG itself always
 ## points +X; this only changes how it is DISPLAYED, never the hit maths.
@@ -37,7 +42,7 @@ func _ready() -> void:
 	_blade_angle = deg_to_rad(rest_angle_degrees)
 	_phase_start_angle = _blade_angle
 	_phase_target_angle = _blade_angle
-	blade.rotation = _blade_angle
+	blade.rotation = _blade_angle - deg_to_rad(art_angle_degrees)
 
 func set_aim_angle(angle: float) -> void:
 	aim_angle = angle
@@ -66,7 +71,7 @@ func _process(delta: float) -> void:
 			"recovery": duration = weapon.recovery
 	_t = 1.0 if duration <= 0.0 else minf(1.0, _t + delta / duration)
 	_blade_angle = lerpf(_phase_start_angle, _phase_target_angle, _t)
-	blade.rotation = _blade_angle
+	blade.rotation = _blade_angle - deg_to_rad(art_angle_degrees)
 	if show_reach_telegraph and _phase == "windup":
 		queue_redraw()
 
