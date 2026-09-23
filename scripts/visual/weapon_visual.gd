@@ -16,6 +16,7 @@ class_name WeaponVisual
 @export var windup_angle_degrees := 60.0   ## how far back the blade winds up, relative to aim
 @export var show_reach_telegraph := true   ## faint wedge during windup, reused from the old swing_arc draw code
 @export var telegraph_color := Color(1, 1, 1, 0.18)
+@export var ground_squash := 0.45          ## flatten floor shapes so they read as lying down (2.5D)
 
 @onready var blade: Sprite2D = $Blade
 
@@ -75,8 +76,10 @@ func _draw() -> void:
 		return
 	var half := deg_to_rad(weapon.arc_degrees * 0.5)
 	var r: float = weapon.reach
+	# Squashed: the reach lies on the floor, so it must look flat (decision 0009).
 	var points := PackedVector2Array([Vector2.ZERO])
 	var steps := 16
 	for i in steps + 1:
-		points.append(Vector2.RIGHT.rotated(lerpf(-half, half, float(i) / steps)) * r)
+		var p := Vector2.RIGHT.rotated(lerpf(-half, half, float(i) / steps)) * r
+		points.append(Vector2(p.x, p.y * ground_squash))
 	draw_colored_polygon(points, telegraph_color)

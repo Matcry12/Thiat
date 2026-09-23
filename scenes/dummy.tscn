@@ -8,10 +8,10 @@
 [ext_resource type="Texture2D" path="res://assets/placeholder/shadow.png" id="6"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
-radius = 14.0
+radius = 10.0
 
 [sub_resource type="CircleShape2D" id="HurtShape"]
-radius = 14.0
+radius = 13.0
 
 [node name="Dummy" type="StaticBody2D"]
 script = ExtResource("1")

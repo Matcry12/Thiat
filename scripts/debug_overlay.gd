@@ -4,6 +4,10 @@ extends CanvasLayer
 
 @export var player_path: NodePath
 
+## How flat a floor circle is drawn. Matches the shadow ellipse so ground shapes
+## read as lying on the floor rather than standing up.
+const GROUND_SQUASH := 0.45
+
 var enabled := true
 var last_damage := 0.0
 var weapon_state := "idle"
@@ -56,7 +60,7 @@ func _on_draw() -> void:
 
 	# Hitbox: red outline, only while active.
 	if weapon_holder.phase == WeaponHolder.Phase.ACTIVE:
-		_draw_layer.draw_arc(hitbox.global_position, weapon.reach, 0, TAU, 32, Color.RED, 2.0)
+		_draw_ground_circle(hitbox.global_position, weapon.reach, Color.RED, 2.0)
 
 	# Sword wedge: whenever not idle.
 	if weapon != null and weapon_holder.phase != WeaponHolder.Phase.IDLE:
@@ -64,9 +68,19 @@ func _on_draw() -> void:
 		var half_arc := deg_to_rad(weapon.arc_degrees / 2.0)
 		var from_angle := aim.angle() - half_arc
 		var to_angle := aim.angle() + half_arc
-		_draw_layer.draw_arc(_player.global_position, weapon.reach, from_angle, to_angle, 24, Color.WHITE, 1.5)
+		_draw_layer.draw_set_transform(_player.global_position, 0.0, Vector2(1.0, GROUND_SQUASH))
+		_draw_layer.draw_arc(Vector2.ZERO, weapon.reach, from_angle, to_angle, 24, Color.WHITE, 1.5)
+		_draw_layer.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func _draw_hurtbox_outline(hurtbox: Hurtbox) -> void:
-	var shape := (hurtbox.get_node("CollisionShape2D") as CollisionShape2D).shape as CircleShape2D
+	var cs := hurtbox.get_node("CollisionShape2D") as CollisionShape2D
+	var shape := cs.shape as CircleShape2D
 	if shape:
-		_draw_layer.draw_arc(hurtbox.global_position, shape.radius, 0, TAU, 24, Color.GREEN, 2.0)
+		_draw_ground_circle(cs.global_position, shape.radius, Color.GREEN, 2.0)
+
+## Hit shapes live on the FLOOR plane in 2.5D, so draw them squashed like a
+## shadow. A true circle would look like a hoop standing through the character.
+func _draw_ground_circle(at: Vector2, radius: float, color: Color, width: float) -> void:
+	_draw_layer.draw_set_transform(at, 0.0, Vector2(1.0, GROUND_SQUASH))
+	_draw_layer.draw_arc(Vector2.ZERO, radius, 0, TAU, 28, color, width)
+	_draw_layer.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

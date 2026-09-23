@@ -65,3 +65,25 @@ Done. No programming.
 - Anything that changes how combat works
 
 Everything else — pictures, numbers, positions — is yours.
+
+---
+
+## Making placeholder art yourself
+
+`tools/make_placeholders.py` draws every placeholder picture. The sword is written as a
+**character grid** — you can edit the shape without knowing how to draw:
+
+```
+"......KKK................."
+"......KGK................."
+"KRHHHHKGKWWWWWWWWWWWWWWK.."
+```
+
+`K` = black outline, `G` = gold guard, `H` = brown grip, `R` = red gem,
+`W` = light blade, `B` = blue blade, `.` = transparent.
+
+Change the letters, run `python3 tools/make_placeholders.py`, and the picture updates.
+
+**Never use stock images from the internet** (Dreamstime, Shutterstock and similar).
+They are watermarked and not licensed for a game. Free and safe sources: Kenney.nl (CC0),
+itch.io asset packs, or art you make yourself.

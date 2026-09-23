@@ -32,3 +32,5 @@
 - ALWAYS give a concrete example — user said explanations were "hard to imagine" without one.
 - Explain what breaks and what the user would SEE on screen, not what the code does.
 - No jargon without plain words beside it. Asked for this on 2026-09-23.
+- Never put watermarked/stock images (Dreamstime etc.) into the project — not licensed.
+  Draw an original placeholder instead, or use CC0 (Kenney.nl). Came up 2026-09-23.

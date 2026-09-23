@@ -32,6 +32,25 @@ def box(w, h, fill, outline=(0, 0, 0, 200), name=""):
     return img
 
 
+def pixel_art(grid, palette, scale, name):
+    """Draw from a character grid, then upscale with NEAREST so it stays crisp.
+
+    The grid IS the art: edit the characters to change the shape. Scale only
+    changes the final size, never the pixel look.
+    """
+    h = len(grid)
+    w = max(len(r) for r in grid)
+    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    px = img.load()
+    for y, row in enumerate(grid):
+        for x, ch in enumerate(row):
+            if ch in palette:
+                px[x, y] = palette[ch]
+    img = img.resize((w * scale, h * scale), Image.NEAREST)
+    img.save(OUT / f"{name}.png")
+    return img
+
+
 def ellipse(w, h, fill, name=""):
     img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     ImageDraw.Draw(img).ellipse([0, 0, w - 1, h - 1], fill=fill)
@@ -44,8 +63,29 @@ if __name__ == "__main__":
     capsule(28, 38, (210, 70, 70, 255), name="enemy")
     capsule(96, 120, (120, 30, 30, 255), name="boss")
     # Weapons point +X (right) at rotation 0, pivot at the LEFT edge = the hand.
-    box(56, 10, (230, 230, 235, 255), name="sword")
+    # Sword: points +X (right), handle at the LEFT edge = where the hand holds it.
+    # Edit the grid below to change the shape; '.' is transparent.
+    sword_grid = [
+        "......KKK.................",
+        "......KGK.................",
+        "..KKKKKGK.................",
+        "......KGKKKKKKKKKKKKKKKKK.",
+        "KRHHHHKGKWWWWWWWWWWWWWWK..",
+        "KRHHHHKGKBBBBBBBBBBBBK....",
+        "..KKKKKGKKKKKKKKKKKKK.....",
+        "......KGK.................",
+        "......KKK.................",
+    ]
+    sword_palette = {
+        "K": (20, 20, 26, 255),      # outline
+        "G": (240, 190, 60, 255),    # gold guard
+        "H": (120, 72, 40, 255),     # brown grip
+        "R": (200, 50, 50, 255),     # pommel gem
+        "W": (245, 250, 255, 255),   # blade highlight (top edge)
+        "B": (150, 200, 240, 255),   # blade
+    }
+    pixel_art(sword_grid, sword_palette, 3, "sword")
     box(40, 8, (180, 140, 80, 255), name="bow")
-    ellipse(40, 16, (0, 0, 0, 90), name="shadow")
+    ellipse(44, 18, (0, 0, 0, 150), name="shadow")
     ellipse(12, 12, (120, 220, 255, 255), name="projectile")
     print(f"wrote {len(list(OUT.glob('*.png')))} files to {OUT}")
