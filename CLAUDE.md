@@ -46,14 +46,29 @@ create a proper one first, then place it. **Root stays clean** — no stray file
 - `docs/decision/` — decision records, `NNNN-<slug>.md`: Context / Decision / Why / Consequences. Write one whenever a choice changes how the project is built (the decision-detector hook reminds you).
 - `docs/reference/` — external material (PDFs, playbooks, specs).
 
-## 5. Project: BossFight (Godot 4.x top-down combat + RL bosses)
+## 5. Project: BossFight (Godot 4.7 top-down combat + RL bosses)
 
 **Stack**
-- Game: Godot 4.x, GDScript. Scenes in `scenes/`, scripts beside their scene, shared logic in `scripts/`.
-- RL: Python in `rl/` (godot_rl_agents + stable-baselines3). Trained policies exported to ONNX and loaded in Godot for release; Python is training-only.
+- Game: **Godot 4.7**, GDScript (`~/.local/bin/godot`). Scenes in `scenes/`, scripts in `scripts/`
+  (components / weapons / brains), weapon data as `.tres` in `data/weapons/`.
+- RL: Python in `rl/` (godot_rl_agents + stable-baselines3), training-only. Shipped inference is
+  JSON weights + a GDScript matmul — **the official ONNX node is .NET-only**
+  ([0008](docs/decision/0008-rl-inference.md)).
+
+**Read before design or code work**
+- [docs/wiki/design-pillars.md](docs/wiki/design-pillars.md) — the combat/boss/item system.
+- [docs/wiki/prototype-v0.md](docs/wiki/prototype-v0.md) — v0 scope, architecture, debug/tuning tools.
+- [docs/decision/](docs/decision/) — 0001..0008. Settled; supersede with a new record, never ignore.
+- [docs/reference/godot/](docs/reference/godot/) — Godot 4 combat patterns, juice recipes, RL notes.
+
+**How we work** ([0007](docs/decision/0007-working-agreement.md))
+- Vertical slices, one question each, playtested by the user before the next slice starts.
+- Every feel number is an `@export` (live-tunable via `F3` panel / Remote inspector). Never hardcode one.
+- Debug keys: `F1` hitboxes + timing, `F2` 0.25x slow-mo, `F3` tuning panel.
 
 **Verify (rule 2, made concrete)**
-- GDScript change → `godot --headless --check-only -s <script>` or `godot --headless --quit` on the project; run GUT/gdUnit4 tests if present.
+- GDScript change → `godot --headless --check-only --script <file>` (the PostToolUse hook runs this
+  automatically and blocks on parse errors); `godot --headless --quit` to boot the project.
 - Python change → `pytest rl/` and a short smoke run of the env.
 - Gameplay feel (hit timing, dodge windows) can't be verified headless — say so, ask the user to playtest.
 
@@ -61,4 +76,5 @@ create a proper one first, then place it. **Root stays clean** — no stray file
 - `.godot/`, `*.import`, `*.uid` are generated. Never edit.
 - Prefer editing `.tscn` via the editor semantics you know; when editing by hand, keep `[gd_scene ... format=3]` and node paths intact and re-check with `--check-only`.
 - Combat logic lives in code (state machines, hitboxes), not in scattered signal connections inside `.tscn`.
-- Boss RL: observation/action spaces are documented in `docs/wiki/rl-spaces.md` — update it when they change.
+- Boss RL: observation/action spaces get documented in `docs/wiki/rl-spaces.md` when RL work starts
+  (not yet written — v0's boss is hand-scripted).

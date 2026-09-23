@@ -1,5 +1,8 @@
 # BossFight — Design Pillars
 
+*Design only. What v0 actually builds is [prototype-v0.md](prototype-v0.md);
+implementation patterns are in [docs/reference/godot/](../reference/godot/).*
+
 Single durable design synthesis. See [decision 0001](../decision/0001-design-reference-games.md) for why these three games are the references: [Necesse](../reference/game-design/necesse.md) (combat/controls), [Terraria](../reference/game-design/terraria.md) (bosses/items), [Soul Knight](../reference/game-design/soul-knight.md) (mobile ergonomics).
 
 ## 1. Pillars

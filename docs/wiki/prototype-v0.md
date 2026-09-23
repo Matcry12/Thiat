@@ -1,14 +1,24 @@
 # Prototype v0 — Combat Scratch Build
 
+**Status (2026-09-23):** docs + research complete. Godot 4.7 on PATH, git initialised, nothing built.
+Next: slice 1 (move, aim, sword arc, one dummy, F1 overlay) — *does swinging feel good?*
+
 **Goal:** one room, one player, one boss, combat that feels good. Nothing else.
 
 Judged by a single question: *is the fight fun with zero art?* If yes, the design is
 right and everything after is production. If no, no amount of sprites fixes it.
 
-Design source: [design-pillars.md](design-pillars.md). Decisions:
-[0002 PC-first](../decision/0002-pc-first.md),
-[0003 loadout](../decision/0003-loadout-and-swapping.md),
-[0004 dodge](../decision/0004-dodge.md).
+Design source: [design-pillars.md](design-pillars.md).
+Decisions: [0002 PC-first](../decision/0002-pc-first.md) ·
+[0003 loadout](../decision/0003-loadout-and-swapping.md) ·
+[0004 dodge](../decision/0004-dodge.md) ·
+[0005 architecture](../decision/0005-architecture.md) ·
+[0006 controls/parry](../decision/0006-controls-and-parry.md) ·
+[0007 working agreement](../decision/0007-working-agreement.md) ·
+[0008 RL inference](../decision/0008-rl-inference.md).
+Godot references: [combat patterns](../reference/godot/combat-patterns.md) ·
+[juice & VFX](../reference/godot/juice-and-vfx.md) ·
+[RL & ONNX](../reference/godot/rl-and-onnx.md).
 
 ---
 
