@@ -9,3 +9,8 @@ Reference docs in `docs/reference/godot/` were researched against 4.3/4.4 — if
 - `@export` changes need the editor to re-scan; tell the user when a reload is required.
 - Verify with `godot --headless --check-only --script <file>` (the PostToolUse hook runs this
   automatically on every `.gd` edit and blocks on parse errors).
+- `Vector2.angle_to()` returns a **signed** angle in [-PI, PI]. Arc/cone hit filters must use
+  `absf(aim.angle_to(to_target)) <= half_arc` — without `absf` every target *behind* the attacker
+  passes the filter. Regression test: `tests/test_arc_filter.gd`.
+- A `Hurtbox` may have no sibling `Health` (the player in slice 1 cannot take damage yet) —
+  `get_node_or_null`, and callers must handle null.

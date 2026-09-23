@@ -1,0 +1,72 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/dummy.tscn" id="2"]
+[ext_resource type="Script" path="res://scripts/debug_overlay.gd" id="3"]
+
+[sub_resource type="RectangleShape2D" id="WallH"]
+size = Vector2(1152, 32)
+
+[sub_resource type="RectangleShape2D" id="WallV"]
+size = Vector2(32, 648)
+
+[node name="Arena" type="Node2D"]
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1152.0
+offset_bottom = 648.0
+color = Color(0.35, 0.35, 0.35, 1)
+
+[node name="Walls" type="Node2D" parent="."]
+
+[node name="Top" type="StaticBody2D" parent="Walls"]
+position = Vector2(576, 16)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/Top"]
+shape = SubResource("WallH")
+
+[node name="Bottom" type="StaticBody2D" parent="Walls"]
+position = Vector2(576, 632)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/Bottom"]
+shape = SubResource("WallH")
+
+[node name="Left" type="StaticBody2D" parent="Walls"]
+position = Vector2(16, 324)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/Left"]
+shape = SubResource("WallV")
+
+[node name="Right" type="StaticBody2D" parent="Walls"]
+position = Vector2(1136, 324)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Walls/Right"]
+shape = SubResource("WallV")
+
+[node name="Player" parent="." instance=ExtResource("1")]
+position = Vector2(400, 324)
+collision_layer = 1
+collision_mask = 1
+
+[node name="Dummy" parent="." instance=ExtResource("2")]
+position = Vector2(700, 324)
+
+[node name="DebugOverlay" type="CanvasLayer" parent="."]
+script = ExtResource("3")
+player_path = NodePath("../Player")
+
+[node name="DrawLayer" type="Node2D" parent="DebugOverlay"]
+
+[node name="Label" type="Label" parent="DebugOverlay"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 300.0
+offset_bottom = 60.0
