@@ -91,7 +91,34 @@ Write so it can be understood **without reading the code**.
 If an explanation needs the user to understand the code to follow it, it is the wrong explanation -
 rewrite it.
 
-## 7. Project: BossFight (Godot 4.7 top-down combat + RL bosses)
+## 7. Test mode is part of every feature
+
+Nothing is "done" until it can be **seen and changed while the game runs**. Test mode is not a
+side tool — it ships with the feature, in the same slice.
+
+Debug keys (keep this table current):
+
+| Key | Shows |
+|---|---|
+| `F1` | Hitboxes, hurtboxes, attack phase, reach wedge |
+| `F2` | Slow motion (0.25x) |
+| `F3` | Status + live tuning panel (the Minecraft F3 equivalent) |
+
+**When adding any feature, the same slice must also:**
+
+1. **Expose every number as `@export`** — on a Resource or a node. The F3 panel reflects over
+   `@export` properties, so a new number appears automatically. A hardcoded feel constant is a bug.
+2. **Show the new state in F3** — a new cooldown, phase, flag or counter must be visible while
+   playing. If the player cannot see why something happened, it cannot be tuned.
+3. **Draw the new shape in F1** if it has a hitbox, range or area.
+4. **Leave a way to trigger it on demand** where that is not trivial (a key to spawn the enemy, to
+   force a boss phase, to refill health).
+
+Test mode is dev-build only and never shipped, but it is never an afterthought either: the reason
+every number in the design docs says "starting value, tune" is that the panel is how they get
+resolved.
+
+## 8. Project: BossFight (Godot 4.7 top-down combat + RL bosses)
 
 **Stack**
 - Game: **Godot 4.7**, GDScript (`~/.local/bin/godot`). Scenes in `scenes/`, scripts in `scripts/`

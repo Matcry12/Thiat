@@ -4,7 +4,7 @@ extends CanvasLayer
 
 @export var player_path: NodePath
 
-var enabled := true
+@export var enabled := true  ## exported so the F3 tuning panel can reflect it
 var last_damage := 0.0
 var weapon_state := "idle"
 
