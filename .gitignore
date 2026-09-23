@@ -1,0 +1,17 @@
+# Godot
+.godot/
+/android/
+export_presets.cfg
+*.translation
+
+# OMC / agent state
+.omc/
+
+# Python (RL training)
+rl/__pycache__/
+rl/.venv/
+*.pyc
+logs/
+
+# OS
+.DS_Store
