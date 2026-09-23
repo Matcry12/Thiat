@@ -46,7 +46,32 @@ create a proper one first, then place it. **Root stays clean** — no stray file
 - `docs/decision/` — decision records, `NNNN-<slug>.md`: Context / Decision / Why / Consequences. Write one whenever a choice changes how the project is built (the decision-detector hook reminds you).
 - `docs/reference/` — external material (PDFs, playbooks, specs).
 
-## 5. Project: BossFight (Godot 4.7 top-down combat + RL bosses)
+## 5. Build for replacement, never for the placeholder
+
+Everything visible right now is placeholder — circles, capsules, wedges, ugly bars. **None of it
+may be load-bearing.** Before writing any visual or content code, ask: *when this becomes a pixel
+sprite / a real level / a real weapon, is this a swap or a rewrite?* If it is a rewrite, restructure
+before continuing.
+
+Concretely, every time:
+
+- **Visuals live in their own node and nothing reaches inside.** Combat emits state
+  (`state_changed`, `set_aim_angle`, `on_weapon_state`); the visual node decides what to draw.
+  Replacing a `Polygon2D`/`_draw()` with an `AnimatedSprite2D` must touch **zero** combat code.
+- **Every effect gets a slot, not a special case.** A swing, a hit flash, a telegraph is its own
+  node driven by data + signals — so it can be swapped for a sprite, shader or trail later.
+- **Timings and numbers live in data (`WeaponData` / `@export`), never in art.** When a real
+  animation arrives, the art is stretched to fit the tuned timing — the timing is never changed to
+  fit the art. `speed_scale = anim_length / data_duration`.
+- **No number that affects feel is a hardcoded constant.** It is an `@export`, so it reaches the
+  inspector and the F3 tuning panel.
+- **Name things by role, not by shape.** `Visual`, `SwingArc`, `Telegraph` — never `WhiteCircle`,
+  `RedRect`.
+- Placeholder is a **stand-in with a defined interface**, not a prototype to be rewritten. Writing
+  something that will have to be rebuilt from scratch when art arrives is the failure this rule exists
+  to prevent.
+
+## 6. Project: BossFight (Godot 4.7 top-down combat + RL bosses)
 
 **Stack**
 - Game: **Godot 4.7**, GDScript (`~/.local/bin/godot`). Scenes in `scenes/`, scripts in `scripts/`

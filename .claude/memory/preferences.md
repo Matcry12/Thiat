@@ -19,3 +19,10 @@
 - Combat is the product. Story/world/meta come later and never constrain the fight.
 - Every feel number is tunable live (`F3` panel / Godot Remote inspector) — expose new ones as
   `@export`, never hardcode.
+
+## Build for replacement (CLAUDE.md §5)
+- Placeholders are stand-ins with an interface, never throwaway code to rebuild later.
+- Visuals live in their own node; combat only emits signals. Sprite swap must touch zero
+  combat code.
+- Timings live in data; art stretches to fit the tuned timing, never the reverse.
+- User cares about this specifically — flagged it unprompted on 2026-09-23.
