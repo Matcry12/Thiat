@@ -9,8 +9,19 @@ The intended perspective is Soul Knight's: top-down world, but characters drawn 
 facing the camera.
 
 ## Decision
-**2.5D top-down.** The world (floor, walls, arena) is viewed from above; **characters stand upright
-and never rotate with aim.**
+**Flat 2D, drawn like Soul Knight.** The world is viewed from above; **characters stand upright and
+never rotate with aim.**
+
+**Amended 2026-09-23 — "2.5D" caused a real mistake, so state it precisely:** this is *not* a
+perspective projection. There is **no foreshortening, no squashing, no fake depth**. Everything is
+drawn flat. The only things that create a sense of depth are:
+
+1. **Layering** — draw order by Y position (who is in front).
+2. **Upright sprites** — characters face the camera instead of being seen from the top.
+3. **A simple shadow** under each character.
+
+That is the whole technique. Any attempt to make shapes look "lying on the floor" by squashing
+them into ellipses is wrong and was reverted. Circles are drawn as circles.
 
 - Bodies are upright capsules in placeholder art, not circles seen from above.
 - **Only the aim indicator rotates.** Later, sprites flip left/right and the held weapon rotates;

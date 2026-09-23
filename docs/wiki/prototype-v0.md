@@ -48,10 +48,10 @@ Rules:
 - Placeholder art is *permanent* for v0. No "quick sprite pass" — it hides bad feel.
 - The drawn shape **is** the collision shape (see 1b). Never draw one size and collide another.
 
-**Perspective: 2.5D top-down, Soul Knight style** ([decision 0009](../decision/0009-perspective-2-5d.md)).
+**Perspective: flat 2D, Soul Knight style** ([decision 0009](../decision/0009-perspective-2-5d.md)).
 The world is seen from above, but characters stand **upright** and face the camera — they never
-rotate with aim; only the aim indicator does. A ground shadow ellipse sells the height.
-Combat math stays flat top-down; perspective is a rendering concern only.
+rotate with aim. **No perspective, no squashing, no fake 3D.** Depth comes only from draw order
+(who is in front), upright sprites, and a simple shadow. Circles are drawn as circles.
 
 Reference for the target look: Soul Knight (top-down 2.5D, flat high-contrast shapes) — its
 readability, not its art.
@@ -62,9 +62,10 @@ Because everything is a primitive, **the drawn footprint and the collision shape
 shape**: a body of radius 16 has a `CircleShape2D` r=16 on the flat plane. What you see is what
 collides — the "why did that hit me?" class of bug cannot exist by construction.
 
-One 2.5D caveat ([0009](../decision/0009-perspective-2-5d.md)): bodies are drawn **upright** while
-hitboxes are flat-plane circles at their feet. The overlay therefore draws shapes that do not
-trace the visible body outline. That is correct — the feet are the position.
+One caveat ([0009](../decision/0009-perspective-2-5d.md)): bodies are drawn **upright** while
+hitboxes are circles at their feet, drawn as plain circles. The overlay therefore draws shapes that
+do not trace the visible body outline. That is correct — the feet are the position, and distances
+between characters are measured there.
 
 On top of that, v0 ships a **debug overlay** (`F1` toggles, on by default in v0):
 

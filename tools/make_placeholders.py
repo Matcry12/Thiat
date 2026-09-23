@@ -65,25 +65,34 @@ if __name__ == "__main__":
     # Weapons point +X (right) at rotation 0, pivot at the LEFT edge = the hand.
     # Sword: points +X (right), handle at the LEFT edge = where the hand holds it.
     # Edit the grid below to change the shape; '.' is transparent.
+    # Chunky pixel sword. Drawn POINTING RIGHT so the swing maths stay simple;
+    # it is displayed tilted (WeaponVisual.rest_angle_degrees) for the held look.
     sword_grid = [
-        "......KKK.................",
-        "......KGK.................",
-        "..KKKKKGK.................",
-        "......KGKKKKKKKKKKKKKKKKK.",
-        "KRHHHHKGKWWWWWWWWWWWWWWK..",
-        "KRHHHHKGKBBBBBBBBBBBBK....",
-        "..KKKKKGKKKKKKKKKKKKK.....",
-        "......KGK.................",
-        "......KKK.................",
+        ".....KKK..................",
+        ".....KGK...........KKKKKK.",
+        "..KKKKGKKKKKKKKKKKKKWWWWK.",
+        ".KKGGGGGGGGWBWBWBWBWBWWWK.",
+        "KRKGGGGGGGGWBWBWBWBWBWWK..",
+        ".KKGGGGGGGGKBKBKBKBKBKKK..",
+        "..KKKKGKKKKKKKKKKKKKKK....",
+        ".....KGK..................",
+        ".....KKK..................",
     ]
     sword_palette = {
         "K": (20, 20, 26, 255),      # outline
-        "G": (240, 190, 60, 255),    # gold guard
-        "H": (120, 72, 40, 255),     # brown grip
-        "R": (200, 50, 50, 255),     # pommel gem
-        "W": (245, 250, 255, 255),   # blade highlight (top edge)
-        "B": (150, 200, 240, 255),   # blade
+        "G": (120, 72, 40, 255),     # grip
+        "R": (220, 40, 40, 255),     # pommel gem
+        "W": (250, 252, 255, 255),   # blade highlight
+        "B": (150, 200, 240, 255),   # blade, dithered with W like the reference
     }
+    sword_palette["Y"] = (240, 190, 60, 255)   # gold guard
+    sword_grid[1] = sword_grid[1].replace("KGK", "KYK", 1)
+    sword_grid[2] = sword_grid[2][:5] + "Y" + sword_grid[2][6:]
+    sword_grid[3] = sword_grid[3][:2] + "YY" + sword_grid[3][4:]
+    sword_grid[4] = sword_grid[4][:3] + "Y" + sword_grid[4][4:]
+    sword_grid[5] = sword_grid[5][:2] + "YY" + sword_grid[5][4:]
+    sword_grid[6] = sword_grid[6][:5] + "Y" + sword_grid[6][6:]
+    sword_grid[7] = sword_grid[7].replace("KGK", "KYK", 1)
     pixel_art(sword_grid, sword_palette, 3, "sword")
     box(40, 8, (180, 140, 80, 255), name="bow")
     ellipse(44, 18, (0, 0, 0, 150), name="shadow")
