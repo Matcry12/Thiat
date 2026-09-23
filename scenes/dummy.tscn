@@ -20,6 +20,7 @@ shape = SubResource("BodyShape")
 [node name="Visual" type="Node2D" parent="."]
 script = ExtResource("2")
 radius = 14.0
+height = 30.0
 base_color = Color(1, 0, 0, 1)
 
 [node name="Hurtbox" type="Area2D" parent="."]

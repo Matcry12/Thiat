@@ -14,3 +14,13 @@ Reference docs in `docs/reference/godot/` were researched against 4.3/4.4 — if
   passes the filter. Regression test: `tests/test_arc_filter.gd`.
 - A `Hurtbox` may have no sibling `Health` (the player in slice 1 cannot take damage yet) —
   `get_node_or_null`, and callers must handle null.
+- A `NodePath` written into a `.tscn` does NOT resolve into a typed-Node `@export` (e.g.
+  `@export var hitbox: Hitbox`) — it stays **null** with no error. Export a `NodePath` and resolve
+  it with `get_node_or_null()` in `_ready()`, plus an `assert`.
+- `Area2D.area_entered` never fires for a target already overlapping when `monitoring` is switched
+  on — the usual case for a melee hitbox against a stationary enemy. Poll `get_overlapping_areas()`
+  during the active window instead.
+- A `ColorRect` background defaults to `mouse_filter = STOP` and will eat clicks over the whole
+  screen. Set it to `IGNORE` (2).
+- Headless tests: the mouse reads as (0,0), so any script that aims at `get_global_mouse_position()`
+  will fight the test. `set_physics_process(false)` on the player before asserting on aim.

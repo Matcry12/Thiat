@@ -29,11 +29,11 @@ drawn in code (`Polygon2D` / `_draw()`), flat color, no outline art.
 
 | Thing | Shape | Color |
 |---|---|---|
-| Player | circle, r=16 | white |
-| Player facing | short line from center to cursor | white |
+| Player | upright capsule, r=16, h=34 + ground shadow | white |
+| Player facing | short line from body toward cursor (body does NOT rotate) | white |
 | Melee swing | 90 deg arc wedge, 1 frame | white, fades in 0.1s |
 | Projectile | small circle r=4 | cyan (player) / magenta (enemy) |
-| Trash enemy | circle r=14 | red |
+| Trash enemy | upright capsule r=14 + shadow | red |
 | Boss | circle r=48 | dark red |
 | Boss part (fist/add) | circle r=20 | dark red, lighter outline |
 | AoE telegraph | ground circle/rect outline, fills over the windup | orange -> red |
@@ -48,14 +48,23 @@ Rules:
 - Placeholder art is *permanent* for v0. No "quick sprite pass" — it hides bad feel.
 - The drawn shape **is** the collision shape (see 1b). Never draw one size and collide another.
 
-Reference for the target look: Zombs Royale (flat geometric, high contrast), minus the
-polish — we want its readability, not its vector art.
+**Perspective: 2.5D top-down, Soul Knight style** ([decision 0009](../decision/0009-perspective-2-5d.md)).
+The world is seen from above, but characters stand **upright** and face the camera — they never
+rotate with aim; only the aim indicator does. A ground shadow ellipse sells the height.
+Combat math stays flat top-down; perspective is a rendering concern only.
+
+Reference for the target look: Soul Knight (top-down 2.5D, flat high-contrast shapes) — its
+readability, not its art.
 
 ## 1b. Hitboxes are the visuals — debug view is a feature
 
-Because everything is a primitive, **the drawn shape and the collision shape are the same shape**.
-A white circle r=16 has a `CircleShape2D` r=16. What you see is what collides — the "why did that
-hit me?" class of bug cannot exist by construction.
+Because everything is a primitive, **the drawn footprint and the collision shape are the same
+shape**: a body of radius 16 has a `CircleShape2D` r=16 on the flat plane. What you see is what
+collides — the "why did that hit me?" class of bug cannot exist by construction.
+
+One 2.5D caveat ([0009](../decision/0009-perspective-2-5d.md)): bodies are drawn **upright** while
+hitboxes are flat-plane circles at their feet. The overlay therefore draws shapes that do not
+trace the visible body outline. That is correct — the feet are the position.
 
 On top of that, v0 ships a **debug overlay** (`F1` toggles, on by default in v0):
 

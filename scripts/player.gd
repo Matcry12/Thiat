@@ -22,7 +22,8 @@ func _physics_process(_delta: float) -> void:
 	if aim_direction == Vector2.ZERO:
 		aim_direction = Vector2.RIGHT
 	hitbox.aim_direction = aim_direction
-	visual.rotation = aim_direction.angle()
+	# 2.5D: the body stays upright, only the aim indicator turns (decision 0009).
+	visual.set_aim_angle(aim_direction.angle())
 
 	if Input.is_action_just_pressed("attack"):
 		weapon_holder.try_attack()

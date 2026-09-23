@@ -8,15 +8,23 @@ signal state_changed(state: String)
 enum Phase { IDLE, WINDUP, ACTIVE, RECOVERY }
 
 @export var weapon: WeaponData
-@export var hitbox: Hitbox
+## NodePath, not a typed Hitbox export: a NodePath written into a .tscn does not
+## resolve into a typed-Node export, it silently stays null. Resolve it ourselves.
+@export var hitbox_path: NodePath
+
+var hitbox: Hitbox
 
 var phase: Phase = Phase.IDLE
 var _phase_time := 0.0
 
+func _ready() -> void:
+	hitbox = get_node_or_null(hitbox_path) as Hitbox
+	assert(hitbox != null, "WeaponHolder: hitbox_path does not resolve to a Hitbox")
+
 ## Called by whoever owns this holder (player input, or a boss Brain later).
 ## The holder never reads Input itself — that is what makes it reusable.
 func try_attack() -> bool:
-	if phase != Phase.IDLE:
+	if phase != Phase.IDLE or weapon == null or hitbox == null:
 		return false
 	_start_attack()
 	return true
@@ -39,8 +47,6 @@ func _physics_process(delta: float) -> void:
 				_set_phase(Phase.IDLE)
 
 func _start_attack() -> void:
-	if weapon == null or hitbox == null:
-		return
 	hitbox.weapon = weapon
 	_set_phase(Phase.WINDUP)
 
