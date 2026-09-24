@@ -57,6 +57,13 @@ func _on_draw() -> void:
 	# Hitbox: red outline of its ACTUAL shape at its ACTUAL transform, only
 	# while active. The shape IS the hit area (decision 0011) — this is the
 	# only honest picture of what can currently hit, no separate reach/arc math.
+	# Two different things, both needed to understand a swing:
+	#   WHITE  = the whole area the swing can reach (arc_degrees + radius),
+	#            shown through windup AND active so it is actually visible.
+	#   RED    = the wedge that is dangerous RIGHT NOW, which travels with the
+	#            blade. Only alive for `active` (0.1s), far too brief on its own.
+	if weapon_holder.phase != WeaponHolder.Phase.IDLE:
+		_draw_swing_range(weapon_holder)
 	for hb in get_tree().get_nodes_in_group("hitbox"):
 		if (hb as Hitbox).is_active():
 			_draw_hitbox_outline(hb)
@@ -95,6 +102,24 @@ func _draw_hurtbox_outline(hurtbox: Hurtbox) -> void:
 ## Capsule) AND a generated sector (CollisionPolygon2D, decision 0011
 ## amendment) — whichever child the Hitbox actually has is the real hit area,
 ## so this is the only honest picture of what can currently hit.
+## The full sweep the weapon can reach this swing: arc_degrees wide, radius deep,
+## centred on the aim. Drawn in the weapon pivot's space so it turns with aim and
+## mirrors with the weapon, exactly like the real hit wedge does.
+func _draw_swing_range(weapon_holder: WeaponHolder) -> void:
+	var weapon: WeaponData = weapon_holder.weapon
+	if weapon == null:
+		return
+	var pivot := _player.get_node_or_null("WeaponVisual") as Node2D
+	if pivot == null:
+		return
+	var xform := pivot.global_transform
+	var poly := SectorShape.build_sector_polygon(weapon.arc_degrees, weapon.radius, 0.0, 20)
+	var points := PackedVector2Array()
+	for p in poly:
+		points.append(xform * p)
+	points.append(points[0])
+	_draw_layer.draw_polyline(points, Color(1, 1, 1, 0.55), 1.5)
+
 func _draw_hitbox_outline(hitbox: Hitbox) -> void:
 	for child in hitbox.get_children():
 		if child is CollisionPolygon2D:
