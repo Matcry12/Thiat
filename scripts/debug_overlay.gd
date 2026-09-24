@@ -124,6 +124,19 @@ func _draw_swing_range(weapon_holder: WeaponHolder) -> void:
 	points.append(points[0])
 	_draw_layer.draw_polyline(points, Color(1, 1, 1, 0.55), 1.5)
 
+	# The AIM LINE: straight from the hand to the cursor. The swing is centred on
+	# it — the blade starts half the arc on one side and finishes half on the
+	# other, crossing this line in the middle of the swing.
+	var origin: Vector2 = xform.origin
+	var tip: Vector2 = xform * Vector2(reach * 1.15, 0.0)
+	_draw_layer.draw_line(origin, tip, Color(1, 0.9, 0.2, 0.9), 1.5)
+	_draw_layer.draw_circle(origin, 3.0, Color(1, 0.9, 0.2, 0.9))
+
+	# The two edges of the swing: where it starts and where it ends.
+	var half := deg_to_rad(weapon.arc_degrees) * 0.5
+	for edge in [-half, half]:
+		_draw_layer.draw_line(origin, xform * (Vector2.RIGHT.rotated(edge) * reach), Color(1, 1, 1, 0.35), 1.0)
+
 ## Furthest point of the hitbox's shape from the swing pivot. This is the
 ## weapon's reach — increase it by making the BOX bigger, not by typing a number.
 func _hitbox_reach(hitbox: Hitbox) -> float:
