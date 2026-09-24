@@ -6,11 +6,17 @@
 [ext_resource type="Script" uid="uid://cfhocpi452k6r" path="res://scripts/components/health.gd" id="4"]
 [ext_resource type="Texture2D" uid="uid://dwnb6ldkjxx75" path="res://assets/placeholder/enemy.png" id="5"]
 [ext_resource type="Texture2D" uid="uid://c850m4ii26ok3" path="res://assets/placeholder/shadow.png" id="6"]
+[ext_resource type="Script" path="res://scripts/components/attacker.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/components/hitbox.gd" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/telegraph.tscn" id="9"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 
 [sub_resource type="CircleShape2D" id="HurtShape"]
 radius = 13.0
+
+[sub_resource type="CircleShape2D" id="StrikeShape"]
+radius = 90.0
 
 [node name="Dummy" type="StaticBody2D" unique_id=1417564191]
 script = ExtResource("1")
@@ -44,3 +50,25 @@ shape = SubResource("HurtShape")
 script = ExtResource("4")
 max_hp = 500.0
 armor = 20.0
+shield_max = 0.0
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 16
+collision_mask = 2
+script = ExtResource("8")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+shape = SubResource("StrikeShape")
+
+[node name="Telegraph" parent="." instance=ExtResource("9")]
+
+[node name="Attacker" type="Node" parent="."]
+script = ExtResource("7")
+attack_range = 90.0
+telegraph_time = 0.9
+strike_time = 0.15
+attack_cooldown = 1.8
+attack_damage = 25.0
+target_path = NodePath("../../Player")
+hitbox_path = NodePath("../Hitbox")
+telegraph_path = NodePath("../Telegraph")

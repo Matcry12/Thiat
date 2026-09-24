@@ -303,9 +303,10 @@ slices. Any slice may send us back to the design — that is expected, not failu
 1. **Move & hit** — player, mouse aim, sword arc, one dummy that takes damage. **DONE
    (2026-09-24)** — user verdict: movement and attack are acceptable.
    *Does swinging feel good?*
-2. **Dodge, parry & get hit** — enemy attacks with a telegraph, shield+HP, dodge i-frames,
-   parry window + stagger reward, and the parryable/unparryable tell.
-   *Is the dodge window trustworthy? Is parry worth the risk over just dodging?*
+2. **Dodge & get hit** — enemy attacks with a telegraph, shield+HP, dodge i-frames, HUD.
+   *Is the dodge window trustworthy?*
+2b. **Parry** — the `F` window, stagger reward, parryable vs unparryable tell.
+   *Is parry worth the risk over just dodging?*
 3. **Two weapons** — bow added, swap with cast+cooldown, one skill each.
    *Is the 5s swap cooldown interesting or annoying?*
 4. **The boss** — 3 attacks, phase 2, enrage rule, HUD cooldowns.

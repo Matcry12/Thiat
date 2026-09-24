@@ -3,12 +3,14 @@ extends CanvasLayer
 ## tint reference, and top-left timing text.
 
 @export var player_path: NodePath
+@export var dummy_path: NodePath
 
 @export var enabled := true  ## exported so the F3 tuning panel can reflect it
 var last_damage := 0.0
 var weapon_state := "idle"
 
 @onready var _player: CharacterBody2D = get_node(player_path)
+@onready var _dummy: Node2D = get_node_or_null(dummy_path)
 @onready var _draw_layer: Node2D = $DrawLayer
 @onready var _label: Label = $Label
 
@@ -58,6 +60,29 @@ func _on_draw() -> void:
 	# only honest picture of what can currently hit, no separate reach/arc math.
 	if weapon_holder.phase == WeaponHolder.Phase.ACTIVE:
 		_draw_hitbox_outline(hitbox)
+
+	# Player i-frames: blue outline for the dodge window's whole duration.
+	var dodge: Dodge = _player.get_node_or_null("Dodge")
+	if dodge and dodge.iframes_active():
+		var body_cs := _player.get_node("CollisionShape2D") as CollisionShape2D
+		var body_shape := body_cs.shape as CircleShape2D
+		if body_shape:
+			_draw_ground_circle(_player.global_position, body_shape.radius, Color.BLUE, 3.0)
+
+	# Enemy strike: hitbox red only while STRIKE, telegraph area outlined
+	# while TELEGRAPH (redundant with Telegraph's own border — cheap, and
+	# consistent with the debug overlay drawing every other timing state).
+	if _dummy:
+		var attacker: Attacker = _dummy.get_node_or_null("Attacker")
+		var enemy_hitbox: Hitbox = _dummy.get_node_or_null("Hitbox")
+		if attacker and enemy_hitbox:
+			if attacker.phase == Attacker.Phase.STRIKE:
+				_draw_hitbox_outline(enemy_hitbox)
+			elif attacker.phase == Attacker.Phase.TELEGRAPH:
+				var cs := enemy_hitbox.get_node("CollisionShape2D") as CollisionShape2D
+				var shape := cs.shape as CircleShape2D
+				if shape:
+					_draw_ground_circle(cs.global_position, shape.radius, Color.ORANGE, 2.0)
 
 func _draw_hurtbox_outline(hurtbox: Hurtbox) -> void:
 	var cs := hurtbox.get_node("CollisionShape2D") as CollisionShape2D

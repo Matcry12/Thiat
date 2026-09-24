@@ -34,6 +34,9 @@ var _dummy: StaticBody2D
 var _debug_overlay: CanvasLayer
 var _weapon_holder: WeaponHolder
 var _dummy_health: Health
+var _player_health: Health
+var _dodge: Dodge
+var _attacker: Attacker
 
 var _targets: Array = []          # [{"name": String, "object": Object}]
 var _controls: Dictionary = {}    # "Target.prop" -> {obj, prop, control, value_label, is_bool, is_int}
@@ -58,6 +61,9 @@ func _ready() -> void:
 	_debug_overlay = get_node(debug_overlay_path)
 	_weapon_holder = _player.get_node("WeaponHolder")
 	_dummy_health = _dummy.get_node("Health")
+	_player_health = _player.get_node("Health")
+	_dodge = _player.get_node("Dodge")
+	_attacker = _dummy.get_node("Attacker")
 
 	_weapon_holder.state_changed.connect(_on_weapon_state_changed)
 	_dummy_health.damaged.connect(_on_dummy_damaged)
@@ -67,7 +73,10 @@ func _ready() -> void:
 		{"name": "Sword", "object": _weapon_holder.weapon},
 		{"name": "WeaponVisual", "object": _player.get_node("WeaponVisual")},
 		{"name": "Visual", "object": _player.visual},
+		{"name": "Dodge", "object": _dodge},
+		{"name": "Player Health", "object": _player_health},
 		{"name": "Dummy Health", "object": _dummy_health},
+		{"name": "Attacker", "object": _attacker},
 		{"name": "Debug", "object": _debug_overlay},
 	]
 
@@ -134,6 +143,15 @@ func _update_status_text() -> void:
 		"",
 		"[Entities]",
 		"hurtboxes: %d  dummy hp: %.0f" % [hurtbox_count, _dummy_health.hp],
+		"",
+		"[Dodge]",
+		"cooldown left: %.2fs  i-frames active: %s" % [_dodge.cooldown_remaining(), _dodge.iframes_active()],
+		"",
+		"[Player Health]",
+		"shield: %.0f/%.0f  hp: %.0f/%.0f" % [_player_health.shield, _player_health.shield_max, _player_health.hp, _player_health.max_hp],
+		"",
+		"[Enemy Attack]",
+		"state: %s" % Attacker.Phase.keys()[_attacker.phase].to_lower(),
 	])
 
 
@@ -226,6 +244,7 @@ func _build_ui() -> void:
 	var action_row := HBoxContainer.new()
 	tuning_vbox.add_child(action_row)
 	_add_button(action_row, "Heal dummy", _on_heal_dummy)
+	_add_button(action_row, "Heal player", _on_heal_player)
 	_add_button(action_row, "Reset stats", _on_reset_stats)
 
 	var scroll := ScrollContainer.new()
@@ -378,6 +397,12 @@ func _on_reset_pressed() -> void:
 func _on_heal_dummy() -> void:
 	_dummy_health.hp = _dummy_health.max_hp
 	print("tuning: dummy healed -> %.0f" % _dummy_health.hp)
+
+
+func _on_heal_player() -> void:
+	_player_health.hp = _player_health.max_hp
+	_player_health.shield = _player_health.shield_max
+	print("tuning: player healed -> hp %.0f, shield %.0f" % [_player_health.hp, _player_health.shield])
 
 
 func _on_reset_stats() -> void:

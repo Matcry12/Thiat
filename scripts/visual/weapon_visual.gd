@@ -30,7 +30,15 @@ class_name WeaponVisual
 ## is carried diagonally instead of pointing flat forward. The PNG itself always
 ## points +X; this only changes how it is DISPLAYED, never the hit maths.
 @export var rest_angle_degrees := -45.0: set = _set_rest_angle
-@export var windup_angle_degrees := 60.0: set = _set_windup_angle   ## how far back the blade winds up, relative to aim
+@export var windup_angle_degrees := 70.0: set = _set_windup_angle   ## how far back the blade winds up, relative to aim
+
+## Speed curves. The blade must not travel at a constant speed — Soul Knight
+## SNAPS the blade up, holds an instant, then accelerates through the slash.
+## Values are fed to Godot's ease(): below 1.0 = fast start then settle
+## (a snap), above 1.0 = slow start then accelerate (a whip).
+@export var windup_ease := 0.35      ## snap the blade up almost instantly
+@export var active_ease := 2.2       ## accelerate through the slash
+@export var recovery_ease := 0.6     ## drift back, unhurried
 
 @onready var blade: Sprite2D = $Blade
 
@@ -109,5 +117,10 @@ func _process(delta: float) -> void:
 			"active": duration = weapon.active
 			"recovery": duration = weapon.recovery
 	_t = 1.0 if duration <= 0.0 else minf(1.0, _t + delta / duration)
-	_blade_angle = lerpf(_phase_start_angle, _phase_target_angle, _t)
+	var curve := 1.0
+	match _phase:
+		"windup": curve = windup_ease
+		"active": curve = active_ease
+		"recovery": curve = recovery_ease
+	_blade_angle = lerpf(_phase_start_angle, _phase_target_angle, ease(_t, curve))
 	blade.rotation = _blade_angle - deg_to_rad(art_angle_degrees)

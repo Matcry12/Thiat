@@ -11,9 +11,12 @@ extends CharacterBody2D
 # delete the weapon with it (same trap as the shadow).
 @onready var weapon_visual: WeaponVisual = $WeaponVisual
 @onready var weapon_holder: WeaponHolder = $WeaponHolder
+@onready var health: Health = $Health
+@onready var dodge: Dodge = $Dodge
 
 var aim_direction := Vector2.RIGHT
 var _move_state := "idle"
+var _move_dir := Vector2.ZERO
 
 func _ready() -> void:
 	weapon_holder.state_changed.connect(_on_weapon_state_changed)
@@ -21,6 +24,7 @@ func _ready() -> void:
 
 func _physics_process(_delta: float) -> void:
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	_move_dir = input_dir
 	velocity = input_dir * speed
 	move_and_slide()
 
@@ -39,6 +43,9 @@ func _physics_process(_delta: float) -> void:
 
 	if Input.is_action_just_pressed("attack"):
 		weapon_holder.try_attack()
+
+	if Input.is_action_just_pressed("dodge"):
+		dodge.try_dodge(_move_dir, aim_direction)
 
 func _on_weapon_state_changed(state: String) -> void:
 	visual.set_weapon_state(state)

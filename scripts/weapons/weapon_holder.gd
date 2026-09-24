@@ -29,6 +29,15 @@ func try_attack() -> bool:
 	_start_attack()
 	return true
 
+## Cancels an in-progress swing (dodge does this): stops the hitbox dealing
+## any further damage and returns to idle immediately. No-op if already idle.
+func cancel() -> void:
+	if phase == Phase.IDLE:
+		return
+	if hitbox:
+		hitbox.end_swing()
+	_set_phase(Phase.IDLE)
+
 func _physics_process(delta: float) -> void:
 	if phase == Phase.IDLE:
 		return

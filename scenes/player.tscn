@@ -10,6 +10,8 @@
 [ext_resource type="Texture2D" uid="uid://bbeyf40b8qn4h" path="res://assets/placeholder/player.png" id="8"]
 [ext_resource type="Texture2D" uid="uid://c850m4ii26ok3" path="res://assets/placeholder/shadow.png" id="9"]
 [ext_resource type="Texture2D" uid="uid://jshxlxj775bb" path="res://assets/stock/sword_straight.png" id="10"]
+[ext_resource type="Script" path="res://scripts/components/health.gd" id="11"]
+[ext_resource type="Script" path="res://scripts/components/dodge.gd" id="12"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -79,3 +81,20 @@ shape = SubResource("HurtShape")
 script = ExtResource("5")
 weapon = ExtResource("6")
 hitbox_path = NodePath("../WeaponVisual/Blade/Hitbox")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("11")
+max_hp = 100.0
+armor = 10.0
+shield_max = 30.0
+shield_regen_delay = 5.0
+shield_regen_rate = 1.0
+
+[node name="Dodge" type="Node" parent="."]
+script = ExtResource("12")
+iframe_duration = 0.3
+burst_distance = 160.0
+cooldown = 2.0
+body_path = NodePath("..")
+health_path = NodePath("../Health")
+weapon_holder_path = NodePath("../WeaponHolder")
