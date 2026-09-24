@@ -6,15 +6,18 @@ class_name WeaponVisual
 ## change to the swing motion here also moves the hit area. There is no
 ## separate telegraph draw any more: the visible blade IS the telegraph.
 ##
-## The whole node rotates to the aim angle; `Blade` sits at `hand_distance`
-## along +X (weapon sprites point +X at rotation 0, pivot at the LEFT edge —
-## the hand). All timing comes from `weapon` (a WeaponData resource), never
-## a hardcoded second.
+## The whole node rotates to the aim angle. The `Blade` child is positioned BY
+## HAND in the editor — drag it until the grip sits where the hand should be.
+## This script never writes `Blade.position`: doing so would silently overwrite
+## your dragging when the game starts (the same two-sources-of-truth bug as
+## decision 0011). Code owns only the blade's ROTATION, because that animates.
+##
+## All timing comes from `weapon` (a WeaponData resource), never a hardcoded second.
 
 @export var weapon: WeaponData
 @export var blade_texture: Texture2D: set = _set_blade_texture
-@export var blade_offset := Vector2.ZERO: set = _set_blade_offset
-@export var hand_distance := 14.0: set = _set_hand_distance          ## distance from body centre to the hand
+
+
 ## Which way the blade points INSIDE the image file, in degrees.
 ## 0 = the art points right (our own placeholders). -45 = the art is drawn
 ## diagonally, pointing up-right (most downloaded item icons look like this).
@@ -50,7 +53,6 @@ func _apply_all() -> void:
 		return
 	if blade_texture:
 		b.texture = blade_texture
-	b.position = Vector2(hand_distance, 0) + blade_offset
 	if Engine.is_editor_hint():
 		b.rotation = deg_to_rad(rest_angle_degrees) - deg_to_rad(art_angle_degrees)
 	else:
@@ -58,14 +60,6 @@ func _apply_all() -> void:
 
 func _set_blade_texture(v: Texture2D) -> void:
 	blade_texture = v
-	_apply_all()
-
-func _set_blade_offset(v: Vector2) -> void:
-	blade_offset = v
-	_apply_all()
-
-func _set_hand_distance(v: float) -> void:
-	hand_distance = v
 	_apply_all()
 
 func _set_rest_angle(v: float) -> void:

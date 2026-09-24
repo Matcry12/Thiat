@@ -4,3 +4,7 @@
 - 2026-09-23: drew debug/ground shapes squashed into ellipses to fake 3D depth → Soul Knight is
   FLAT 2D. Depth comes only from layering (draw order) + upright sprites + a simple shadow.
   Never add perspective squashing, foreshortening or fake-3D projection.
+- 2026-09-24: code recomputed `Blade.position` from `hand_distance` in `_ready()`, silently
+  overwriting the position the user had dragged in the editor → if a human positions something by
+  dragging, NO script may write that same property. Code owns what animates (rotation); the editor
+  owns placement. Never two owners for one property.

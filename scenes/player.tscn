@@ -1,76 +1,81 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene format=3 uid="uid://brkn6l6tyxfd0"]
 
-[ext_resource type="Script" path="res://scripts/player.gd" id="1"]
-[ext_resource type="Script" path="res://scripts/visual/sprite_actor_visual.gd" id="2"]
-[ext_resource type="Script" path="res://scripts/components/hurtbox.gd" id="3"]
-[ext_resource type="Script" path="res://scripts/visual/weapon_visual.gd" id="7"]
-[ext_resource type="Script" path="res://scripts/components/hitbox.gd" id="4"]
-[ext_resource type="Script" path="res://scripts/weapons/weapon_holder.gd" id="5"]
-[ext_resource type="Resource" path="res://data/weapons/sword.tres" id="6"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/player.png" id="8"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/shadow.png" id="9"]
-[ext_resource type="Texture2D" path="res://assets/stock/sword_straight.png" id="10"]
+[ext_resource type="Script" uid="uid://irytr6tq00f5" path="res://scripts/player.gd" id="1"]
+[ext_resource type="Script" uid="uid://cj3m53hayxeaq" path="res://scripts/visual/sprite_actor_visual.gd" id="2"]
+[ext_resource type="Script" uid="uid://b2k3y42aktkbx" path="res://scripts/components/hurtbox.gd" id="3"]
+[ext_resource type="Script" uid="uid://d0s5saauew0b5" path="res://scripts/components/hitbox.gd" id="4"]
+[ext_resource type="Script" uid="uid://d0awtsvbienb8" path="res://scripts/weapons/weapon_holder.gd" id="5"]
+[ext_resource type="Resource" uid="uid://gvjnvct47q1q" path="res://data/weapons/sword.tres" id="6"]
+[ext_resource type="Script" uid="uid://bdm85dlwvqabq" path="res://scripts/visual/weapon_visual.gd" id="7"]
+[ext_resource type="Texture2D" uid="uid://bbeyf40b8qn4h" path="res://assets/placeholder/player.png" id="8"]
+[ext_resource type="Texture2D" uid="uid://c850m4ii26ok3" path="res://assets/placeholder/shadow.png" id="9"]
+[ext_resource type="Texture2D" uid="uid://jshxlxj775bb" path="res://assets/stock/sword_straight.png" id="10"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
 
-[sub_resource type="CircleShape2D" id="HurtShape"]
-radius = 15.0
-
 [sub_resource type="RectangleShape2D" id="HitShape"]
 size = Vector2(10, 34)
 
-[node name="Player" type="CharacterBody2D"]
-script = ExtResource("1")
-motion_mode = 1
+[sub_resource type="CircleShape2D" id="HurtShape"]
+radius = 15.0
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="Player" type="CharacterBody2D" unique_id=1610032297]
+motion_mode = 1
+script = ExtResource("1")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2036448946]
 shape = SubResource("BodyShape")
 
-[node name="Visual" type="Node2D" parent="."]
+[node name="Visual" type="Node2D" parent="." unique_id=123694702]
 script = ExtResource("2")
 body_texture = ExtResource("8")
 shadow_texture = ExtResource("9")
 body_offset = Vector2(0, -22)
 shadow_offset = Vector2(0, -2)
 
-[node name="Body" type="Sprite2D" parent="Visual"]
+[node name="Body" type="Sprite2D" parent="Visual" unique_id=557419974]
+position = Vector2(0, -17)
+texture = ExtResource("8")
 
-[node name="Shadow" type="Sprite2D" parent="Visual"]
+[node name="Shadow" type="Sprite2D" parent="Visual" unique_id=882274028]
 z_index = -1
+position = Vector2(0, -2)
+texture = ExtResource("9")
 
-[node name="WeaponVisual" type="Node2D" parent="."]
+[node name="WeaponVisual" type="Node2D" parent="." unique_id=1080354139]
 position = Vector2(0, -22)
 script = ExtResource("7")
 weapon = ExtResource("6")
 blade_texture = ExtResource("10")
-blade_offset = Vector2(0, 0)
-rest_angle_degrees = -20.0
-hand_distance = 6.0
 art_angle_degrees = -90.0
+rest_angle_degrees = -20.0
 
-[node name="Blade" type="Sprite2D" parent="WeaponVisual"]
+[node name="Blade" type="Sprite2D" parent="WeaponVisual" unique_id=1099783664]
+position = Vector2(6, 15)
+rotation = 1.2217305
+texture = ExtResource("10")
 centered = false
 offset = Vector2(-8, -44)
 
-[node name="Hitbox" type="Area2D" parent="WeaponVisual/Blade"]
+[node name="Hitbox" type="Area2D" parent="WeaponVisual/Blade" unique_id=2141333532]
 collision_layer = 8
 collision_mask = 4
 script = ExtResource("4")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="WeaponVisual/Blade/Hitbox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WeaponVisual/Blade/Hitbox" unique_id=1592139998]
 position = Vector2(-0.5, -27)
 shape = SubResource("HitShape")
 
-[node name="Hurtbox" type="Area2D" parent="."]
+[node name="Hurtbox" type="Area2D" parent="." unique_id=186865809]
 collision_layer = 2
 collision_mask = 0
 script = ExtResource("3")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox" unique_id=604204268]
 shape = SubResource("HurtShape")
 
-[node name="WeaponHolder" type="Node" parent="."]
+[node name="WeaponHolder" type="Node" parent="." unique_id=544363035]
 script = ExtResource("5")
 weapon = ExtResource("6")
 hitbox_path = NodePath("../WeaponVisual/Blade/Hitbox")
