@@ -48,7 +48,6 @@ func _update_label() -> void:
 func _on_draw() -> void:
 	if not enabled:
 		return
-	var hitbox: Hitbox = _player.get_node("WeaponVisual/Hitbox")
 	var weapon_holder: WeaponHolder = _player.get_node("WeaponHolder")
 
 	# Hurtboxes: green outline.
@@ -58,8 +57,9 @@ func _on_draw() -> void:
 	# Hitbox: red outline of its ACTUAL shape at its ACTUAL transform, only
 	# while active. The shape IS the hit area (decision 0011) — this is the
 	# only honest picture of what can currently hit, no separate reach/arc math.
-	if weapon_holder.phase == WeaponHolder.Phase.ACTIVE:
-		_draw_hitbox_outline(hitbox)
+	for hb in get_tree().get_nodes_in_group("hitbox"):
+		if (hb as Hitbox).is_active():
+			_draw_hitbox_outline(hb)
 
 	# Player i-frames: blue outline for the dodge window's whole duration.
 	var dodge: Dodge = _player.get_node_or_null("Dodge")

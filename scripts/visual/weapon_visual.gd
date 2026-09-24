@@ -41,6 +41,9 @@ class_name WeaponVisual
 @export var recovery_ease := 0.6     ## drift back, unhurried
 
 @onready var blade: Sprite2D = $Blade
+## Carries the Hitbox. Rotates with the swing so the hit area travels with the
+## blade instead of covering the whole cone at once.
+@onready var _swing_pivot: Node2D = get_node_or_null("SwingPivot")
 
 var aim_angle := 0.0
 
@@ -124,3 +127,7 @@ func _process(delta: float) -> void:
 		"recovery": curve = recovery_ease
 	_blade_angle = lerpf(_phase_start_angle, _phase_target_angle, ease(_t, curve))
 	blade.rotation = _blade_angle - deg_to_rad(art_angle_degrees)
+	# The hit wedge follows the blade's swing, but never the art angle — that is
+	# only how the picture happens to be drawn.
+	if _swing_pivot:
+		_swing_pivot.rotation = _blade_angle

@@ -8,7 +8,7 @@ func _init():
 	var player = arena.get_node("Player")
 	player.set_physics_process(false)          # headless mouse sits at (0,0)
 	var wv = arena.get_node("Player/WeaponVisual")
-	var hitbox = arena.get_node("Player/WeaponVisual/Hitbox")
+	var hitbox = arena.get_node("Player/WeaponVisual/SwingPivot/Hitbox")
 	# Hitbox itself sits AT the hand pivot (WeaponVisual's origin), so its own
 	# global_position doesn't move on a mirror/rotation — check a point on the
 	# actual generated sector polygon instead (decision 0011 amendment).

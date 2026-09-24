@@ -33,3 +33,9 @@ Reference docs in `docs/reference/godot/` were researched against 4.3/4.4 — if
   what you cannot see. Any visual node the user must position by dragging needs `@tool` plus
   property setters that call an `_apply_all()`, and `_process`/`_physics_process` guarded with
   `Engine.is_editor_hint()`.
+- Hardcoded node paths in one script break silently when a node is reparented elsewhere (the debug
+  overlay held `WeaponVisual/Hitbox`). Use groups (`add_to_group("hitbox")`) for cross-script
+  lookups, and NodePath exports for scene-local wiring.
+- A node sitting AT a pivot does not change `global_position` when the pivot rotates — only its
+  carried shape turns. Assert on `global_transform.get_rotation()` (or a transformed shape point),
+  not on position.

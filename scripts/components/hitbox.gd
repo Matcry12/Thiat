@@ -24,6 +24,17 @@ class_name Hitbox
 var _active := false
 var _hit_this_swing: Array[Node] = []
 
+func _ready() -> void:
+	# Group membership, not a hardcoded path: the hitbox gets reparented as the
+	# design evolves (blade -> hand pivot -> swing pivot) and a path in another
+	# script breaks silently every time.
+	add_to_group("hitbox")
+
+## True while this hitbox can deal damage — used by the debug overlay so it
+## draws only what is genuinely dangerous right now.
+func is_active() -> bool:
+	return _active
+
 func start_swing() -> void:
 	_hit_this_swing.clear()
 	_active = true

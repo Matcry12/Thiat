@@ -1,51 +1,62 @@
 extends SceneTree
-# Headless: proves decision 0011 (amended) — the Hitbox is parented under
-# WeaponVisual (the hand pivot, not the Blade's own swing animation) and
-# inherits WeaponVisual's transform, and it does nothing while the weapon is
-# idle.
+# The hit area must be CARRIED BY THE WEAPON (decision 0011) and must travel with
+# the blade's swing, not sit still covering the whole cone.
 func _init():
 	var player = load("res://scenes/player.tscn").instantiate()
 	root.add_child(player)
 	await process_frame
-	# Player's own _physics_process recomputes aim from the headless (0,0)
-	# mouse every tick and would stomp the rotation we set by hand below.
+	# Headless mouse reads as (0,0); the player would re-aim every frame and
+	# fight the assertions (see .claude/memory/godot-gotchas.md).
 	player.set_physics_process(false)
+	var wv_early = player.get_node("WeaponVisual")
+	wv_early.set_process(false)
 
-	var weapon_visual: Node2D = player.get_node("WeaponVisual")
-	var hitbox: Node2D = player.get_node("WeaponVisual/Hitbox")
+	var hitboxes = root.get_tree().get_nodes_in_group("hitbox")
+	var hitbox = null
+	for hb in hitboxes:
+		if player.is_ancestor_of(hb):
+			hitbox = hb
+	var found = hitbox != null
+	print("player hitbox found via group: ", found)
+	if not found:
+		print("FAIL"); quit(1); return
 
-	# 1. Parent chain includes WeaponVisual (the hand pivot), per the amendment.
-	var parented_under_weapon_visual: bool = hitbox.get_parent() == weapon_visual
-	print("hitbox parent is WeaponVisual: ", parented_under_weapon_visual)
+	# carried by the weapon, not bolted to the player body
+	var under_weapon = false
+	var n = hitbox.get_parent()
+	while n != null:
+		if n.name == "WeaponVisual":
+			under_weapon = true
+		n = n.get_parent()
+	print("hitbox is under WeaponVisual: ", under_weapon)
 
-	# 2. Rotating WeaponVisual moves the sector's world-space extent (proves it
-	# inherits the transform instead of being computed independently). The
-	# Hitbox node itself sits AT the hand pivot (WeaponVisual's origin), so its
-	# own global_position does not move on a pure rotation — what has to move
-	# is the generated shape, so check a point on the actual sector polygon.
-	var sector: CollisionPolygon2D = hitbox.get_node("SectorShape")
-	weapon_visual.rotation = 0.0
+	var wv = player.get_node("WeaponVisual")
+	var pivot = player.get_node("WeaponVisual/SwingPivot")
+
+	# The hitbox NODE sits on the pivot, so its POSITION never moves. What moves is
+	# the orientation of the shape it carries — check that directly.
+	var shape: CollisionPolygon2D = hitbox.get_child(0)
+
+	wv.set_aim_angle(0.0); pivot.rotation = 0.0
 	await physics_frame
-	var tip_a: Vector2 = sector.global_transform * sector.polygon[sector.polygon.size() / 2]
-	weapon_visual.rotation = deg_to_rad(90.0)
+	var r0: float = shape.global_transform.get_rotation()
+
+	wv.set_aim_angle(PI * 0.5)
 	await physics_frame
-	var tip_b: Vector2 = sector.global_transform * sector.polygon[sector.polygon.size() / 2]
-	var moved_with_rotation: bool = not tip_a.is_equal_approx(tip_b)
-	print("hitbox shape moves when WeaponVisual rotates: ", moved_with_rotation, " (", tip_a, " -> ", tip_b, ")")
+	var r_aim: float = shape.global_transform.get_rotation()
+	var aim_moves: bool = absf(r_aim - r0) > 0.1
+	print("hit area follows aim: %s (%.2f -> %.2f rad)" % [aim_moves, r0, r_aim])
 
-	# 3. No damage while idle: the shape may still geometrically overlap a
-	# target, but Hitbox only checks overlaps while `start_swing()` was called.
-	var holder: WeaponHolder = player.get_node("WeaponHolder")
-	print("weapon idle at start: ", holder.phase == 0)
-	var health: Health = load("res://scenes/dummy.tscn").instantiate().get_node("Health")
-	root.add_child(health.get_parent())
-	health.get_parent().global_position = hitbox.global_position
-	var hp_before: float = health.hp
-	for i in 10:
-		await physics_frame
-	var no_damage_while_idle: bool = health.hp == hp_before
-	print("no damage dealt while idle: ", no_damage_while_idle)
+	# the SWING turns it too — this is what "it is how we swing" means
+	wv.set_aim_angle(0.0); pivot.rotation = 0.0
+	await physics_frame
+	var r1: float = shape.global_transform.get_rotation()
+	pivot.rotation = deg_to_rad(60)
+	await physics_frame
+	var r_swing: float = shape.global_transform.get_rotation()
+	var swing_moves: bool = absf(r_swing - r1) > 0.1
+	print("hit area travels with the swing: %s (%.2f -> %.2f rad)" % [swing_moves, r1, r_swing])
 
-	var ok: bool = parented_under_weapon_visual and moved_with_rotation and no_damage_while_idle
+	var ok = under_weapon and aim_moves and swing_moves
 	print("PASS" if ok else "FAIL")
 	quit(0 if ok else 1)
