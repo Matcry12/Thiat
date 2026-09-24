@@ -1,6 +1,8 @@
 extends SceneTree
-# Headless: proves decision 0011 — the Hitbox is parented under the blade and
-# inherits its transform, and it does nothing while the weapon is idle.
+# Headless: proves decision 0011 (amended) — the Hitbox is parented under
+# WeaponVisual (the hand pivot, not the Blade's own swing animation) and
+# inherits WeaponVisual's transform, and it does nothing while the weapon is
+# idle.
 func _init():
 	var player = load("res://scenes/player.tscn").instantiate()
 	root.add_child(player)
@@ -10,23 +12,26 @@ func _init():
 	player.set_physics_process(false)
 
 	var weapon_visual: Node2D = player.get_node("WeaponVisual")
-	var blade: Node = player.get_node("WeaponVisual/Blade")
-	var hitbox: Node2D = player.get_node("WeaponVisual/Blade/Hitbox")
+	var hitbox: Node2D = player.get_node("WeaponVisual/Hitbox")
 
-	# 1. Parent chain includes Blade.
-	var parented_under_blade: bool = hitbox.get_parent() == blade
-	print("hitbox parent is Blade: ", parented_under_blade)
+	# 1. Parent chain includes WeaponVisual (the hand pivot), per the amendment.
+	var parented_under_weapon_visual: bool = hitbox.get_parent() == weapon_visual
+	print("hitbox parent is WeaponVisual: ", parented_under_weapon_visual)
 
-	# 2. Rotating WeaponVisual moves the hitbox's global_position (proves it
-	# inherits the transform instead of being computed independently).
+	# 2. Rotating WeaponVisual moves the sector's world-space extent (proves it
+	# inherits the transform instead of being computed independently). The
+	# Hitbox node itself sits AT the hand pivot (WeaponVisual's origin), so its
+	# own global_position does not move on a pure rotation — what has to move
+	# is the generated shape, so check a point on the actual sector polygon.
+	var sector: CollisionPolygon2D = hitbox.get_node("SectorShape")
 	weapon_visual.rotation = 0.0
 	await physics_frame
-	var pos_a: Vector2 = hitbox.global_position
+	var tip_a: Vector2 = sector.global_transform * sector.polygon[sector.polygon.size() / 2]
 	weapon_visual.rotation = deg_to_rad(90.0)
 	await physics_frame
-	var pos_b: Vector2 = hitbox.global_position
-	var moved_with_rotation: bool = not pos_a.is_equal_approx(pos_b)
-	print("hitbox moves when WeaponVisual rotates: ", moved_with_rotation, " (", pos_a, " -> ", pos_b, ")")
+	var tip_b: Vector2 = sector.global_transform * sector.polygon[sector.polygon.size() / 2]
+	var moved_with_rotation: bool = not tip_a.is_equal_approx(tip_b)
+	print("hitbox shape moves when WeaponVisual rotates: ", moved_with_rotation, " (", tip_a, " -> ", tip_b, ")")
 
 	# 3. No damage while idle: the shape may still geometrically overlap a
 	# target, but Hitbox only checks overlaps while `start_swing()` was called.
@@ -41,6 +46,6 @@ func _init():
 	var no_damage_while_idle: bool = health.hp == hp_before
 	print("no damage dealt while idle: ", no_damage_while_idle)
 
-	var ok: bool = parented_under_blade and moved_with_rotation and no_damage_while_idle
+	var ok: bool = parented_under_weapon_visual and moved_with_rotation and no_damage_while_idle
 	print("PASS" if ok else "FAIL")
 	quit(0 if ok else 1)

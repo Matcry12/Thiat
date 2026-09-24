@@ -21,7 +21,8 @@ class_name TuningPanel
 ## current value" (see `_range_for`) gives a bad slider range. Keyed by
 ## property name only — NOT a hardcoded list of which properties exist.
 @export var range_overrides: Dictionary = {
-	"arc_degrees": {"min": -180.0, "max": 180.0},
+	"arc_degrees": {"min": 10.0, "max": 360.0},
+	"radius": {"min": 10.0, "max": 200.0},
 	"art_angle_degrees": {"min": -180.0, "max": 180.0},
 	"windup_angle_degrees": {"min": -180.0, "max": 180.0},
 	"rest_angle_degrees": {"min": -180.0, "max": 180.0},

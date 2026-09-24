@@ -46,3 +46,26 @@ the art.**
   requires a texture.
 - Reach can no longer be changed with a slider. It is changed by resizing the shape in the editor,
   which is the point.
+
+## Amendment (2026-09-24) — the melee shape is now generated, not hand-drawn
+
+The hit area still lives on the weapon and is still a real shape — that part of the decision is
+unchanged. What changed: for melee, a hand-dragged `RectangleShape2D` was a clumsy way to describe
+a sweep and gave no numeric control. A sweep is naturally a **sector** (a pie slice): an arc angle
+plus a radius.
+
+- `SectorShape` (`scripts/components/sector_shape.gd`, `@tool extends CollisionPolygon2D`) builds
+  the polygon from `WeaponData.arc_degrees` + `WeaponData.radius`. The numbers still GENERATE the
+  one shape that both F1 shows and physics tests against — there is still exactly one owner, it is
+  just computed instead of dragged.
+- `Hitbox` moved from `WeaponVisual/Blade` to `WeaponVisual` itself (the hand pivot). It rotates
+  with aim but not with the blade's own windup/active/recovery swing animation — that swing is
+  what the sector's `arc_degrees` already represents numerically, so letting the shape also
+  physically swing with the blade would double-count the same motion.
+- Accepted trade-off: `radius` is just a number, so a sloppy value can stop matching the blade
+  art's length (a short blade with a huge radius, or the reverse). This is deliberate — F1 draws
+  the real generated polygon every frame, so the mismatch is visible immediately. Catching that
+  mismatch on sight is the whole point of the debug view, not a gap in it.
+- A hand-authored shape (like the enemy's `CollisionShape2D` strike circle) still works — `Hitbox`
+  and the debug overlay accept either a `CollisionShape2D` or a `CollisionPolygon2D` child. Nothing
+  requires a weapon to be a sector.

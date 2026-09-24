@@ -2,12 +2,12 @@ extends Area2D
 class_name Hitbox
 ## Deals damage to anything the shape overlaps while active.
 ##
-## The shape (`CollisionShape2D` under this node) is authored in the editor
-## as a child of `WeaponVisual/Blade`, sized to match the blade art. It IS
-## the hit area — there is no reach/arc math here to keep in sync with what
-## is drawn; the drawn blade and the hit area are the same transform
-## (decision 0011). Reparent/resize the shape to change what hits, not a
-## number in this script.
+## The shape (a `CollisionShape2D` or `CollisionPolygon2D` child of this node)
+## IS the hit area — there is no reach/arc math here to keep in sync with it.
+## It may be hand-authored (dragged in the editor, like the enemy's strike
+## circle) OR generated from weapon numbers (`SectorShape`, under the melee
+## Hitbox, decision 0011 amendment). Either way there is exactly one shape and
+## it is the single source of truth; this script never computes geometry.
 ##
 ## Collision layers (project-wide convention, BIT VALUES as used in .tscn):
 ##   1 = world/walls   2 = player hurtbox   4 = enemy hurtbox

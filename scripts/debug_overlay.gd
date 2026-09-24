@@ -48,7 +48,7 @@ func _update_label() -> void:
 func _on_draw() -> void:
 	if not enabled:
 		return
-	var hitbox: Hitbox = _player.get_node("WeaponVisual/Blade/Hitbox")
+	var hitbox: Hitbox = _player.get_node("WeaponVisual/Hitbox")
 	var weapon_holder: WeaponHolder = _player.get_node("WeaponHolder")
 
 	# Hurtboxes: green outline.
@@ -90,11 +90,32 @@ func _draw_hurtbox_outline(hurtbox: Hurtbox) -> void:
 	if shape:
 		_draw_ground_circle(cs.global_position, shape.radius, Color.GREEN, 2.0)
 
-## Draws the Hitbox's own CollisionShape2D, rotated and positioned exactly as
-## it sits in the world. Supports the two shape types decision 0011 allows.
+## Draws the Hitbox's own shape, rotated and positioned exactly as it sits in
+## the world. Supports hand-authored shapes (CollisionShape2D: Rectangle or
+## Capsule) AND a generated sector (CollisionPolygon2D, decision 0011
+## amendment) — whichever child the Hitbox actually has is the real hit area,
+## so this is the only honest picture of what can currently hit.
 func _draw_hitbox_outline(hitbox: Hitbox) -> void:
-	var cs := hitbox.get_node("CollisionShape2D") as CollisionShape2D
-	if cs == null or cs.shape == null:
+	for child in hitbox.get_children():
+		if child is CollisionPolygon2D:
+			_draw_collision_polygon_outline(child)
+			return
+		elif child is CollisionShape2D:
+			_draw_collision_shape_outline(child)
+			return
+
+func _draw_collision_polygon_outline(cp: CollisionPolygon2D) -> void:
+	if cp.polygon.is_empty():
+		return
+	var xform := cp.global_transform
+	var points := PackedVector2Array()
+	for p in cp.polygon:
+		points.append(xform * p)
+	points.append(points[0])
+	_draw_layer.draw_polyline(points, Color.RED, 2.0)
+
+func _draw_collision_shape_outline(cs: CollisionShape2D) -> void:
+	if cs.shape == null:
 		return
 	var xform := cs.global_transform
 	var points := PackedVector2Array()
