@@ -112,7 +112,15 @@ func _draw_swing_range(weapon_holder: WeaponHolder) -> void:
 	var pivot := _player.get_node_or_null("WeaponVisual") as Node2D
 	if pivot == null:
 		return
-	var xform := pivot.global_transform
+	# The blade does NOT sweep symmetrically around the aim: it pulls back to
+	# -windup_angle_degrees, then travels forward through arc_degrees. Draw
+	# exactly that span, using the same numbers the motion uses, or the outline
+	# is a lie.
+	var wv := pivot as Node2D
+	var windup_deg: float = wv.get("windup_angle_degrees") if wv.get("windup_angle_degrees") != null else 0.0
+	var start_deg: float = -windup_deg
+	var centre_deg: float = start_deg + weapon.arc_degrees * 0.5
+	var xform := pivot.global_transform * Transform2D(deg_to_rad(centre_deg), Vector2.ZERO)
 	var poly := SectorShape.build_sector_polygon(weapon.arc_degrees, weapon.radius, 0.0, 20)
 	var points := PackedVector2Array()
 	for p in poly:
