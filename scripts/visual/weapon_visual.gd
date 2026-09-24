@@ -22,15 +22,15 @@ class_name WeaponVisual
 ## 0 = the art points right (our own placeholders). -45 = the art is drawn
 ## diagonally, pointing up-right (most downloaded item icons look like this).
 ## The code cancels this out, so diagonal art needs no rotating or redrawing.
-@export var art_angle_degrees := 0.0
+@export var art_angle_degrees := 0.0: set = _set_art_angle
 ## Aiming left mirrors the weapon rather than rotating it past vertical, so the
 ## blade always reads as held upright — how Soul Knight does it.
-@export var mirror_when_facing_left := true: set = _set_art_angle
+@export var mirror_when_facing_left := true
 ## Idle hold angle, relative to aim. -45 reads like a Minecraft item: the blade
 ## is carried diagonally instead of pointing flat forward. The PNG itself always
 ## points +X; this only changes how it is DISPLAYED, never the hit maths.
 @export var rest_angle_degrees := -45.0: set = _set_rest_angle
-@export var windup_angle_degrees := 60.0   ## how far back the blade winds up, relative to aim
+@export var windup_angle_degrees := 60.0: set = _set_windup_angle   ## how far back the blade winds up, relative to aim
 
 @onready var blade: Sprite2D = $Blade
 
@@ -72,6 +72,9 @@ func _set_rest_angle(v: float) -> void:
 func _set_art_angle(v: float) -> void:
 	art_angle_degrees = v
 	_apply_all()
+
+func _set_windup_angle(v: float) -> void:
+	windup_angle_degrees = v
 
 func set_aim_angle(angle: float) -> void:
 	aim_angle = angle

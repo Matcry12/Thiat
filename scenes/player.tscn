@@ -33,7 +33,7 @@ body_texture = ExtResource("8")
 shadow_texture = ExtResource("9")
 
 [node name="Body" type="Sprite2D" parent="Visual" unique_id=557419974]
-position = Vector2(0, -13)
+position = Vector2(0, -12)
 texture = ExtResource("8")
 
 [node name="Shadow" type="Sprite2D" parent="Visual" unique_id=882274028]
@@ -42,15 +42,16 @@ position = Vector2(0, 4)
 texture = ExtResource("9")
 
 [node name="WeaponVisual" type="Node2D" parent="." unique_id=1080354139]
-position = Vector2(0, -22)
+position = Vector2(0, -9)
 script = ExtResource("7")
 weapon = ExtResource("6")
 blade_texture = ExtResource("10")
 art_angle_degrees = -90.0
+mirror_when_facing_left = null
 rest_angle_degrees = -20.0
 
 [node name="Blade" type="Sprite2D" parent="WeaponVisual" unique_id=1099783664]
-position = Vector2(7.2772875, 18.535105)
+position = Vector2(7.0000005, 6)
 rotation = 1.2217305
 scale = Vector2(1, 1.3398156)
 texture = ExtResource("10")
