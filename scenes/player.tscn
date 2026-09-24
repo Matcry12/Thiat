@@ -50,15 +50,14 @@ art_angle_degrees = -90.0
 mirror_when_facing_left = null
 rest_angle_degrees = -20.0
 
-[node name="Blade" type="Sprite2D" parent="WeaponVisual" unique_id=1099783664]
+[node name="SwingPivot" type="Node2D" parent="WeaponVisual" unique_id=1733221144]
+
+[node name="Blade" type="Sprite2D" parent="WeaponVisual/SwingPivot" unique_id=1099783664]
 position = Vector2(7.0000005, 6)
-rotation = 1.2217305
 scale = Vector2(1, 1.3398156)
 texture = ExtResource("10")
 centered = false
 offset = Vector2(-8, -44)
-
-[node name="SwingPivot" type="Node2D" parent="WeaponVisual" unique_id=1733221144]
 
 [node name="Hitbox" type="Area2D" parent="WeaponVisual/SwingPivot" unique_id=2141333532]
 collision_layer = 8

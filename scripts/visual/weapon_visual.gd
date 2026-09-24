@@ -40,10 +40,11 @@ class_name WeaponVisual
 @export var active_ease := 2.2       ## accelerate through the slash
 @export var recovery_ease := 0.6     ## drift back, unhurried
 
-@onready var blade: Sprite2D = $Blade
-## Carries the Hitbox. Rotates with the swing so the hit area travels with the
-## blade instead of covering the whole cone at once.
+## ONE pivot swings everything: the blade sprite AND the hitbox hang off it, so
+## the picture and the hit area turn as a single rigid arm. Two separate
+## rotations kept in sync by code is what made the old swing look wrong.
 @onready var _swing_pivot: Node2D = get_node_or_null("SwingPivot")
+@onready var blade: Sprite2D = get_node_or_null("SwingPivot/Blade")
 
 var aim_angle := 0.0
 
@@ -62,15 +63,16 @@ func _ready() -> void:
 ## Applies texture, position and resting rotation. Runs in the EDITOR too
 ## (@tool), so the sword is visible and alignable without pressing play.
 func _apply_all() -> void:
-	var b := get_node_or_null("Blade") as Sprite2D
+	var b := get_node_or_null("SwingPivot/Blade") as Sprite2D
 	if b == null:
 		return
 	if blade_texture:
 		b.texture = blade_texture
-	if Engine.is_editor_hint():
-		b.rotation = deg_to_rad(rest_angle_degrees) - deg_to_rad(art_angle_degrees)
-	else:
-		b.rotation = _blade_angle - deg_to_rad(art_angle_degrees)
+	# Constant: only cancels the art's drawn direction. The SWING lives on the pivot.
+	b.rotation = -deg_to_rad(art_angle_degrees)
+	var pivot := get_node_or_null("SwingPivot") as Node2D
+	if pivot and Engine.is_editor_hint():
+		pivot.rotation = deg_to_rad(rest_angle_degrees)
 
 func _set_blade_texture(v: Texture2D) -> void:
 	blade_texture = v
@@ -126,8 +128,7 @@ func _process(delta: float) -> void:
 		"active": curve = active_ease
 		"recovery": curve = recovery_ease
 	_blade_angle = lerpf(_phase_start_angle, _phase_target_angle, ease(_t, curve))
-	blade.rotation = _blade_angle - deg_to_rad(art_angle_degrees)
-	# The hit wedge follows the blade's swing, but never the art angle — that is
-	# only how the picture happens to be drawn.
+	# The arm swings; the blade's own rotation only ever corrects for how the
+	# picture happens to be drawn, and never changes during a swing.
 	if _swing_pivot:
 		_swing_pivot.rotation = _blade_angle
