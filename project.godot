@@ -67,7 +67,4 @@ debug_panel={
 
 [rendering]
 
-; Pixel art: NEAREST keeps hard pixel edges. The default (linear) blurs every
-; sprite, and blurs worst on rotation - which is exactly what a swinging weapon
-; does. 0 = nearest.
 textures/canvas_textures/default_texture_filter=0

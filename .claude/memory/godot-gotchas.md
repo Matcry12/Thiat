@@ -29,3 +29,7 @@ Reference docs in `docs/reference/godot/` were researched against 4.3/4.4 — if
   resizing blurs pixel art.
 - `godot .` inside a project directory **runs the game**. To open the EDITOR use `godot -e .`
   (or `godot --editor --path <dir>`). Told the user the wrong one on 2026-09-24.
+- Sprites whose texture is assigned in `_ready()` show as EMPTY in the editor — you cannot align
+  what you cannot see. Any visual node the user must position by dragging needs `@tool` plus
+  property setters that call an `_apply_all()`, and `_process`/`_physics_process` guarded with
+  `Engine.is_editor_hint()`.

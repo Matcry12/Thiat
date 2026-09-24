@@ -1,3 +1,4 @@
+@tool
 extends Node2D
 class_name WeaponVisual
 ## The weapon sprite on a rotating pivot (decision 0010). The Hitbox now lives
@@ -11,18 +12,18 @@ class_name WeaponVisual
 ## a hardcoded second.
 
 @export var weapon: WeaponData
-@export var blade_texture: Texture2D
-@export var blade_offset := Vector2.ZERO
-@export var hand_distance := 14.0          ## distance from body centre to the hand
+@export var blade_texture: Texture2D: set = _set_blade_texture
+@export var blade_offset := Vector2.ZERO: set = _set_blade_offset
+@export var hand_distance := 14.0: set = _set_hand_distance          ## distance from body centre to the hand
 ## Which way the blade points INSIDE the image file, in degrees.
 ## 0 = the art points right (our own placeholders). -45 = the art is drawn
 ## diagonally, pointing up-right (most downloaded item icons look like this).
 ## The code cancels this out, so diagonal art needs no rotating or redrawing.
-@export var art_angle_degrees := 0.0
+@export var art_angle_degrees := 0.0: set = _set_art_angle
 ## Idle hold angle, relative to aim. -45 reads like a Minecraft item: the blade
 ## is carried diagonally instead of pointing flat forward. The PNG itself always
 ## points +X; this only changes how it is DISPLAYED, never the hit maths.
-@export var rest_angle_degrees := -45.0
+@export var rest_angle_degrees := -45.0: set = _set_rest_angle
 @export var windup_angle_degrees := 60.0   ## how far back the blade winds up, relative to aim
 
 @onready var blade: Sprite2D = $Blade
@@ -36,13 +37,44 @@ var _phase_start_angle := 0.0
 var _phase_target_angle := 0.0
 
 func _ready() -> void:
-	if blade_texture:
-		blade.texture = blade_texture
-	blade.position = Vector2(hand_distance, 0) + blade_offset
 	_blade_angle = deg_to_rad(rest_angle_degrees)
 	_phase_start_angle = _blade_angle
 	_phase_target_angle = _blade_angle
-	blade.rotation = _blade_angle - deg_to_rad(art_angle_degrees)
+	_apply_all()
+
+## Applies texture, position and resting rotation. Runs in the EDITOR too
+## (@tool), so the sword is visible and alignable without pressing play.
+func _apply_all() -> void:
+	var b := get_node_or_null("Blade") as Sprite2D
+	if b == null:
+		return
+	if blade_texture:
+		b.texture = blade_texture
+	b.position = Vector2(hand_distance, 0) + blade_offset
+	if Engine.is_editor_hint():
+		b.rotation = deg_to_rad(rest_angle_degrees) - deg_to_rad(art_angle_degrees)
+	else:
+		b.rotation = _blade_angle - deg_to_rad(art_angle_degrees)
+
+func _set_blade_texture(v: Texture2D) -> void:
+	blade_texture = v
+	_apply_all()
+
+func _set_blade_offset(v: Vector2) -> void:
+	blade_offset = v
+	_apply_all()
+
+func _set_hand_distance(v: float) -> void:
+	hand_distance = v
+	_apply_all()
+
+func _set_rest_angle(v: float) -> void:
+	rest_angle_degrees = v
+	_apply_all()
+
+func _set_art_angle(v: float) -> void:
+	art_angle_degrees = v
+	_apply_all()
 
 func set_aim_angle(angle: float) -> void:
 	aim_angle = angle
@@ -62,6 +94,8 @@ func on_weapon_state(state: String) -> void:
 			_phase_target_angle = deg_to_rad(rest_angle_degrees)
 
 func _process(delta: float) -> void:
+	if Engine.is_editor_hint():
+		return
 	var duration := 0.0
 	if weapon != null:
 		match _phase:

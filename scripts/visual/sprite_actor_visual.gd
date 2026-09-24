@@ -1,3 +1,4 @@
+@tool
 extends ActorVisual
 class_name SpriteActorVisual
 ## Placeholder sprite implementation of ActorVisual (decision 0010).
@@ -10,10 +11,12 @@ class_name SpriteActorVisual
 ## PNGs and nudge `body_offset` / `shadow_offset` in the inspector. No script
 ## change needed.
 
-@export var body_texture: Texture2D
-@export var shadow_texture: Texture2D
-@export var body_offset := Vector2.ZERO   ## nudge so the sprite's feet sit at this node's origin
-@export var shadow_offset := Vector2.ZERO
+## Setters apply immediately, in the editor too (@tool), so you can SEE what you
+## are aligning instead of pressing play to find out.
+@export var body_texture: Texture2D: set = _set_body_texture
+@export var shadow_texture: Texture2D: set = _set_shadow_texture
+@export var body_offset := Vector2.ZERO: set = _set_body_offset   ## feet sit at this node's origin
+@export var shadow_offset := Vector2.ZERO: set = _set_shadow_offset
 @export var flip_when_facing_left := true
 @export var run_bob := 2.0                ## pixels of vertical bob while running (never rotate, decision 0009)
 @export var bob_speed := 10.0             ## bob cycles per second-ish (radians/sec fed to sin())
@@ -26,12 +29,37 @@ var _running := false
 var _bob_t := 0.0
 
 func _ready() -> void:
-	body.texture = body_texture
-	shadow.texture = shadow_texture
-	body.position = body_offset
-	shadow.position = shadow_offset
+	_apply_all()
+
+func _apply_all() -> void:
+	var b := get_node_or_null("Body") as Sprite2D
+	var sh := get_node_or_null("Shadow") as Sprite2D
+	if b:
+		b.texture = body_texture
+		b.position = body_offset
+	if sh:
+		sh.texture = shadow_texture
+		sh.position = shadow_offset
+
+func _set_body_texture(v: Texture2D) -> void:
+	body_texture = v
+	_apply_all()
+
+func _set_shadow_texture(v: Texture2D) -> void:
+	shadow_texture = v
+	_apply_all()
+
+func _set_body_offset(v: Vector2) -> void:
+	body_offset = v
+	_apply_all()
+
+func _set_shadow_offset(v: Vector2) -> void:
+	shadow_offset = v
+	_apply_all()
 
 func _process(delta: float) -> void:
+	if Engine.is_editor_hint():
+		return
 	if not _running:
 		return
 	_bob_t += delta * bob_speed
