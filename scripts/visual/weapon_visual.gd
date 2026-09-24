@@ -22,7 +22,10 @@ class_name WeaponVisual
 ## 0 = the art points right (our own placeholders). -45 = the art is drawn
 ## diagonally, pointing up-right (most downloaded item icons look like this).
 ## The code cancels this out, so diagonal art needs no rotating or redrawing.
-@export var art_angle_degrees := 0.0: set = _set_art_angle
+@export var art_angle_degrees := 0.0
+## Aiming left mirrors the weapon rather than rotating it past vertical, so the
+## blade always reads as held upright — how Soul Knight does it.
+@export var mirror_when_facing_left := true: set = _set_art_angle
 ## Idle hold angle, relative to aim. -45 reads like a Minecraft item: the blade
 ## is carried diagonally instead of pointing flat forward. The PNG itself always
 ## points +X; this only changes how it is DISPLAYED, never the hit maths.
@@ -73,6 +76,12 @@ func _set_art_angle(v: float) -> void:
 func set_aim_angle(angle: float) -> void:
 	aim_angle = angle
 	rotation = angle
+	# Soul Knight style: aiming left MIRRORS the weapon instead of turning it
+	# upside down. Scaling the whole node (not flipping the sprite) mirrors the
+	# hitbox with the art, so the two can never disagree (decision 0011).
+	if mirror_when_facing_left:
+		var facing_left: bool = cos(angle) < 0.0
+		scale.y = -1.0 if facing_left else 1.0
 
 func on_weapon_state(state: String) -> void:
 	_phase = state

@@ -33,12 +33,12 @@ body_texture = ExtResource("8")
 shadow_texture = ExtResource("9")
 
 [node name="Body" type="Sprite2D" parent="Visual" unique_id=557419974]
-position = Vector2(0, -14)
+position = Vector2(0, -13)
 texture = ExtResource("8")
 
 [node name="Shadow" type="Sprite2D" parent="Visual" unique_id=882274028]
 z_index = -1
-position = Vector2(0, -2)
+position = Vector2(0, 4)
 texture = ExtResource("9")
 
 [node name="WeaponVisual" type="Node2D" parent="." unique_id=1080354139]
@@ -50,8 +50,9 @@ art_angle_degrees = -90.0
 rest_angle_degrees = -20.0
 
 [node name="Blade" type="Sprite2D" parent="WeaponVisual" unique_id=1099783664]
-position = Vector2(6.0000005, 19)
+position = Vector2(7.2772875, 18.535105)
 rotation = 1.2217305
+scale = Vector2(1, 1.3398156)
 texture = ExtResource("10")
 centered = false
 offset = Vector2(-8, -44)
@@ -62,7 +63,7 @@ collision_mask = 4
 script = ExtResource("4")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="WeaponVisual/Blade/Hitbox" unique_id=1592139998]
-position = Vector2(-0.5, -27)
+position = Vector2(-0.5000005, -26.999998)
 shape = SubResource("HitShape")
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=186865809]
