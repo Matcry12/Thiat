@@ -57,15 +57,15 @@ func _set_segments(v: int) -> void:
 ## two floats per physics frame is cheap; rebuild only when they actually
 ## changed since last frame.
 func _physics_process(_delta: float) -> void:
-	if weapon != null and (weapon.blade_width_degrees != _last_weapon_arc or weapon.radius != _last_weapon_radius):
+	if weapon != null and weapon.arc_degrees != _last_weapon_arc:
 		_rebuild()
 
 func _rebuild() -> void:
 	var arc := arc_degrees
 	var r := radius
 	if weapon != null:
-		arc = weapon.blade_width_degrees
-		r = weapon.radius
+		arc = weapon.arc_degrees
+		r = radius
 		_syncing = true
 		arc_degrees = arc
 		radius = r

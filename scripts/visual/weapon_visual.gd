@@ -30,7 +30,6 @@ class_name WeaponVisual
 ## is carried diagonally instead of pointing flat forward. The PNG itself always
 ## points +X; this only changes how it is DISPLAYED, never the hit maths.
 @export var rest_angle_degrees := -45.0: set = _set_rest_angle
-@export var windup_angle_degrees := 70.0: set = _set_windup_angle   ## how far back the blade winds up, relative to aim
 
 ## Speed curves. The blade must not travel at a constant speed — Soul Knight
 ## SNAPS the blade up, holds an instant, then accelerates through the slash.
@@ -82,12 +81,14 @@ func _set_rest_angle(v: float) -> void:
 	rest_angle_degrees = v
 	_apply_all()
 
+## The swing is centred on the aim: -arc/2 .. +arc/2. There is no separate
+## windup angle to keep in sync — one number describes the whole motion.
+func _half_arc() -> float:
+	return deg_to_rad(weapon.arc_degrees) * 0.5 if weapon else 0.0
+
 func _set_art_angle(v: float) -> void:
 	art_angle_degrees = v
 	_apply_all()
-
-func _set_windup_angle(v: float) -> void:
-	windup_angle_degrees = v
 
 func set_aim_angle(angle: float) -> void:
 	aim_angle = angle
@@ -105,10 +106,12 @@ func on_weapon_state(state: String) -> void:
 	_phase_start_angle = _blade_angle
 	match state:
 		"windup":
-			_phase_target_angle = -deg_to_rad(windup_angle_degrees)
+			# Half the arc BEHIND the aim...
+			_phase_target_angle = -_half_arc()
 		"active":
-			var arc: float = deg_to_rad(weapon.arc_degrees) if weapon else 0.0
-			_phase_target_angle = _phase_start_angle + arc
+			# ...then through to half the arc AHEAD of it, so the blade points
+			# straight at the cursor in the middle of the swing.
+			_phase_target_angle = _half_arc()
 		_:
 			_phase_target_angle = deg_to_rad(rest_angle_degrees)
 

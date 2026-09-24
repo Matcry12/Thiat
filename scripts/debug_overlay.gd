@@ -102,9 +102,10 @@ func _draw_hurtbox_outline(hurtbox: Hurtbox) -> void:
 ## Capsule) AND a generated sector (CollisionPolygon2D, decision 0011
 ## amendment) — whichever child the Hitbox actually has is the real hit area,
 ## so this is the only honest picture of what can currently hit.
-## The full sweep the weapon can reach this swing: arc_degrees wide, radius deep,
-## centred on the aim. Drawn in the weapon pivot's space so it turns with aim and
-## mirrors with the weapon, exactly like the real hit wedge does.
+## The full sweep this swing covers. Both numbers are DERIVED, never typed:
+##   span   = weapon.arc_degrees, centred on the aim (-arc/2 .. +arc/2)
+##   reach  = how far the hitbox shape actually extends
+## So the outline can never promise reach the box does not have.
 func _draw_swing_range(weapon_holder: WeaponHolder) -> void:
 	var weapon: WeaponData = weapon_holder.weapon
 	if weapon == null:
@@ -112,21 +113,40 @@ func _draw_swing_range(weapon_holder: WeaponHolder) -> void:
 	var pivot := _player.get_node_or_null("WeaponVisual") as Node2D
 	if pivot == null:
 		return
-	# The blade does NOT sweep symmetrically around the aim: it pulls back to
-	# -windup_angle_degrees, then travels forward through arc_degrees. Draw
-	# exactly that span, using the same numbers the motion uses, or the outline
-	# is a lie.
-	var wv := pivot as Node2D
-	var windup_deg: float = wv.get("windup_angle_degrees") if wv.get("windup_angle_degrees") != null else 0.0
-	var start_deg: float = -windup_deg
-	var centre_deg: float = start_deg + weapon.arc_degrees * 0.5
-	var xform := pivot.global_transform * Transform2D(deg_to_rad(centre_deg), Vector2.ZERO)
-	var poly := SectorShape.build_sector_polygon(weapon.arc_degrees, weapon.radius, 0.0, 20)
+	var reach := _hitbox_reach(weapon_holder.hitbox)
+	if reach <= 0.0:
+		return
+	var poly := SectorShape.build_sector_polygon(weapon.arc_degrees, reach, 0.0, 20)
+	var xform := pivot.global_transform
 	var points := PackedVector2Array()
 	for p in poly:
 		points.append(xform * p)
 	points.append(points[0])
 	_draw_layer.draw_polyline(points, Color(1, 1, 1, 0.55), 1.5)
+
+## Furthest point of the hitbox's shape from the swing pivot. This is the
+## weapon's reach — increase it by making the BOX bigger, not by typing a number.
+func _hitbox_reach(hitbox: Hitbox) -> float:
+	if hitbox == null:
+		return 0.0
+	var best := 0.0
+	for child in hitbox.get_children():
+		if child is CollisionShape2D:
+			var cs := child as CollisionShape2D
+			if cs.shape is RectangleShape2D:
+				var half: Vector2 = (cs.shape as RectangleShape2D).size / 2.0
+				for corner in [Vector2(-half.x, -half.y), Vector2(half.x, -half.y),
+						Vector2(half.x, half.y), Vector2(-half.x, half.y)]:
+					best = maxf(best, (cs.position + corner.rotated(cs.rotation)).length())
+			elif cs.shape is CircleShape2D:
+				best = maxf(best, cs.position.length() + (cs.shape as CircleShape2D).radius)
+			elif cs.shape is CapsuleShape2D:
+				var cap := cs.shape as CapsuleShape2D
+				best = maxf(best, cs.position.length() + cap.height * 0.5)
+		elif child is CollisionPolygon2D:
+			for p in (child as CollisionPolygon2D).polygon:
+				best = maxf(best, ((child as Node2D).position + p).length())
+	return best
 
 func _draw_hitbox_outline(hitbox: Hitbox) -> void:
 	for child in hitbox.get_children():
