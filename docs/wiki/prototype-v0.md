@@ -300,7 +300,8 @@ Worked per [decision 0007](../decision/0007-working-agreement.md): each slice is
 ONE question, and is playtested by the human before the next one starts. No stacking unverified
 slices. Any slice may send us back to the design — that is expected, not failure.
 
-1. **Move & hit** — player circle, mouse aim, sword arc, one dummy enemy that takes damage.
+1. **Move & hit** — player, mouse aim, sword arc, one dummy that takes damage. **DONE
+   (2026-09-24)** — user verdict: movement and attack are acceptable.
    *Does swinging feel good?*
 2. **Dodge, parry & get hit** — enemy attacks with a telegraph, shield+HP, dodge i-frames,
    parry window + stagger reward, and the parryable/unparryable tell.
