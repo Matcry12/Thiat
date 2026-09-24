@@ -8,15 +8,18 @@ class_name SpriteActorVisual
 ## loses the shadow.
 ##
 ## To swap in a real asset: set `body_texture` / `shadow_texture` to the new
-## PNGs and nudge `body_offset` / `shadow_offset` in the inspector. No script
-## change needed.
+## PNGs, then DRAG the Body and Shadow sprites into place in the editor.
+## No script change needed.
 
-## Setters apply immediately, in the editor too (@tool), so you can SEE what you
-## are aligning instead of pressing play to find out.
+## Textures apply immediately, in the editor too (@tool), so a swapped picture is
+## visible without pressing play.
+##
+## There is deliberately NO position/offset export here. The Body and Shadow
+## sprites are placed BY HAND in the editor — drag them until the feet sit at
+## this node's origin. A script that also wrote those positions would silently
+## overwrite your dragging when the game starts. One owner per property.
 @export var body_texture: Texture2D: set = _set_body_texture
 @export var shadow_texture: Texture2D: set = _set_shadow_texture
-@export var body_offset := Vector2.ZERO: set = _set_body_offset   ## feet sit at this node's origin
-@export var shadow_offset := Vector2.ZERO: set = _set_shadow_offset
 @export var flip_when_facing_left := true
 @export var run_bob := 2.0                ## pixels of vertical bob while running (never rotate, decision 0009)
 @export var bob_speed := 10.0             ## bob cycles per second-ish (radians/sec fed to sin())
@@ -24,22 +27,24 @@ class_name SpriteActorVisual
 @onready var body: Sprite2D = $Body
 @onready var shadow: Sprite2D = $Shadow
 
+var _rest_position := Vector2.ZERO   ## the position you dragged Body to; bob returns here
 var _facing_left := false
 var _running := false
 var _bob_t := 0.0
 
 func _ready() -> void:
 	_apply_all()
+	var b := get_node_or_null("Body") as Sprite2D
+	if b:
+		_rest_position = b.position
 
 func _apply_all() -> void:
 	var b := get_node_or_null("Body") as Sprite2D
 	var sh := get_node_or_null("Shadow") as Sprite2D
 	if b:
 		b.texture = body_texture
-		b.position = body_offset
 	if sh:
 		sh.texture = shadow_texture
-		sh.position = shadow_offset
 
 func _set_body_texture(v: Texture2D) -> void:
 	body_texture = v
@@ -49,26 +54,18 @@ func _set_shadow_texture(v: Texture2D) -> void:
 	shadow_texture = v
 	_apply_all()
 
-func _set_body_offset(v: Vector2) -> void:
-	body_offset = v
-	_apply_all()
-
-func _set_shadow_offset(v: Vector2) -> void:
-	shadow_offset = v
-	_apply_all()
-
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
 	if not _running:
 		return
 	_bob_t += delta * bob_speed
-	body.position = body_offset + Vector2(0, sin(_bob_t) * run_bob)
+	body.position = _rest_position + Vector2(0, sin(_bob_t) * run_bob)
 
 func set_move_state(state: String) -> void:
 	_running = state == "run"
 	if not _running:
-		body.position = body_offset
+		body.position = _rest_position
 
 func set_facing(dir: Vector2) -> void:
 	if not flip_when_facing_left or absf(dir.x) < 0.001:

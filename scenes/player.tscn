@@ -31,11 +31,9 @@ shape = SubResource("BodyShape")
 script = ExtResource("2")
 body_texture = ExtResource("8")
 shadow_texture = ExtResource("9")
-body_offset = Vector2(0, -22)
-shadow_offset = Vector2(0, -2)
 
 [node name="Body" type="Sprite2D" parent="Visual" unique_id=557419974]
-position = Vector2(0, -17)
+position = Vector2(0, -14)
 texture = ExtResource("8")
 
 [node name="Shadow" type="Sprite2D" parent="Visual" unique_id=882274028]
@@ -52,7 +50,7 @@ art_angle_degrees = -90.0
 rest_angle_degrees = -20.0
 
 [node name="Blade" type="Sprite2D" parent="WeaponVisual" unique_id=1099783664]
-position = Vector2(6, 15)
+position = Vector2(6.0000005, 19)
 rotation = 1.2217305
 texture = ExtResource("10")
 centered = false

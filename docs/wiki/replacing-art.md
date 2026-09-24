@@ -16,18 +16,18 @@ That is it. Your picture is now the player.
 
 ## Step 3 — nudge the position
 
-Your picture is probably not in the right place. Two numbers fix that:
+Your picture is probably not in the right place. **Drag it** — do not type numbers.
 
-| Setting | What it does |
-|---|---|
-| **Body Offset** | Moves the picture up/down/left/right |
-| **Shadow Offset** | Moves the shadow |
+Click the **Body** node under Visual, then drag it in the middle view until it looks right.
+Same for **Shadow**.
+
+Nothing in the code moves these sprites, so what you drag is what you get.
 
 **Important:** the character's **feet** must sit at the node's centre (position 0,0).
 The picture is drawn *above* that point.
 
-Example: the placeholder is 44 pixels tall, so Body Offset is `(0, -22)` — half the
-height, upward. A 64-pixel-tall knight would use about `(0, -32)`.
+Example: a 44-pixel-tall character is dragged up by about 22 pixels, so its feet land on the
+node's centre. A 64-pixel-tall knight is dragged up about 32.
 
 Why the feet: the game decides who is drawn in front by the **Y position of the feet**.
 Feet in the wrong place = a character standing behind another one is drawn in front.

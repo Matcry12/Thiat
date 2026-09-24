@@ -23,12 +23,12 @@ shape = SubResource("BodyShape")
 script = ExtResource("2")
 body_texture = ExtResource("5")
 shadow_texture = ExtResource("6")
-body_offset = Vector2(0, -19)
-shadow_offset = Vector2(0, -2)
 
 [node name="Body" type="Sprite2D" parent="Visual"]
+position = Vector2(0, -19)
 
 [node name="Shadow" type="Sprite2D" parent="Visual"]
+position = Vector2(0, -2)
 z_index = -1
 
 [node name="Hurtbox" type="Area2D" parent="."]

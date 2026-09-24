@@ -34,3 +34,8 @@
 - No jargon without plain words beside it. Asked for this on 2026-09-23.
 - Never put watermarked/stock images (Dreamstime etc.) into the project — not licensed.
   Draw an original placeholder instead, or use CC0 (Kenney.nl). Came up 2026-09-23.
+
+## One owner per property (learned the hard way, 2026-09-24)
+If a human places something by dragging in the editor, NO script may write that property.
+Code owns only what animates. Hit twice: Blade.position (hand_distance) and Body.position
+(body_offset). Both exports deleted.
