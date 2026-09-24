@@ -35,7 +35,7 @@ func _init():
 
 	# The hitbox NODE sits on the pivot, so its POSITION never moves. What moves is
 	# the orientation of the shape it carries — check that directly.
-	var shape: CollisionPolygon2D = hitbox.get_child(0)
+	var shape: Node2D = hitbox.get_child(0)   # a box or a generated sector, either works
 
 	wv.set_aim_angle(0.0); pivot.rotation = 0.0
 	await physics_frame

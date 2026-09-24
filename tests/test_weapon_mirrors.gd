@@ -9,20 +9,20 @@ func _init():
 	player.set_physics_process(false)          # headless mouse sits at (0,0)
 	var wv = arena.get_node("Player/WeaponVisual")
 	var hitbox = arena.get_node("Player/WeaponVisual/SwingPivot/Hitbox")
-	# Hitbox itself sits AT the hand pivot (WeaponVisual's origin), so its own
-	# global_position doesn't move on a mirror/rotation — check a point on the
-	# actual generated sector polygon instead (decision 0011 amendment).
-	var sector: CollisionPolygon2D = hitbox.get_node("SectorShape")
+	# The Hitbox sits AT the hand pivot, so its own global_position never moves on
+	# a mirror or rotation. Its SHAPE child does — track that instead. Works for a
+	# box or a generated sector alike.
+	var shape: Node2D = hitbox.get_child(0)
 
 	wv.set_aim_angle(0.0)                      # aiming right
 	await physics_frame
 	var right_scale: float = wv.scale.y
-	var right_hit: Vector2 = sector.global_transform * sector.polygon[sector.polygon.size() / 2]
+	var right_hit: Vector2 = shape.global_position
 
 	wv.set_aim_angle(PI)                       # aiming left
 	await physics_frame
 	var left_scale: float = wv.scale.y
-	var left_hit: Vector2 = sector.global_transform * sector.polygon[sector.polygon.size() / 2]
+	var left_hit: Vector2 = shape.global_position
 
 	var mirrored := right_scale > 0.0 and left_scale < 0.0
 	var hitbox_followed := not right_hit.is_equal_approx(left_hit)

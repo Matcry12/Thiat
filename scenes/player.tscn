@@ -17,6 +17,9 @@
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
 
+[sub_resource type="RectangleShape2D" id="HitShape"]
+size = Vector2(40, 14)
+
 [sub_resource type="CircleShape2D" id="HurtShape"]
 radius = 15.0
 
@@ -64,9 +67,9 @@ collision_layer = 8
 collision_mask = 4
 script = ExtResource("4")
 
-[node name="SectorShape" type="CollisionPolygon2D" parent="WeaponVisual/SwingPivot/Hitbox" unique_id=1592139998]
-script = ExtResource("13")
-weapon = ExtResource("6")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WeaponVisual/SwingPivot/Hitbox" unique_id=1592139998]
+position = Vector2(28, 0)
+shape = SubResource("HitShape")
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=186865809]
 collision_layer = 2
