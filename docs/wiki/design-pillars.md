@@ -28,8 +28,11 @@ constrain the moment-to-moment fight.
   - Cancels a weapon swap in progress (the swap fails, per [0003](../decision/0003-loadout-and-swapping.md)).
   - Gear tunes it (shorter cooldown, longer i-frames, extra charge); never grants or removes it.
   - Boss pacing is authored against this: two unavoidable hits inside 2s are unfair by construction.
-- **Parry** ([decision 0006](../decision/0006-controls-and-parry.md)): `F`. A timing window, not a
-  hold-block. Starting values, tune: 0.25s window, 0.5s recovery on miss, 3s cooldown.
+- **Parry / block** ([0006](../decision/0006-controls-and-parry.md), revised by
+  [0013](../decision/0013-parry-and-block-on-one-key.md)): `F`. **Tap** = parry, a 0.25s timing
+  window. **Hold** = block: always works, but 30% chip damage, 40% move speed, and you cannot
+  attack. Both only stop what comes from the half you face (`parry_arc_degrees`, 180 default).
+  Starting values, tune: 0.25s window, 0.5s recovery on miss, 0.8s stagger on success.
   - Success: negate the hit, **stagger the attacker ~0.8s**, refund ~25% shield. Failure: take the
     hit *and* the recovery — strictly worse than not pressing it.
   - Does not move you; dodge does. Dodge = avoid (safe, works on AoE), parry = punish (greedy,

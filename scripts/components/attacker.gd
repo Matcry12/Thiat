@@ -8,13 +8,14 @@ class_name Attacker
 
 signal state_changed(state: String)
 
-enum Phase { IDLE, TELEGRAPH, STRIKE, COOLDOWN }
+enum Phase { IDLE, TELEGRAPH, STRIKE, COOLDOWN, STAGGER }
 
 @export var attack_range := 90.0
 @export var telegraph_time := 0.9
 @export var strike_time := 0.15
 @export var attack_cooldown := 1.8
 @export var attack_damage := 25.0
+@export var parryable := true
 
 @export var target_path: NodePath
 @export var hitbox_path: NodePath
@@ -28,6 +29,7 @@ var _telegraph: Telegraph
 var _origin: Node2D
 var _weapon: WeaponData
 var _phase_time := 0.0
+var _stagger_duration := 0.0
 
 func _ready() -> void:
 	_origin = get_parent() as Node2D
@@ -50,13 +52,14 @@ func set_target(node: Node2D) -> void:
 func _physics_process(delta: float) -> void:
 	if _weapon:
 		_weapon.damage = attack_damage  ## live-tunable from the F3 panel
+		_weapon.parryable = parryable
 	match phase:
 		Phase.IDLE:
 			if _in_range():
 				_set_phase(Phase.TELEGRAPH)
-		Phase.TELEGRAPH, Phase.STRIKE, Phase.COOLDOWN:
+		Phase.TELEGRAPH, Phase.STRIKE, Phase.COOLDOWN, Phase.STAGGER:
 			_phase_time += delta
-			var duration := telegraph_time if phase == Phase.TELEGRAPH else (strike_time if phase == Phase.STRIKE else attack_cooldown)
+			var duration := _duration_for(phase)
 			if _phase_time >= duration:
 				_advance()
 
@@ -65,11 +68,30 @@ func _in_range() -> bool:
 		return false
 	return _origin.global_position.distance_to(_target.global_position) <= attack_range
 
+func _duration_for(p: Phase) -> float:
+	match p:
+		Phase.TELEGRAPH: return telegraph_time
+		Phase.STRIKE: return strike_time
+		Phase.COOLDOWN: return attack_cooldown
+		Phase.STAGGER: return _stagger_duration
+		_: return 0.0
+
 func _advance() -> void:
 	match phase:
 		Phase.TELEGRAPH: _set_phase(Phase.STRIKE)
 		Phase.STRIKE: _set_phase(Phase.COOLDOWN)
 		Phase.COOLDOWN: _set_phase(Phase.IDLE)
+		Phase.STAGGER: _set_phase(Phase.IDLE)
+
+## Cancels the current strike and holds in STAGGER for `duration` — called by
+## Guard.resolve() (duck-typed as `source.stagger()`) on a successful parry.
+func stagger(duration: float) -> void:
+	if _hitbox:
+		_hitbox.end_swing()
+	if _telegraph:
+		_telegraph.hide_now()
+	_stagger_duration = duration
+	_set_phase(Phase.STAGGER)
 
 func _set_phase(new_phase: Phase) -> void:
 	phase = new_phase
@@ -77,7 +99,7 @@ func _set_phase(new_phase: Phase) -> void:
 	match new_phase:
 		Phase.TELEGRAPH:
 			if _telegraph:
-				_telegraph.show_for(telegraph_time)
+				_telegraph.show_for(telegraph_time, parryable)
 		Phase.STRIKE:
 			if _hitbox:
 				_hitbox.start_swing()

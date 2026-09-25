@@ -11,6 +11,9 @@ class_name Telegraph
 
 @export var color_start := Color(1.0, 0.55, 0.0, 0.35)
 @export var color_end := Color(1.0, 0.0, 0.0, 0.55)
+## Purple pair: "you cannot parry this, dodge it" (unparryable attacks).
+@export var unparryable_color_start := Color(0.55, 0.0, 0.85, 0.35)
+@export var unparryable_color_end := Color(0.35, 0.0, 0.55, 0.55)
 @export var border_color := Color(1.0, 1.0, 1.0, 0.85)
 @export var border_width := 2.0
 
@@ -18,6 +21,7 @@ var _shape: Shape2D
 var _duration := 0.0
 var _t := 0.0
 var _active := false
+var _parryable := true
 
 func _ready() -> void:
 	visible = false
@@ -26,10 +30,11 @@ func set_shape(shape: Shape2D) -> void:
 	_shape = shape
 	queue_redraw()
 
-func show_for(duration: float) -> void:
+func show_for(duration: float, parryable := true) -> void:
 	_duration = maxf(duration, 0.001)
 	_t = 0.0
 	_active = true
+	_parryable = parryable
 	visible = true
 	queue_redraw()
 
@@ -50,7 +55,9 @@ func _draw() -> void:
 	if _shape == null:
 		return
 	var progress := clampf(_t / _duration, 0.0, 1.0)
-	var fill: Color = color_start.lerp(color_end, progress)
+	var start := color_start if _parryable else unparryable_color_start
+	var end := color_end if _parryable else unparryable_color_end
+	var fill: Color = start.lerp(end, progress)
 	if _shape is CircleShape2D:
 		var r: float = (_shape as CircleShape2D).radius
 		draw_circle(Vector2.ZERO, r, fill)

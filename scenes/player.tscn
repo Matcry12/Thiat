@@ -12,6 +12,8 @@
 [ext_resource type="Texture2D" uid="uid://jshxlxj775bb" path="res://assets/stock/sword_straight.png" id="10"]
 [ext_resource type="Script" uid="uid://cfhocpi452k6r" path="res://scripts/components/health.gd" id="11"]
 [ext_resource type="Script" uid="uid://cu3cx00235xph" path="res://scripts/components/dodge.gd" id="12"]
+[ext_resource type="Script" path="res://scripts/components/guard.gd" id="13"]
+[ext_resource type="Script" path="res://scripts/visual/guard_visual.gd" id="14"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -95,3 +97,11 @@ script = ExtResource("12")
 body_path = NodePath("..")
 health_path = NodePath("../Health")
 weapon_holder_path = NodePath("../WeaponHolder")
+
+[node name="Guard" type="Node" parent="."]
+script = ExtResource("13")
+weapon_holder_path = NodePath("../WeaponHolder")
+body_path = NodePath("..")
+
+[node name="GuardVisual" type="Node2D" parent="."]
+script = ExtResource("14")

@@ -14,3 +14,5 @@ class_name WeaponData
 ## Reach is not a number here — it is whatever the hitbox shape reaches.
 @export var arc_degrees := 90.0
 @export var color := Color.WHITE
+## False = unparryable (purple telegraph) — cannot be parried or blocked.
+@export var parryable := true

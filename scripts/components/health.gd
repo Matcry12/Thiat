@@ -24,10 +24,12 @@ var shield: float = 0.0
 var invulnerable := false
 
 var _time_since_hit := 0.0
+var _guard: Guard
 
 func _ready() -> void:
 	hp = max_hp
 	shield = shield_max
+	_guard = get_parent().get_node_or_null("Guard") as Guard
 
 func _physics_process(delta: float) -> void:
 	if shield >= shield_max:
@@ -37,10 +39,18 @@ func _physics_process(delta: float) -> void:
 		shield = minf(shield_max, shield + shield_regen_rate * delta)
 
 ## Single damage entry point (rule: no direct hp -= anywhere else).
-func take_damage(raw_damage: float) -> void:
+## `source`/`parryable` feed an optional sibling Guard (slice 3): a parry
+## negates the hit entirely, a block chips it, both duck-type a `stagger()`
+## call onto `source` on a successful parry.
+func take_damage(raw_damage: float, source: Node = null, parryable := true) -> void:
 	if invulnerable:
 		dodged.emit()
 		return
+	if _guard:
+		var through: float = _guard.resolve(raw_damage, source, parryable)
+		if through <= 0.0:
+			return
+		raw_damage *= through
 	_time_since_hit = 0.0
 	var remaining: float = maxf(1.0, raw_damage - armor * 0.5)
 	if shield > 0.0:

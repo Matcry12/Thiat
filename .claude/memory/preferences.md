@@ -39,3 +39,10 @@
 If a human places something by dragging in the editor, NO script may write that property.
 Code owns only what animates. Hit twice: Blade.position (hand_distance) and Body.position
 (body_offset). Both exports deleted.
+
+## Prefer one abstract effect over per-weapon animation (2026-09-25)
+User rejected "animate the weapon into a block pose" in favour of a shield effect in front of the
+player: *"it help us not to care about animation too much"*. An effect that says WHAT happened
+(blocked) instead of HOW (this weapon's pose) covers every current and future weapon with one piece
+of art. Default to the weapon-independent effect; only animate the weapon when the weapon's own
+character is the point. See [0013](../../docs/decision/0013-parry-and-block-on-one-key.md).

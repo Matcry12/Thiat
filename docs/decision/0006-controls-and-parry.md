@@ -1,6 +1,8 @@
 # 0006 — Controls, and parry as a distinct defensive option
 
 **Date:** 2026-09-23
+**Partly superseded by [0013](0013-parry-and-block-on-one-key.md)** (2026-09-25):
+`F` is now tap-to-parry / hold-to-block, and both are directional. The rest of this record stands.
 
 ## Context
 [0004](0004-dodge.md) made dodge baseline. Adding a shield/parry on `F` risks a second button

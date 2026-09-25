@@ -17,6 +17,9 @@ var weapon_state := "idle"
 func _ready() -> void:
 	_draw_layer.draw.connect(_on_draw)
 	(_player.get_node("WeaponHolder") as WeaponHolder).state_changed.connect(_on_weapon_state_changed)
+	var guard: Guard = _player.get_node_or_null("Guard")
+	if guard:
+		guard.state_changed.connect(func(_s: String): _update_label())
 	# Every hurtbox in the scene, not one hardcoded dummy.
 	for hurtbox in get_tree().get_nodes_in_group("hurtbox"):
 		var health := (hurtbox as Hurtbox).get_health()
@@ -43,7 +46,12 @@ func _on_damaged(amount: float) -> void:
 	_update_label()
 
 func _update_label() -> void:
-	_label.text = "" if not enabled else "weapon: %s\nlast damage: %.1f" % [weapon_state, last_damage]
+	if not enabled:
+		_label.text = ""
+		return
+	var guard: Guard = _player.get_node_or_null("Guard")
+	var guard_state: String = Guard.State.keys()[guard.state].to_lower() if guard else "n/a"
+	_label.text = "weapon: %s\nlast damage: %.1f\nguard: %s" % [weapon_state, last_damage, guard_state]
 
 func _on_draw() -> void:
 	if not enabled:
@@ -76,6 +84,15 @@ func _on_draw() -> void:
 		if body_shape:
 			_draw_ground_circle(_player.global_position, body_shape.radius, Color.BLUE, 3.0)
 
+	# Guard: the parry/block arc, coloured differently for each.
+	var guard: Guard = _player.get_node_or_null("Guard")
+	if guard and guard.is_guarding():
+		var guard_color := Color.CYAN if guard.state == Guard.State.PARRY else Color(0.3, 0.5, 0.6, 1.0)
+		var half := deg_to_rad(guard.parry_arc_degrees) * 0.5
+		var from := guard.aim_direction.angle() - half
+		var to := guard.aim_direction.angle() + half
+		_draw_layer.draw_arc(_player.global_position, 30.0, from, to, 24, guard_color, 3.0)
+
 	# Enemy strike: hitbox red only while STRIKE, telegraph area outlined
 	# while TELEGRAPH (redundant with Telegraph's own border — cheap, and
 	# consistent with the debug overlay drawing every other timing state).
@@ -89,7 +106,8 @@ func _on_draw() -> void:
 				var cs := enemy_hitbox.get_node("CollisionShape2D") as CollisionShape2D
 				var shape := cs.shape as CircleShape2D
 				if shape:
-					_draw_ground_circle(cs.global_position, shape.radius, Color.ORANGE, 2.0)
+					var outline_color := Color.ORANGE if attacker.parryable else Color.PURPLE
+					_draw_ground_circle(cs.global_position, shape.radius, outline_color, 2.0)
 
 func _draw_hurtbox_outline(hurtbox: Hurtbox) -> void:
 	var cs := hurtbox.get_node("CollisionShape2D") as CollisionShape2D

@@ -37,6 +37,8 @@ var _dummy_health: Health
 var _player_health: Health
 var _dodge: Dodge
 var _attacker: Attacker
+var _guard: Guard
+var _guard_visual: GuardVisual
 
 var _targets: Array = []          # [{"name": String, "object": Object}]
 var _controls: Dictionary = {}    # "Target.prop" -> {obj, prop, control, value_label, is_bool, is_int}
@@ -64,6 +66,8 @@ func _ready() -> void:
 	_player_health = _player.get_node("Health")
 	_dodge = _player.get_node("Dodge")
 	_attacker = _dummy.get_node("Attacker")
+	_guard = _player.get_node("Guard")
+	_guard_visual = _player.get_node("GuardVisual")
 
 	_weapon_holder.state_changed.connect(_on_weapon_state_changed)
 	_dummy_health.damaged.connect(_on_dummy_damaged)
@@ -74,6 +78,8 @@ func _ready() -> void:
 		{"name": "WeaponVisual", "object": _player.get_node("WeaponVisual")},
 		{"name": "Visual", "object": _player.visual},
 		{"name": "Dodge", "object": _dodge},
+		{"name": "Guard", "object": _guard},
+		{"name": "GuardVisual", "object": _guard_visual},
 		{"name": "Player Health", "object": _player_health},
 		{"name": "Dummy Health", "object": _dummy_health},
 		{"name": "Attacker", "object": _attacker},
@@ -146,6 +152,9 @@ func _update_status_text() -> void:
 		"",
 		"[Dodge]",
 		"cooldown left: %.2fs  i-frames active: %s" % [_dodge.cooldown_remaining(), _dodge.iframes_active()],
+		"",
+		"[Guard]",
+		"state: %s" % Guard.State.keys()[_guard.state].to_lower(),
 		"",
 		"[Player Health]",
 		"shield: %.0f/%.0f  hp: %.0f/%.0f" % [_player_health.shield, _player_health.shield_max, _player_health.hp, _player_health.max_hp],
