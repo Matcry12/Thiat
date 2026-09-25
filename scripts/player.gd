@@ -17,6 +17,12 @@ extends CharacterBody2D
 @onready var guard_visual: GuardVisual = $GuardVisual
 
 var aim_direction := Vector2.RIGHT
+## Automation seam, NOT gameplay: when non-zero, aim comes from here instead of
+## the mouse. The demo recorder (tools/demo/) and headless tests have no cursor
+## — Godot reports the mouse at (0,0), which aims the player up-left and makes
+## the directional guard/parry look broken when it is not. Nothing in the game
+## ever writes this, and it is deliberately not an @export so the editor cannot.
+var aim_override := Vector2.ZERO
 var _move_state := "idle"
 var _move_dir := Vector2.ZERO
 
@@ -40,7 +46,8 @@ func _physics_process(_delta: float) -> void:
 		_move_state = new_move_state
 		visual.set_move_state(_move_state)
 
-	aim_direction = (get_global_mouse_position() - global_position).normalized()
+	aim_direction = aim_override.normalized() if aim_override != Vector2.ZERO \
+		else (get_global_mouse_position() - global_position).normalized()
 	if aim_direction == Vector2.ZERO:
 		aim_direction = Vector2.RIGHT
 	visual.set_facing(aim_direction)

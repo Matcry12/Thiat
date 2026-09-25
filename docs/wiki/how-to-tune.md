@@ -122,3 +122,22 @@ Then tell me, and I can put any file back to how it was.
 
 Tell me **which file** you are working on. I will not touch it until you say you are done.
 This avoids us both changing the same file and losing work.
+
+## Recording a demo instead of playing it
+
+When you cannot playtest, a bot can play a scripted round and record it:
+
+```bash
+tools/demo/record.sh slice3-parry
+```
+
+It writes `docs/demo/slice3-parry.mp4` using Godot's movie-maker mode on an invisible screen — no
+window opens on your desktop, and it takes about 20 seconds. The bot presses the real keys through
+the real player script, so what you see is what a player gets.
+
+The beat list lives in `_run()` in [demo_bot.gd](../../tools/demo/demo_bot.gd) and reads like a
+storyboard — add a beat by adding a few lines. It prints a damage number per beat, so a broken
+mechanic shows in the terminal even if nobody watches the video.
+
+**What it cannot tell you:** whether the timing is fair to a human hand. The bot presses on the
+exact frame every time. Only a playtest answers "does this feel good".

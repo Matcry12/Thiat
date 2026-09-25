@@ -39,3 +39,14 @@ Reference docs in `docs/reference/godot/` were researched against 4.3/4.4 — if
 - A node sitting AT a pivot does not change `global_position` when the pivot rotates — only its
   carried shape turns. Assert on `global_transform.get_rotation()` (or a transformed shape point),
   not on position.
+- Recording a demo (`tools/demo/`): **do not aim with `warp_mouse()`**. A recording runs on a
+  screen with no cursor, Godot then reports the mouse at `(0,0)`, the player aims up-left, and every
+  directional mechanic (guard arc, parry) reads as broken when it is fine. Drive
+  `player.aim_override` instead — added for exactly this.
+- A scripted demo must wait for a **fresh** enemy wind-up, not `phase == TELEGRAPH`: the enemy
+  starts winding up the instant the player enters range, so a beat can join one already in progress
+  and press the key after the hit landed.
+- Measure damage from the start of the beat being tested, and count **hp + shield**. hp alone is a
+  lie (30 shield absorbs a whole hit with hp unmoved), and a snapshot taken too early blames the
+  previous attack's hit on this beat. Both bugs reported a WORKING parry as broken — verify the
+  measurement before doubting the game.
