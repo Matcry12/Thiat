@@ -89,3 +89,25 @@ burst with a particle system touches no combat code.
 
 Unchanged from 0013, and still unanswered by playtest. The bar makes blocking readable; it does
 nothing for the parry window, which is the thing that has to feel right.
+
+## Amendment (2026-09-28): the shield is a status icon, plus a direction hint
+
+After playing it, the user dragged the shield to the **middle of the player** and asked for it to
+"show status of defending". It is no longer a plate held out in front.
+
+That created a gap: the guard still only covers the side you face (`parry_arc_degrees`, 180), and
+a centred, upright icon cannot show which side that is. A hit from behind would land while the
+player is clearly blocking, which feels like the game is cheating. Offered three options; the user
+chose **front only, plus a hint**:
+
+- **Shield icon** — upright, wherever the user dragged it. Says *that* you are defending and, through
+  the cracks, *how much* shield is left. `GuardVisual.face_aim` (default off) turns it back into a
+  plate held in front if a future shield art wants that.
+- **CoverArc** — a separate node that turns with the aim and spans exactly `parry_arc_degrees`. Says
+  *where* you are protected. Its width is mirrored from `Guard` every frame, so the F3 slider moves
+  the hint and the real protected side together. It can be swapped for a glow sprite and still
+  turn, because `GuardVisual` only sets its rotation, visibility and tint.
+
+Also fixed while doing this: the cracks were a *sibling* of the shield with their own position,
+so they stayed behind when the shield was dragged. They are now a *child* — one position, and it
+belongs to the user.

@@ -26,6 +26,9 @@ class_name GuardVisual
 ## On: the node turns to face the aim, for art that is a plate held in front.
 @export var face_aim := false
 @export var shield_path: NodePath
+## The direction hint (CoverArc, or any Node2D that replaces it). ALWAYS turns
+## with the aim, even when the shield icon itself stays upright.
+@export var cover_path: NodePath
 @export var cracks_path: NodePath
 @export var parry_modulate := Color(0.4, 0.9, 1.0, 0.9)
 @export var block_modulate := Color(0.5, 0.7, 0.85, 1.0)
@@ -38,6 +41,7 @@ class_name GuardVisual
 @export var break_shard_size := 4.0
 @export var break_shard_color := Color(0.6, 0.85, 1.0, 1.0)
 
+var _cover: Node2D
 var _shield: Sprite2D
 var _cracks: Sprite2D
 var _state := "ready"
@@ -48,6 +52,7 @@ var _break_remaining := 0.0
 func _ready() -> void:
 	_shield = get_node_or_null(shield_path) as Sprite2D
 	_cracks = get_node_or_null(cracks_path) as Sprite2D
+	_cover = get_node_or_null(cover_path) as Node2D
 	_apply_state()
 
 func on_guard_state(state: String) -> void:
@@ -59,6 +64,15 @@ func on_parry_success() -> void:
 
 func set_aim_angle(radians: float) -> void:
 	rotation = radians if face_aim else 0.0
+	if _cover:
+		# Relative to this node: if face_aim already turned us, don't turn twice.
+		_cover.rotation = 0.0 if face_aim else radians
+
+## Width of the protected side, mirrored from Guard by the player. Duck-typed so
+## a Sprite2D glow can replace CoverArc without having the property.
+func set_cover_degrees(degrees: float) -> void:
+	if _cover and "arc_degrees" in _cover:
+		_cover.set("arc_degrees", degrees)
 
 ## Cracks are transparency-only, never a crop/resize of either sprite: full
 ## tank -> invisible cracks, empty tank -> full-strength cracks.
@@ -86,6 +100,8 @@ func _apply_state() -> void:
 	var visible_now: bool = _state == "parry" or _state == "block"
 	if _shield:
 		_shield.visible = visible_now   # Cracks is a child: it hides with the shield
+	if _cover:
+		_cover.visible = visible_now
 	_apply_modulate()
 
 func _current_color() -> Color:
@@ -98,6 +114,8 @@ func _apply_modulate() -> void:
 	var c := _current_color()
 	if _shield and _shield.visible:
 		_shield.modulate = c
+	if _cover and _cover.visible:
+		_cover.modulate = c             # same parry/block/flash tint as the shield
 	_apply_crack_alpha(c)
 
 ## Alpha only, RGB stays white: Cracks is a child of Shield, so it already

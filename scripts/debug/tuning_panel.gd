@@ -80,6 +80,7 @@ func _ready() -> void:
 		{"name": "Dodge", "object": _dodge},
 		{"name": "Guard", "object": _guard},
 		{"name": "GuardVisual", "object": _guard_visual},
+		{"name": "CoverArc", "object": _guard_visual.get_node("CoverArc")},
 		{"name": "Player Health", "object": _player_health},
 		{"name": "Dummy Health", "object": _dummy_health},
 		{"name": "Attacker", "object": _attacker},

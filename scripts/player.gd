@@ -59,6 +59,7 @@ func _physics_process(_delta: float) -> void:
 	weapon_visual.set_aim_angle(aim_direction.angle())
 	guard.aim_direction = aim_direction
 	guard_visual.set_aim_angle(aim_direction.angle())
+	guard_visual.set_cover_degrees(guard.parry_arc_degrees)  ## mirrored: the hint shows exactly what blocks
 
 	if Input.is_action_just_pressed("attack") and guard.can_attack():
 		weapon_holder.try_attack()

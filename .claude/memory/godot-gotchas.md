@@ -53,3 +53,5 @@ Reference docs in `docs/reference/godot/` were researched against 4.3/4.4 — if
 - An overlay that must line up with a sprite (cracks on a shield) is its **child**, never a
   sibling. As siblings they had two positions and nothing kept them together — the user dragged the
   shield and the cracks stayed behind. Child = one position, owned by the user.
+- `await physics_frame` resumes BEFORE the nodes' `_physics_process` for that step. To read a value
+  a node writes in its physics tick, await `physics_frame` then `process_frame`.
