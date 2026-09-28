@@ -1,4 +1,11 @@
 {
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true,
+    "ponytail@ponytail": true,
+    "oh-my-claudecode@omc": false,
+    "frontend-design@claude-plugins-official": false,
+    "shipwithai-auth@shipwithai": false
+  },
   "permissions": {
     "allow": [
       "Read(//**)",

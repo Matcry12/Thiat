@@ -25,7 +25,15 @@ Never report a task as done on assumption. Before any "it works" claim:
 
 1. Read the code that changed.
 2. **Run it** if it can be run (build, test, execute, lint).
-3. Only then report — with the actual evidence (output, exit code, test result).
+3. **Test the user's steps too.** If the report tells the user to set something in the editor, load
+   the scene headless and confirm that value actually reaches the running game.
+4. **Get a second judge.** After any non-trivial change, spawn a reviewer agent with **fresh context,
+   on a different model than the one that did the work** (Opus wrote it → Sonnet judges; Sonnet
+   wrote it → Opus judges). Give it the request, the diff, and this file. It judges: does the change
+   do what was asked, does it break a rule here (one owner, build for replacement, test mode), and
+   are there bugs the tests miss. Fix what it confirms; tell the user what it found — including
+   "nothing".
+5. Only then report — with the actual evidence (output, exit code, test result, judge verdict).
 
 If it failed, say so plainly with the output. No hedging, no "should work".
 
