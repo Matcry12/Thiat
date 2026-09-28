@@ -58,83 +58,6 @@ def ellipse(w, h, fill, name=""):
     return img
 
 
-def shield(scale=4, name="shield"):
-    """Heater shield, built as a grid so the SHAPE is data, not a drawing.
-
-    Original art. Pixel art must be authored at its true pixel size and then
-    upscaled with NEAREST — resizing a big image down blurs it
-    (.claude/memory/godot-gotchas.md). Points UP (the way it is held), and the
-    node that draws it rotates it toward the mouse.
-    """
-    W, H = 16, 18
-    K = (18, 18, 24, 255)      # outline
-    D = (86, 96, 108, 255)     # dark rim
-    M = (132, 144, 156, 255)   # panel, shaded side
-    L = (176, 188, 200, 255)   # panel, lit side
-    HI = (226, 234, 242, 255)  # centre seam / top highlight
-    R = (206, 216, 228, 255)   # rivet (bright, or it vanishes into the rim)
-    px = {}
-    for y in range(H):
-        inset = max(0, y - 9)          # straight sides, then taper to a point
-        left, right = inset, W - 1 - inset
-        if right - left < 1:
-            break
-        for x in range(left, right + 1):
-            if x in (left, right) or y in (0, H - 1) or right - left < 3:
-                c = K
-            elif x in (left + 1, right - 1) or y == 1:
-                c = R if (x in (left + 1, right - 1) and y in (3, 6, 9, 12)) else D
-            elif y == 2:
-                c = HI
-            elif x == W // 2 - 1:
-                c = HI
-            else:
-                c = L if x < W // 2 else M
-            px[(x, y)] = c
-    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    load = img.load()
-    for (x, y), c in px.items():
-        load[x, y] = c
-    img = img.resize((W * scale, H * scale), Image.NEAREST)
-    img.save(OUT / f"{name}.png")
-    return img
-
-
-def crack_overlay(scale=4, name="cracks"):
-    """A DAMAGE PATTERN, not a damaged shield.
-
-    Drawn on the SAME 16x18 grid as shield(), fully transparent except the
-    cracks, so it can be laid on top of ANY shield sprite. A new shield never
-    needs its own cracked version — this one layer covers every shield we will
-    ever add. Alpha rises as the shield bar drops.
-    """
-    W, H = 16, 18
-    K = (12, 12, 16, 255)      # crack
-    E = (232, 238, 246, 255)   # bright edge, so a crack reads on dark metal too
-    # Hand-placed so the cracks branch from the top rim downward, the way a
-    # struck shield actually fails. (x, y) pairs.
-    # Three thin branching cracks, 1px wide. Sparse on purpose: a dense
-    # scribble reads as noise, not damage.
-    crack = [
-        (7, 2), (7, 3), (6, 4), (6, 5), (5, 6), (5, 7), (4, 8), (4, 9), (4, 10),
-        (7, 5), (8, 6), (9, 6), (10, 7),
-        (12, 3), (11, 4), (11, 5), (10, 6),
-        (8, 10), (8, 11), (7, 12), (7, 13),
-    ]
-    # No bright edge: at 16px a highlight beside the crack doubles its width and
-    # the whole thing turns to mush. One dark pixel reads as a crack.
-    edge = []
-    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    px = img.load()
-    for (x, y) in edge:
-        if 0 <= x < W and 0 <= y < H:
-            px[x, y] = E
-    for (x, y) in crack:
-        if 0 <= x < W and 0 <= y < H:
-            px[x, y] = K
-    img = img.resize((W * scale, H * scale), Image.NEAREST)
-    img.save(OUT / f"{name}.png")
-    return img
 
 
 if __name__ == "__main__":
@@ -176,6 +99,4 @@ if __name__ == "__main__":
     box(40, 8, (180, 140, 80, 255), name="bow")
     ellipse(44, 18, (0, 0, 0, 150), name="shadow")
     ellipse(12, 12, (120, 220, 255, 255), name="projectile")
-    shield(name="shield")
-    crack_overlay(name="shield_cracks")
     print(f"wrote {len(list(OUT.glob('*.png')))} files to {OUT}")

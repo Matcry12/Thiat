@@ -68,20 +68,14 @@ User: *"remove the shield, we're not using it, just saving for future"*. The ico
 are gone from the scene and from `guard_visual.gd`. The **shield bar** (what blocking drains, shown
 in the HUD, breaks at 0) is a different thing and is still in use — untouched.
 
-Kept for when the shield comes back as an off-hand weapon:
-
-| What | Where |
-|---|---|
-| Shield art | `assets/placeholder/shield.png` |
-| Crack pattern (fits ANY shield) | `assets/placeholder/shield_cracks.png` |
-| How both are drawn (editable grid) | `shield()` and `crack_overlay()` in `tools/make_placeholders.py` |
-| The last working code, scene and test | commit `a365828` |
-
-To see that code again:
+**Update (same day): the art is deleted too** — user: *"the pexel one we dont need that"*. Nothing
+shield-shaped is left in the project except the shield *bar* mechanic. If it is ever wanted back,
+the last working version of everything (art, generator, code, scene, test) is commit `a365828`:
 
 ```bash
 git show a365828:scripts/visual/guard_visual.gd
-git show a365828:tests/test_shield_is_status_icon.gd
+git show a365828:tools/make_placeholders.py      # shield() and crack_overlay()
+git checkout a365828 -- assets/placeholder/shield.png assets/placeholder/shield_cracks.png
 ```
 
 Lessons from it that still apply when it returns: cracks are a **child** of the shield (one

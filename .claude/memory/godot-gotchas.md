@@ -55,3 +55,8 @@ Reference docs in `docs/reference/godot/` were researched against 4.3/4.4 — if
   shield and the cracks stayed behind. Child = one position, owned by the user.
 - `await physics_frame` resumes BEFORE the nodes' `_physics_process` for that step. To read a value
   a node writes in its physics tick, await `physics_frame` then `process_frame`.
+- **The open editor overwrites hand-edits to a `.tscn`.** If Godot has the scene open, its next save
+  writes its stale in-memory copy back over the file: removed nodes return, `= null` lines appear
+  for exports it hasn't reloaded, and the user's drags get lost. Before hand-editing a scene, check
+  `pgrep -f "godot.*-e"`. If the editor is open, tell the user to press **Reload** (never Resave)
+  when Godot asks. Always `git diff` a `.tscn` before committing it.

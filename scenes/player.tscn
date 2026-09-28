@@ -14,10 +14,8 @@
 [ext_resource type="Script" uid="uid://cu3cx00235xph" path="res://scripts/components/dodge.gd" id="12"]
 [ext_resource type="Script" uid="uid://b7gjgeew8j7ga" path="res://scripts/components/guard.gd" id="13"]
 [ext_resource type="Script" uid="uid://10nk8ph3115l" path="res://scripts/visual/guard_visual.gd" id="14"]
-[ext_resource type="Texture2D" uid="uid://ciytoaw0cai6v" path="res://assets/placeholder/shield.png" id="15"]
-[ext_resource type="Texture2D" uid="uid://di1pgult0owun" path="res://assets/placeholder/shield_cracks.png" id="16"]
 [ext_resource type="Script" uid="uid://bjs01qfet1ww8" path="res://scripts/visual/cover_arc.gd" id="17"]
-[ext_resource type="Script" path="res://scripts/visual/curve_bar.gd" id="18"]
+[ext_resource type="Script" uid="uid://rv5vvr83gowx" path="res://scripts/visual/curve_bar.gd" id="18"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -56,9 +54,6 @@ weapon = ExtResource("6")
 blade_texture = ExtResource("10")
 art_angle_degrees = -90.0
 rest_angle_degrees = -20.0
-guard_raise_time = null
-guard_lower_time = null
-guard_ease = null
 preview_guard_pose = true
 
 [node name="SwingPivot" type="Node2D" parent="WeaponVisual" unique_id=1733221144]
@@ -116,17 +111,8 @@ script = ExtResource("14")
 cover_path = NodePath("CoverArc")
 bar_path = NodePath("GuardBar")
 
-[node name="Shield" type="Sprite2D" parent="GuardVisual" unique_id=236346050]
-position = Vector2(2.3841858e-07, -6)
-scale = Vector2(0.35, 0.35)
-texture = ExtResource("15")
-
-[node name="Cracks" type="Sprite2D" parent="GuardVisual/Shield" unique_id=1789522509]
-z_index = 1
-texture = ExtResource("16")
-
 [node name="CoverArc" type="Node2D" parent="GuardVisual" unique_id=731821845]
 script = ExtResource("17")
 
-[node name="GuardBar" type="Node2D" parent="GuardVisual"]
+[node name="GuardBar" type="Node2D" parent="GuardVisual" unique_id=1335390381]
 script = ExtResource("18")
