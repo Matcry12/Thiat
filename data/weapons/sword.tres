@@ -4,3 +4,5 @@
 
 [resource]
 script = ExtResource("1")
+guard_forward = 6.0
+guard_side = 15.0

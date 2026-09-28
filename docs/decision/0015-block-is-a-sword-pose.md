@@ -87,3 +87,22 @@ git show a365828:tests/test_shield_is_status_icon.gd
 Lessons from it that still apply when it returns: cracks are a **child** of the shield (one
 position, owned by the user); cracks set **alpha only** because they inherit the shield's tint; the
 crack layer must assume **nothing** about the shield texture under it.
+
+## Amendment (2026-09-28): the shield bar is a curve next to the player
+
+User: *"a curve bar that show shield bar"*. Given the choice, they picked a **separate arc** over
+merging it into the glow. That keeps one job per shape: the glow shows *which side* is protected,
+and the curve shows *how much* shield is left. (Merged, a half-empty glow would look like
+half-protected.)
+
+- `CurveBar` (`scripts/visual/curve_bar.gd`) is **generic**: a 0..1 value drawn along a circle.
+  It is a `@tool`, so you can drag it and shape it (radius / start / span / colours) in the
+  editor. Code writes only `value`, `visible` and `modulate`. The same script can later show a
+  dodge cooldown or a boss charge.
+- As `GuardVisual/GuardBar`, it is **shown** while guarding, while broken, and while refilling. It
+  is **hidden** when full and idle, so it doesn't sit on screen all the time. It turns **red**
+  while broken, so an empty bar reads as "no guard", not just "low".
+- `GuardVisual.set_tank_fill()` is back, and now drives the bar (duck-typed `value`, so a
+  `TextureProgressBar` or a sprite ring can replace it).
+- The HUD shield bar is still there. With the curve in front of the player, it may now be
+  redundant — remove it if a playtest says so.
