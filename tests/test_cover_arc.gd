@@ -31,6 +31,14 @@ func _init():
 	var kept: bool = cover.position.is_equal_approx(dragged)
 	print("dragged hint position kept: %s (%s)" % [kept, cover.position])
 
-	ok = ok and width_follows and kept
+	# The width must NOT be editable on the arc: code overwrites it every frame,
+	# so an Inspector field there would be a trap (the user fell into it).
+	var editable := false
+	for prop in cover.get_property_list():
+		if prop.name in ["arc_degrees", "value"] and (prop.usage & PROPERTY_USAGE_EDITOR):
+			editable = true
+	print("code-owned width/fill editable in the Inspector (must be false): %s" % editable)
+
+	ok = ok and width_follows and kept and not editable
 	print("PASS" if ok else "FAIL")
 	quit(0 if ok else 1)

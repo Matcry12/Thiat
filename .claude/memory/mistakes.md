@@ -11,3 +11,10 @@
 - 2026-09-28: user said "remove the shield"; I removed the icon but kept the HUD shield bar and
   asked, and they had to say it again → "remove X" means every copy of X on screen. Remove them all,
   and list what was removed; don't keep one back and ask.
+- 2026-09-28: CoverArc exported `arc_degrees` although code overwrote it every frame. The user set
+  100 there and "it still" did nothing → a value code writes must NOT be an @export. An Inspector
+  field that silently does nothing is a bug, even if a comment warns about it. Test with
+  get_property_list() that code-owned fields are not editable.
+- 2026-09-28: gave the user editor steps without testing them ("did you check before giving me?")
+  → before giving Inspector instructions, load the scene headless and confirm the value set there
+  actually reaches the running game.

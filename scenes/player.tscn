@@ -102,6 +102,7 @@ weapon_holder_path = NodePath("../WeaponHolder")
 
 [node name="Guard" type="Node" parent="." unique_id=1125952862]
 script = ExtResource("13")
+parry_arc_degrees = 100.0
 weapon_holder_path = NodePath("../WeaponHolder")
 body_path = NodePath("..")
 
@@ -110,4 +111,5 @@ script = ExtResource("14")
 cover_path = NodePath("CoverArc")
 
 [node name="CoverArc" type="Node2D" parent="GuardVisual" unique_id=731821845]
+position = Vector2(0, -9)
 script = ExtResource("17")

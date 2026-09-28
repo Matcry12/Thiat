@@ -17,15 +17,17 @@ class_name CoverArc
 ##
 ## Drawn centred on +X, the direction its rotation points.
 
-## Mirrored from Guard.parry_arc_degrees by the player every frame, so the F3
-## slider moves the arc and the real protected area together.
-@export var arc_degrees := 180.0:
+## NOT an @export, on purpose: the player copies Guard.parry_arc_degrees into
+## it every frame, so a value typed here in the Inspector would silently do
+## nothing — the user did exactly that. Set the width on the Guard node (or F3
+## -> Guard). One owner per property.
+var arc_degrees := 180.0:
 	set(v):
 		arc_degrees = v
 		queue_redraw()
-## Guard left, 0..1. Set by code; set it by hand in the editor only to preview
-## a half-empty arc — the game overwrites it.
-@export_range(0.0, 1.0) var value := 1.0:
+## Guard left, 0..1. Not an @export for the same reason as arc_degrees: code
+## writes it, so an Inspector field would be a trap.
+var value := 1.0:
 	set(v):
 		value = clampf(v, 0.0, 1.0)
 		queue_redraw()
