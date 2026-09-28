@@ -85,14 +85,9 @@ func _on_draw() -> void:
 		if body_shape:
 			_draw_ground_circle(_player.global_position, body_shape.radius, Color.BLUE, 3.0)
 
-	# Guard: the parry/block arc, coloured differently for each.
-	var guard: Guard = _player.get_node_or_null("Guard")
-	if guard and guard.is_guarding():
-		var guard_color := Color.CYAN if guard.state == Guard.State.PARRY else Color(0.3, 0.5, 0.6, 1.0)
-		var half := deg_to_rad(guard.parry_arc_degrees) * 0.5
-		var from := guard.aim_direction.angle() - half
-		var to := guard.aim_direction.angle() + half
-		_draw_layer.draw_arc(_player.global_position, 30.0, from, to, 24, guard_color, 3.0)
+	# Guard arc: NOT drawn here. The in-game CoverArc already shows the exact
+	# protected side (width mirrored from Guard, turns with the aim), so a second
+	# arc here only doubled it on screen. Guard state + tank are in the label.
 
 	# Enemy strike: hitbox red only while STRIKE, telegraph area outlined
 	# while TELEGRAPH (redundant with Telegraph's own border — cheap, and
