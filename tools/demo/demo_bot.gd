@@ -211,7 +211,7 @@ func _run() -> void:
 	# at the real cooldown this beat would run 9 seconds of standing still.
 	var real_cooldown := _attacker.attack_cooldown
 	_attacker.attack_cooldown = 0.5
-	_say("HOLD F — GUARD", "sword up. The shield bar (HUD) soaks the whole hit")
+	_say("HOLD F — GUARD", "sword up. The guard arc soaks the whole hit")
 	_hold("parry", true)
 	await _wait(0.4)                   # the parry window passes; now it is a block
 	_mark()
