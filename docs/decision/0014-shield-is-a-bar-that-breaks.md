@@ -29,7 +29,7 @@ A bar fixes both at once: it is a resource you can watch, and it gives the art s
 | Blocking, hit ≤ bar | bar -= damage, you take **0** |
 | Blocking, hit > bar | bar → 0, only the **leftover** reaches you, shield **breaks** |
 | Broken | cannot guard at all for `break_recovery`; the bar regrows from 0 |
-| Purple (unparryable) | full damage **and** the shield breaks instantly |
+| Purple (unparryable), tap OR hold | full damage **and** the guard breaks instantly — no F timing is safe against purple (made explicit 2026-09-28 after the judge found the tap window was exempt) |
 | Not guarding for `tank_regen_delay` | the bar refills at `tank_regen_rate`/sec |
 
 **Parry still costs nothing.** That is the whole balance: parry is free but demands timing; block

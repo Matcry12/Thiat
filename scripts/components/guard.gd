@@ -81,7 +81,13 @@ func tank_fraction() -> float:
 func resolve(raw_damage: float, source: Node, parryable: bool) -> float:
 	match state:
 		State.PARRY:
-			if parryable and _within_arc(source):
+			# Purple breaks the guard in the tap window too, exactly as in BLOCK.
+			# Otherwise tapping F at a purple attack was SAFER than holding it,
+			# and the rule would stop being "purple = dodge" (judge finding).
+			if not parryable:
+				_break_tank()
+				return 1.0
+			if _within_arc(source):
 				parried.emit(source)
 				if source != null and source.has_method("stagger"):
 					source.stagger(stagger_time)
