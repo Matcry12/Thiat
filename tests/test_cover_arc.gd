@@ -28,6 +28,15 @@ func _init():
 	var width_follows: bool = is_equal_approx(cover.arc_degrees, 90.0)
 	print("guard arc set to 90 -> hint arc %.0f: %s" % [cover.arc_degrees, width_follows])
 
+	# Editor preview: the arc must be able to show Guard's width on its own,
+	# with no player code copying it (the editor never runs the player).
+	cover.arc_degrees = 180.0
+	guard.parry_arc_degrees = 70.0
+	cover.sync_editor_preview()
+	var preview_ok: bool = is_equal_approx(cover.arc_degrees, 70.0)
+	print("editor preview reads Guard's width: %.0f (want 70): %s" % [cover.arc_degrees, preview_ok])
+	ok = ok and preview_ok
+
 	var kept: bool = cover.position.is_equal_approx(dragged)
 	print("dragged hint position kept: %s (%s)" % [kept, cover.position])
 

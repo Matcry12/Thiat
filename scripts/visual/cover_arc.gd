@@ -50,6 +50,25 @@ var value := 1.0:
 		track_color = v
 		queue_redraw()
 @export var segments := 32
+## EDITOR PREVIEW ONLY. In the editor no player code runs to copy the width
+## in, so the arc showed its own default (180) no matter what Guard said — the
+## user set 100 and "didn't see it change". In the editor it reads the width
+## from this node instead. While the game runs this is ignored: the player
+## mirrors the width every frame, and the arc never reads Guard.
+@export var preview_width_from: NodePath = NodePath("../../Guard")
+
+func _process(_delta: float) -> void:
+	if Engine.is_editor_hint():
+		sync_editor_preview()
+
+## Separate from _process so a test can call it outside the editor.
+func sync_editor_preview() -> void:
+	var src := get_node_or_null(preview_width_from)
+	if src == null:
+		return
+	var w = src.get("parry_arc_degrees")
+	if (w is float or w is int) and not is_equal_approx(arc_degrees, w):
+		arc_degrees = w
 
 func _draw() -> void:
 	var half := deg_to_rad(clampf(arc_degrees, 1.0, 360.0)) * 0.5
