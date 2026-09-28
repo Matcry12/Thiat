@@ -14,6 +14,8 @@
 [ext_resource type="Script" uid="uid://cu3cx00235xph" path="res://scripts/components/dodge.gd" id="12"]
 [ext_resource type="Script" path="res://scripts/components/guard.gd" id="13"]
 [ext_resource type="Script" path="res://scripts/visual/guard_visual.gd" id="14"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/shield.png" id="15"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/shield_cracks.png" id="16"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -90,7 +92,7 @@ hitbox_path = NodePath("../WeaponVisual/SwingPivot/Hitbox")
 [node name="Health" type="Node" parent="." unique_id=380820153]
 script = ExtResource("11")
 armor = 10.0
-shield_max = 30.0
+shield_max = 0.0
 
 [node name="Dodge" type="Node" parent="." unique_id=167593539]
 script = ExtResource("12")
@@ -105,3 +107,16 @@ body_path = NodePath("..")
 
 [node name="GuardVisual" type="Node2D" parent="."]
 script = ExtResource("14")
+shield_path = NodePath("Shield")
+cracks_path = NodePath("Cracks")
+
+[node name="Shield" type="Sprite2D" parent="GuardVisual"]
+position = Vector2(26, 0)
+scale = Vector2(0.35, 0.35)
+texture = ExtResource("15")
+
+[node name="Cracks" type="Sprite2D" parent="GuardVisual"]
+z_index = 1
+position = Vector2(26, 0)
+scale = Vector2(0.35, 0.35)
+texture = ExtResource("16")

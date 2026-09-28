@@ -36,11 +36,15 @@ func _init():
 	print("reached BLOCK: ", in_block)
 
 	var hp_before_block: float = health.hp
+	var tank_before_block: float = guard.tank
 	health.take_damage(40.0, dummy, false)
 	var taken_block: float = hp_before_block - health.hp
 	var full_during_block: bool = taken_block >= 39.9
 	print("damage during BLOCK vs unparryable: %.2f (want ~40)" % taken_block)
 
-	var ok: bool = full_during_parry and in_block and full_during_block
+	var shield_broke: bool = guard.tank == 0.0 and guard.state == Guard.State.BROKEN
+	print("shield broke: ", shield_broke, " tank before=", tank_before_block, " after=", guard.tank, " state=", Guard.State.keys()[guard.state])
+
+	var ok: bool = full_during_parry and in_block and full_during_block and shield_broke
 	print("PASS" if ok else "FAIL")
 	quit(0 if ok else 1)

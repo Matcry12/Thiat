@@ -8,16 +8,22 @@ class_name HUD
 
 var _health: Health
 var _dodge: Dodge
+var _guard: Guard
 
 var _shield_bar: ProgressBar
 var _hp_bar: ProgressBar
+var _tank_bar: ProgressBar
 var _dodge_label: Label
 
 func _ready() -> void:
 	var player: Node = get_node(player_path)
 	_health = player.get_node("Health")
 	_dodge = player.get_node("Dodge")
+	_guard = player.get_node_or_null("Guard") as Guard
 	_build_ui()
+	if _guard:
+		_guard.tank_changed.connect(_on_tank_changed)
+		_on_tank_changed(_guard.tank, _guard.tank_max)
 
 func _process(_delta: float) -> void:
 	if _health:
@@ -33,7 +39,7 @@ func _process(_delta: float) -> void:
 func _build_ui() -> void:
 	var root := Control.new()
 	root.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	root.position = Vector2(16, -84)
+	root.position = Vector2(16, -104)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 
@@ -53,5 +59,19 @@ func _build_ui() -> void:
 	_hp_bar.modulate = Color.RED
 	vbox.add_child(_hp_bar)
 
+	# Guard's shield tank — same style, below HP. Reads clearly empty (0/max)
+	# when the shield has broken.
+	_tank_bar = ProgressBar.new()
+	_tank_bar.custom_minimum_size = Vector2(220, 10)
+	_tank_bar.show_percentage = false
+	_tank_bar.modulate = Color.SKY_BLUE
+	_tank_bar.visible = false
+	vbox.add_child(_tank_bar)
+
 	_dodge_label = Label.new()
 	vbox.add_child(_dodge_label)
+
+func _on_tank_changed(current: float, maximum: float) -> void:
+	_tank_bar.max_value = maxf(maximum, 0.001)
+	_tank_bar.value = current
+	_tank_bar.visible = maximum > 0.0

@@ -51,7 +51,8 @@ func _update_label() -> void:
 		return
 	var guard: Guard = _player.get_node_or_null("Guard")
 	var guard_state: String = Guard.State.keys()[guard.state].to_lower() if guard else "n/a"
-	_label.text = "weapon: %s\nlast damage: %.1f\nguard: %s" % [weapon_state, last_damage, guard_state]
+	var tank_text: String = "%.0f/%.0f" % [guard.tank, guard.tank_max] if guard else "n/a"
+	_label.text = "weapon: %s\nlast damage: %.1f\nguard: %s  tank: %s" % [weapon_state, last_damage, guard_state, tank_text]
 
 func _on_draw() -> void:
 	if not enabled:

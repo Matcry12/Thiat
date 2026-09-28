@@ -1,6 +1,8 @@
 # 0013 — Parry and block share one key; the shield is an effect, not an item
 
 **Date:** 2026-09-25
+**Partly revised by [0014](0014-shield-is-a-bar-that-breaks.md)** (2026-09-28): block is a
+depleting shield bar that breaks, not 30% chip damage. The rest of this record stands.
 **Supersedes:** part of [0006](0006-controls-and-parry.md) — "Parry is a 0.25s timing window
 (**not** a hold-block)". Hold-block now exists. Everything else in 0006 stands.
 

@@ -31,6 +31,9 @@ func _ready() -> void:
 	weapon_visual.weapon = weapon_holder.weapon
 	guard.state_changed.connect(guard_visual.on_guard_state)
 	guard.parried.connect(func(_source: Node): guard_visual.on_parry_success())
+	guard.tank_changed.connect(func(_current: float, _maximum: float): guard_visual.set_tank_fill(guard.tank_fraction()))
+	guard.broke.connect(guard_visual.on_break)
+	guard_visual.set_tank_fill(guard.tank_fraction())
 
 func _physics_process(_delta: float) -> void:
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
@@ -56,7 +59,6 @@ func _physics_process(_delta: float) -> void:
 	weapon_visual.set_aim_angle(aim_direction.angle())
 	guard.aim_direction = aim_direction
 	guard_visual.set_aim_angle(aim_direction.angle())
-	guard_visual.parry_arc_degrees = guard.parry_arc_degrees  ## mirrored, never read from Guard by the visual
 
 	if Input.is_action_just_pressed("attack") and guard.can_attack():
 		weapon_holder.try_attack()

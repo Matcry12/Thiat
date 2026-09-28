@@ -45,4 +45,6 @@ User rejected "animate the weapon into a block pose" in favour of a shield effec
 player: *"it help us not to care about animation too much"*. An effect that says WHAT happened
 (blocked) instead of HOW (this weapon's pose) covers every current and future weapon with one piece
 of art. Default to the weapon-independent effect; only animate the weapon when the weapon's own
-character is the point. See [0013](../../docs/decision/0013-parry-and-block-on-one-key.md).
+character is the point. Extended 2026-09-28: the same for DECORATION — damage is a crack overlay
+laid on any shield, never a cracked copy of each shield. Anything that decorates a swappable object
+is a shared pattern by default. See [0013](../../docs/decision/0013-parry-and-block-on-one-key.md).

@@ -49,10 +49,12 @@ func _ready() -> void:
 	_guard = _player.get_node("Guard")
 	_player_health = _player.get_node("Health")
 
-	# Demo-only, and the only two things this bot changes about the game: the
-	# player can't die (the recording would stop early) and the shield doesn't
-	# regenerate (it would quietly refill between beats and make the printed
-	# damage numbers wrong). Neither is visible in the video.
+	# Demo-only changes, and the only ones this bot makes:
+	#   - the player cannot die (the recording would stop early)
+	#   - Health's passive shield does not regenerate (it would refill between
+	#     beats and make the printed damage numbers wrong)
+	#   - each beat heals to full before measuring (see _mark())
+	# The health bar jumping back up between beats is the only visible sign.
 	_player_health.immortal = true
 	_player_health.shield_regen_rate = 0.0
 
@@ -110,9 +112,14 @@ func _wait(seconds: float) -> void:
 func _pool() -> float:
 	return _player_health.hp + _player_health.shield
 
-## Starts measuring here. hp ALONE would be a lie — the player carries 30
-## shield, which absorbs a whole hit without hp moving at all.
+## Starts measuring here, and heals to full first.
+##
+## Healing is not cosmetic: `immortal` clamps hp at 1, so once the player has
+## been worn down every later beat reports "0 damage" whether it was guarded or
+## not — a full purple hit read as a perfect block. Each beat must start from a
+## place where damage can actually show.
 func _mark() -> void:
+	_player_health.hp = _player_health.max_hp
 	_beat_pool = _pool()
 
 ## One line of hard facts per beat. `aim off` is the angle between where the
@@ -122,9 +129,9 @@ func _mark() -> void:
 func _report(want: String) -> void:
 	var to_enemy: Vector2 = _dummy.global_position - _player.global_position
 	var aim_off := rad_to_deg(absf(_player.aim_direction.angle_to(to_enemy.normalized())))
-	print("[demo]   damage %.1f (%s) | aim off %.0f deg | dist %.0f | guard %s" % [
+	print("[demo]   damage %.1f (%s) | aim off %.0f deg | dist %.0f | guard %s | tank %.0f/%.0f" % [
 		_beat_pool - _pool(), want, aim_off, to_enemy.length(),
-		Guard.State.keys()[_guard.state]])
+		Guard.State.keys()[_guard.state], _guard.tank, _guard.tank_max])
 
 ## Waits for the enemy to reach `phase`, giving up after `timeout`. Never loop
 ## forever: the enemy only attacks while the player is in range, so a beat that
@@ -200,23 +207,41 @@ func _run() -> void:
 	_report("want a full hit")
 	await _wait(1.4)
 
-	# 3. Holding = block.
-	_say("HOLD F — BLOCK", "no timing needed. But watch how slow you walk")
+	# 3. Holding = the shield bar soaks hits until it breaks. Sped up on purpose:
+	# at the real cooldown this beat would run 9 seconds of standing still.
+	var real_cooldown := _attacker.attack_cooldown
+	_attacker.attack_cooldown = 0.5
+	_say("HOLD F — SHIELD", "the bar soaks the whole hit. Watch it crack as it drops")
 	_hold("parry", true)
 	await _wait(0.4)                   # the parry window passes; now it is a block
 	_mark()
-	_hold("move_left", true)
-	await _wait(0.4)
-	_hold("move_left", false)
-	_hold("move_right", true)          # step back in: out of range means no attack and no demo
-	await _wait(0.4)
-	_hold("move_right", false)
 	await _await_phase(Attacker.Phase.STRIKE)
-	await _wait(0.4)
+	await _wait(0.3)
+	_report("want 0, tank down")
+	_say("ZERO DAMAGE", "but the shield paid for it — and you cannot attack while holding")
+	var broke := [false]
+	_guard.broke.connect(func(): broke[0] = true)   # lambdas capture by value; an Array is a reference
+	var left := 12.0
+	while not broke[0] and left > 0.0:
+		await get_tree().physics_frame
+		left -= get_physics_process_delta_time()
+	_say("SHIELD BROKEN", "at zero it shatters — no guard at all for 1.5s")
+	print("[demo]   shield broke: %s | tank %.0f | guard %s" % [
+		broke[0], _guard.tank, Guard.State.keys()[_guard.state]])
 	_hold("parry", false)
-	_say("BLOCKED", "only 30% damage — but you could not attack the whole time")
-	_report("want ~30% of a full hit")
+	_attacker.attack_cooldown = real_cooldown
 	await _wait(1.6)
+
+	# The bar comes back on its own. Also makes the next beat honest: showing
+	# purple "breaking the shield" while the shield is ALREADY broken proves
+	# nothing.
+	_say("SHIELD RECHARGES", "stop guarding and the bar fills back up by itself")
+	var left2 := 10.0
+	while _guard.tank_fraction() < 0.95 and left2 > 0.0:
+		await get_tree().physics_frame
+		left2 -= get_physics_process_delta_time()
+	print("[demo]   tank back to %.0f/%.0f" % [_guard.tank, _guard.tank_max])
+	await _wait(0.8)
 
 	# 4. Purple breaks both.
 	_attacker.parryable = false

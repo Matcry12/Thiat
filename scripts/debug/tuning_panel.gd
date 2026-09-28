@@ -154,7 +154,7 @@ func _update_status_text() -> void:
 		"cooldown left: %.2fs  i-frames active: %s" % [_dodge.cooldown_remaining(), _dodge.iframes_active()],
 		"",
 		"[Guard]",
-		"state: %s" % Guard.State.keys()[_guard.state].to_lower(),
+		"state: %s  tank: %.0f/%.0f" % [Guard.State.keys()[_guard.state].to_lower(), _guard.tank, _guard.tank_max],
 		"",
 		"[Player Health]",
 		"shield: %.0f/%.0f  hp: %.0f/%.0f" % [_player_health.shield, _player_health.shield_max, _player_health.hp, _player_health.max_hp],

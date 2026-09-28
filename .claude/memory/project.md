@@ -20,6 +20,9 @@ Placeholder art is circles/rectangles drawn in code — deliberately, permanentl
   Parry is a 0.25s timing window (not a hold-block): success = negate + stagger 0.8s + 25% shield;
   miss = take the hit + 0.5s recovery. Not every attack is parryable (purple tell) [0006]
 - Vertical slices, playtest-gated [0007]
+- `F` = tap parry / hold block; both directional (`parry_arc_degrees`, 180 default). Block drains a
+  shield bar that BREAKS at 0; purple breaks it instantly. Damage shown by a shared crack overlay,
+  never a per-shield damaged sprite [0013, 0014]
 - RL inference: train in Python, ship JSON weights + ~40-line GDScript matmul.
   **The official godot_rl_agents ONNX node is .NET-only — we are GDScript** [0008]
 
