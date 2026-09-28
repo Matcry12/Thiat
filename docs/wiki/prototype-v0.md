@@ -304,11 +304,16 @@ slices. Any slice may send us back to the design — that is expected, not failu
    (2026-09-24)** — user verdict: movement and attack are acceptable.
    *Does swinging feel good?*
 2. **Dodge & get hit** — enemy attacks with a telegraph, shield+HP, dodge i-frames, HUD.
-   *Is the dodge window trustworthy?*
+   *Is the dodge window trustworthy?* **DONE (2026-09-25)** — dodge became a fast dash, not a
+   teleport; the user accepted it without a formal playtest of the window.
 2b. **Parry** — the `F` window, stagger reward, parryable vs unparryable tell.
-   *Is parry worth the risk over just dodging?*
+   *Is parry worth the risk over just dodging?* **DONE (2026-09-28)** — grew into parry (tap) +
+   block (hold) + a guard bar that breaks, a per-weapon sword guard pose, and one guard arc showing
+   side + amount ([0013](../decision/0013-parry-and-block-on-one-key.md)–[0015](../decision/0015-block-is-a-sword-pose.md)).
+   User verdict: "it works good" / "that's fine".
 3. **Two weapons** — bow added, swap with cast+cooldown, one skill each.
-   *Is the 5s swap cooldown interesting or annoying?*
+   *Is the 5s swap cooldown interesting or annoying?* Split before starting: **3a** bow + swap
+   (the question above), **3b** one `E` skill per weapon (a different question).
 4. **The boss** — 3 attacks, phase 2, enrage rule, HUD cooldowns.
    *Is losing to it fair?*
 5. **Tune** — adjust only the numbers in §2 until it feels right. No new features.

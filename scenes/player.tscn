@@ -113,3 +113,4 @@ cover_path = NodePath("CoverArc")
 [node name="CoverArc" type="Node2D" parent="GuardVisual" unique_id=731821845]
 position = Vector2(0, -9)
 script = ExtResource("17")
+preview_width_from = null
