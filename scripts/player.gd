@@ -30,6 +30,8 @@ func _ready() -> void:
 	weapon_holder.state_changed.connect(_on_weapon_state_changed)
 	weapon_visual.weapon = weapon_holder.weapon
 	guard.state_changed.connect(guard_visual.on_guard_state)
+	# Block pose: the sword rises while guarding (decision 0015).
+	guard.state_changed.connect(func(st: String): weapon_visual.set_guarding(st == "parry" or st == "block"))
 	guard.parried.connect(func(_source: Node): guard_visual.on_parry_success())
 	guard.tank_changed.connect(func(_current: float, _maximum: float): guard_visual.set_tank_fill(guard.tank_fraction()))
 	guard.broke.connect(guard_visual.on_break)

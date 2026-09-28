@@ -39,6 +39,14 @@ class_name WeaponVisual
 @export var active_ease := 2.2       ## accelerate through the slash
 @export var recovery_ease := 0.6     ## drift back, unhurried
 
+## Block pose (decision 0015). The ANGLE is per weapon (WeaponData.
+## guard_angle_degrees); how fast the arm gets there is a feel number here.
+## Raise must beat the 0.25s parry window by a wide margin, or the pose would
+## still be travelling when the parry already landed.
+@export var guard_raise_time := 0.06
+@export var guard_lower_time := 0.12
+@export var guard_ease := 0.4        ## below 1 = snap into the guard
+
 ## ONE pivot swings everything: the blade sprite AND the hitbox hang off it, so
 ## the picture and the hit area turn as a single rigid arm. Two separate
 ## rotations kept in sync by code is what made the old swing look wrong.
@@ -52,6 +60,7 @@ var _t := 0.0
 var _blade_angle := 0.0          ## Blade.rotation, relative to this node (i.e. relative to aim)
 var _phase_start_angle := 0.0
 var _phase_target_angle := 0.0
+var _guarding := false
 
 func _ready() -> void:
 	_blade_angle = deg_to_rad(rest_angle_degrees)
@@ -100,7 +109,27 @@ func set_aim_angle(angle: float) -> void:
 		var facing_left: bool = cos(angle) < 0.0
 		scale.y = -1.0 if facing_left else 1.0
 
+## Hold F -> the blade snaps into the guard pose; release -> back to rest.
+## Driven by Guard's state (parry/block = on), wired by the player — this node
+## never reads Guard.
+func set_guarding(on: bool) -> void:
+	if on == _guarding:
+		return
+	_guarding = on
+	_t = 0.0
+	_phase_start_angle = _blade_angle
+	if on:
+		_phase = "guard"
+		_phase_target_angle = deg_to_rad(weapon.guard_angle_degrees if weapon else -90.0)
+	else:
+		_phase = "guard_release"
+		_phase_target_angle = deg_to_rad(rest_angle_degrees)
+
 func on_weapon_state(state: String) -> void:
+	# Starting a guard cancels the swing, which reports "idle" — that must not
+	# drop the blade out of the guard pose it is about to take.
+	if _guarding and state == "idle":
+		return
 	_phase = state
 	_t = 0.0
 	_phase_start_angle = _blade_angle
@@ -124,12 +153,20 @@ func _process(delta: float) -> void:
 			"windup": duration = weapon.windup
 			"active": duration = weapon.active
 			"recovery": duration = weapon.recovery
+	match _phase:
+		"guard": duration = guard_raise_time
+		"guard_release": duration = guard_lower_time
 	_t = 1.0 if duration <= 0.0 else minf(1.0, _t + delta / duration)
 	var curve := 1.0
 	match _phase:
 		"windup": curve = windup_ease
 		"active": curve = active_ease
 		"recovery": curve = recovery_ease
+		"guard", "guard_release": curve = guard_ease
+	# While F stays held, keep tracking the weapon's guard angle, so the F3
+	# slider moves the pose live instead of only on the next press.
+	if _phase == "guard" and weapon:
+		_phase_target_angle = deg_to_rad(weapon.guard_angle_degrees)
 	_blade_angle = lerpf(_phase_start_angle, _phase_target_angle, ease(_t, curve))
 	# The arm swings; the blade's own rotation only ever corrects for how the
 	# picture happens to be drawn, and never changes during a swing.

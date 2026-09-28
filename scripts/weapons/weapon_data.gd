@@ -16,3 +16,8 @@ class_name WeaponData
 @export var color := Color.WHITE
 ## False = unparryable (purple telegraph) — cannot be parried or blocked.
 @export var parryable := true
+## The block pose: where the blade is held while F is down, in degrees relative
+## to the aim (0 = pointing at the mouse). -90 = raised straight across the
+## attack line, edge toward the mouse. Per WEAPON, not per player: a hammer or
+## a spear holds a guard differently, and that is one number, not an animation.
+@export var guard_angle_degrees := -90.0

@@ -40,7 +40,7 @@ If a human places something by dragging in the editor, NO script may write that 
 Code owns only what animates. Hit twice: Blade.position (hand_distance) and Body.position
 (body_offset). Both exports deleted.
 
-## Prefer one abstract effect over per-weapon animation (2026-09-25)
+## Prefer one abstract effect over per-weapon animation (2026-09-25; narrowed 2026-09-28)
 User rejected "animate the weapon into a block pose" in favour of a shield effect in front of the
 player: *"it help us not to care about animation too much"*. An effect that says WHAT happened
 (blocked) instead of HOW (this weapon's pose) covers every current and future weapon with one piece
@@ -48,3 +48,8 @@ of art. Default to the weapon-independent effect; only animate the weapon when t
 character is the point. Extended 2026-09-28: the same for DECORATION — damage is a crack overlay
 laid on any shield, never a cracked copy of each shield. Anything that decorates a swappable object
 is a shared pattern by default. See [0013](../../docs/decision/0013-parry-and-block-on-one-key.md).
+**Narrowed 2026-09-28:** the user then chose a sword GUARD POSE for blocking after all, because the
+shield will become its own off-hand weapon. It is acceptable because in this codebase a pose is one
+eased rotation number per weapon (`WeaponData.guard_angle_degrees`), not animation frames. So: a
+weapon-held pose that is a single number is fine; anything needing per-weapon FRAMES still defaults
+to a shared effect.

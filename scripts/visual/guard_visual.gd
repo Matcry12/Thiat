@@ -25,6 +25,10 @@ class_name GuardVisual
 ## dragged, showing THAT you are defending and how much shield is left.
 ## On: the node turns to face the aim, for art that is a plate held in front.
 @export var face_aim := false
+## Off for now (decision 0015): the block is shown by the SWORD's guard pose, and
+## the shield becomes its own off-hand weapon later. The shield + crack art and
+## this whole slot are kept for that — turn this on to bring the icon back.
+@export var show_shield := false
 @export var shield_path: NodePath
 ## The direction hint (CoverArc, or any Node2D that replaces it). ALWAYS turns
 ## with the aim, even when the shield icon itself stays upright.
@@ -99,7 +103,7 @@ func _process(delta: float) -> void:
 func _apply_state() -> void:
 	var visible_now: bool = _state == "parry" or _state == "block"
 	if _shield:
-		_shield.visible = visible_now   # Cracks is a child: it hides with the shield
+		_shield.visible = visible_now and show_shield   # Cracks is a child: it hides with the shield
 	if _cover:
 		_cover.visible = visible_now
 	_apply_modulate()

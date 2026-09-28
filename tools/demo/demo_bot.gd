@@ -211,21 +211,21 @@ func _run() -> void:
 	# at the real cooldown this beat would run 9 seconds of standing still.
 	var real_cooldown := _attacker.attack_cooldown
 	_attacker.attack_cooldown = 0.5
-	_say("HOLD F — SHIELD", "the bar soaks the whole hit. Watch it crack as it drops")
+	_say("HOLD F — GUARD", "sword up. The shield bar (HUD) soaks the whole hit")
 	_hold("parry", true)
 	await _wait(0.4)                   # the parry window passes; now it is a block
 	_mark()
 	await _await_phase(Attacker.Phase.STRIKE)
 	await _wait(0.3)
 	_report("want 0, tank down")
-	_say("ZERO DAMAGE", "but the shield paid for it — and you cannot attack while holding")
+	_say("ZERO DAMAGE", "but the bar paid for it — and you cannot attack while guarding")
 	var broke := [false]
 	_guard.broke.connect(func(): broke[0] = true)   # lambdas capture by value; an Array is a reference
 	var left := 12.0
 	while not broke[0] and left > 0.0:
 		await get_tree().physics_frame
 		left -= get_physics_process_delta_time()
-	_say("SHIELD BROKEN", "at zero it shatters — no guard at all for 1.5s")
+	_say("GUARD BROKEN", "bar at zero — it shatters, no guard at all for 1.5s")
 	print("[demo]   shield broke: %s | tank %.0f | guard %s" % [
 		broke[0], _guard.tank, Guard.State.keys()[_guard.state]])
 	_hold("parry", false)
@@ -235,7 +235,7 @@ func _run() -> void:
 	# The bar comes back on its own. Also makes the next beat honest: showing
 	# purple "breaking the shield" while the shield is ALREADY broken proves
 	# nothing.
-	_say("SHIELD RECHARGES", "stop guarding and the bar fills back up by itself")
+	_say("BAR RECHARGES", "stop guarding and the bar fills back up by itself")
 	var left2 := 10.0
 	while _guard.tank_fraction() < 0.95 and left2 > 0.0:
 		await get_tree().physics_frame
