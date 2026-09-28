@@ -50,3 +50,6 @@ Reference docs in `docs/reference/godot/` were researched against 4.3/4.4 — if
   lie (30 shield absorbs a whole hit with hp unmoved), and a snapshot taken too early blames the
   previous attack's hit on this beat. Both bugs reported a WORKING parry as broken — verify the
   measurement before doubting the game.
+- An overlay that must line up with a sprite (cracks on a shield) is its **child**, never a
+  sibling. As siblings they had two positions and nothing kept them together — the user dragged the
+  shield and the cracks stayed behind. Child = one position, owned by the user.

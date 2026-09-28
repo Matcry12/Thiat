@@ -10,11 +10,21 @@ class_name GuardVisual
 ## needs no cracked variant of its own. Nothing here may assume a texture
 ## size or pixel offset for either sprite.
 ##
-## ONE OWNER: this script only ever writes Shield/Cracks modulate, and
-## rotates ITSELF (not the sprites). Their position/scale/offset are the
+## ONE OWNER: this script only ever writes Shield/Cracks modulate (and its
+## own rotation when `face_aim` is on). The Shield's position/scale are the
 ## user's to drag in the editor — see godot-gotchas.md / "one owner per
 ## property".
+##
+## Cracks is a CHILD of Shield, not a sibling. As siblings they each had their
+## own position and nothing kept them together: the user dragged the shield to
+## the middle of the player and the cracks stayed floating 26px to the right.
+## As a child, wherever the shield goes the cracks go — there is one position,
+## and it belongs to the user.
 
+## Off (default): the shield is a STATUS icon — upright, wherever it was
+## dragged, showing THAT you are defending and how much shield is left.
+## On: the node turns to face the aim, for art that is a plate held in front.
+@export var face_aim := false
 @export var shield_path: NodePath
 @export var cracks_path: NodePath
 @export var parry_modulate := Color(0.4, 0.9, 1.0, 0.9)
@@ -48,7 +58,7 @@ func on_parry_success() -> void:
 	_flash_remaining = flash_time
 
 func set_aim_angle(radians: float) -> void:
-	rotation = radians
+	rotation = radians if face_aim else 0.0
 
 ## Cracks are transparency-only, never a crop/resize of either sprite: full
 ## tank -> invisible cracks, empty tank -> full-strength cracks.
@@ -75,9 +85,7 @@ func _process(delta: float) -> void:
 func _apply_state() -> void:
 	var visible_now: bool = _state == "parry" or _state == "block"
 	if _shield:
-		_shield.visible = visible_now
-	if _cracks:
-		_cracks.visible = visible_now
+		_shield.visible = visible_now   # Cracks is a child: it hides with the shield
 	_apply_modulate()
 
 func _current_color() -> Color:
@@ -92,12 +100,13 @@ func _apply_modulate() -> void:
 		_shield.modulate = c
 	_apply_crack_alpha(c)
 
-func _apply_crack_alpha(rgb_source: Color) -> void:
-	if _cracks == null or not _cracks.visible:
+## Alpha only, RGB stays white: Cracks is a child of Shield, so it already
+## INHERITS the shield's parry/block tint. Copying the tint here as well would
+## multiply it in twice and turn the cracks muddy.
+func _apply_crack_alpha(_rgb_source: Color) -> void:
+	if _cracks == null:
 		return
-	var c := rgb_source
-	c.a = pow(1.0 - _fraction, crack_curve)
-	_cracks.modulate = c
+	_cracks.modulate = Color(1.0, 1.0, 1.0, pow(1.0 - _fraction, crack_curve))
 
 func _draw() -> void:
 	if _break_remaining <= 0.0:
@@ -105,9 +114,11 @@ func _draw() -> void:
 	var t := 1.0 - _break_remaining / break_effect_time
 	var alpha := 1.0 - t
 	var dist := break_shard_speed * break_effect_time * t
+	# Burst from wherever the user dragged the shield (read, never written).
+	var origin := _shield.position if _shield else Vector2.ZERO
 	for i in break_shard_count:
 		var angle := TAU * float(i) / break_shard_count
-		var pos := Vector2.RIGHT.rotated(angle) * dist
+		var pos := origin + Vector2.RIGHT.rotated(angle) * dist
 		var c := break_shard_color
 		c.a *= alpha
 		var half := break_shard_size * 0.5
