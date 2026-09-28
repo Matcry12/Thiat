@@ -8,3 +8,6 @@
   overwriting the position the user had dragged in the editor → if a human positions something by
   dragging, NO script may write that same property. Code owns what animates (rotation); the editor
   owns placement. Never two owners for one property.
+- 2026-09-28: user said "remove the shield"; I removed the icon but kept the HUD shield bar and
+  asked, and they had to say it again → "remove X" means every copy of X on screen. Remove them all,
+  and list what was removed; don't keep one back and ask.

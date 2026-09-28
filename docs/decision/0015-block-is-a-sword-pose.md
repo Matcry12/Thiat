@@ -104,5 +104,5 @@ half-protected.)
   while broken, so an empty bar reads as "no guard", not just "low".
 - `GuardVisual.set_tank_fill()` is back, and now drives the bar (duck-typed `value`, so a
   `TextureProgressBar` or a sprite ring can replace it).
-- The HUD shield bar is still there. With the curve in front of the player, it may now be
-  redundant — remove it if a playtest says so.
+- The HUD shield bars are **gone** (user: "remove the shield bro"). The curve is the only
+  shield display. The HUD shows HP and the dodge cooldown.
