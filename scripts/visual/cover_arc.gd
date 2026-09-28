@@ -1,3 +1,4 @@
+@tool
 extends Node2D
 class_name CoverArc
 ## The "which side am I protecting" hint (decision 0014 amendment). The shield
@@ -11,6 +12,10 @@ class_name CoverArc
 ## script, keep the node name.
 ##
 ## Drawn centred on +X, the direction its parent's rotation points.
+##
+## @tool so it DRAWS IN THE EDITOR: you cannot drag what you cannot see (same
+## trap as the sword, godot-gotchas.md). Drag its position freely — the arc
+## turns around wherever you put it. Code only ever writes its rotation.
 
 ## Mirrored from Guard.parry_arc_degrees by the player every frame, so the F3
 ## slider moves the hint and the real protected area together. Never typed

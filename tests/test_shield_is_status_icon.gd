@@ -13,6 +13,9 @@ func _init():
 	var cracks: Sprite2D = gv.get_node("Shield/Cracks")
 	var cover: Node2D = gv.get_node("CoverArc")
 	var guard = player.get_node("Guard")
+	# ONE OWNER: the user may drag the hint anywhere. Code must never move it.
+	var dragged := Vector2(7, -11)
+	cover.position = dragged
 
 	var ok := true
 	for angle in [0.0, PI * 0.5, PI, -PI * 0.5]:
@@ -48,6 +51,10 @@ func _init():
 	print("face_aim on, aim down -> rotation %.2f (want %.2f): %s | hint not doubled: %s" % [
 		gv.rotation, PI * 0.5, turns, hint_once])
 	ok = ok and turns and hint_once
+
+	var kept: bool = cover.position.is_equal_approx(dragged)
+	print("dragged hint position kept: %s (%s)" % [kept, cover.position])
+	ok = ok and kept
 
 	print("PASS" if ok else "FAIL")
 	quit(0 if ok else 1)
