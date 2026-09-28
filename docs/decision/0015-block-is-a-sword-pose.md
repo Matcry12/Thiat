@@ -46,3 +46,18 @@ between target angles. A guard pose is **one more target angle**.
 - The earlier memory rule "prefer a shared effect over per-weapon animation" is narrowed, not
   dropped: a pose that is **one number** is fine; anything needing per-weapon **frames** still
   defaults to a shared effect.
+
+## Amendment (2026-09-28): a pose is three numbers, and it can be previewed
+
+User: *"each weapon gonna have special pose to defend ... I want to custom that pose"*. An angle
+alone can't express a spear pushing its guard out, or a hammer pulling in to the body. So a guard
+pose is now three numbers on `WeaponData`: `guard_angle_degrees`, `guard_forward` (toward the mouse)
+and `guard_side` (across it). They are floats rather than a Vector2 so that they show up as F3
+sliders.
+
+`WeaponVisual.preview_guard_pose` (editor only) shows the pose in the editor while the numbers are
+being edited. This works around the fact that the pose otherwise only exists while F is held in a
+running game.
+
+**`SwingPivot`'s whole transform is now code-owned** — rotation *and* position. To move the hand,
+drag `WeaponVisual`; to move the grip, drag `Blade`. Never drag `SwingPivot`.

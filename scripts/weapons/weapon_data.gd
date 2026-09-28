@@ -21,3 +21,9 @@ class_name WeaponData
 ## attack line, edge toward the mouse. Per WEAPON, not per player: a hammer or
 ## a spear holds a guard differently, and that is one number, not an animation.
 @export var guard_angle_degrees := -90.0
+## Where the arm moves for the guard, in pixels, relative to the aim:
+## forward = toward the mouse (a spear thrusts its guard out), side = across it
+## (a hammer pulls in to the body). 0/0 = the guard happens where the hand is.
+## Two floats, not a Vector2, so they appear in the F3 panel as sliders.
+@export var guard_forward := 0.0
+@export var guard_side := 0.0

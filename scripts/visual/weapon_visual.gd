@@ -47,6 +47,11 @@ class_name WeaponVisual
 @export var guard_lower_time := 0.12
 @export var guard_ease := 0.4        ## below 1 = snap into the guard
 
+## Tick this in the EDITOR to see the weapon's guard pose instead of its rest
+## pose, then edit Guard Angle / Forward / Side on the weapon's data and watch it
+## move. Editor-only: the running game ignores it.
+@export var preview_guard_pose := false: set = _set_preview_guard
+
 ## ONE pivot swings everything: the blade sprite AND the hitbox hang off it, so
 ## the picture and the hit area turn as a single rigid arm. Two separate
 ## rotations kept in sync by code is what made the old swing look wrong.
@@ -61,6 +66,9 @@ var _blade_angle := 0.0          ## Blade.rotation, relative to this node (i.e. 
 var _phase_start_angle := 0.0
 var _phase_target_angle := 0.0
 var _guarding := false
+var _pivot_pos := Vector2.ZERO   ## SwingPivot.position — code-owned, see _guard_offset()
+var _phase_start_pos := Vector2.ZERO
+var _phase_target_pos := Vector2.ZERO
 
 func _ready() -> void:
 	_blade_angle = deg_to_rad(rest_angle_degrees)
@@ -80,7 +88,22 @@ func _apply_all() -> void:
 	b.rotation = -deg_to_rad(art_angle_degrees)
 	var pivot := get_node_or_null("SwingPivot") as Node2D
 	if pivot and Engine.is_editor_hint():
-		pivot.rotation = deg_to_rad(rest_angle_degrees)
+		if preview_guard_pose and weapon:
+			pivot.rotation = deg_to_rad(weapon.guard_angle_degrees)
+			pivot.position = _guard_offset()
+		else:
+			pivot.rotation = deg_to_rad(rest_angle_degrees)
+			pivot.position = Vector2.ZERO
+
+## The guard's arm offset. SwingPivot.position is CODE-OWNED (like its
+## rotation): drag WeaponVisual to move the hand, or Blade to move the grip —
+## never SwingPivot, or the game will move it back.
+func _guard_offset() -> Vector2:
+	return Vector2(weapon.guard_forward, weapon.guard_side) if weapon else Vector2.ZERO
+
+func _set_preview_guard(v: bool) -> void:
+	preview_guard_pose = v
+	_apply_all()
 
 func _set_blade_texture(v: Texture2D) -> void:
 	blade_texture = v
@@ -118,12 +141,15 @@ func set_guarding(on: bool) -> void:
 	_guarding = on
 	_t = 0.0
 	_phase_start_angle = _blade_angle
+	_phase_start_pos = _pivot_pos
 	if on:
 		_phase = "guard"
 		_phase_target_angle = deg_to_rad(weapon.guard_angle_degrees if weapon else -90.0)
+		_phase_target_pos = _guard_offset()
 	else:
 		_phase = "guard_release"
 		_phase_target_angle = deg_to_rad(rest_angle_degrees)
+		_phase_target_pos = Vector2.ZERO
 
 func on_weapon_state(state: String) -> void:
 	# Starting a guard cancels the swing, which reports "idle" — that must not
@@ -133,6 +159,8 @@ func on_weapon_state(state: String) -> void:
 	_phase = state
 	_t = 0.0
 	_phase_start_angle = _blade_angle
+	_phase_start_pos = _pivot_pos
+	_phase_target_pos = Vector2.ZERO   # every swing happens from the hand
 	match state:
 		"windup":
 			# Half the arc BEHIND the aim...
@@ -146,6 +174,10 @@ func on_weapon_state(state: String) -> void:
 
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint():
+		# Re-apply while previewing, so edits to the weapon's .tres numbers show
+		# up immediately (a Resource does not tell this node it changed).
+		if preview_guard_pose:
+			_apply_all()
 		return
 	var duration := 0.0
 	if weapon != null:
@@ -167,8 +199,12 @@ func _process(delta: float) -> void:
 	# slider moves the pose live instead of only on the next press.
 	if _phase == "guard" and weapon:
 		_phase_target_angle = deg_to_rad(weapon.guard_angle_degrees)
-	_blade_angle = lerpf(_phase_start_angle, _phase_target_angle, ease(_t, curve))
+		_phase_target_pos = _guard_offset()
+	var k := ease(_t, curve)
+	_blade_angle = lerpf(_phase_start_angle, _phase_target_angle, k)
+	_pivot_pos = _phase_start_pos.lerp(_phase_target_pos, k)
 	# The arm swings; the blade's own rotation only ever corrects for how the
 	# picture happens to be drawn, and never changes during a swing.
 	if _swing_pivot:
 		_swing_pivot.rotation = _blade_angle
+		_swing_pivot.position = _pivot_pos

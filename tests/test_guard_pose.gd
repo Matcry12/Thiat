@@ -12,6 +12,9 @@ func _init():
 	var wv = player.get_node("WeaponVisual")
 	var pivot: Node2D = wv.get_node("SwingPivot")
 	var shield: Sprite2D = player.get_node("GuardVisual/Shield")
+	# A pose is angle + arm offset. Give it a non-zero offset to prove both move.
+	wv.weapon.guard_forward = 10.0
+	wv.weapon.guard_side = -4.0
 	var want_guard := deg_to_rad(wv.weapon.guard_angle_degrees)
 	var want_rest := deg_to_rad(wv.rest_angle_degrees)
 
@@ -28,6 +31,10 @@ func _init():
 	print("after F %.2fs: blade %.0f deg (guard %.0f): %s | pose beats the parry window: %s" % [
 		wv.guard_raise_time + 0.03, rad_to_deg(pivot.rotation), wv.weapon.guard_angle_degrees, raised, in_window])
 
+	var moved: bool = pivot.position.is_equal_approx(Vector2(10, -4))
+	print("arm offset in guard: %s (want (10, -4)): %s" % [pivot.position, moved])
+	raised = raised and moved
+
 	var shield_hidden: bool = not shield.visible
 	print("shield icon hidden while guarding: %s" % shield_hidden)
 
@@ -37,8 +44,10 @@ func _init():
 
 	guard.release()
 	await _seconds(wv.guard_lower_time + 0.05)
-	var lowered: bool = absf(angle_difference(pivot.rotation, want_rest)) < 0.02
-	print("after release: blade %.0f deg (rest %.0f): %s" % [rad_to_deg(pivot.rotation), wv.rest_angle_degrees, lowered])
+	var lowered: bool = absf(angle_difference(pivot.rotation, want_rest)) < 0.02 \
+		and pivot.position.is_equal_approx(Vector2.ZERO)
+	print("after release: blade %.0f deg (rest %.0f), arm %s: %s" % [
+		rad_to_deg(pivot.rotation), wv.rest_angle_degrees, pivot.position, lowered])
 
 	var ok := at_rest and raised and in_window and shield_hidden and still_up and lowered
 	print("PASS" if ok else "FAIL")
