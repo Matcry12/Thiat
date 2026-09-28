@@ -100,3 +100,16 @@ half-protected.)
   `TextureProgressBar` or a sprite ring can replace it).
 - The HUD shield bars are **gone** (user: "remove the shield bro"). The curve is the only
   shield display. The HUD shows HP and the dodge cooldown.
+
+## Amendment (2026-09-28): the guard bar is merged into the guard arc
+
+User, reconsidering: *"what about merge into the guard?"* — they chose to merge the bar into the glow
+arc, the option turned down earlier. The reason it was turned down (a half-empty arc would look
+half-protected) is solved by drawing the arc's full width as a dim **track** that never shrinks;
+only the bright **fill** drains, toward the aim line from both ends.
+
+- `CoverArc` now has `value` (guard left) and `track_color`. It is one curve with two jobs: where
+  you are protected, and how much guard is left.
+- `GuardVisual` shows it while guarding, while broken (red, `broken_color`) and while refilling
+  (dim, `refill_modulate`). It is hidden when full and idle.
+- `CurveBar` and the `GuardBar` node are deleted — nothing else used them.

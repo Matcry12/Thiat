@@ -1,7 +1,7 @@
 extends SceneTree
-# The curved shield bar: hidden when full and idle, shown while guarding and
-# while refilling, follows the tank exactly, turns red when broken, and keeps a
-# position the user dragged in the editor.
+# The guard arc's FILL (decision 0015, merged): hidden when full and idle, shown
+# while guarding and while refilling, fill follows the guard exactly, the full
+# width stays drawn as a track, turns red when broken, keeps a dragged position.
 func _init():
 	var arena = load("res://scenes/arena.tscn").instantiate()
 	root.add_child(arena)
@@ -13,7 +13,7 @@ func _init():
 	var guard = player.get_node("Guard")
 	var health = player.get_node("Health")
 	var gv = player.get_node("GuardVisual")
-	var bar = player.get_node("GuardVisual/GuardBar")
+	var bar = player.get_node("GuardVisual/CoverArc")
 	var dragged := Vector2(3, 14)
 	bar.position = dragged
 	await _tick()
@@ -33,7 +33,11 @@ func _init():
 	health.take_damage(20.0, dummy, true)
 	await _tick()
 	var follows: bool = is_equal_approx(bar.value, guard.tank_fraction()) and bar.value < 1.0
-	print("blocked 20 -> bar %.2f, tank %.2f: %s" % [bar.value, guard.tank_fraction(), follows])
+	# The protected WIDTH must not shrink with the guard — only the fill does.
+	var width_kept: bool = is_equal_approx(bar.arc_degrees, guard.parry_arc_degrees)
+	print("blocked 20 -> fill %.2f, guard %.2f: %s | full width still %.0f deg: %s" % [
+		bar.value, guard.tank_fraction(), follows, bar.arc_degrees, width_kept])
+	follows = follows and width_kept
 	ok = ok and follows
 
 	guard.release()
@@ -46,7 +50,7 @@ func _init():
 	await create_timer(guard.parry_window + 0.05).timeout
 	health.take_damage(500.0, dummy, true)                   # more than the bar -> breaks
 	await _tick()
-	var red: bool = bar.visible and bar.modulate.is_equal_approx(gv.broken_bar_color) and is_zero_approx(bar.value)
+	var red: bool = bar.visible and bar.modulate.is_equal_approx(gv.broken_color) and is_zero_approx(bar.value)
 	print("broken -> shown, empty, red: %s (value %.2f)" % [red, bar.value])
 	ok = ok and red
 	guard.release()

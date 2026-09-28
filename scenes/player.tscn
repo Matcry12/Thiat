@@ -15,7 +15,6 @@
 [ext_resource type="Script" uid="uid://b7gjgeew8j7ga" path="res://scripts/components/guard.gd" id="13"]
 [ext_resource type="Script" uid="uid://10nk8ph3115l" path="res://scripts/visual/guard_visual.gd" id="14"]
 [ext_resource type="Script" uid="uid://bjs01qfet1ww8" path="res://scripts/visual/cover_arc.gd" id="17"]
-[ext_resource type="Script" uid="uid://rv5vvr83gowx" path="res://scripts/visual/curve_bar.gd" id="18"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -109,10 +108,6 @@ body_path = NodePath("..")
 [node name="GuardVisual" type="Node2D" parent="." unique_id=385884158]
 script = ExtResource("14")
 cover_path = NodePath("CoverArc")
-bar_path = NodePath("GuardBar")
 
 [node name="CoverArc" type="Node2D" parent="GuardVisual" unique_id=731821845]
 script = ExtResource("17")
-
-[node name="GuardBar" type="Node2D" parent="GuardVisual" unique_id=1335390381]
-script = ExtResource("18")
