@@ -1,7 +1,6 @@
 extends SceneTree
 # Holding F raises the sword into the weapon's guard pose; releasing drops it
-# back to rest. The shield icon stays hidden (decision 0015: it becomes its own
-# off-hand weapon later).
+# back to rest.
 func _init():
 	var arena = load("res://scenes/arena.tscn").instantiate()
 	root.add_child(arena)
@@ -11,7 +10,6 @@ func _init():
 	var guard = player.get_node("Guard")
 	var wv = player.get_node("WeaponVisual")
 	var pivot: Node2D = wv.get_node("SwingPivot")
-	var shield: Sprite2D = player.get_node("GuardVisual/Shield")
 	# A pose is angle + arm offset. Give it a non-zero offset to prove both move.
 	wv.weapon.guard_forward = 10.0
 	wv.weapon.guard_side = -4.0
@@ -35,8 +33,6 @@ func _init():
 	print("arm offset in guard: %s (want (10, -4)): %s" % [pivot.position, moved])
 	raised = raised and moved
 
-	var shield_hidden: bool = not shield.visible
-	print("shield icon hidden while guarding: %s" % shield_hidden)
 
 	await _seconds(guard.parry_window + 0.05)          # still holding -> BLOCK
 	var still_up: bool = absf(angle_difference(pivot.rotation, want_guard)) < 0.02
@@ -49,7 +45,7 @@ func _init():
 	print("after release: blade %.0f deg (rest %.0f), arm %s: %s" % [
 		rad_to_deg(pivot.rotation), wv.rest_angle_degrees, pivot.position, lowered])
 
-	var ok := at_rest and raised and in_window and shield_hidden and still_up and lowered
+	var ok := at_rest and raised and in_window and still_up and lowered
 	print("PASS" if ok else "FAIL")
 	quit(0 if ok else 1)
 

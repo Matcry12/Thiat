@@ -21,8 +21,9 @@ Placeholder art is circles/rectangles drawn in code — deliberately, permanentl
   miss = take the hit + 0.5s recovery. Not every attack is parryable (purple tell) [0006]
 - Vertical slices, playtest-gated [0007]
 - `F` = tap parry / hold block; both directional (`parry_arc_degrees`, 180 default). Block drains a
-  shield bar that BREAKS at 0; purple breaks it instantly. Damage shown by a shared crack overlay,
-  never a per-shield damaged sprite [0013, 0014]
+  shield bar that BREAKS at 0; purple breaks it instantly. Block is SHOWN by a sword guard pose
+  (angle/forward/side per weapon). Shield icon + cracks are PARKED for a future off-hand shield
+  weapon — art kept, code at commit a365828 [0013, 0014, 0015]
 - RL inference: train in Python, ship JSON weights + ~40-line GDScript matmul.
   **The official godot_rl_agents ONNX node is .NET-only — we are GDScript** [0008]
 

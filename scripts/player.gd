@@ -33,9 +33,7 @@ func _ready() -> void:
 	# Block pose: the sword rises while guarding (decision 0015).
 	guard.state_changed.connect(func(st: String): weapon_visual.set_guarding(st == "parry" or st == "block"))
 	guard.parried.connect(func(_source: Node): guard_visual.on_parry_success())
-	guard.tank_changed.connect(func(_current: float, _maximum: float): guard_visual.set_tank_fill(guard.tank_fraction()))
 	guard.broke.connect(guard_visual.on_break)
-	guard_visual.set_tank_fill(guard.tank_fraction())
 
 func _physics_process(_delta: float) -> void:
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")

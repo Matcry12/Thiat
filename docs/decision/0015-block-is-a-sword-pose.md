@@ -61,3 +61,29 @@ running game.
 
 **`SwingPivot`'s whole transform is now code-owned** — rotation *and* position. To move the hand,
 drag `WeaponVisual`; to move the grip, drag `Blade`. Never drag `SwingPivot`.
+
+## Parked: the shield icon (2026-09-28)
+
+User: *"remove the shield, we're not using it, just saving for future"*. The icon and crack overlay
+are gone from the scene and from `guard_visual.gd`. The **shield bar** (what blocking drains, shown
+in the HUD, breaks at 0) is a different thing and is still in use — untouched.
+
+Kept for when the shield comes back as an off-hand weapon:
+
+| What | Where |
+|---|---|
+| Shield art | `assets/placeholder/shield.png` |
+| Crack pattern (fits ANY shield) | `assets/placeholder/shield_cracks.png` |
+| How both are drawn (editable grid) | `shield()` and `crack_overlay()` in `tools/make_placeholders.py` |
+| The last working code, scene and test | commit `a365828` |
+
+To see that code again:
+
+```bash
+git show a365828:scripts/visual/guard_visual.gd
+git show a365828:tests/test_shield_is_status_icon.gd
+```
+
+Lessons from it that still apply when it returns: cracks are a **child** of the shield (one
+position, owned by the user); cracks set **alpha only** because they inherit the shield's tint; the
+crack layer must assume **nothing** about the shield texture under it.

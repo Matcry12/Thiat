@@ -14,8 +14,6 @@
 [ext_resource type="Script" uid="uid://cu3cx00235xph" path="res://scripts/components/dodge.gd" id="12"]
 [ext_resource type="Script" uid="uid://b7gjgeew8j7ga" path="res://scripts/components/guard.gd" id="13"]
 [ext_resource type="Script" uid="uid://10nk8ph3115l" path="res://scripts/visual/guard_visual.gd" id="14"]
-[ext_resource type="Texture2D" uid="uid://ciytoaw0cai6v" path="res://assets/placeholder/shield.png" id="15"]
-[ext_resource type="Texture2D" uid="uid://di1pgult0owun" path="res://assets/placeholder/shield_cracks.png" id="16"]
 [ext_resource type="Script" uid="uid://bjs01qfet1ww8" path="res://scripts/visual/cover_arc.gd" id="17"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
@@ -107,18 +105,7 @@ body_path = NodePath("..")
 
 [node name="GuardVisual" type="Node2D" parent="." unique_id=385884158]
 script = ExtResource("14")
-shield_path = NodePath("Shield")
 cover_path = NodePath("CoverArc")
-cracks_path = NodePath("Shield/Cracks")
-
-[node name="Shield" type="Sprite2D" parent="GuardVisual" unique_id=236346050]
-position = Vector2(2.3841858e-07, -6)
-scale = Vector2(0.35, 0.35)
-texture = ExtResource("15")
-
-[node name="Cracks" type="Sprite2D" parent="GuardVisual/Shield" unique_id=1789522509]
-z_index = 1
-texture = ExtResource("16")
 
 [node name="CoverArc" type="Node2D" parent="GuardVisual" unique_id=731821845]
 position = Vector2(0, -9)
