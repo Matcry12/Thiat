@@ -18,6 +18,9 @@ var _shooter: Node
 var _travelled := 0.0
 var _shooter_rid: RID
 var _first_step := true   ## see _physics_process: the first ray starts at the shooter, not the spawn point
+var _pierce := false      ## passes through targets instead of stopping (Piercing Shot)
+var _hit: Array[Node] = []   ## targets already damaged: a piercing arrow hits each once
+var _pierced: Array[RID] = []   ## their hurtbox + body: kept across frames, or the body (a "wall") would stop the arrow next step
 var spawn_pos := Vector2.ZERO   ## read by the F1 overlay to draw the travel line
 
 func _ready() -> void:
@@ -25,13 +28,14 @@ func _ready() -> void:
 	# reaching into it — same pattern as hitbox.gd's "hitbox" group.
 	add_to_group("projectile")
 
-func setup(dir: Vector2, speed: float, range: float, damage: float, parryable: bool, shooter: Node) -> void:
+func setup(dir: Vector2, speed: float, range: float, damage: float, parryable: bool, shooter: Node, pierce := false) -> void:
 	_dir = dir.normalized() if dir != Vector2.ZERO else Vector2.RIGHT
 	_speed = speed
 	_range = range
 	_damage = damage
 	_parryable = parryable
 	_shooter = shooter
+	_pierce = pierce
 	spawn_pos = global_position
 	rotation = _dir.angle()
 	if shooter is CollisionObject2D:
@@ -55,21 +59,45 @@ func _physics_process(delta: float) -> void:
 	query.collide_with_bodies = true
 	# world (1) + enemy hurtbox (4) — bit values per hitbox.gd's convention.
 	query.collision_mask = 1 | 4
+	var exclude: Array[RID] = _pierced.duplicate()
 	if _shooter_rid.is_valid():
-		query.exclude = [_shooter_rid]
-	var hit := get_world_2d().direct_space_state.intersect_ray(query)
+		exclude.append(_shooter_rid)
 
 	global_position = to
 	_travelled += step
 
-	if hit:
-		global_position = hit.position
+	# A normal arrow stops at the first thing. A piercing one damages a target,
+	# excludes it (and its body) and re-casts the rest of the segment, so it
+	# still stops on a wall.
+	while true:
+		query.exclude = exclude
+		var hit := get_world_2d().direct_space_state.intersect_ray(query)
+		if not hit:
+			break
 		var hurtbox := hit.collider as Hurtbox
+		# A target's BODY (world layer) can be bigger than its hurtbox, so the ray
+		# meets the body first. A body that owns a Hurtbox is that target, not a wall.
+		if hurtbox == null:
+			hurtbox = (hit.collider as Node).get_node_or_null("Hurtbox") as Hurtbox
+		if hurtbox and _pierce:
+			_damage_hurtbox(hurtbox)
+			for rid in [hurtbox.get_rid(), (hurtbox.owner as CollisionObject2D).get_rid() if hurtbox.owner is CollisionObject2D else RID()]:
+				if rid.is_valid():
+					exclude.append(rid)
+					_pierced.append(rid)
+			continue
+		global_position = hit.position
 		if hurtbox:
-			var health := hurtbox.get_health()
-			if health:
-				health.take_damage(_damage, _shooter, _parryable)
+			_damage_hurtbox(hurtbox)
 		queue_free()
 		return
 	if _travelled >= _range:
 		queue_free()
+
+func _damage_hurtbox(hurtbox: Hurtbox) -> void:
+	if hurtbox.owner in _hit:
+		return
+	_hit.append(hurtbox.owner)
+	var health := hurtbox.get_health()
+	if health:
+		health.take_damage(_damage, _shooter, _parryable)

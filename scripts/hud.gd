@@ -12,16 +12,19 @@ class_name HUD
 var _health: Health
 var _dodge: Dodge
 var _loadout: Loadout
+var _skill_slot: SkillSlot
 
 var _hp_bar: ProgressBar
 var _dodge_label: Label
 var _weapon_label: Label
+var _skill_label: Label
 
 func _ready() -> void:
 	var player: Node = get_node(player_path)
 	_health = player.get_node("Health")
 	_dodge = player.get_node("Dodge")
 	_loadout = player.get_node_or_null("Loadout")
+	_skill_slot = player.get_node_or_null("SkillSlot")
 	_build_ui()
 
 func _process(_delta: float) -> void:
@@ -33,6 +36,16 @@ func _process(_delta: float) -> void:
 		_dodge_label.text = "dodge: ready" if cd <= 0.0 else "dodge: %.1fs" % cd
 	if _loadout:
 		_weapon_label.text = "weapon: %s | swap: %s" % [_weapon_name(), _swap_text()]
+	if _skill_slot and _loadout:
+		_skill_label.text = _skill_text()
+
+func _skill_text() -> String:
+	var w: WeaponData = _loadout.active_weapon()
+	var s := _skill_slot.skill_for(w)
+	if s == null:
+		return "E: (no skill)"
+	var cd := _skill_slot.cooldown_left(w)
+	return "E: %s ready" % s.skill_name if cd <= 0.0 else "E: %.1fs" % cd
 
 func _weapon_name() -> String:
 	var w: WeaponData = _loadout.active_weapon()
@@ -49,7 +62,7 @@ func _swap_text() -> String:
 func _build_ui() -> void:
 	var root := Control.new()
 	root.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
-	root.position = Vector2(16, -104)
+	root.position = Vector2(16, -128)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 
@@ -67,3 +80,6 @@ func _build_ui() -> void:
 
 	_weapon_label = Label.new()
 	vbox.add_child(_weapon_label)
+
+	_skill_label = Label.new()
+	vbox.add_child(_skill_label)

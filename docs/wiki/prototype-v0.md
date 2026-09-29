@@ -319,6 +319,12 @@ slices. Any slice may send us back to the design — that is expected, not failu
    Log 3a: built by Sonnet 5 agent · Opus judge found 4 real bugs (point-blank arrow, swap while
    guarding, stale rest pose, 3 owners of current weapon) + 2 follow-ups · user: visuals only.
 
+   **3b BUILT (2026-09-29)** — E: sword lunge-slash, bow piercing charged shot, per-weapon cooldown
+   ([0018](../decision/0018-weapon-skills.md)). Awaiting the batch playtest.
+   Log 3b: built by Sonnet 5.5 agent · Opus judge: ship; 1 confirmed bug (arrows stopped on a body
+   bigger than its hurtbox — would have made the boss arrow-proof), 2 plausible (swap mid-charge,
+   no skill state signal), 4 nits — all fixed in one round · user: pending.
+
 **Batch playtest (user's call, 2026-09-29):** 3b and 4 are built back to back, then playtested
 together — an exception to "no stacking unverified slices".
 4. **The boss** — 3 attacks, phase 2, enrage rule, HUD cooldowns.

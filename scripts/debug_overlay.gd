@@ -106,6 +106,7 @@ func _on_draw() -> void:
 	# A ranged weapon's reach, drawn all the time it is held (the sword's wedge
 	# only shows mid-swing, but a bow's range matters BEFORE you shoot).
 	_draw_projectile_range(weapon_holder)
+	_draw_skill_reach(weapon_holder)
 	for hb in get_tree().get_nodes_in_group("hitbox"):
 		if (hb as Hitbox).is_active():
 			_draw_hitbox_outline(hb)
@@ -174,6 +175,22 @@ func _draw_projectile_range(weapon_holder: WeaponHolder) -> void:
 	var to: Vector2 = from + weapon_holder.aim_direction.normalized() * weapon.projectile_range
 	_draw_layer.draw_line(from, to, Color(1, 1, 1, 0.25), 1.0)
 	_draw_layer.draw_circle(to, 3.0, Color(1, 1, 1, 0.5))
+
+## Orange line for the equipped weapon's E skill reach (lunge distance / piercing
+## shot range), asked of the skill itself so a new skill needs no change here.
+func _draw_skill_reach(weapon_holder: WeaponHolder) -> void:
+	var slot: SkillSlot = _player.get_node_or_null("SkillSlot")
+	if slot == null:
+		return
+	var s := slot.skill_for(weapon_holder.weapon)
+	if s == null:
+		return
+	var pts := s.debug_reach(_player, weapon_holder.aim_direction)
+	if pts.size() < 2:
+		return
+	var col := Color(1.0, 0.6, 0.1, 0.9 if slot.is_active() else 0.45)
+	_draw_layer.draw_line(pts[0], pts[1], col, 2.0)
+	_draw_layer.draw_circle(pts[1], 4.0, col)
 
 func _draw_swing_range(weapon_holder: WeaponHolder) -> void:
 	var weapon: WeaponData = weapon_holder.weapon

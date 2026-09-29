@@ -39,3 +39,8 @@ class_name WeaponData
 ## Two floats, not a Vector2, so they appear in the F3 panel as sliders.
 @export var guard_forward := 0.0
 @export var guard_side := 0.0
+
+## The E skill: a SCENE whose root extends Skill (decision 0018). A new skill is
+## a new scene, nothing else changes. Cooldown is per weapon, kept by SkillSlot.
+@export var skill: PackedScene
+@export var skill_cooldown := 6.0

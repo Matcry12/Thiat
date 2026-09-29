@@ -16,6 +16,7 @@ extends CharacterBody2D
 @onready var guard: Guard = $Guard
 @onready var guard_visual: GuardVisual = $GuardVisual
 @onready var loadout: Loadout = $Loadout
+@onready var skill_slot: SkillSlot = $SkillSlot
 
 var aim_direction := Vector2.RIGHT
 ## Automation seam, NOT gameplay: when non-zero, aim comes from here instead of
@@ -54,8 +55,9 @@ func _physics_process(_delta: float) -> void:
 	_move_dir = input_dir
 	# Dodge drives the body itself while dashing — fighting it over velocity
 	# would double-move the player for a frame.
-	if not dodge.is_dashing():
-		velocity = input_dir * speed * guard.move_scale()
+	# A body-moving skill (the lunge) drives velocity the same way.
+	if not dodge.is_dashing() and not skill_slot.moves_body():
+		velocity = input_dir * speed * guard.move_scale() * skill_slot.move_scale()
 		move_and_slide()
 
 	var new_move_state := "run" if velocity.length() > 1.0 else "idle"
@@ -72,32 +74,46 @@ func _physics_process(_delta: float) -> void:
 	visual.set_aim_angle(aim_direction.angle())
 	weapon_visual.set_aim_angle(aim_direction.angle())
 	weapon_holder.aim_direction = aim_direction
+	skill_slot.aim_direction = aim_direction
 	guard.aim_direction = aim_direction
 	guard_visual.set_aim_angle(aim_direction.angle())
 	guard_visual.set_cover_degrees(guard.parry_arc_degrees)  ## mirrored: the hint shows exactly what blocks
 
-	if Input.is_action_just_pressed("attack") and guard.can_attack() and not loadout.is_casting():
+	if Input.is_action_just_pressed("attack") and guard.can_attack() and not loadout.is_casting() \
+			and not skill_slot.is_active():
 		weapon_holder.try_attack()
 
-	if Input.is_action_just_pressed("dodge"):
+	# E skill. Refused while guarding, dashing, casting a swap, mid-swing; the
+	# slot itself refuses a second skill or one on cooldown.
+	if Input.is_action_just_pressed("skill") and not guard.is_guarding() and not dodge.is_dashing() \
+			and not loadout.is_casting() and weapon_holder.phase == WeaponHolder.Phase.IDLE:
+		skill_slot.try_use(loadout.active_weapon(), aim_direction)
+
+	# Dodge and guard are refused while a body-moving skill (the 0.15 s lunge)
+	# runs: two things driving the body at once. A bow charge does NOT move the
+	# body, so a dodge/guard that fires cancels it (cooldown refunded).
+	var body_free := not skill_slot.moves_body()
+	if Input.is_action_just_pressed("dodge") and body_free:
 		# Only a dodge that actually FIRES cancels the swap — a dodge refused
 		# by its own cooldown must not cancel a cast that would otherwise
 		# have kept going (decision: a failed press is a no-op, not a cancel).
 		if dodge.try_dodge(_move_dir, aim_direction):
 			loadout.cancel_swap()
+			skill_slot.cancel()
 
 	if Input.is_action_just_pressed("parry"):
-		if guard.try_guard():
+		if body_free and guard.try_guard():
 			loadout.cancel_swap()
+			skill_slot.cancel()
 	elif Input.is_action_just_released("parry"):
 		guard.release()
 
 	# Weapon swap is vulnerable, like an attack (decision 0003) — refused
 	# while guarding or dashing, same as the attack gate above. Loadout stays
 	# input-agnostic; the gate lives here, next to the other input gates.
-	if Input.is_action_just_pressed("weapon_1") and not guard.is_guarding() and not dodge.is_dashing():
+	if Input.is_action_just_pressed("weapon_1") and not guard.is_guarding() and not dodge.is_dashing() and not skill_slot.is_active():
 		loadout.try_swap(0)
-	if Input.is_action_just_pressed("weapon_2") and not guard.is_guarding() and not dodge.is_dashing():
+	if Input.is_action_just_pressed("weapon_2") and not guard.is_guarding() and not dodge.is_dashing() and not skill_slot.is_active():
 		loadout.try_swap(1)
 
 func _on_weapon_state_changed(state: String) -> void:
@@ -105,5 +121,6 @@ func _on_weapon_state_changed(state: String) -> void:
 	weapon_visual.on_weapon_state(state)
 
 func _on_swap_finished(w: WeaponData) -> void:
+	skill_slot.cancel()   # defensive: swaps are refused while a skill runs
 	weapon_holder.weapon = w
 	weapon_visual.set_weapon(w)   # emits model_changed -> weapon_holder.bind_model

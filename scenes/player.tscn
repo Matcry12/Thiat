@@ -17,6 +17,8 @@
 [ext_resource type="Script" path="res://scripts/components/loadout.gd" id="18"]
 [ext_resource type="Resource" path="res://data/weapons/bow.tres" id="19"]
 
+[ext_resource type="Script" path="res://scripts/components/skill_slot.gd" id="20"]
+
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
 
@@ -92,4 +94,8 @@ script = ExtResource("17")
 [node name="Loadout" type="Node" parent="."]
 script = ExtResource("18")
 weapons = Array[ExtResource("6")]([ExtResource("6"), ExtResource("19")])
+weapon_holder_path = NodePath("../WeaponHolder")
+
+[node name="SkillSlot" type="Node" parent="."]
+script = ExtResource("20")
 weapon_holder_path = NodePath("../WeaponHolder")

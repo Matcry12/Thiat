@@ -40,6 +40,7 @@ var _attacker: Attacker
 var _guard: Guard
 var _guard_visual: GuardVisual
 var _loadout: Loadout
+var _skill_slot: SkillSlot
 
 var _targets: Array = []          # [{"name": String, "object": Object}]
 var _controls: Dictionary = {}    # "Target.prop" -> {obj, prop, control, value_label, is_bool, is_int}
@@ -70,6 +71,7 @@ func _ready() -> void:
 	_guard = _player.get_node("Guard")
 	_guard_visual = _player.get_node("GuardVisual")
 	_loadout = _player.get_node_or_null("Loadout")
+	_skill_slot = _player.get_node_or_null("SkillSlot")
 
 	_weapon_holder.state_changed.connect(_on_weapon_state_changed)
 	_dummy_health.damaged.connect(_on_dummy_damaged)
@@ -94,6 +96,13 @@ func _ready() -> void:
 		for w in _loadout.weapons:
 			if w:
 				_targets.append({"name": _weapon_target_name(w), "object": w})
+	# The E skill: the slot, and each weapon's own skill scene (its numbers).
+	if _skill_slot:
+		_targets.append({"name": "SkillSlot", "object": _skill_slot})
+		for w in _loadout.weapons:
+			var s := _skill_slot.skill_for(w)
+			if s:
+				_targets.append({"name": _weapon_target_name(w) + " Skill", "object": s})
 
 	_build_ui()
 	visible = false
@@ -173,6 +182,9 @@ func _update_status_text() -> void:
 		"",
 		"[Loadout]",
 		_loadout_status_text(),
+		"",
+		"[Skills (E)]",
+		_skill_status_text(),
 	])
 
 func _loadout_status_text() -> String:
@@ -188,6 +200,22 @@ func _loadout_status_text() -> String:
 	elif _loadout.cooldown_left() > 0.0:
 		swap_state = "cooldown %.2fs" % _loadout.cooldown_left()
 	return "active: %s (%d)  swap: %s" % [active_name, _loadout.active_index(), swap_state]
+
+
+func _skill_status_text() -> String:
+	if _skill_slot == null or _loadout == null:
+		return "n/a"
+	var lines: Array[String] = []
+	for w in _loadout.weapons:
+		var s := _skill_slot.skill_for(w)
+		var state := "no skill"
+		if s:
+			var cd := _skill_slot.cooldown_left(w)
+			state = "ready" if cd <= 0.0 else "cooldown %.2fs" % cd
+			if s.is_active():
+				state = "ACTIVE, " + state
+		lines.append("%s: %s" % [_weapon_target_name(w), state])
+	return "\n".join(lines)
 
 
 func _on_weapon_state_changed(state: String) -> void:
@@ -287,6 +315,7 @@ func _build_ui() -> void:
 	_add_button(action_row, "Heal dummy", _on_heal_dummy)
 	_add_button(action_row, "Heal player", _on_heal_player)
 	_add_button(action_row, "Reset stats", _on_reset_stats)
+	_add_button(action_row, "Reset skill cd", func(): _skill_slot.reset_cooldowns())
 
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(340, 480)
