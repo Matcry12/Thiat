@@ -39,6 +39,7 @@ var _dodge: Dodge
 var _attacker: Attacker
 var _guard: Guard
 var _guard_visual: GuardVisual
+var _loadout: Loadout
 
 var _targets: Array = []          # [{"name": String, "object": Object}]
 var _controls: Dictionary = {}    # "Target.prop" -> {obj, prop, control, value_label, is_bool, is_int}
@@ -68,13 +69,13 @@ func _ready() -> void:
 	_attacker = _dummy.get_node("Attacker")
 	_guard = _player.get_node("Guard")
 	_guard_visual = _player.get_node("GuardVisual")
+	_loadout = _player.get_node_or_null("Loadout")
 
 	_weapon_holder.state_changed.connect(_on_weapon_state_changed)
 	_dummy_health.damaged.connect(_on_dummy_damaged)
 
 	_targets = [
 		{"name": "Player", "object": _player},
-		{"name": "Sword", "object": _weapon_holder.weapon},
 		{"name": "WeaponVisual", "object": _player.get_node("WeaponVisual")},
 		{"name": "Visual", "object": _player.visual},
 		{"name": "Dodge", "object": _dodge},
@@ -85,7 +86,14 @@ func _ready() -> void:
 		{"name": "Dummy Health", "object": _dummy_health},
 		{"name": "Attacker", "object": _attacker},
 		{"name": "Debug", "object": _debug_overlay},
+		{"name": "Loadout", "object": _loadout},
 	]
+	# One target per weapon in the loadout, named from its own file — not a
+	# hardcoded index/name, so a third weapon needs zero changes here.
+	if _loadout:
+		for w in _loadout.weapons:
+			if w:
+				_targets.append({"name": _weapon_target_name(w), "object": w})
 
 	_build_ui()
 	visible = false
@@ -162,7 +170,24 @@ func _update_status_text() -> void:
 		"",
 		"[Enemy Attack]",
 		"state: %s" % Attacker.Phase.keys()[_attacker.phase].to_lower(),
+		"",
+		"[Loadout]",
+		_loadout_status_text(),
 	])
+
+func _loadout_status_text() -> String:
+	if _loadout == null:
+		return "n/a"
+	var active: WeaponData = _loadout.active_weapon()
+	var active_name := "(none)"
+	if active != null:
+		active_name = active.resource_path.get_file().get_basename() if active.resource_path != "" else "(unsaved)"
+	var swap_state := "ready"
+	if _loadout.is_casting():
+		swap_state = "casting %.2fs" % _loadout.cast_left()
+	elif _loadout.cooldown_left() > 0.0:
+		swap_state = "cooldown %.2fs" % _loadout.cooldown_left()
+	return "active: %s (%d)  swap: %s" % [active_name, _loadout.active_index(), swap_state]
 
 
 func _on_weapon_state_changed(state: String) -> void:
@@ -174,6 +199,12 @@ func _on_dummy_damaged(amount: float) -> void:
 	_last_damage = amount
 	_total_damage += amount
 	_hits += 1
+
+
+func _weapon_target_name(w: WeaponData) -> String:
+	if w.resource_path == "":
+		return "Weapon"
+	return w.resource_path.get_file().get_basename().capitalize()
 
 
 # ------------------------------------------------------------- reflection ---

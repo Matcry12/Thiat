@@ -35,18 +35,29 @@ var _player: CharacterBody2D
 var _dummy: Node2D
 var _attacker: Attacker
 var _guard: Guard
+var _loadout: Loadout
 var _player_health: Health
 var _caption: Label
 var _subtitle: Label
 var _beat_pool := 0.0
 
+## Which storyboard to run — `record.sh <name> --scenario=X` forwards X here
+## via OS.get_cmdline_user_args() (record.sh passes everything after <name>
+## straight through to Godot's `-- ` user args).
+var _scenario := "guard"
+
 func _ready() -> void:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--scenario="):
+			_scenario = arg.substr("--scenario=".length())
+
 	_arena = ARENA.instantiate()
 	add_child(_arena)
 	_player = _arena.get_node("Player")
 	_dummy = _arena.get_node("Dummy")
 	_attacker = _dummy.get_node("Attacker")
 	_guard = _player.get_node("Guard")
+	_loadout = _player.get_node("Loadout")
 	_player_health = _player.get_node("Health")
 
 	# Demo-only changes, and the only ones this bot makes:
@@ -165,12 +176,18 @@ func _wait_for_strike_moment() -> void:
 	await _await_fresh_telegraph()
 	await _wait(_attacker.telegraph_time * parry_at)
 
-## Walks right until the enemy is in range, so the fight starts the same way in
-## every recording regardless of where the scene puts the two of them.
-func _close_the_distance() -> void:
+## Walks right until within `threshold` of the enemy, so the fight starts the
+## same way in every recording regardless of where the scene puts the two of
+## them. Defaults to the enemy's own attack range (close enough to be attacked
+## back); the sword's actual reach is shorter, so a melee-swing beat passes a
+## tighter threshold (see MELEE_RANGE).
+const MELEE_RANGE := 55.0
+
+func _close_the_distance(threshold := -1.0) -> void:
+	var want: float = threshold if threshold > 0.0 else _attacker.attack_range - 10.0
 	_hold("move_right", true)
 	var left := 8.0
-	while _player.global_position.distance_to(_dummy.global_position) > _attacker.attack_range - 10.0:
+	while _player.global_position.distance_to(_dummy.global_position) > want:
 		await get_tree().physics_frame
 		left -= get_physics_process_delta_time()
 		if left <= 0.0:
@@ -179,6 +196,11 @@ func _close_the_distance() -> void:
 	_hold("move_right", false)
 
 func _run() -> void:
+	match _scenario:
+		"weapons": await _run_weapons()
+		_: await _run_guard()
+
+func _run_guard() -> void:
 	await _wait(0.6)
 	_say("BOSSFIGHT — slice 3", "F1 overlay on: green = can be hit, red = is hitting")
 	await _wait(1.6)
@@ -268,5 +290,88 @@ func _run() -> void:
 	await _wait(2.0)
 
 	_say("THE QUESTION", "can you feel when the parry window is open?")
+	await _wait(2.5)
+	get_tree().quit()
+
+## Slice 3a: sword + bow, gated by a cast + cooldown. Question: is the 5s swap
+## cooldown interesting or annoying?
+func _run_weapons() -> void:
+	var health := func(): return _dummy.get_node("Health") as Health
+
+	await _wait(0.6)
+	_say("BOSSFIGHT — slice 3a", "sword and bow — press 1/2 to swap")
+	await _wait(1.6)
+
+	_say("WALK IN", "sword equipped")
+	await _close_the_distance(MELEE_RANGE)
+	await _wait(0.3)
+
+	_say("SWORD HIT", "the melee swing, same as before")
+	var before: float = health.call().hp
+	await _tap("attack")
+	await _wait(0.5)
+	print("[demo]   sword dealt %.1f damage" % (before - health.call().hp))
+	await _wait(0.8)
+
+	_say("PRESS 2 — SWAP TO BOW", "a %.1fs cast — you can't attack while it runs" % _loadout.swap_cast)
+	await _tap("weapon_2")
+	while _loadout.is_casting():
+		await get_tree().physics_frame
+	print("[demo]   swap finished: active weapon %s" % _loadout.active_weapon().resource_path.get_file())
+	await _wait(0.4)
+
+	_say("BACK OFF", "the bow hits from range — no need to close in")
+	_hold("move_left", true)
+	await _wait(0.9)
+	_hold("move_left", false)
+	await _wait(0.3)
+
+	_say("SHOOT", "an arrow flies to the dummy")
+	_player.aim_override = _dummy.global_position - _player.global_position
+	var before2: float = health.call().hp
+	await _tap("attack")
+	# Wait for the arrow to actually land rather than a fixed guess: it must
+	# travel however far BACK OFF put us, and a short guess would measure
+	# "damage" before the hit ever happened (bit us once already, see the
+	# geometry-refactor notes on this beat).
+	var left_shot := 3.0
+	while is_equal_approx(health.call().hp, before2) and left_shot > 0.0:
+		await get_tree().physics_frame
+		left_shot -= get_physics_process_delta_time()
+	print("[demo]   arrow dealt %.1f damage" % (before2 - health.call().hp))
+	await _wait(0.8)
+
+	_say("PRESS 1 — TOO SOON", "swap is on a %.1fs cooldown — the press does nothing" % _loadout.swap_cooldown)
+	var index_before := _loadout.active_index()
+	await _tap("weapon_1")
+	await _wait(0.1)
+	var refused: bool = _loadout.active_index() == index_before and not _loadout.is_casting()
+	print("[demo]   refused: %s (cooldown left %.2fs)" % [refused, _loadout.cooldown_left()])
+	await _wait(1.4)
+
+	_say("COOLDOWN CLEARS", "now the swap works")
+	while _loadout.cooldown_left() > 0.0:
+		await get_tree().physics_frame
+	await _wait(0.3)
+
+	_say("PRESS 1 — SWAP BACK", "%.1fs cast again" % _loadout.swap_cast)
+	await _tap("weapon_1")
+	while _loadout.is_casting():
+		await get_tree().physics_frame
+	print("[demo]   swap finished: active weapon %s" % _loadout.active_weapon().resource_path.get_file())
+	await _wait(0.4)
+
+	_say("BACK IN", "sword again")
+	await _close_the_distance(MELEE_RANGE)
+	await _wait(0.3)
+
+	_say("SWORD HIT AGAIN", "back to melee")
+	var before3: float = health.call().hp
+	await _tap("attack")
+	await _wait(0.5)
+	print("[demo]   sword dealt %.1f damage" % (before3 - health.call().hp))
+	await _wait(1.0)
+
+	_say("THE QUESTION", "is the 5s swap cooldown interesting, or just annoying?")
 	await _wait(2.5)
 	get_tree().quit()

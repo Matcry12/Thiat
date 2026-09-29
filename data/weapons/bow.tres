@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" uid="uid://b8cxxfxugrtmd" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/bow_model.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/projectiles/arrow.tscn" id="3"]
+
+[resource]
+script = ExtResource("1")
+behavior = "projectile"
+damage = 18.0
+windup = 0.25
+active = 0.05
+recovery = 0.25
+arc_degrees = 0.0
+model = ExtResource("2")
+rest_angle_degrees = 0.0
+guard_angle_degrees = -60.0
+guard_forward = 4.0
+guard_side = 8.0
+projectile_scene = ExtResource("3")
+projectile_speed = 700.0
+projectile_range = 520.0

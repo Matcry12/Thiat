@@ -1,8 +1,11 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3 uid="uid://gvjnvct47q1q"]
 
 [ext_resource type="Script" uid="uid://b8cxxfxugrtmd" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/sword_model.tscn" id="2"]
 
 [resource]
 script = ExtResource("1")
+model = ExtResource("2")
+rest_angle_degrees = -20.0
 guard_forward = 6.0
 guard_side = 15.0

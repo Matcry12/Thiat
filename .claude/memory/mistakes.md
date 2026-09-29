@@ -18,3 +18,6 @@
 - 2026-09-28: gave the user editor steps without testing them ("did you check before giving me?")
   → before giving Inspector instructions, load the scene headless and confirm the value set there
   actually reaches the running game.
+- 2026-09-29: `git commit -am` for a docs-only change swept in the open editor's save of
+  player.tscn (a `preview_width_from = null` line that silently broke the arc's editor preview) →
+  never `commit -a`. Stage files by name, and `git diff` every .tscn before it goes in.

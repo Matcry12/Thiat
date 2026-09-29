@@ -8,7 +8,7 @@ func _init():
 	var player = arena.get_node("Player")
 	player.set_physics_process(false)          # headless mouse sits at (0,0)
 	var wv = arena.get_node("Player/WeaponVisual")
-	var hitbox = arena.get_node("Player/WeaponVisual/SwingPivot/Hitbox")
+	var hitbox = arena.get_node("Player/WeaponVisual/SwingPivot/SwordModel/Hitbox")
 	# The Hitbox sits AT the hand pivot, so its own global_position never moves on
 	# a mirror or rotation. Its SHAPE child does — track that instead. Works for a
 	# box or a generated sector alike.

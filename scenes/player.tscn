@@ -9,18 +9,16 @@
 [ext_resource type="Script" uid="uid://bdm85dlwvqabq" path="res://scripts/visual/weapon_visual.gd" id="7"]
 [ext_resource type="Texture2D" uid="uid://bbeyf40b8qn4h" path="res://assets/placeholder/player.png" id="8"]
 [ext_resource type="Texture2D" uid="uid://c850m4ii26ok3" path="res://assets/placeholder/shadow.png" id="9"]
-[ext_resource type="Texture2D" uid="uid://jshxlxj775bb" path="res://assets/stock/sword_straight.png" id="10"]
 [ext_resource type="Script" uid="uid://cfhocpi452k6r" path="res://scripts/components/health.gd" id="11"]
 [ext_resource type="Script" uid="uid://cu3cx00235xph" path="res://scripts/components/dodge.gd" id="12"]
 [ext_resource type="Script" uid="uid://b7gjgeew8j7ga" path="res://scripts/components/guard.gd" id="13"]
 [ext_resource type="Script" uid="uid://10nk8ph3115l" path="res://scripts/visual/guard_visual.gd" id="14"]
 [ext_resource type="Script" uid="uid://bjs01qfet1ww8" path="res://scripts/visual/cover_arc.gd" id="17"]
+[ext_resource type="Script" path="res://scripts/components/loadout.gd" id="18"]
+[ext_resource type="Resource" path="res://data/weapons/bow.tres" id="19"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
-
-[sub_resource type="RectangleShape2D" id="HitShape"]
-size = Vector2(44.086098, 9.562761)
 
 [sub_resource type="CircleShape2D" id="HurtShape"]
 radius = 15.0
@@ -49,33 +47,12 @@ texture = ExtResource("9")
 [node name="WeaponVisual" type="Node2D" parent="." unique_id=1080354139]
 position = Vector2(0, -9)
 script = ExtResource("7")
-weapon = ExtResource("6")
-blade_texture = ExtResource("10")
-art_angle_degrees = -90.0
-rest_angle_degrees = -20.0
 preview_guard_pose = true
+preview_weapon_from = NodePath("../Loadout")
 
 [node name="SwingPivot" type="Node2D" parent="WeaponVisual" unique_id=1733221144]
 position = Vector2(6, 15)
 rotation = -1.5707964
-
-[node name="Blade" type="Sprite2D" parent="WeaponVisual/SwingPivot" unique_id=1099783664]
-position = Vector2(7.0000005, 6)
-rotation = 1.5707964
-scale = Vector2(1, 1.3398156)
-texture = ExtResource("10")
-centered = false
-offset = Vector2(-8, -44)
-
-[node name="Hitbox" type="Area2D" parent="WeaponVisual/SwingPivot" unique_id=2141333532]
-collision_layer = 8
-collision_mask = 4
-script = ExtResource("4")
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="WeaponVisual/SwingPivot/Hitbox" unique_id=1592139998]
-position = Vector2(43.74236, 5.313388)
-scale = Vector2(1.0000004, 1.0000004)
-shape = SubResource("HitShape")
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=186865809]
 collision_layer = 2
@@ -87,8 +64,6 @@ shape = SubResource("HurtShape")
 
 [node name="WeaponHolder" type="Node" parent="." unique_id=544363035]
 script = ExtResource("5")
-weapon = ExtResource("6")
-hitbox_path = NodePath("../WeaponVisual/SwingPivot/Hitbox")
 
 [node name="Health" type="Node" parent="." unique_id=380820153]
 script = ExtResource("11")
@@ -113,4 +88,8 @@ cover_path = NodePath("CoverArc")
 [node name="CoverArc" type="Node2D" parent="GuardVisual" unique_id=731821845]
 position = Vector2(0, -9)
 script = ExtResource("17")
-preview_width_from = null
+
+[node name="Loadout" type="Node" parent="."]
+script = ExtResource("18")
+weapons = Array[ExtResource("6")]([ExtResource("6"), ExtResource("19")])
+weapon_holder_path = NodePath("../WeaponHolder")

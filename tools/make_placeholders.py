@@ -96,7 +96,49 @@ if __name__ == "__main__":
     sword_grid[6] = sword_grid[6][:5] + "Y" + sword_grid[6][6:]
     sword_grid[7] = sword_grid[7].replace("KGK", "KYK", 1)
     pixel_art(sword_grid, sword_palette, 3, "sword")
-    box(40, 8, (180, 140, 80, 255), name="bow")
+
+    # Bow: a curved limb + riser, drawn pointing +X like the sword (the grip
+    # sits toward the hand; the string faces the shot direction).
+    # Seen from above: two limbs bowing TOWARD the target (+X), the string a
+    # straight light line on the player's side, the grip in the middle. Bright
+    # wood + a white string so it reads on the grey floor AND over the white
+    # body — the first version was a dark outline and read as noise.
+    bow_grid = [
+        "WK...",
+        "SWK..",
+        "S.WK.",
+        "S..WK",
+        "S..WK",
+        "S..WK",
+        "S..GG",
+        "S..WK",
+        "S..WK",
+        "S..WK",
+        "S.WK.",
+        "SWK..",
+        "WK...",
+    ]
+    bow_palette = {
+        "W": (214, 150, 80, 255),    # limb, lit side
+        "K": (120, 74, 36, 255),     # limb, shaded side
+        "G": (70, 42, 22, 255),      # leather grip
+        "S": (238, 238, 244, 255),   # string
+    }
+    pixel_art(bow_grid, bow_palette, 3, "bow")
+
+    # Arrow: fletching at the tail (-X), arrowhead at the tip (+X) — same
+    # "points +X" convention as the sword, so Projectile.rotation lines up.
+    arrow_grid = [
+        "....K..",
+        "FSSSSKK",
+        "....K..",
+    ]
+    arrow_palette = {
+        "F": (200, 60, 50, 255),     # fletching
+        "S": (200, 150, 90, 255),    # shaft — light, or it vanishes on the grey floor
+        "K": (225, 228, 236, 255),   # arrowhead — steel, bright for the same reason
+    }
+    pixel_art(arrow_grid, arrow_palette, 4, "arrow")
+
     ellipse(44, 18, (0, 0, 0, 150), name="shadow")
-    ellipse(12, 12, (120, 220, 255, 255), name="projectile")
     print(f"wrote {len(list(OUT.glob('*.png')))} files to {OUT}")

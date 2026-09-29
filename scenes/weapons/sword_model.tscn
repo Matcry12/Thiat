@@ -1,0 +1,27 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" uid="uid://jshxlxj775bb" path="res://assets/stock/sword_straight.png" id="1"]
+[ext_resource type="Script" uid="uid://d0s5saauew0b5" path="res://scripts/components/hitbox.gd" id="2"]
+
+[sub_resource type="RectangleShape2D" id="HitShape"]
+size = Vector2(44.086098, 9.562761)
+
+[node name="SwordModel" type="Node2D"]
+
+[node name="Art" type="Sprite2D" parent="."]
+position = Vector2(7.0000005, 6)
+rotation = 1.5707964
+scale = Vector2(1, 1.3398156)
+texture = ExtResource("1")
+centered = false
+offset = Vector2(-8, -44)
+
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 4
+script = ExtResource("2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(43.74236, 5.313388)
+scale = Vector2(1.0000004, 1.0000004)
+shape = SubResource("HitShape")

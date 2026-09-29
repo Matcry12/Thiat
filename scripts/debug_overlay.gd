@@ -9,6 +9,13 @@ extends CanvasLayer
 var last_damage := 0.0
 var weapon_state := "idle"
 
+## Fading hit markers for freed arrows: {"pos": Vector2, "t": float}. An arrow
+## queue_frees the instant it hits, so this is the only way to still show
+## where it landed for a moment.
+var _hit_marks: Array = []
+var _known_projectiles := {}   ## instance_id -> last seen global_position
+const HIT_MARK_TIME := 0.25
+
 @onready var _player: CharacterBody2D = get_node(player_path)
 @onready var _dummy: Node2D = get_node_or_null(dummy_path)
 @onready var _draw_layer: Node2D = $DrawLayer
@@ -34,8 +41,27 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("debug_slowmo"):
 		Engine.time_scale = 0.25 if Engine.time_scale == 1.0 else 1.0
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_track_projectiles()
+	for mark in _hit_marks.duplicate():
+		mark["t"] -= delta
+		if mark["t"] <= 0.0:
+			_hit_marks.erase(mark)
 	_draw_layer.queue_redraw()
+	_update_label()   # the swap-cast countdown needs a live tick, not just on-event
+
+## Polls the "projectile" group (see projectile.gd) each frame: records where
+## each live arrow currently is, and drops a fading mark wherever one was last
+## seen the instant it disappears (it queue_frees itself on the same frame it
+## hits, so there is no "on hit" moment to hook otherwise).
+func _track_projectiles() -> void:
+	var alive := {}
+	for p in get_tree().get_nodes_in_group("projectile"):
+		alive[p.get_instance_id()] = p.global_position
+	for id in _known_projectiles.keys():
+		if not alive.has(id):
+			_hit_marks.append({"pos": _known_projectiles[id], "t": HIT_MARK_TIME})
+	_known_projectiles = alive
 
 func _on_weapon_state_changed(state: String) -> void:
 	weapon_state = state
@@ -52,7 +78,11 @@ func _update_label() -> void:
 	var guard: Guard = _player.get_node_or_null("Guard")
 	var guard_state: String = Guard.State.keys()[guard.state].to_lower() if guard else "n/a"
 	var tank_text: String = "%.0f/%.0f" % [guard.tank, guard.tank_max] if guard else "n/a"
-	_label.text = "weapon: %s\nlast damage: %.1f\nguard: %s  tank: %s" % [weapon_state, last_damage, guard_state, tank_text]
+	var loadout: Loadout = _player.get_node_or_null("Loadout")
+	var swap_text := ""
+	if loadout and loadout.is_casting():
+		swap_text = "\nswapping: %.2fs" % loadout.cast_left()
+	_label.text = "weapon: %s\nlast damage: %.1f\nguard: %s  tank: %s%s" % [weapon_state, last_damage, guard_state, tank_text, swap_text]
 
 func _on_draw() -> void:
 	if not enabled:
@@ -73,6 +103,9 @@ func _on_draw() -> void:
 	#            blade. Only alive for `active` (0.1s), far too brief on its own.
 	if weapon_holder.phase != WeaponHolder.Phase.IDLE:
 		_draw_swing_range(weapon_holder)
+	# A ranged weapon's reach, drawn all the time it is held (the sword's wedge
+	# only shows mid-swing, but a bow's range matters BEFORE you shoot).
+	_draw_projectile_range(weapon_holder)
 	for hb in get_tree().get_nodes_in_group("hitbox"):
 		if (hb as Hitbox).is_active():
 			_draw_hitbox_outline(hb)
@@ -84,6 +117,14 @@ func _on_draw() -> void:
 		var body_shape := body_cs.shape as CircleShape2D
 		if body_shape:
 			_draw_ground_circle(_player.global_position, body_shape.radius, Color.BLUE, 3.0)
+
+	# Arrows: a cyan line from where each live one was fired to where it is
+	# now, plus a brief mark wherever one just vanished (hit or out of range).
+	for p in get_tree().get_nodes_in_group("projectile"):
+		_draw_layer.draw_line(p.spawn_pos, p.global_position, Color(0.3, 0.9, 1.0, 0.7), 1.5)
+	for mark in _hit_marks:
+		var a: float = mark["t"] / HIT_MARK_TIME
+		_draw_layer.draw_circle(mark["pos"], 6.0, Color(1.0, 0.9, 0.2, a))
 
 	# Guard arc: NOT drawn here. The in-game CoverArc already shows the exact
 	# protected side (width mirrored from Guard, turns with the aim), so a second
@@ -120,6 +161,20 @@ func _draw_hurtbox_outline(hurtbox: Hurtbox) -> void:
 ##   span   = weapon.arc_degrees, centred on the aim (-arc/2 .. +arc/2)
 ##   reach  = how far the hitbox shape actually extends
 ## So the outline can never promise reach the box does not have.
+## Dim line from the Muzzle along the aim, exactly projectile_range long: where
+## an arrow can reach if nothing stops it. Nothing drawn for melee weapons.
+func _draw_projectile_range(weapon_holder: WeaponHolder) -> void:
+	var weapon: WeaponData = weapon_holder.weapon
+	if weapon == null or weapon.behavior != "projectile":
+		return
+	var muzzle := weapon_holder.get_muzzle()
+	if muzzle == null:
+		return
+	var from: Vector2 = muzzle.global_position
+	var to: Vector2 = from + weapon_holder.aim_direction.normalized() * weapon.projectile_range
+	_draw_layer.draw_line(from, to, Color(1, 1, 1, 0.25), 1.0)
+	_draw_layer.draw_circle(to, 3.0, Color(1, 1, 1, 0.5))
+
 func _draw_swing_range(weapon_holder: WeaponHolder) -> void:
 	var weapon: WeaponData = weapon_holder.weapon
 	if weapon == null:

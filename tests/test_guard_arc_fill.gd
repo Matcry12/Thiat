@@ -29,7 +29,7 @@ func _init():
 	print("guarding -> shown: %s" % shown_guarding)
 	ok = ok and shown_guarding
 
-	await create_timer(guard.parry_window + 0.05).timeout    # into BLOCK
+	await _until_block(guard)    # wait for the STATE: physics can lag the clock (godot-gotchas)
 	health.take_damage(20.0, dummy, true)
 	await _tick()
 	var follows: bool = is_equal_approx(bar.value, guard.tank_fraction()) and bar.value < 1.0
@@ -47,7 +47,7 @@ func _init():
 	ok = ok and shown_refilling
 
 	guard.try_guard()
-	await create_timer(guard.parry_window + 0.05).timeout
+	await _until_block(guard)
 	health.take_damage(500.0, dummy, true)                   # more than the bar -> breaks
 	await _tick()
 	var red: bool = bar.visible and bar.modulate.is_equal_approx(gv.broken_color) and is_zero_approx(bar.value)
@@ -65,3 +65,10 @@ func _init():
 func _tick() -> void:
 	await physics_frame
 	await process_frame
+
+## Steps physics until the guard is in BLOCK (or 2s of game time pass).
+func _until_block(guard) -> void:
+	var left := 2.0
+	while guard.state != Guard.State.BLOCK and left > 0.0:
+		await physics_frame
+		left -= 1.0 / Engine.physics_ticks_per_second

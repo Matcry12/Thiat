@@ -2,11 +2,23 @@ extends Resource
 class_name WeaponData
 ## Data-driven weapon numbers. A new weapon is a new .tres file, zero code.
 
-@export_enum("arc") var behavior := "arc"
+@export_enum("arc", "projectile") var behavior := "arc"
 @export var damage := 30.0
 @export var windup := 0.15
 @export var active := 0.1
 @export var recovery := 0.2
+## The weapon's own scene (Step 1, decision-driven model split). Root = the
+## grip/hand point. Children, hand-placed by the user, never written by code:
+## `Art` (Sprite2D), optional `Hitbox` (melee) / `Muzzle` (ranged spawn point).
+@export var model: PackedScene
+## Idle hold angle, relative to aim (WeaponVisual used to own this; it is a
+## per-weapon number, not a per-player one — a bow rests pointing at the mouse).
+@export var rest_angle_degrees := -45.0
+
+## behavior == "projectile" only.
+@export var projectile_scene: PackedScene
+@export var projectile_speed := 700.0
+@export var projectile_range := 520.0
 ## How far the blade sweeps during the active frame. One number, two jobs:
 ## it drives the blade's visual swing (WeaponVisual) AND, since the 0011
 ## How far the swing travels, CENTRED ON THE AIM: the blade pulls back to

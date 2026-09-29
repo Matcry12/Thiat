@@ -14,11 +14,11 @@ func _init():
 	wv.weapon.guard_forward = 10.0
 	wv.weapon.guard_side = -4.0
 	var want_guard := deg_to_rad(wv.weapon.guard_angle_degrees)
-	var want_rest := deg_to_rad(wv.rest_angle_degrees)
+	var want_rest := deg_to_rad(wv.weapon.rest_angle_degrees)
 
 	await _frames(10)
 	var at_rest: bool = is_equal_approx(pivot.rotation, want_rest)
-	print("before F: blade %.0f deg (rest %.0f): %s" % [rad_to_deg(pivot.rotation), wv.rest_angle_degrees, at_rest])
+	print("before F: blade %.0f deg (rest %.0f): %s" % [rad_to_deg(pivot.rotation), wv.weapon.rest_angle_degrees, at_rest])
 
 	guard.try_guard()
 	# The pose must be reached well inside the 0.25s parry window, or the
@@ -43,7 +43,7 @@ func _init():
 	var lowered: bool = absf(angle_difference(pivot.rotation, want_rest)) < 0.02 \
 		and pivot.position.is_equal_approx(Vector2.ZERO)
 	print("after release: blade %.0f deg (rest %.0f), arm %s: %s" % [
-		rad_to_deg(pivot.rotation), wv.rest_angle_degrees, pivot.position, lowered])
+		rad_to_deg(pivot.rotation), wv.weapon.rest_angle_degrees, pivot.position, lowered])
 
 	var ok := at_rest and raised and in_window and still_up and lowered
 	print("PASS" if ok else "FAIL")

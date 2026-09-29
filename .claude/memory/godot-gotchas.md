@@ -60,3 +60,7 @@ Reference docs in `docs/reference/godot/` were researched against 4.3/4.4 — if
   for exports it hasn't reloaded, and the user's drags get lost. Before hand-editing a scene, check
   `pgrep -f "godot.*-e"`. If the editor is open, tell the user to press **Reload** (never Resave)
   when Godot asks. Always `git diff` a `.tscn` before committing it.
+- Tests must wait for STATE, not wall-clock (`create_timer`), when the code under test counts
+  PHYSICS steps. Headless physics can lag the clock, so `await create_timer(1.6)` sometimes lands
+  before a 1.5s physics timer has expired → a flaky test (hit test_unparryable_breaks_guard 1 in ~4).
+  Poll `physics_frame` until the condition holds, with a timeout.

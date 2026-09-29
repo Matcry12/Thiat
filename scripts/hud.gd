@@ -11,14 +11,17 @@ class_name HUD
 
 var _health: Health
 var _dodge: Dodge
+var _loadout: Loadout
 
 var _hp_bar: ProgressBar
 var _dodge_label: Label
+var _weapon_label: Label
 
 func _ready() -> void:
 	var player: Node = get_node(player_path)
 	_health = player.get_node("Health")
 	_dodge = player.get_node("Dodge")
+	_loadout = player.get_node_or_null("Loadout")
 	_build_ui()
 
 func _process(_delta: float) -> void:
@@ -28,6 +31,20 @@ func _process(_delta: float) -> void:
 	if _dodge:
 		var cd := _dodge.cooldown_remaining()
 		_dodge_label.text = "dodge: ready" if cd <= 0.0 else "dodge: %.1fs" % cd
+	if _loadout:
+		_weapon_label.text = "weapon: %s | swap: %s" % [_weapon_name(), _swap_text()]
+
+func _weapon_name() -> String:
+	var w: WeaponData = _loadout.active_weapon()
+	if w == null:
+		return "(none)"
+	return w.resource_path.get_file().get_basename() if w.resource_path != "" else "(unsaved)"
+
+func _swap_text() -> String:
+	if _loadout.is_casting():
+		return "swapping… %.1fs" % _loadout.cast_left()
+	var cd := _loadout.cooldown_left()
+	return "ready" if cd <= 0.0 else "%.1fs" % cd
 
 func _build_ui() -> void:
 	var root := Control.new()
@@ -47,3 +64,6 @@ func _build_ui() -> void:
 
 	_dodge_label = Label.new()
 	vbox.add_child(_dodge_label)
+
+	_weapon_label = Label.new()
+	vbox.add_child(_weapon_label)

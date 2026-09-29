@@ -28,15 +28,18 @@ func _init():
 	print("PARRY vs purple: damage %.2f (want ~40), guard broken: %s" % [hp0 - health.hp, parry_broke])
 	guard.release()
 
-	# Recover: wait out the break, then refill the bar so BLOCK starts fresh.
-	await create_timer(guard.break_recovery + 0.1).timeout
+	# Recover, then refill the bar so BLOCK starts fresh. Wait for the STATE,
+	# never a wall-clock timer: the guard counts physics steps, which can lag
+	# behind the clock on a busy machine. A timer here made this test flaky
+	# (1 in ~4 runs the guard was still BROKEN and the F press was refused).
+	var recovered: bool = await _until(func(): return guard.state == Guard.State.READY, guard.break_recovery + 2.0)
 	guard.tank = guard.tank_max
 	health.hp = health.max_hp
 
 	# --- held (BLOCK), purple ---
-	guard.try_guard()
-	await create_timer(guard.parry_window + 0.05).timeout
-	var in_block: bool = guard.state == Guard.State.BLOCK
+	var pressed: bool = guard.try_guard()
+	var in_block: bool = await _until(func(): return guard.state == Guard.State.BLOCK, guard.parry_window + 2.0)
+	print("recovered: %s, F accepted: %s" % [recovered, pressed])
 	print("reached BLOCK: ", in_block)
 	var hp1: float = health.hp
 	health.take_damage(40.0, dummy, false)
@@ -44,6 +47,16 @@ func _init():
 	var block_broke: bool = guard.tank == 0.0 and guard.state == Guard.State.BROKEN
 	print("BLOCK vs purple: damage %.2f (want ~40), guard broken: %s" % [hp1 - health.hp, block_broke])
 
-	var ok: bool = parry_full and parry_broke and in_block and block_full and block_broke
+	var ok: bool = parry_full and parry_broke and recovered and pressed and in_block and block_full and block_broke
 	print("PASS" if ok else "FAIL")
 	quit(0 if ok else 1)
+
+## Steps physics until `cond` is true or `timeout` seconds of GAME time pass.
+func _until(cond: Callable, timeout: float) -> bool:
+	var left := timeout
+	while not cond.call():
+		await physics_frame
+		left -= 1.0 / Engine.physics_ticks_per_second
+		if left <= 0.0:
+			return false
+	return true
