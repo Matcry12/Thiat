@@ -314,6 +314,13 @@ slices. Any slice may send us back to the design — that is expected, not failu
 3. **Two weapons** — bow added, swap with cast+cooldown, one skill each.
    *Is the 5s swap cooldown interesting or annoying?* Split before starting: **3a** bow + swap
    (the question above), **3b** one `E` skill per weapon (a different question).
+   **3a DONE (2026-09-29)** — user: works "kinda fine", visual is the weak part (visual comes later).
+   Swap-cooldown question folded into the batch playtest below.
+   Log 3a: built by Sonnet 5 agent · Opus judge found 4 real bugs (point-blank arrow, swap while
+   guarding, stale rest pose, 3 owners of current weapon) + 2 follow-ups · user: visuals only.
+
+**Batch playtest (user's call, 2026-09-29):** 3b and 4 are built back to back, then playtested
+together — an exception to "no stacking unverified slices".
 4. **The boss** — 3 attacks, phase 2, enrage rule, HUD cooldowns.
    *Is losing to it fair?*
 5. **Tune** — adjust only the numbers in §2 until it feels right. No new features.

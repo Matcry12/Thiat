@@ -19,6 +19,26 @@ Before starting any task, ask this **first**:
 
 Default bias: **delegate the doing, keep the deciding.**
 
+**Which model for which job** ([0017](docs/decision/0017-model-routing.md)). In this project
+`sonnet` = **Sonnet 5.5** (set in `.claude/settings.json`), `opus` = Opus 5.5.
+
+| Job | Model | Why |
+|---|---|---|
+| Plan a slice, split it into tasks, decide design | Opus (main loop) | Deciding is where mistakes cost most |
+| Build a slice / feature, write tests, refactor | Sonnet 5.5 agent | Normal coding; tested and judged after |
+| Judge Sonnet's work (rule 2.4) | Opus agent, fresh context | A weak judge hides bugs; nobody sees them until playtest |
+| Judge work Opus did itself | Sonnet 5.5 agent | Different eyes matter more than strength |
+| Hard bug (flaky, timing, "can't reproduce") | Opus agent | Opus 5.5 was 2x faster on our debug test; both fixed it |
+| Lookups, file sweeps, blind grading, mechanical edits | Haiku agent | Cheap and enough |
+| Explain to the user | Opus (main loop) | It holds the conversation |
+
+**Escalate, don't retry blind:** if a Sonnet agent fails the same task twice (tests red, or the
+judge confirms a real bug twice), give that task to an Opus agent. Note it in the slice log.
+
+**Slice log = the real-world score.** When a slice is done, add one line under that slice in
+`docs/wiki/prototype-v0.md`: who built it, what the judge found, what the user found. After a few
+slices this tells us where each model is weak — better data than a lab test.
+
 ## 2. Always verify before reporting
 
 Never report a task as done on assumption. Before any "it works" claim:
