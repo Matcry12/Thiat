@@ -4,6 +4,7 @@ extends CanvasLayer
 
 @export var player_path: NodePath
 @export var dummy_path: NodePath
+@export var boss_path: NodePath
 
 @export var enabled := true  ## exported so the F3 tuning panel can reflect it
 var last_damage := 0.0
@@ -18,6 +19,7 @@ const HIT_MARK_TIME := 0.25
 
 @onready var _player: CharacterBody2D = get_node(player_path)
 @onready var _dummy: Node2D = get_node_or_null(dummy_path)
+@onready var _boss: Boss = get_node_or_null(boss_path) as Boss
 @onready var _draw_layer: Node2D = $DrawLayer
 @onready var _label: Label = $Label
 
@@ -130,6 +132,17 @@ func _on_draw() -> void:
 	# Guard arc: NOT drawn here. The in-game CoverArc already shows the exact
 	# protected side (width mirrored from Guard, turns with the aim), so a second
 	# arc here only doubled it on screen. Guard state + tank are in the label.
+
+	# Boss: warning areas of the attack in progress (orange = parry, purple =
+	# dodge; the charge lane included) and the FightZone (red once enraged).
+	# Active hitboxes are already red via the "hitbox" group above.
+	for atk in get_tree().get_nodes_in_group("boss_attack"):
+		for area in (atk as BossAttack).debug_areas():
+			_draw_shape(area["shape"], area["xform"], area["color"], 2.0)
+	if _boss and _boss.get_fight_zone():
+		var zcs := _boss.get_fight_zone().get_node_or_null("CollisionShape2D") as CollisionShape2D
+		if zcs:
+			_draw_shape(zcs.shape, zcs.global_transform, Color.RED if _boss.enraged else Color(0.3, 0.8, 1.0), 2.0)
 
 	# Enemy strike: hitbox red only while STRIKE, telegraph area outlined
 	# while TELEGRAPH (redundant with Telegraph's own border — cheap, and
@@ -269,6 +282,9 @@ func _draw_collision_polygon_outline(cp: CollisionPolygon2D) -> void:
 func _draw_collision_shape_outline(cs: CollisionShape2D) -> void:
 	if cs.shape == null:
 		return
+	if cs.shape is CircleShape2D:
+		_draw_shape(cs.shape, cs.global_transform, Color.RED, 2.0)
+		return
 	var xform := cs.global_transform
 	var points := PackedVector2Array()
 	if cs.shape is RectangleShape2D:
@@ -292,6 +308,25 @@ func _draw_collision_shape_outline(cs: CollisionShape2D) -> void:
 	for i in points.size():
 		points[i] = xform * points[i]
 	_draw_layer.draw_polyline(points, Color.RED, 2.0)
+
+## Outline of a circle / rectangle / convex polygon at a transform.
+func _draw_shape(shape: Shape2D, xform: Transform2D, color: Color, width: float) -> void:
+	var pts := PackedVector2Array()
+	if shape is CircleShape2D:
+		var r: float = (shape as CircleShape2D).radius
+		for i in 33:
+			pts.append(Vector2.RIGHT.rotated(TAU * i / 32.0) * r)
+	elif shape is RectangleShape2D:
+		var h: Vector2 = (shape as RectangleShape2D).size / 2.0
+		pts = PackedVector2Array([Vector2(-h.x, -h.y), Vector2(h.x, -h.y), Vector2(h.x, h.y), Vector2(-h.x, h.y), Vector2(-h.x, -h.y)])
+	elif shape is ConvexPolygonShape2D:
+		pts = (shape as ConvexPolygonShape2D).points
+		pts.append(pts[0])
+	else:
+		return
+	for i in pts.size():
+		pts[i] = xform * pts[i]
+	_draw_layer.draw_polyline(pts, color, width)
 
 ## Flat 2D circle. No perspective squashing — this game fakes depth only through
 ## draw order and upright sprites (decision 0009), never through projection.

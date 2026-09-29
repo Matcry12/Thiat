@@ -4,6 +4,7 @@ extends SceneTree
 func _init():
 	var arena = load("res://scenes/arena.tscn").instantiate()
 	root.add_child(arena)
+	arena.get_node("Boss").passive = true   # quiet arena: these tests are not about the boss
 	await process_frame
 	var panel = arena.get_node("TuningPanel")
 

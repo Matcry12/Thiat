@@ -8,16 +8,23 @@ class_name HUD
 ## player (decision 0015), where you can read it without looking away.
 
 @export var player_path: NodePath
+@export var boss_path: NodePath
 
 var _health: Health
 var _dodge: Dodge
 var _loadout: Loadout
 var _skill_slot: SkillSlot
+var _guard: Guard
+var _boss: Boss
 
 var _hp_bar: ProgressBar
 var _dodge_label: Label
 var _weapon_label: Label
 var _skill_label: Label
+var _guard_label: Label
+var _boss_bar: ProgressBar
+var _boss_marker: ColorRect
+var _boss_label: Label
 
 func _ready() -> void:
 	var player: Node = get_node(player_path)
@@ -25,6 +32,8 @@ func _ready() -> void:
 	_dodge = player.get_node("Dodge")
 	_loadout = player.get_node_or_null("Loadout")
 	_skill_slot = player.get_node_or_null("SkillSlot")
+	_guard = player.get_node_or_null("Guard")
+	_boss = get_node_or_null(boss_path) as Boss
 	_build_ui()
 
 func _process(_delta: float) -> void:
@@ -38,6 +47,19 @@ func _process(_delta: float) -> void:
 		_weapon_label.text = "weapon: %s | swap: %s" % [_weapon_name(), _swap_text()]
 	if _skill_slot and _loadout:
 		_skill_label.text = _skill_text()
+	if _guard:
+		_guard_label.text = _guard_text()
+	if _boss:
+		_boss_bar.max_value = _boss.health.max_hp
+		_boss_bar.value = _boss.health.hp
+		_boss_marker.position.x = _boss_bar.custom_minimum_size.x * _boss.phase2_threshold
+		_boss_label.text = "BOSS  phase %d%s" % [_boss.phase, "  ENRAGED" if _boss.enraged else ""]
+
+## Guard has no cooldown timer: it is a state (ready / parry / block / recover /
+## broken) plus the shield bar, so that is exactly what this line shows.
+func _guard_text() -> String:
+	var st: String = Guard.State.keys()[_guard.state].to_lower()
+	return "guard: %s  shield %.0f/%.0f" % [st, _guard.tank, _guard.tank_max]
 
 func _skill_text() -> String:
 	var w: WeaponData = _loadout.active_weapon()
@@ -83,3 +105,30 @@ func _build_ui() -> void:
 
 	_skill_label = Label.new()
 	vbox.add_child(_skill_label)
+
+	_guard_label = Label.new()
+	vbox.add_child(_guard_label)
+
+	if _boss:
+		_build_boss_bar()
+
+## Boss HP, top centre. The thin marker sits where phase 2 starts.
+func _build_boss_bar() -> void:
+	var top := Control.new()
+	top.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	top.position = Vector2(-210, 12)   # between the two F3 panels
+	top.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(top)
+	_boss_label = Label.new()
+	top.add_child(_boss_label)
+	_boss_bar = ProgressBar.new()
+	_boss_bar.position = Vector2(0, 26)
+	_boss_bar.custom_minimum_size = Vector2(420, 20)
+	_boss_bar.show_percentage = false
+	_boss_bar.modulate = Color(0.8, 0.2, 0.9)
+	top.add_child(_boss_bar)
+	_boss_marker = ColorRect.new()
+	_boss_marker.color = Color.WHITE
+	_boss_marker.size = Vector2(3, 20)
+	_boss_marker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_boss_bar.add_child(_boss_marker)

@@ -66,3 +66,7 @@ func _draw() -> void:
 		var half: Vector2 = (_shape as RectangleShape2D).size / 2.0
 		draw_rect(Rect2(-half, half * 2.0), fill)
 		draw_rect(Rect2(-half, half * 2.0), border_color, false, border_width)
+	elif _shape is ConvexPolygonShape2D:
+		var pts := (_shape as ConvexPolygonShape2D).points
+		draw_colored_polygon(pts, fill)
+		draw_polyline(pts + PackedVector2Array([pts[0]]), border_color, border_width)

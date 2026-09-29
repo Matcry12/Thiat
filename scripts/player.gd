@@ -25,6 +25,9 @@ var aim_direction := Vector2.RIGHT
 ## the directional guard/parry look broken when it is not. Nothing in the game
 ## ever writes this, and it is deliberately not an @export so the editor cannot.
 var aim_override := Vector2.ZERO
+## True once Health.died fired: every input is ignored (the EndScreen shows the
+## retry prompt). Code-owned, so not an @export.
+var dead := false
 var _move_state := "idle"
 var _move_dir := Vector2.ZERO
 
@@ -49,8 +52,21 @@ func _ready() -> void:
 	guard.parried.connect(func(_source: Node): guard_visual.on_parry_success())
 	guard.broke.connect(guard_visual.on_break)
 	loadout.swap_finished.connect(_on_swap_finished)
+	health.died.connect(_on_died)
+
+func _on_died() -> void:
+	if dead:
+		return
+	dead = true
+	weapon_holder.cancel()
+	guard.release()
+	skill_slot.cancel()
+	velocity = Vector2.ZERO
+	visual.set_move_state("idle")
 
 func _physics_process(_delta: float) -> void:
+	if dead:
+		return
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	_move_dir = input_dir
 	# Dodge drives the body itself while dashing — fighting it over velocity

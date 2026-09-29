@@ -34,7 +34,7 @@ drawn in code (`Polygon2D` / `_draw()`), flat color, no outline art.
 | Melee swing | 90 deg arc wedge, 1 frame | white, fades in 0.1s |
 | Projectile | small circle r=4 | cyan (player) / magenta (enemy) |
 | Trash enemy | upright capsule r=14 + shadow | red |
-| Boss | circle r=48 | dark red |
+| Boss | circle r=28 (v0 build; was r=48 in the first plan) | dark red |
 | Boss part (fist/add) | circle r=20 | dark red, lighter outline |
 | AoE telegraph | ground circle/rect outline, fills over the windup | orange -> red |
 | Wall / arena | rectangle | grey |
@@ -329,6 +329,12 @@ slices. Any slice may send us back to the design — that is expected, not failu
 together — an exception to "no stacking unverified slices".
 4. **The boss** — 3 attacks, phase 2, enrage rule, HUD cooldowns.
    *Is losing to it fair?*
+   **BUILT (2026-09-29)** — slam / spread / charge + phase-2 ring, enrage zone, death + R retry,
+   Brain boundary ([0019](../decision/0019-boss-v0.md)). Awaiting the batch playtest.
+   Log 4: built by Sonnet 5.5 agent · Opus judge: fix first — 3 confirmed (player walked through
+   the boss, charge ended on top of the player, dummy shielded boss bolts), 2 plausible, 4 design
+   calls (bolt parry stunned the boss from across the arena, magenta = "unparryable" bolts, hidden
+   second ring, idle enrage) — all fixed in one round · user: pending.
 5. **Tune** — adjust only the numbers in §2 until it feels right. No new features.
 
 ## 6. Done when

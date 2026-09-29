@@ -5,9 +5,14 @@
 [ext_resource type="Script" uid="uid://bv2w05208846v" path="res://scripts/debug_overlay.gd" id="3"]
 [ext_resource type="Script" uid="uid://d1skviyhs5c7r" path="res://scripts/debug/tuning_panel.gd" id="4"]
 [ext_resource type="Script" uid="uid://bjng3ujrudrq1" path="res://scripts/hud.gd" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/boss.tscn" id="6"]
+[ext_resource type="Script" path="res://scripts/end_screen.gd" id="7"]
 
 [sub_resource type="RectangleShape2D" id="WallH"]
 size = Vector2(1152, 32)
+
+[sub_resource type="RectangleShape2D" id="ZoneShape"]
+size = Vector2(880, 460)
 
 [sub_resource type="RectangleShape2D" id="WallV"]
 size = Vector2(32, 648)
@@ -57,12 +62,26 @@ shape = SubResource("WallV")
 position = Vector2(409, 321)
 
 [node name="Dummy" parent="." unique_id=934264551 instance=ExtResource("2")]
-position = Vector2(700, 324)
+position = Vector2(700, 130)
+
+[node name="FightZone" type="Area2D" parent="."]
+position = Vector2(576, 324)
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="FightZone"]
+shape = SubResource("ZoneShape")
+
+[node name="Boss" parent="." instance=ExtResource("6")]
+position = Vector2(960, 324)
+target_path = NodePath("../Player")
+fight_zone_path = NodePath("../FightZone")
 
 [node name="DebugOverlay" type="CanvasLayer" parent="." unique_id=1487825587]
 script = ExtResource("3")
 player_path = NodePath("../Player")
 dummy_path = NodePath("../Dummy")
+boss_path = NodePath("../Boss")
 
 [node name="DrawLayer" type="Node2D" parent="DebugOverlay" unique_id=1855662076]
 
@@ -76,8 +95,15 @@ offset_bottom = 60.0
 script = ExtResource("4")
 player_path = NodePath("../Player")
 dummy_path = NodePath("../Dummy")
+boss_path = NodePath("../Boss")
 debug_overlay_path = NodePath("../DebugOverlay")
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=1974175763]
 script = ExtResource("5")
 player_path = NodePath("../Player")
+boss_path = NodePath("../Boss")
+
+[node name="EndScreen" type="CanvasLayer" parent="."]
+script = ExtResource("7")
+player_path = NodePath("../Player")
+boss_path = NodePath("../Boss")

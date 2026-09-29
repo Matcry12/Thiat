@@ -15,6 +15,7 @@ class_name TuningPanel
 
 @export var player_path: NodePath
 @export var dummy_path: NodePath
+@export var boss_path: NodePath
 @export var debug_overlay_path: NodePath
 
 ## Per-property range override, for the few properties where "derive from the
@@ -41,6 +42,7 @@ var _guard: Guard
 var _guard_visual: GuardVisual
 var _loadout: Loadout
 var _skill_slot: SkillSlot
+var _boss: Boss
 
 var _targets: Array = []          # [{"name": String, "object": Object}]
 var _controls: Dictionary = {}    # "Target.prop" -> {obj, prop, control, value_label, is_bool, is_int}
@@ -72,6 +74,7 @@ func _ready() -> void:
 	_guard_visual = _player.get_node("GuardVisual")
 	_loadout = _player.get_node_or_null("Loadout")
 	_skill_slot = _player.get_node_or_null("SkillSlot")
+	_boss = get_node_or_null(boss_path) as Boss
 
 	_weapon_holder.state_changed.connect(_on_weapon_state_changed)
 	_dummy_health.damaged.connect(_on_dummy_damaged)
@@ -103,6 +106,16 @@ func _ready() -> void:
 			var s := _skill_slot.skill_for(w)
 			if s:
 				_targets.append({"name": _weapon_target_name(w) + " Skill", "object": s})
+
+	# The boss, its health, its brain and each attack (one section per attack,
+	# found from the boss itself so a new attack needs no change here).
+	if _boss:
+		_targets.append({"name": "Boss", "object": _boss})
+		_targets.append({"name": "Boss Health", "object": _boss.health})
+		_targets.append({"name": "Boss Brain", "object": _boss.get_brain()})
+		_targets.append({"name": "Boss Visual", "object": _boss.visual})
+		for n in _boss.attack_names():
+			_targets.append({"name": "Boss " + String(n).capitalize(), "object": _boss.get_attack(n)})
 
 	_build_ui()
 	visible = false
@@ -179,6 +192,9 @@ func _update_status_text() -> void:
 		"",
 		"[Enemy Attack]",
 		"state: %s" % Attacker.Phase.keys()[_attacker.phase].to_lower(),
+		"",
+		"[Boss]",
+		_boss.status_text() if _boss else "n/a",
 		"",
 		"[Loadout]",
 		_loadout_status_text(),
@@ -316,6 +332,18 @@ func _build_ui() -> void:
 	_add_button(action_row, "Heal player", _on_heal_player)
 	_add_button(action_row, "Reset stats", _on_reset_stats)
 	_add_button(action_row, "Reset skill cd", func(): _skill_slot.reset_cooldowns())
+
+	if _boss:
+		var boss_row := HBoxContainer.new()
+		tuning_vbox.add_child(boss_row)
+		_add_button(boss_row, "Phase 2", func(): _boss.force_phase_2())
+		for n in _boss.attack_names():
+			_add_button(boss_row, "-> " + String(n), func(): _boss.force_next(n))
+		var boss_row2 := HBoxContainer.new()
+		tuning_vbox.add_child(boss_row2)
+		_add_button(boss_row2, "Boss passive", func(): _boss.passive = not _boss.passive)
+		_add_button(boss_row2, "Heal boss", func(): _boss.health.hp = _boss.health.max_hp)
+		_add_button(boss_row2, "Restart", func(): get_tree().reload_current_scene())
 
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(340, 480)

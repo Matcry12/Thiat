@@ -15,9 +15,11 @@ var _range := 520.0
 var _damage := 0.0
 var _parryable := true
 var _shooter: Node
+var _source: Node   ## who Health/Guard see as the damage source (default: the shooter)
 var _travelled := 0.0
 var _shooter_rid: RID
 var _first_step := true   ## see _physics_process: the first ray starts at the shooter, not the spawn point
+var _mask := 1 | 4       ## what this bolt hits: world + enemy hurtbox by default (player shots)
 var _pierce := false      ## passes through targets instead of stopping (Piercing Shot)
 var _hit: Array[Node] = []   ## targets already damaged: a piercing arrow hits each once
 var _pierced: Array[RID] = []   ## their hurtbox + body: kept across frames, or the body (a "wall") would stop the arrow next step
@@ -28,7 +30,9 @@ func _ready() -> void:
 	# reaching into it — same pattern as hitbox.gd's "hitbox" group.
 	add_to_group("projectile")
 
-func setup(dir: Vector2, speed: float, range: float, damage: float, parryable: bool, shooter: Node, pierce := false) -> void:
+func setup(dir: Vector2, speed: float, range: float, damage: float, parryable: bool, shooter: Node, pierce := false, hit_mask := 1 | 4, damage_source: Node = null) -> void:
+	_mask = hit_mask
+	_source = damage_source if damage_source else shooter
 	_dir = dir.normalized() if dir != Vector2.ZERO else Vector2.RIGHT
 	_speed = speed
 	_range = range
@@ -40,6 +44,9 @@ func setup(dir: Vector2, speed: float, range: float, damage: float, parryable: b
 	rotation = _dir.angle()
 	if shooter is CollisionObject2D:
 		_shooter_rid = (shooter as CollisionObject2D).get_rid()
+
+func get_shooter() -> Node:
+	return _shooter
 
 func _physics_process(delta: float) -> void:
 	var step: float = _speed * delta
@@ -57,8 +64,9 @@ func _physics_process(delta: float) -> void:
 	var query := PhysicsRayQueryParameters2D.create(from, to)
 	query.collide_with_areas = true
 	query.collide_with_bodies = true
-	# world (1) + enemy hurtbox (4) — bit values per hitbox.gd's convention.
-	query.collision_mask = 1 | 4
+	# Default: world (1) + enemy hurtbox (4), bit values per hitbox.gd's convention.
+	# A boss bolt passes world (1) + player hurtbox (2) instead.
+	query.collision_mask = _mask
 	var exclude: Array[RID] = _pierced.duplicate()
 	if _shooter_rid.is_valid():
 		exclude.append(_shooter_rid)
@@ -79,6 +87,12 @@ func _physics_process(delta: float) -> void:
 		# meets the body first. A body that owns a Hurtbox is that target, not a wall.
 		if hurtbox == null:
 			hurtbox = (hit.collider as Node).get_node_or_null("Hurtbox") as Hurtbox
+			# That Hurtbox is on a layer this shot does not target (a boss bolt
+			# and the training Dummy): the body is not a target, and not a wall
+			# either. Skip it, so the Dummy cannot shield the player.
+			if hurtbox and (hurtbox.collision_layer & _mask) == 0:
+				exclude.append(hit.rid)
+				continue
 		if hurtbox and _pierce:
 			_damage_hurtbox(hurtbox)
 			for rid in [hurtbox.get_rid(), (hurtbox.owner as CollisionObject2D).get_rid() if hurtbox.owner is CollisionObject2D else RID()]:
@@ -100,4 +114,4 @@ func _damage_hurtbox(hurtbox: Hurtbox) -> void:
 	_hit.append(hurtbox.owner)
 	var health := hurtbox.get_health()
 	if health:
-		health.take_damage(_damage, _shooter, _parryable)
+		health.take_damage(_damage, _source, _parryable)
