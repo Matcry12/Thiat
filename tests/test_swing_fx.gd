@@ -41,15 +41,23 @@ func _init():
 		await _frames(1)
 		var tip: Node2D = wv.get_model().get_node("Tip")
 		var start_tip := tip.global_position
-		var slash_xf: Transform2D = _fx.get_node("Slash").global_transform   # it fades before the swing ends
+		# The crescent is fattest late in the sweep, so the centre of its blocks sits
+		# toward where the blade finishes. Read it now: the slash fades before the swing ends.
+		var blocks = _fx.get_node("Slash")
+		var centre := Vector2.ZERO
+		for c in blocks.cells:
+			centre += c + Vector2.ONE * blocks.px * 0.5
+		centre /= blocks.cells.size()
 		var end_tip := start_tip
 		while _holder.phase == WeaponHolder.Phase.ACTIVE:
 			end_tip = tip.global_position
 			await physics_frame
-		var half := deg_to_rad(_holder.weapon.arc_degrees) * 0.5
-		var fat: Vector2 = slash_xf * (Vector2.RIGHT.rotated(lerpf(-half, half, _fx.slash_peak)) * 60.0)
-		var follows: bool = fat.distance_to(end_tip) < fat.distance_to(start_tip)
-		print("aim %.0f deg: fat end nearer the blade's finish: %s" % [rad_to_deg(angle), follows])
+		# Which way the blade turned (+1/-1) vs. which side of the aim line the bulk sits on.
+		var origin: Vector2 = wv.global_position
+		var turned := signf((start_tip - origin).cross(end_tip - origin))
+		var bulk_side := signf(Vector2.from_angle(angle).cross(centre - origin))
+		var follows: bool = turned != 0.0 and turned == bulk_side
+		print("aim %.0f deg: bulk nearer the blade's finish: %s" % [rad_to_deg(angle), follows])
 		ok = ok and follows
 		await _until_phase(WeaponHolder.Phase.IDLE)
 		await _frames(15)
