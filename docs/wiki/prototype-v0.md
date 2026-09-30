@@ -323,7 +323,7 @@ slices. Any slice may send us back to the design — that is expected, not failu
    ([0018](../decision/0018-weapon-skills.md)). Awaiting the batch playtest.
    Log 3b: built by Sonnet 5.5 agent · Opus judge: ship; 1 confirmed bug (arrows stopped on a body
    bigger than its hurtbox — would have made the boss arrow-proof), 2 plausible (swap mid-charge,
-   no skill state signal), 4 nits — all fixed in one round · user: pending.
+   no skill state signal), 4 nits — all fixed in one round · user (2026-09-30): gameplay acceptable; wants smoother visuals + better poses.
 
 **Batch playtest (user's call, 2026-09-29):** 3b and 4 are built back to back, then playtested
 together — an exception to "no stacking unverified slices".
@@ -334,7 +334,7 @@ together — an exception to "no stacking unverified slices".
    Log 4: built by Sonnet 5.5 agent · Opus judge: fix first — 3 confirmed (player walked through
    the boss, charge ended on top of the player, dummy shielded boss bolts), 2 plausible, 4 design
    calls (bolt parry stunned the boss from across the arena, magenta = "unparryable" bolts, hidden
-   second ring, idle enrage) — all fixed in one round · user: pending.
+   second ring, idle enrage) — all fixed in one round · user (2026-09-30): gameplay acceptable; wants smoother visuals + better poses.
 5. **Tune** — adjust only the numbers in §2 until it feels right. No new features.
 
 ## 6. Done when
