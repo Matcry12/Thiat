@@ -204,6 +204,7 @@ func _run() -> void:
 		"weapons": await _run_weapons()
 		"skills": await _run_skills()
 		"boss": await _run_boss()
+		"swingfx": await _run_swingfx()
 		_: await _run_guard()
 
 func _run_guard() -> void:
@@ -688,4 +689,50 @@ func _run_boss() -> void:
 	await _wait(0.5)
 	_overlay(false)
 	await _wait(3.0)
+	get_tree().quit()
+
+# ---------------------------------------------------------------------------
+# Swing FX demo: the same swing, four effect styles, aiming right then left.
+# Question: which style reads best and feels right?
+func _run_swingfx() -> void:
+	_arena.get_node("Boss").passive = true
+	_overlay(false)
+	_dummy_off(_dummy)
+	# Demo-only: dummy in the middle of the arena, camera zoomed 3x on it so the
+	# swing fills the screen. Captions are a CanvasLayer, so they do not zoom.
+	_dummy.global_position = Vector2(576, 324)
+	var cam := Camera2D.new()
+	cam.zoom = Vector2(3, 3)
+	cam.position = _dummy.global_position
+	add_child(cam)
+	cam.make_current()
+	var fx: SwingFx = _player.get_node("WeaponVisual/SwingFx")
+	var dummy_health: Health = _dummy.get_node("Health")
+	var swing := func():
+		dummy_health.hp = dummy_health.max_hp   # keep the target alive
+		await _tap("attack")
+		await _wait(0.8)
+	var stand := func(side: float):   # -1 = left of the dummy (aims right), 1 = right (aims left)
+		_player.global_position = _dummy.global_position + Vector2(90.0 * side, 0.0)
+
+	await _wait(0.6)
+	for style in ["slash", "trail", "afterimage", "particles"]:
+		fx.style = style
+		stand.call(-1.0)
+		Engine.time_scale = 1.0
+		_say("STYLE: %s" % style.to_upper(), "2 swings at normal speed")
+		await _wait(0.6)
+		for i in 2:
+			await swing.call()
+		Engine.time_scale = 0.25
+		_say("STYLE: %s" % style.to_upper(), "2 swings in slow motion (F2)")
+		await _wait(0.3)
+		for i in 2:
+			await swing.call()
+		if style == "slash":
+			stand.call(1.0)
+			_say("STYLE: SLASH", "aiming LEFT - slow motion: the crescent mirrors with the swing")
+			await _wait(0.3)
+			await swing.call()
+		Engine.time_scale = 1.0
 	get_tree().quit()

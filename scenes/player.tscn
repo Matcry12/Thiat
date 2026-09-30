@@ -18,6 +18,7 @@
 [ext_resource type="Resource" path="res://data/weapons/bow.tres" id="19"]
 
 [ext_resource type="Script" path="res://scripts/components/skill_slot.gd" id="20"]
+[ext_resource type="Script" path="res://scripts/visual/swing_fx.gd" id="21"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -55,6 +56,9 @@ preview_weapon_from = NodePath("../Loadout")
 [node name="SwingPivot" type="Node2D" parent="WeaponVisual" unique_id=1733221144]
 position = Vector2(6, 15)
 rotation = -1.5707964
+
+[node name="SwingFx" type="Node2D" parent="WeaponVisual"]
+script = ExtResource("21")
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=186865809]
 collision_layer = 2

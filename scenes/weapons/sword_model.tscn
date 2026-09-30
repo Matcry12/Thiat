@@ -25,3 +25,6 @@ script = ExtResource("2")
 position = Vector2(43.74236, 5.313388)
 scale = Vector2(1.0000004, 1.0000004)
 shape = SubResource("HitShape")
+
+[node name="Tip" type="Marker2D" parent="."]
+position = Vector2(65.8, 5.5)

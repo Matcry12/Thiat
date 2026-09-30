@@ -10,6 +10,7 @@ extends CharacterBody2D
 # Sibling of Visual, NOT a child: replacing the Visual node must never
 # delete the weapon with it (same trap as the shadow).
 @onready var weapon_visual: WeaponVisual = $WeaponVisual
+@onready var swing_fx: SwingFx = $WeaponVisual/SwingFx
 @onready var weapon_holder: WeaponHolder = $WeaponHolder
 @onready var health: Health = $Health
 @onready var dodge: Dodge = $Dodge
@@ -37,6 +38,7 @@ func _ready() -> void:
 	# desync). Both are plain vars now; set them from Loadout here and again
 	# in _on_swap_finished.
 	weapon_holder.weapon = loadout.active_weapon()
+	swing_fx.set_weapon(loadout.active_weapon())
 	weapon_visual.set_weapon(loadout.active_weapon())
 	weapon_holder.state_changed.connect(_on_weapon_state_changed)
 	weapon_visual.model_changed.connect(weapon_holder.bind_model)
@@ -45,6 +47,8 @@ func _ready() -> void:
 	# would free+recreate it, renaming the node out from under anything
 	# holding its path).
 	weapon_holder.bind_model(weapon_visual.get_model())
+	weapon_visual.model_changed.connect(swing_fx.bind_model)
+	swing_fx.bind_model(weapon_visual.get_model())
 	guard.state_changed.connect(guard_visual.on_guard_state)
 	guard.tank_changed.connect(func(_c: float, _m: float): guard_visual.set_tank_fill(guard.tank_fraction()))
 	# Block pose: the sword rises while guarding (decision 0015).
@@ -135,8 +139,10 @@ func _physics_process(_delta: float) -> void:
 func _on_weapon_state_changed(state: String) -> void:
 	visual.set_weapon_state(state)
 	weapon_visual.on_weapon_state(state)
+	swing_fx.on_weapon_state(state)
 
 func _on_swap_finished(w: WeaponData) -> void:
 	skill_slot.cancel()   # defensive: swaps are refused while a skill runs
 	weapon_holder.weapon = w
+	swing_fx.set_weapon(w)
 	weapon_visual.set_weapon(w)   # emits model_changed -> weapon_holder.bind_model
