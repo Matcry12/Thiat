@@ -1,6 +1,6 @@
 extends SceneTree
-# Every swing-effect style shows effect nodes during ACTIVE and leaves none
-# behind shortly after RECOVERY; "none" shows nothing; the slash follows the
+# The slash shows effect nodes during ACTIVE and leaves none
+# behind shortly after RECOVERY; the slash follows the
 # swing when aiming left (its fat end sits where the blade FINISHES).
 var _holder: WeaponHolder
 var _fx: SwingFx
@@ -17,30 +17,28 @@ func _init():
 	var wv = player.get_node("WeaponVisual")
 	var ok := true
 
-	for style in ["none", "slash", "trail", "afterimage", "particles"]:
-		_fx.style = style
-		wv.set_aim_angle(0.0)
-		_holder.try_attack()
-		await _until_phase(WeaponHolder.Phase.ACTIVE)
-		await _frames(3)
-		var during := _fx.get_child_count()
-		await _until_phase(WeaponHolder.Phase.IDLE)
-		await _frames(15)                       # 0.25 s of grace after recovery
-		var after := _fx.get_child_count()
-		var good: bool = (during == 0 and after == 0) if style == "none" else (during > 0 and after == 0)
-		print("%-10s nodes during active: %d, after recovery: %d  %s" % [style, during, after, good])
-		ok = ok and good
+	wv.set_aim_angle(0.0)
+	_holder.try_attack()
+	await _until_phase(WeaponHolder.Phase.ACTIVE)
+	await _frames(3)
+	var during := _fx.get_child_count()
+	await _until_phase(WeaponHolder.Phase.IDLE)
+	await _frames(15)                       # 0.25 s of grace after recovery
+	var after := _fx.get_child_count()
+	var good: bool = during > 0 and after == 0
+	print("slash nodes during active: %d, after recovery: %d  %s" % [during, after, good])
+	ok = ok and good
 
 	# Aim left: the crescent's fat point must be on the side the blade ends on.
-	_fx.style = "slash"
 	for angle in [0.0, PI]:
 		wv.set_aim_angle(angle)
 		await _frames(2)
 		_holder.try_attack()
+		var tip: Node2D = wv.get_model().get_node("Hitbox/CollisionShape2D")
+		await _frames(3)
+		var start_tip := tip.global_position      # pulled back, before the snap
 		await _until_phase(WeaponHolder.Phase.ACTIVE)
 		await _frames(1)
-		var tip: Node2D = wv.get_model().get_node("Tip")
-		var start_tip := tip.global_position
 		# The crescent is fattest late in the sweep, so the centre of its blocks sits
 		# toward where the blade finishes. Read it now: the slash fades before the swing ends.
 		var blocks = _fx.get_node("Slash")

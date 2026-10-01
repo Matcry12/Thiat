@@ -692,8 +692,8 @@ func _run_boss() -> void:
 	get_tree().quit()
 
 # ---------------------------------------------------------------------------
-# Swing FX demo: the same swing, four effect styles, aiming right then left.
-# Question: which style reads best and feels right?
+# Swing FX demo: the slash + the Soul Knight snap, aiming right then left.
+# Question: does the swing read like Soul Knight (windup, snap, slash, hold)?
 func _run_swingfx() -> void:
 	_arena.get_node("Boss").passive = true
 	_overlay(false)
@@ -706,7 +706,6 @@ func _run_swingfx() -> void:
 	cam.position = _dummy.global_position
 	add_child(cam)
 	cam.make_current()
-	var fx: SwingFx = _player.get_node("WeaponVisual/SwingFx")
 	var dummy_health: Health = _dummy.get_node("Health")
 	var swing := func():
 		dummy_health.hp = dummy_health.max_hp   # keep the target alive
@@ -716,23 +715,19 @@ func _run_swingfx() -> void:
 		_player.global_position = _dummy.global_position + Vector2(90.0 * side, 0.0)
 
 	await _wait(0.6)
-	for style in ["slash", "trail", "afterimage", "particles"]:
-		fx.style = style
-		stand.call(-1.0)
-		Engine.time_scale = 1.0
-		_say("STYLE: %s" % style.to_upper(), "2 swings at normal speed")
-		await _wait(0.6)
-		for i in 2:
-			await swing.call()
-		Engine.time_scale = 0.25
-		_say("STYLE: %s" % style.to_upper(), "2 swings in slow motion (F2)")
-		await _wait(0.3)
-		for i in 2:
-			await swing.call()
-		if style == "slash":
-			stand.call(1.0)
-			_say("STYLE: SLASH", "aiming LEFT - slow motion: the crescent mirrors with the swing")
-			await _wait(0.3)
-			await swing.call()
-		Engine.time_scale = 1.0
+	stand.call(-1.0)
+	_say("SLASH", "2 swings at normal speed")
+	await _wait(0.6)
+	for i in 2:
+		await swing.call()
+	Engine.time_scale = 0.25
+	_say("SLASH", "3 swings in slow motion (F2): pull back, SNAP to the end, hold, return")
+	await _wait(0.3)
+	for i in 3:
+		await swing.call()
+	stand.call(1.0)
+	_say("SLASH", "aiming LEFT - slow motion: the swing mirrors")
+	await _wait(0.3)
+	await swing.call()
+	Engine.time_scale = 1.0
 	get_tree().quit()

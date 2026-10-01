@@ -22,7 +22,7 @@ asks for them. Not promises. Source in brackets.
 
 ## Feel / visuals
 
-- **Swing FX demo** — 4 styles on F4, pick one (then delete the others: `scripts/visual/swing_fx.gd`).
+- **Swing FX: slash chosen (2026-10-01)** — other styles deleted; the blade now snaps to the arc end in ~1 frame and the slash shows the path (`snap_time`, `follow_through_hold` on WeaponVisual).
 - **Weapon animations** — optional AnimationPlayer per weapon model (`rest`, `guard`, `windup`,
   `active`, `recovery`, `skill_*`), stretched to the data timing; falls back to the code pose.
 - **Hit feel starting numbers** — Nuclear Throne's table (hit-stop 10–20 ms, shake, knockback) as F3

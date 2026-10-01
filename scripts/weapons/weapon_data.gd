@@ -25,6 +25,9 @@ class_name WeaponData
 ## -arc/2 and sweeps to +arc/2, so mid-swing it points at the cursor.
 ## Reach is not a number here — it is whatever the hitbox shape reaches.
 @export var arc_degrees := 90.0
+## Snap swings (decision 0020): on the first physics frame of ACTIVE the hit
+## shape is tried at this many angles across the arc. 12 = about 8 deg apart for 90 deg.
+@export var sweep_samples := 12
 @export var color := Color.WHITE
 ## False = unparryable (purple telegraph) — cannot be parried or blocked.
 @export var parryable := true

@@ -20,6 +20,8 @@ class_name Hitbox
 ## toggling `monitoring` costs a physics frame before overlaps repopulate.
 
 @export var weapon: WeaponData
+## [shape, global transform] of every try in the last sweep; the F1 overlay draws it.
+var sweep_poses: Array = []
 
 var _active := false
 var _hit_this_swing: Array[Node] = []
@@ -41,6 +43,85 @@ func start_swing() -> void:
 
 func end_swing() -> void:
 	_active = false
+	sweep_poses.clear()
+
+## Called by WeaponHolder right after start_swing() for a snapping arc weapon
+## (enemy Attackers never call it). Hits everything the shape passes through
+## between -arc/2 and +arc/2. See arc_poses() for the geometry.
+func sweep_arc() -> void:
+	sweep_poses = arc_poses(weapon.sweep_samples if weapon else 0)
+	if sweep_poses.is_empty():
+		return
+	var query := PhysicsShapeQueryParameters2D.new()
+	query.collision_mask = collision_mask
+	query.collide_with_areas = true
+	query.collide_with_bodies = false
+	var space := get_world_2d().direct_space_state
+	for pose in sweep_poses:
+		query.shape = pose[0]
+		query.transform = pose[1]
+		for r in space.intersect_shape(query, 32):
+			if r.collider is Area2D:
+				_try_hit(r.collider)
+
+## [shape, global transform] of this hitbox's shape(s) at `samples` angles from
+## -arc/2 to +arc/2 around the grip. Layout assumed (decision 0010): Hitbox ->
+## model -> SwingPivot -> aim node (WeaponVisual: aim rotation + left mirror).
+## Only the pivot's POSITION and each shape's pose RELATIVE to the pivot are
+## read, never the pivot's current rotation, so the result does not depend on
+## the picture. Pure geometry: the slash effect draws from the same poses.
+func arc_poses(samples: int) -> Array:
+	var out := []
+	if weapon == null or weapon.arc_degrees <= 0.0 or samples < 2:
+		return out
+	var pivot := get_parent().get_parent() as Node2D if get_parent() and get_parent().get_parent() else null
+	if pivot == null or pivot.name != &"SwingPivot" or not pivot.get_parent() is Node2D:
+		_warn_once("needs the layout Hitbox -> model -> SwingPivot -> aim node; the arc sweep is off")
+		return out
+	var aim_frame: Transform2D = (pivot.get_parent() as Node2D).global_transform
+	var half := deg_to_rad(weapon.arc_degrees) * 0.5
+	for sh in _shapes():
+		var rel: Transform2D = pivot.global_transform.affine_inverse() * sh[1]
+		for i in samples:
+			var a := lerpf(-half, half, float(i) / (samples - 1))
+			out.append([sh[0], aim_frame * Transform2D(a, pivot.position) * rel])
+	if out.is_empty():
+		_warn_once("has no usable CollisionShape2D / convex CollisionPolygon2D to sweep")
+	return out
+
+## The hit shapes as [Shape2D, global transform]. A CollisionPolygon2D is swept
+## as a convex polygon; a concave one is swept as its convex hull (warned).
+func _shapes() -> Array:
+	var out := []
+	for c in get_children():
+		if c is CollisionShape2D and not c.disabled and c.shape != null:
+			out.append([c.shape, c.global_transform])
+		elif c is CollisionPolygon2D and not c.disabled and c.polygon.size() >= 3:
+			var cv := ConvexPolygonShape2D.new()
+			cv.set_point_cloud(c.polygon)
+			if cv.points.size() < c.polygon.size():
+				_warn_once("has a concave CollisionPolygon2D; the sweep uses its convex hull (hits may be larger than drawn)")
+			out.append([cv, c.global_transform])
+	return out
+
+## Outline of a Rectangle / Circle / Convex shape, for drawing and the slash.
+static func shape_outline(shape: Shape2D) -> PackedVector2Array:
+	var pts := PackedVector2Array()
+	if shape is RectangleShape2D:
+		var h: Vector2 = shape.size * 0.5
+		pts = PackedVector2Array([Vector2(-h.x, -h.y), Vector2(h.x, -h.y), Vector2(h.x, h.y), Vector2(-h.x, h.y)])
+	elif shape is CircleShape2D:
+		for i in 16:
+			pts.append(Vector2.from_angle(TAU * i / 16.0) * shape.radius)
+	elif shape is ConvexPolygonShape2D:
+		pts = shape.points
+	return pts
+
+var _warned := false
+func _warn_once(msg: String) -> void:
+	if not _warned:
+		_warned = true
+		push_warning("Hitbox %s: %s" % [get_path(), msg])
 
 func _physics_process(_delta: float) -> void:
 	if not _active or weapon == null:

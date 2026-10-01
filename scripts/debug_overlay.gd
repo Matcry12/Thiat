@@ -111,6 +111,8 @@ func _on_draw() -> void:
 	_draw_skill_reach(weapon_holder)
 	for hb in get_tree().get_nodes_in_group("hitbox"):
 		if (hb as Hitbox).is_active():
+			for pose in (hb as Hitbox).sweep_poses:   # the arc a snapping swing covered
+				_draw_shape(pose[0], pose[1], Color(1.0, 0.3, 0.3, 0.3), 1.0)
 			_draw_hitbox_outline(hb)
 
 	# Player i-frames: blue outline for the dodge window's whole duration.

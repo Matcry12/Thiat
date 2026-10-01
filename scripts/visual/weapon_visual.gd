@@ -28,13 +28,19 @@ var weapon: WeaponData: set = _set_weapon
 ## model always reads as held upright — how Soul Knight does it.
 @export var mirror_when_facing_left := true
 
-## Speed curves. The model must not travel at a constant speed — Soul Knight
-## SNAPS it up, holds an instant, then accelerates through the slash.
-## Values are fed to Godot's ease(): below 1.0 = fast start then settle
-## (a snap), above 1.0 = slow start then accelerate (a whip).
-@export var windup_ease := 0.35      ## snap up almost instantly
-@export var active_ease := 2.2       ## accelerate through the slash
+## Swing motion, Soul Knight style (visual only - the hitbox timing is untouched):
+## a readable pull-back (windup), then the blade JUMPS to the end of the arc in
+## about one frame (the slash effect draws the path it "travelled"), holds there
+## (follow-through), then drifts back. Ease values go to Godot's ease(): below
+## 1.0 = fast start then settle, above 1.0 = slow start then accelerate.
+@export var windup_ease := 0.35      ## pull-back curve
 @export var recovery_ease := 0.6     ## drift back, unhurried
+## Seconds the blade takes to reach the end of the arc once ACTIVE starts.
+## 0.016 = one frame at 60 fps; 0 = instant.
+@export var snap_time := 0.016
+## Seconds the blade stays at the end of the arc at the start of RECOVERY
+## (clamped to the recovery time) before it eases back to rest.
+@export var follow_through_hold := 0.06
 
 ## Block pose (decision 0015). The ANGLE is per weapon (WeaponData.
 ## guard_angle_degrees); how fast the arm gets there is a feel number here.
@@ -233,18 +239,22 @@ func _process(delta: float) -> void:
 		"guard": duration = guard_raise_time
 		"guard_release": duration = guard_lower_time
 	_t = 1.0 if duration <= 0.0 else minf(1.0, _t + delta / duration)
-	var curve := 1.0
+	var k := _t
 	match _phase:
-		"windup": curve = windup_ease
-		"active": curve = active_ease
-		"recovery": curve = recovery_ease
-		"guard", "guard_release": curve = guard_ease
+		"windup": k = ease(_t, windup_ease)
+		"active": k = 1.0 if snap_time <= 0.0 or duration <= 0.0 else minf(1.0, _t * duration / snap_time)
+		"recovery":
+			var hold := clampf(follow_through_hold / duration, 0.0, 1.0) if duration > 0.0 else 0.0
+			k = ease(0.0 if _t < hold else (_t - hold) / maxf(1.0 - hold, 0.0001), recovery_ease)
+			if hold >= 1.0:
+				k = 0.0 if _t < 1.0 else 1.0
+		"guard", "guard_release": k = ease(_t, guard_ease)
+		_: k = ease(_t, 1.0)
 	# While F stays held, keep tracking the weapon's guard angle, so the F3
 	# slider moves the pose live instead of only on the next press.
 	if _phase == "guard" and weapon:
 		_phase_target_angle = deg_to_rad(weapon.guard_angle_degrees)
 		_phase_target_pos = _guard_offset()
-	var k := ease(_t, curve)
 	_blade_angle = lerpf(_phase_start_angle, _phase_target_angle, k)
 	_pivot_pos = _phase_start_pos.lerp(_phase_target_pos, k)
 	# The model's own rotation only ever corrects for how its picture happens

@@ -83,6 +83,7 @@ func _start_active() -> void:
 		"arc":
 			if hitbox:
 				hitbox.start_swing()
+				hitbox.sweep_arc()   # the blade snaps, so it hits the whole arc now (decision 0020)
 		"projectile":
 			_spawn_projectile()
 
