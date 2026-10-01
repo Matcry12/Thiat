@@ -17,6 +17,7 @@ class_name TuningPanel
 @export var dummy_path: NodePath
 @export var boss_path: NodePath
 @export var debug_overlay_path: NodePath
+@export var map_path: NodePath
 
 ## Per-property range override, for the few properties where "derive from the
 ## current value" (see `_range_for`) gives a bad slider range. Keyed by
@@ -26,6 +27,11 @@ class_name TuningPanel
 	"radius": {"min": 10.0, "max": 200.0},
 	"art_angle_degrees": {"min": -180.0, "max": 180.0},
 	"rest_angle_degrees": {"min": -180.0, "max": 180.0},
+	"map_seed": {"min": 0.0, "max": 9999.0},
+	"patch_noise_threshold": {"min": 0.0, "max": 1.0},
+	"dark_grass_chance": {"min": 0.0, "max": 1.0},
+	"noise_frequency": {"min": 0.01, "max": 0.5},
+	"border_density": {"min": 0.1, "max": 2.0},
 }
 
 const SAVE_PATH := "user://tuning.json"
@@ -43,6 +49,7 @@ var _guard_visual: GuardVisual
 var _loadout: Loadout
 var _skill_slot: SkillSlot
 var _boss: Boss
+var _map: ArenaMap
 
 var _targets: Array = []          # [{"name": String, "object": Object}]
 var _controls: Dictionary = {}    # "Target.prop" -> {obj, prop, control, value_label, is_bool, is_int}
@@ -75,6 +82,7 @@ func _ready() -> void:
 	_loadout = _player.get_node_or_null("Loadout")
 	_skill_slot = _player.get_node_or_null("SkillSlot")
 	_boss = get_node_or_null(boss_path) as Boss
+	_map = get_node_or_null(map_path) as ArenaMap
 
 	_weapon_holder.state_changed.connect(_on_weapon_state_changed)
 	_dummy_health.damaged.connect(_on_dummy_damaged)
@@ -117,6 +125,9 @@ func _ready() -> void:
 		_targets.append({"name": "Boss Visual", "object": _boss.visual})
 		for n in _boss.attack_names():
 			_targets.append({"name": "Boss " + String(n).capitalize(), "object": _boss.get_attack(n)})
+
+	if _map:
+		_targets.append({"name": "Map", "object": _map})
 
 	_build_ui()
 	visible = false
@@ -196,6 +207,9 @@ func _update_status_text() -> void:
 		"",
 		"[Boss]",
 		_boss.status_text() if _boss else "n/a",
+		"",
+		"[Map]",
+		_map.status_text() if _map else "n/a",
 		"",
 		"[Loadout]",
 		_loadout_status_text(),
@@ -333,6 +347,8 @@ func _build_ui() -> void:
 	_add_button(action_row, "Heal player", _on_heal_player)
 	_add_button(action_row, "Reset stats", _on_reset_stats)
 	_add_button(action_row, "Reset skill cd", func(): _skill_slot.reset_cooldowns())
+	if _map:
+		_add_button(action_row, "New map", func(): _map.new_map())
 
 	if _boss:
 		var boss_row := HBoxContainer.new()
@@ -465,7 +481,8 @@ func _on_save_pressed() -> void:
 	var data := {}
 	for key in _controls.keys():
 		var entry: Dictionary = _controls[key]
-		data[key] = entry["obj"].get(entry["prop"])
+		var o: Object = entry["obj"]
+		data[key] = o.save_value(entry["prop"]) if o.has_method("save_value") else o.get(entry["prop"])
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	f.store_string(JSON.stringify(data))
 	f.close()

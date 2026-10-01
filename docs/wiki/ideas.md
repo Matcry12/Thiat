@@ -20,6 +20,15 @@ asks for them. Not promises. Source in brackets.
 - **Safe-spot rule** — every random pattern leaves a gap; pillars for cover. [Soul Knight]
 - **Sound cue on every tell** — Soul Knight warns with a sound (sword chime, laser warm-up). [Soul Knight]
 
+## Maps
+
+- **Random arenas (user idea, 2026-10-01)** — generate the map by algorithm so replays stay fresh.
+  Start small: random floor tile variants + random pillars/props inside a fixed-size arena, seeded
+  (same seed = same map, so a bug can be replayed). Rules: always leave a path around the boss, keep
+  the player spawn clear, pillars give cover (see Safe-spot rule). Later: room shapes, hazards.
+  BUILT as visual slice V1 — see [0021](../decision/0021-procedural-arena.md). Next: rocks inside the
+  zone once the boss can path around them; L-shaped patches need 4 hand-drawn concave corner tiles.
+
 ## Feel / visuals
 
 - **Swing FX: slash chosen (2026-10-01)** — other styles deleted; the blade now snaps to the arc end in ~1 frame and the slash shows the path (`snap_time`, `follow_through_hold` on WeaponVisual).

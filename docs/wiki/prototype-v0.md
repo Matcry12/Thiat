@@ -337,6 +337,13 @@ together — an exception to "no stacking unverified slices".
    second ring, idle enrage) — all fixed in one round · user (2026-09-30): gameplay acceptable; wants smoother visuals + better poses.
 5. **Tune** — adjust only the numbers in §2 until it feels right. No new features.
 
+**Visual slice V1 — grass arena (2026-10-01, outside the v0 numbered plan, user's call).**
+   *Does a generated arena look natural enough to keep?* Pixel Crawler tiles, seeded generator,
+   dirt patches, deco, bush border, rocks outside the FightZone ([0021](../decision/0021-procedural-arena.md)).
+   Log V1: built by Sonnet 5.5 agent · Opus judge: 5 confirmed (same seed ≠ same map after the player
+   moved, seed not typeable back into F3, characters drawn over tall rocks, z_index owned by code,
+   docs) + 1 design exploit (hiding behind a rock from the enraged boss) — all fixed in one round (boss ignores rocks via collision exceptions, not a new layer) · user: pending.
+
 ## 6. Done when
 
 - A fight lasts 60-120s and you lose the first few times.

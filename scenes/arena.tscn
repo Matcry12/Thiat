@@ -7,6 +7,8 @@
 [ext_resource type="Script" uid="uid://bjng3ujrudrq1" path="res://scripts/hud.gd" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/boss.tscn" id="6"]
 [ext_resource type="Script" path="res://scripts/end_screen.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/map/arena_map.gd" id="8"]
+[ext_resource type="Resource" path="res://data/maps/grass.tres" id="9"]
 
 [sub_resource type="RectangleShape2D" id="WallH"]
 size = Vector2(1152, 32)
@@ -25,8 +27,32 @@ offset_left = -20.0
 offset_top = -14.0
 offset_right = 1132.0
 offset_bottom = 634.0
+z_index = -20
 mouse_filter = 2
 color = Color(0.35, 0.35, 0.35, 1)
+
+[node name="ArenaMap" type="Node2D" parent="."]
+y_sort_enabled = true
+script = ExtResource("8")
+style = ExtResource("9")
+player_path = NodePath("../Player")
+boss_path = NodePath("../Boss")
+dummy_path = NodePath("../Dummy")
+fight_zone_path = NodePath("../FightZone")
+
+[node name="Ground" type="Node2D" parent="ArenaMap"]
+z_index = -10
+
+[node name="Dirt" type="TileMapLayer" parent="ArenaMap/Ground"]
+
+[node name="Grass" type="TileMapLayer" parent="ArenaMap/Ground"]
+
+[node name="Deco" type="Node2D" parent="ArenaMap/Ground"]
+
+[node name="Border" type="Node2D" parent="ArenaMap/Ground"]
+
+[node name="Obstacles" type="Node2D" parent="ArenaMap"]
+y_sort_enabled = true
 
 [node name="Walls" type="Node2D" parent="." unique_id=1614146624]
 
@@ -97,6 +123,7 @@ player_path = NodePath("../Player")
 dummy_path = NodePath("../Dummy")
 boss_path = NodePath("../Boss")
 debug_overlay_path = NodePath("../DebugOverlay")
+map_path = NodePath("../ArenaMap")
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=1974175763]
 script = ExtResource("5")

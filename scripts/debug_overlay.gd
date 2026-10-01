@@ -146,6 +146,12 @@ func _on_draw() -> void:
 		if zcs:
 			_draw_shape(zcs.shape, zcs.global_transform, Color.RED if _boss.enraged else Color(0.3, 0.8, 1.0), 2.0)
 
+	# Map rocks: their collision circles (the only part of the map that blocks).
+	for rock in get_tree().get_nodes_in_group("map_obstacle"):
+		var rcs := rock.get_node_or_null("CollisionShape2D") as CollisionShape2D
+		if rcs and rcs.shape:
+			_draw_shape(rcs.shape, rcs.global_transform, Color(1.0, 0.8, 0.2), 2.0)
+
 	# Enemy strike: hitbox red only while STRIKE, telegraph area outlined
 	# while TELEGRAPH (redundant with Telegraph's own border — cheap, and
 	# consistent with the debug overlay drawing every other timing state).

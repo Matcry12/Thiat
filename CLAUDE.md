@@ -128,9 +128,9 @@ Debug keys (keep this table current):
 
 | Key | Shows |
 |---|---|
-| `F1` | Hitboxes, hurtboxes, attack phase, reach wedge |
+| `F1` | Hitboxes, hurtboxes, attack phase, reach wedge, rock collision circles (yellow) |
 | `F2` | Slow motion (0.25x) |
-| `F3` | Status + live tuning panel (the Minecraft F3 equivalent). Boss status + buttons: `Phase 2`, `-> slam/spread/charge/ring` (force that attack next, ignores cooldown + phase), `Boss passive` (stands still, no attacks), `Heal boss`, `Heal player`, `Restart` |
+| `F3` | Status + live tuning panel (the Minecraft F3 equivalent). Boss status + buttons: `Phase 2`, `-> slam/spread/charge/ring` (force that attack next, ignores cooldown + phase), `Boss passive` (stands still, no attacks), `Heal boss`, `Heal player`, `Restart`. Map: seed in status, `New map` button (new random seed), map sliders rebuild live |
 | `R` | Retry — only after the player died or the boss was defeated (not a debug key) |
 
 **When adding any feature, the same slice must also:**
@@ -165,7 +165,7 @@ resolved.
 **How we work** ([0007](docs/decision/0007-working-agreement.md))
 - Vertical slices, one question each, playtested by the user before the next slice starts.
 - Every feel number is an `@export` (live-tunable via `F3` panel / Remote inspector). Never hardcode one.
-- Debug keys: `F1` hitboxes + timing (boss attack areas, charge lane, FightZone), `F2` 0.25x slow-mo, `F3` tuning panel (+ boss trigger buttons).
+- Debug keys: `F1` hitboxes + timing (boss attack areas, charge lane, FightZone, rocks), `F2` 0.25x slow-mo, `F3` tuning panel (+ boss trigger buttons).
 
 **Verify (rule 2, made concrete)**
 - GDScript change → `godot --headless --check-only --script <file>` (the PostToolUse hook runs this
