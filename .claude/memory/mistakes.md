@@ -21,3 +21,4 @@
 - 2026-09-29: `git commit -am` for a docs-only change swept in the open editor's save of
   player.tscn (a `preview_width_from = null` line that silently broke the arc's editor preview) →
   never `commit -a`. Stage files by name, and `git diff` every .tscn before it goes in.
+- 2026-10-01: unzipped a third-party pack inside res:// with read-only dirs → Godot spammed "Cannot open .import" errors. Raw packs get a `.gdignore`; copy the sheets we use elsewhere.

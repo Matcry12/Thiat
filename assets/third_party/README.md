@@ -1,6 +1,7 @@
 # assets/third_party — art made by other people
 
-One folder per pack, kept **as downloaded** (original names). Our own picks, tile sets and edits go
+One folder per pack, kept **as downloaded** (original names), with a `.gdignore` so Godot does not
+import it. Sheets we use are copied to `assets/map/` (or similar). Our own picks, tile sets and edits go
 elsewhere, so a pack can be updated by replacing its folder.
 
 | Folder | Pack | Author | License (short) | Source |
