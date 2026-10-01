@@ -1,4 +1,5 @@
 extends SceneTree
+const ClassicArena = preload("res://tests/support/classic_arena.gd")
 # The Step 1 model-scene refactor (moving Blade/Hitbox out of player.tscn into
 # scenes/weapons/sword_model.tscn) must not move the hand-tuned sword by even
 # one pixel/radian. These numbers were captured from the PRE-refactor scene
@@ -25,7 +26,7 @@ const POS_TOL := 0.01
 const ROT_TOL := 0.001
 
 func _init():
-	var arena = load("res://scenes/arena.tscn").instantiate()
+	var arena = ClassicArena.make()
 	root.add_child(arena)
 	arena.get_node("Boss").passive = true   # quiet arena: these tests are not about the boss
 	await process_frame

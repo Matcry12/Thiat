@@ -1,11 +1,12 @@
 extends SceneTree
+const ClassicArena = preload("res://tests/support/classic_arena.gd")
 # The Brain boundary: the boss runs with ANY Brain (a stub that always says
 # "idle"), hands it the documented state Dictionary, survives nonsense answers,
 # and boss.gd never names the concrete scripted brain.
 const StubBrain = preload("res://tests/support/stub_brain.gd")
 
 func _init():
-	var arena = load("res://scenes/arena.tscn").instantiate()
+	var arena = ClassicArena.make()
 	root.add_child(arena)
 	var boss: Boss = arena.get_node("Boss")
 	boss.passive = true
@@ -25,11 +26,11 @@ func _init():
 
 	var s: Dictionary = stub.last_state
 	var keys_ok := true
-	for k in ["hp_fraction", "phase", "player_distance", "player_angle", "player_weapon", "cooldowns", "enraged"]:
+	for k in ["hp_fraction", "phase", "player_distance", "player_angle", "player_weapon", "cooldowns"]:
 		if not s.has(k):
 			keys_ok = false
 			print("MISSING state key: ", k)
-	var types_ok: bool = keys_ok and s["hp_fraction"] is float and s["phase"] is int and s["player_distance"] is float 			and s["player_angle"] is float and s["player_weapon"] is String and s["cooldowns"] is Dictionary and s["enraged"] is bool
+	var types_ok: bool = keys_ok and s["hp_fraction"] is float and s["phase"] is int and s["player_distance"] is float 			and s["player_angle"] is float and s["player_weapon"] is String and s["cooldowns"] is Dictionary
 	var cds_ok: bool = types_ok and s["cooldowns"].has("slam") and s["cooldowns"].has("spread") 			and s["cooldowns"].has("charge") and s["cooldowns"].has("ring")
 	var dist_ok: bool = types_ok and absf(s["player_distance"] - boss.global_position.distance_to(player.global_position)) < 1.0
 	print("state: ", s)

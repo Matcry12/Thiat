@@ -18,7 +18,7 @@ extends Node2D
 ##      hit gets blamed on this beat. That reported a working parry as broken.
 ##      -> _mark() / _report(), which measure from the tested wind-up's start.
 
-const ARENA := preload("res://scenes/arena.tscn")
+const ClassicArena := preload("res://tests/support/classic_arena.gd")
 
 ## How late in the wind-up to tap F. 0.0 = the instant it starts, 1.0 = the
 ## frame the hit lands. The parry window is 0.25s, so ~0.85 puts the press just
@@ -54,7 +54,8 @@ func _ready() -> void:
 		if arg.begins_with("--scenario="):
 			_scenario = arg.substr("--scenario=".length())
 
-	_arena = ARENA.instantiate()
+	# The storyboards use screen coordinates: run them on the screen-sized arena with the old layout.
+	_arena = ClassicArena.make()
 	add_child(_arena)
 	_player = _arena.get_node("Player")
 	_dummy = _arena.get_node("Dummy")
@@ -636,40 +637,28 @@ func _run_boss() -> void:
 	await _boss_settled()
 	await _wait(1.5)
 
-	# 5. Enrage.
-	_say("ENRAGE", "leave the arena for %.0fs and the boss goes berserk" % _boss.enrage_delay)
+	# 5. Leash: leave the zone and the boss gives up, heals and walks home.
+	_say("LEASH", "leave the arena for %.1fs and the boss gives up" % _boss.leash_delay)
 	_boss.set_brain(ScriptedBrain.new())
-	_ev["charges"] = 0
+	_boss.health.hp = _boss.health.max_hp * 0.5   # so the heal is visible
 	await _steer(Vector2(70, 321), 10.0)
-	var ok := await _until(func(): return _boss.enraged, 6.0)
-	print("[demo]   enraged: %s after %.2fs outside (delay %.1fs)" % [ok, _boss.outside_time, _boss.enrage_delay])
-	_say("ENRAGED: %s (after %.1fs outside)" % ["YES" if ok else "NO", _boss.outside_time], "orange tint, and it keeps charging")
-	await _until(func(): return _ev["charges"] >= 2, 6.0)
-	print("[demo]   charges since leaving: %d" % _ev["charges"])
-	_say("ENRAGED: %d CHARGES AT THE PLAYER" % _ev["charges"], "now walk back into the arena")
-	# The enraged boss chases and can stand in the way: dodge around it.
-	for attempt in 4:
-		_hold("move_right", true)
-		_hold("move_up" if attempt % 2 == 0 else "move_down", true)
-		await _tap("dodge")
-		await _wait(0.4)
-		_hold("move_right", false)
-		_hold("move_up", false)
-		_hold("move_down", false)
-		await _steer(Vector2(420, 250), 12.0, 2.5)
-		if not _boss.enraged:
-			break
-	print("[demo]   walk back: player %s boss %s zone-left-edge 136" % [_player.global_position, _boss.global_position])
-	var calm := await _until(func(): return not _boss.enraged, 3.0)
-	print("[demo]   calm again: %s (outside_time %.2f)" % [calm, _boss.outside_time])
-	_say("BACK INSIDE: CALM %s" % ("YES" if calm else "NO"), "the tint is gone")
+	var ok := await _until(func(): return _boss.aggro == Boss.Aggro.RETURNING, 6.0)
+	print("[demo]   returning: %s after %.2fs outside (delay %.1fs)" % [ok, _boss.outside_time, _boss.leash_delay])
+	_say("RETURNING: %s" % ("YES" if ok else "NO"), "pale tint, healed to %.0f, no damage taken" % _boss.health.hp)
+	var home := await _until(func(): return _boss.aggro == Boss.Aggro.IDLE, 8.0)
+	print("[demo]   home again: %s, hp %.0f, phase %d" % [home, _boss.health.hp, _boss.phase])
+	_say("BACK HOME: %s" % ("YES" if home else "NO"), "it waits there. Walk back in to fight")
+	await _steer(Vector2(420, 250), 12.0, 2.5)
+	var engaged := await _until(func(): return _boss.aggro == Boss.Aggro.ENGAGED, 3.0)
+	print("[demo]   engaged again: %s" % engaged)
+	_say("BACK INSIDE: ENGAGED %s" % ("YES" if engaged else "NO"), "the fight starts again")
 	_boss.set_brain(Brain.new())
 	await _wait(1.5)
 	await _boss_settled()
 
 	# 6. Finish.
 	_boss.health.hp = 80.0
-	_boss.global_position = Vector2(760, 321)   # staging: it was left at the wall, outside the fight zone would re-enrage it
+	_boss.global_position = Vector2(760, 321)   # staging: inside the zone, so it stays engaged
 	_player.global_position = Vector2(480, 321)
 	_say("FINISH HIM", "boss hp set to %.0f for the demo. Lunge, then swords" % _boss.health.hp)
 	await _steer(_boss.global_position - Vector2(180, 0), 20.0)

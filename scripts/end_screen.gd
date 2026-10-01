@@ -42,7 +42,7 @@ func label_text() -> String:
 	return _label.text
 
 func _process(_delta: float) -> void:
-	if _label.visible and Input.is_action_just_pressed("restart"):
+	if _label.visible and Input.is_action_just_pressed("restart") and not get_viewport().gui_get_focus_owner() is LineEdit:
 		retry_requested.emit()
 		if get_tree().current_scene != null:   # null in a headless test
 			get_tree().reload_current_scene()

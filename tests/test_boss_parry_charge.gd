@@ -1,11 +1,12 @@
 extends SceneTree
+const ClassicArena = preload("res://tests/support/classic_arena.gd")
 # Charge is parryable (orange). A timed parry negates it and STAGGERS the boss:
 # it drops the attack, stands still and makes no decision for the stagger time.
 # Control: an un-parried charge hurts exactly once.
 const StubBrain = preload("res://tests/support/stub_brain.gd")
 
 func _init():
-	var arena = load("res://scenes/arena.tscn").instantiate()
+	var arena = ClassicArena.make()
 	root.add_child(arena)
 	var boss: Boss = arena.get_node("Boss")
 	boss.passive = true   # no scripted decision may sneak in before the stub is set

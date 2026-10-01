@@ -71,7 +71,10 @@ func _on_died() -> void:
 func _physics_process(_delta: float) -> void:
 	if dead:
 		return
-	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	# A text field (the F3 seed box) has focus: the keys belong to it, not to the game. Polling Input
+	# ignores GUI focus, so the player has to check by itself.
+	var typing := get_viewport().gui_get_focus_owner() is LineEdit
+	var input_dir := Vector2.ZERO if typing else Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	_move_dir = input_dir
 	# Dodge drives the body itself while dashing — fighting it over velocity
 	# would double-move the player for a frame.
@@ -98,6 +101,10 @@ func _physics_process(_delta: float) -> void:
 	guard.aim_direction = aim_direction
 	guard_visual.set_aim_angle(aim_direction.angle())
 	guard_visual.set_cover_degrees(guard.parry_arc_degrees)  ## mirrored: the hint shows exactly what blocks
+
+	if typing:
+		guard.release()
+		return
 
 	if Input.is_action_just_pressed("attack") and guard.can_attack() and not loadout.is_casting() \
 			and not skill_slot.is_active():

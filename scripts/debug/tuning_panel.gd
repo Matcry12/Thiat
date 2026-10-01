@@ -28,6 +28,14 @@ class_name TuningPanel
 	"art_angle_degrees": {"min": -180.0, "max": 180.0},
 	"rest_angle_degrees": {"min": -180.0, "max": 180.0},
 	"map_seed": {"min": 0.0, "max": 9999.0},
+	"map_cols": {"min": 12.0, "max": 160.0},
+	"map_rows": {"min": 12.0, "max": 100.0},
+	"zone_x": {"min": 0.0, "max": 1.0},
+	"zone_y": {"min": 0.0, "max": 1.0},
+	"player_spawn_x": {"min": 0.0, "max": 1.0},
+	"player_spawn_y": {"min": 0.0, "max": 1.0},
+	"dummy_offset_x": {"min": -600.0, "max": 600.0},
+	"dummy_offset_y": {"min": -600.0, "max": 600.0},
 	"patch_noise_threshold": {"min": 0.0, "max": 1.0},
 	"dark_grass_chance": {"min": 0.0, "max": 1.0},
 	"noise_frequency": {"min": 0.01, "max": 0.5},
@@ -56,6 +64,7 @@ var _controls: Dictionary = {}    # "Target.prop" -> {obj, prop, control, value_
 var _initial_values: Dictionary = {}  # "Target.prop" -> value captured at startup, for Reset
 
 var _status_label: Label
+var _seed_edit: LineEdit
 var _tuning_list: VBoxContainer
 
 var _total_damage := 0.0
@@ -350,6 +359,21 @@ func _build_ui() -> void:
 	if _map:
 		_add_button(action_row, "New map", func(): _map.new_map())
 
+	if _map:
+		var seed_row := HBoxContainer.new()
+		tuning_vbox.add_child(seed_row)
+		var seed_label := Label.new()
+		seed_label.text = "Seed (1-9999)"
+		seed_row.add_child(seed_label)
+		_seed_edit = LineEdit.new()
+		_seed_edit.placeholder_text = "1-9999"
+		_seed_edit.max_length = 4
+		_seed_edit.custom_minimum_size = Vector2(70, 0)
+		_seed_edit.text_changed.connect(_on_seed_text_changed)
+		_seed_edit.text_submitted.connect(func(_t: String): _on_generate_pressed())   # Enter
+		seed_row.add_child(_seed_edit)
+		_add_button(seed_row, "Generate", _on_generate_pressed)
+
 	if _boss:
 		var boss_row := HBoxContainer.new()
 		tuning_vbox.add_child(boss_row)
@@ -373,6 +397,32 @@ func _build_ui() -> void:
 
 	for target in _targets:
 		_add_target_section(target["name"], target["object"])
+
+
+## Digits only: anything else typed or pasted is dropped.
+func _on_seed_text_changed(t: String) -> void:
+	var clean := ""
+	for ch in t:
+		if ch >= "0" and ch <= "9":
+			clean += ch
+	if clean != t:
+		var caret := _seed_edit.caret_column
+		_seed_edit.text = clean
+		_seed_edit.caret_column = mini(caret, clean.length())
+
+
+## Generate button / Enter: build the map for exactly the typed seed, then give the keys back to the game.
+func _on_generate_pressed() -> void:
+	if _seed_edit.text.is_empty():
+		return
+	var n := clampi(int(_seed_edit.text), 1, 9999)
+	_seed_edit.text = str(n)
+	_seed_edit.release_focus()
+	_map.generate_seed(n)
+	var key := "Map.map_seed"
+	if _controls.has(key):
+		_controls[key]["control"].set_value_no_signal(n)
+		_controls[key]["value_label"].text = _format_value(n)
 
 
 func _add_button(parent: Control, text: String, cb: Callable) -> void:

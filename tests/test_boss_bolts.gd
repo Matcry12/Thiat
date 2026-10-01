@@ -1,10 +1,11 @@
 extends SceneTree
+const ClassicArena = preload("res://tests/support/classic_arena.gd")
 # Boss bolts: the training Dummy (a body with a Hurtbox on another layer) is NOT
 # a shield; and bolts still in the air vanish when the boss dies.
 const StubBrain = preload("res://tests/support/stub_brain.gd")
 
 func _init():
-	var arena = load("res://scenes/arena.tscn").instantiate()
+	var arena = ClassicArena.make()
 	root.add_child(arena)
 	var boss: Boss = arena.get_node("Boss")
 	boss.passive = true

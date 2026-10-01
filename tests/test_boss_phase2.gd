@@ -1,10 +1,11 @@
 extends SceneTree
+const ClassicArena = preload("res://tests/support/classic_arena.gd")
 # Phase 2 (at 60% hp) unlocks ONE new move, "ring". Above 60% the boss refuses
 # it even when its brain asks; the scripted brain never picks it in phase 1.
 const StubBrain = preload("res://tests/support/stub_brain.gd")
 
 func _init():
-	var arena = load("res://scenes/arena.tscn").instantiate()
+	var arena = ClassicArena.make()
 	root.add_child(arena)
 	var boss: Boss = arena.get_node("Boss")
 	boss.passive = true
@@ -43,7 +44,7 @@ func _init():
 	var sb := ScriptedBrain.new()
 	sb.rng.seed = 7
 	var st := {"hp_fraction": 1.0, "phase": 1, "player_distance": 200.0, "player_angle": 0.0, "player_weapon": "arc",
-			"cooldowns": {"slam": 0.0, "spread": 0.0, "charge": 0.0, "ring": 0.0}, "enraged": false}
+			"cooldowns": {"slam": 0.0, "spread": 0.0, "charge": 0.0, "ring": 0.0}}
 	var ring_p1 := 0
 	var ring_p2 := 0
 	for i in 200:

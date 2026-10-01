@@ -42,6 +42,26 @@ func _init() -> void:
 	_check(patch_total > 40, "patches are actually produced (%d)" % patch_total)
 	_check(rock_total > 40, "rocks are actually produced (%d)" % rock_total)
 
+	# The big map (72x40): same rules, rocks anywhere outside the zone and the spawns.
+	var big := _params(15)
+	big.cols = 72
+	big.rows = 40
+	big.world = Vector2(2304, 1280)
+	big.obstacle_count = 23
+	big.zone = Rect2(1219, 410, 880, 460)
+	big.spawns = PackedVector2Array([Vector2(323, 640), Vector2(1879, 640), Vector2(613, 450)])
+	big.player_spawn = Vector2(323, 640)
+	var big_rocks := 0
+	var left_rocks := 0
+	for sd in range(1, 11):
+		var r := MapGen.generate(style, big, sd)
+		big_rocks += r.obstacles.size()
+		for o in r.obstacles:
+			left_rocks += 1 if o["pos"].x < 1152 else 0
+		_legal_ground(style, big, r)
+		_fair_rocks(big, r)
+	_check(big_rocks > 150 and left_rocks > 50, "big map: rocks placed all over (%d, %d on the left half)" % [big_rocks, left_rocks])
+
 	# The reachability check itself: a ring of rocks around the player must be refused.
 	var ring: Array[Dictionary] = []
 	for i in 12:

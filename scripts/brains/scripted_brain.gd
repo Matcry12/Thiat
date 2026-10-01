@@ -15,10 +15,7 @@ class_name ScriptedBrain
 var rng := RandomNumberGenerator.new()
 
 func choose_action(state: Dictionary) -> String:
-	# Enraged (player left the fight zone): keep charging until they return.
 	var cd: Dictionary = state["cooldowns"]
-	if state["enraged"]:
-		return "charge" if _off_cd(cd, "charge") else "chase"   # never stand still
 	var dist: float = state["player_distance"]
 	var options: Array[String] = []
 	if state["phase"] >= 2 and _off_cd(cd, "ring") and dist <= ring_max_range:

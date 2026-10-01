@@ -12,7 +12,7 @@ func _init() -> void:
 
 	var seed_a := m.current_seed
 	ok = ok and _t(seed_a != 0, "random seed rolled when map_seed = 0")
-	ok = ok and _t(m.get_node("Ground/Dirt").get_used_cells().size() == 36 * 21, "dirt layer fills the arena (%d)" % m.get_node("Ground/Dirt").get_used_cells().size())
+	ok = ok and _t(m.get_node("Ground/Dirt").get_used_cells().size() == 72 * 40, "dirt layer fills the arena (%d)" % m.get_node("Ground/Dirt").get_used_cells().size())
 	ok = ok and _t(m.get_node("Ground/Grass").get_used_cells().size() > 300, "grass layer is filled")
 	ok = ok and _t(m.get_node("Ground/Border").get_child_count() > 20, "bushes along the walls")
 	var ground: Node2D = m.get_node("Ground")
@@ -24,14 +24,14 @@ func _init() -> void:
 		ok = ok and _t((r as StaticBody2D).collision_layer & 1 == 1, "rock on the walls' layer")
 
 	var panel = arena.get_node("TuningPanel")
-	for key in ["Map.map_seed", "Map.patch_count", "Map.patch_noise_threshold", "Map.deco_density", "Map.deco_min_spacing", "Map.obstacle_count", "Map.obstacle_min_spacing", "Map.spawn_clear_radius", "Map.border_density", "Map.dark_grass_chance", "Map.noise_frequency", "Map.patch_min_size", "Map.patch_max_size"]:
+	for key in ["Map.map_seed", "Map.patch_count", "Map.patch_noise_threshold", "Map.deco_density", "Map.deco_min_spacing", "Map.obstacle_count", "Map.obstacle_min_spacing", "Map.spawn_clear_radius", "Map.border_density", "Map.dark_grass_chance", "Map.noise_frequency", "Map.patch_min_size", "Map.patch_max_size", "Map.map_cols", "Map.map_rows", "Map.zone_width", "Map.zone_height", "Map.camera_smoothing_speed"]:
 		ok = ok and _t(panel._controls.has(key), "F3 lists " + key)
 
 	# a slider keeps the seed and rebuilds
 	panel._apply_value("Map.patch_count", 2)
 	await process_frame
 	await process_frame
-	ok = ok and _t(m.current_seed == seed_a and m.result.patches.size() <= 2, "slider: same seed, new settings")
+	ok = ok and _t(m.current_seed == seed_a and m.result.patches.size() <= 8, "slider: same seed, fewer patches (patch_count is per screen: 2 x 3.8 = 8 max)")
 
 	# Same seed after the player has walked away = same map (spawns are read once, not live).
 	var layout_before := [m.result.patches, m.result.obstacles, m.result.deco, m.result.grass]

@@ -154,7 +154,7 @@ edit-rebuild-replay cycle per number.
 - 3 attacks: a telegraphed slam (ground circle, **unparryable** — purple tell), a ranged spread,
   a charge (**parryable** — orange tell). At least one of each so both defensive options matter.
 - 2 phases: at 60% HP it gains a 4th attack. New move, not bigger numbers.
-- One enrage rule: leave the arena >3s -> it charges at 2x speed until you return.
+- One leash rule ([0022](../decision/0022-boss-leash.md)): the boss waits idle; it fights while you are in its zone; leave for >1 s and it heals, resets and walks home.
 - Knockback-immune.
 
 **HUD (ugly is fine, must exist)**

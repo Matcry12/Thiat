@@ -1,10 +1,11 @@
 extends SceneTree
+const ClassicArena = preload("res://tests/support/classic_arena.gd")
 # The boss is solid: the player cannot walk through an idle boss, and a charge
 # ends NEXT to the player (hurting once), never on top of him.
 const StubBrain = preload("res://tests/support/stub_brain.gd")
 
 func _init():
-	var arena = load("res://scenes/arena.tscn").instantiate()
+	var arena = ClassicArena.make()
 	root.add_child(arena)
 	var boss: Boss = arena.get_node("Boss")
 	boss.passive = true

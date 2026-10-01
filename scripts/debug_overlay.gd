@@ -49,6 +49,9 @@ func _process(delta: float) -> void:
 		mark["t"] -= delta
 		if mark["t"] <= 0.0:
 			_hit_marks.erase(mark)
+	# This is a CanvasLayer (screen space), but every shape is drawn in world coordinates: carry the
+	# camera's transform so the shapes stay on the things they describe.
+	_draw_layer.transform = get_viewport().get_canvas_transform()
 	_draw_layer.queue_redraw()
 	_update_label()   # the swap-cast countdown needs a live tick, not just on-event
 
@@ -136,7 +139,7 @@ func _on_draw() -> void:
 	# arc here only doubled it on screen. Guard state + tank are in the label.
 
 	# Boss: warning areas of the attack in progress (orange = parry, purple =
-	# dodge; the charge lane included) and the FightZone (red once enraged).
+	# dodge; the charge lane included) and the FightZone (red while engaged).
 	# Active hitboxes are already red via the "hitbox" group above.
 	for atk in get_tree().get_nodes_in_group("boss_attack"):
 		for area in (atk as BossAttack).debug_areas():
@@ -144,7 +147,16 @@ func _on_draw() -> void:
 	if _boss and _boss.get_fight_zone():
 		var zcs := _boss.get_fight_zone().get_node_or_null("CollisionShape2D") as CollisionShape2D
 		if zcs:
-			_draw_shape(zcs.shape, zcs.global_transform, Color.RED if _boss.enraged else Color(0.3, 0.8, 1.0), 2.0)
+			var zc := Color(0.3, 0.8, 1.0)   # idle
+			if _boss.aggro == Boss.Aggro.ENGAGED:
+				zc = Color.RED
+			elif _boss.aggro == Boss.Aggro.RETURNING:
+				zc = Color(0.55, 0.7, 0.85)
+			_draw_shape(zcs.shape, zcs.global_transform, zc, 2.0)
+			var top_left: Vector2 = zcs.global_position - (zcs.shape as RectangleShape2D).size * 0.5 if zcs.shape is RectangleShape2D else zcs.global_position
+			_draw_layer.draw_string(ThemeDB.fallback_font, top_left + Vector2(8, 20), "AGGRO ZONE (%s)" % Boss.Aggro.keys()[_boss.aggro].to_lower(), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, zc)
+	if _boss:   # where it waits and walks back to
+		_draw_layer.draw_arc(_boss.home, 10.0, 0.0, TAU, 16, Color(0.55, 0.7, 0.85), 2.0)
 
 	# Map rocks: their collision circles (the only part of the map that blocks).
 	for rock in get_tree().get_nodes_in_group("map_obstacle"):

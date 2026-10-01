@@ -32,3 +32,15 @@ gameplay must not depend on the look.
 - Rocks inside the fight zone need boss pathfinding first.
 - L-shaped / organic patches need 4 hand-drawn concave corner tiles.
 - Ground type has no gameplay effect yet (mud, water = later).
+
+## Update 2026-10-01 — big map
+- The map is now `map_cols` x `map_rows` = 72 x 40 cells = 2304 x 1280 px (2x the screen). `ArenaMap` owns the
+  4 outer walls (built from the size, layer 1), the `Camera2D` (child of the player, limits = the map,
+  smoothing on and mild), the Background size and the start layout. Layout = pure function of exports:
+  zone (880 x 460) centred at 72% / 50% of the map, boss 220 px right of the zone centre, player at
+  14% / 50% (outside the zone, to its left), dummy at player + (290, -190).
+- `patch_count` and `obstacle_count` mean "per 36 x 21 cells" and scale with the map area; `deco_density`
+  already did. Rocks go anywhere outside the zone and the spawns, still with the flood-fill check.
+- The F1 overlay is a `CanvasLayer`; its draw layer copies the viewport's canvas transform each frame so
+  world shapes follow the camera. F3 has a seed field + `Generate` (1..9999).
+- "Enraged boss" in the rock rule above is now the leashing boss ([0022](0022-boss-leash.md)).

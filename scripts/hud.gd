@@ -53,7 +53,7 @@ func _process(_delta: float) -> void:
 		_boss_bar.max_value = _boss.health.max_hp
 		_boss_bar.value = _boss.health.hp
 		_boss_marker.position.x = _boss_bar.custom_minimum_size.x * _boss.phase2_threshold
-		_boss_label.text = "BOSS  phase %d%s" % [_boss.phase, "  ENRAGED" if _boss.enraged else ""]
+		_boss_label.text = "BOSS  phase %d  %s" % [_boss.phase, Boss.Aggro.keys()[_boss.aggro].to_lower()]
 
 ## Guard has no cooldown timer: it is a state (ready / parry / block / recover /
 ## broken) plus the shield bar, so that is exactly what this line shows.

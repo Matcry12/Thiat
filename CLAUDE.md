@@ -130,7 +130,7 @@ Debug keys (keep this table current):
 |---|---|
 | `F1` | Hitboxes, hurtboxes, attack phase, reach wedge, rock collision circles (yellow) |
 | `F2` | Slow motion (0.25x) |
-| `F3` | Status + live tuning panel (the Minecraft F3 equivalent). Boss status + buttons: `Phase 2`, `-> slam/spread/charge/ring` (force that attack next, ignores cooldown + phase), `Boss passive` (stands still, no attacks), `Heal boss`, `Heal player`, `Restart`. Map: seed in status, `New map` button (new random seed), map sliders rebuild live |
+| `F3` | Status + live tuning panel (the Minecraft F3 equivalent). Map: seed box + `Generate`, `New map`. Boss status (idle/engaged/returning) + buttons: `Phase 2`, `-> slam/spread/charge/ring` (force that attack next, ignores cooldown + phase), `Boss passive` (stands still, no attacks), `Heal boss`, `Heal player`, `Restart`. Map: seed in status, `New map` button (new random seed), map sliders rebuild live |
 | `R` | Retry — only after the player died or the boss was defeated (not a debug key) |
 
 **When adding any feature, the same slice must also:**

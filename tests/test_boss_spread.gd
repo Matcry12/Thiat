@@ -1,11 +1,12 @@
 extends SceneTree
+const ClassicArena = preload("res://tests/support/classic_arena.gd")
 # Spread: 5 bolts in a fan. They hit the PLAYER (boss projectiles use the
 # player's hurtbox layer), a block absorbs them into the guard tank, and a timed
 # parry negates that bolt WITHOUT staggering the boss (a bolt is its own source).
 const StubBrain = preload("res://tests/support/stub_brain.gd")
 
 func _init():
-	var arena = load("res://scenes/arena.tscn").instantiate()
+	var arena = ClassicArena.make()
 	root.add_child(arena)
 	var boss: Boss = arena.get_node("Boss")
 	boss.passive = true

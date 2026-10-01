@@ -7,6 +7,6 @@ class_name Brain
 ## boss.gd never names a concrete brain class, so swapping is a drop-in.
 ##
 ## state keys: hp_fraction, phase, player_distance, player_angle,
-## player_weapon, cooldowns ({action: seconds left}), enraged.
+## player_weapon, cooldowns ({action: seconds left}).
 func choose_action(_state: Dictionary) -> String:
 	return "idle"

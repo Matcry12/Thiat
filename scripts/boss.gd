@@ -1,26 +1,35 @@
 extends CharacterBody2D
 class_name Boss
-## The boss body: movement, phases, enrage, stagger, and running whichever
+## The boss body: movement, phases, aggro + leash, stagger, and running whichever
 ## attack it is told to. It does NOT decide what to do next — it builds a plain
 ## `state` Dictionary and asks its Brain (scripts/brains/brain.gd). Attacks are
 ## BossAttack nodes under `Attacks` (scripts/boss/). Never reads Input.
 ## Nothing here names a concrete brain class, so an RL brain is a drop-in.
 
 signal phase_changed(phase: int)
-signal enraged_changed(on: bool)
+signal aggro_changed(state: int)
 signal stagger_changed(on: bool)
 signal action_started(action: String)
 signal defeated
 
 enum Mode { IDLE, ACTION, STAGGER, DEAD }
+## Aggro (decision 0022): IDLE = waits at home, no attacks. ENGAGED = player is in the FightZone
+## (or just left it, inside leash_delay). RETURNING = walks home, resets, takes no damage.
+enum Aggro { IDLE, ENGAGED, RETURNING }
 
 @export var move_speed := 110.0
 ## How often an idle/chasing boss asks its brain (seconds).
 @export var decision_interval := 0.25
 ## Phase 2 starts at this fraction of max hp.
 @export var phase2_threshold := 0.6
-## Player outside the FightZone this long -> enraged.
-@export var enrage_delay := 3.0
+## Player outside the FightZone this long -> the boss gives up and walks home.
+@export var leash_delay := 1.0
+## Walking speed on the way home.
+@export var return_speed := 200.0
+## Heal to full and go back to phase 1 when it gives up.
+@export var reset_heals := true
+## No damage while walking home.
+@export var invulnerable_while_returning := true
 @export var target_path: NodePath
 @export var fight_zone_path: NodePath
 @export var brain_path: NodePath = ^"Brain"
@@ -28,8 +37,11 @@ enum Mode { IDLE, ACTION, STAGGER, DEAD }
 # Code-owned state: plain vars on purpose (an @export nobody may set is a lie).
 var phase := 1
 var mode: Mode = Mode.IDLE
-var enraged := false
+var aggro: Aggro = Aggro.IDLE
+## Seconds the player has been outside the zone while ENGAGED.
 var outside_time := 0.0
+## Where it waits and returns to. Set from the position at _ready, or by set_home().
+var home := Vector2.ZERO
 ## Debug switch: true = stands still, no attacks. Tests and the F3 button flip it.
 var passive := false
 var last_decision := ""
@@ -50,6 +62,7 @@ var _chasing := false
 var _forced := ""
 
 func _ready() -> void:
+	home = global_position
 	for c in $Attacks.get_children():
 		if c is BossAttack:
 			_attacks[(c as BossAttack).get_action_name()] = c
@@ -62,10 +75,16 @@ func _ready() -> void:
 	health.died.connect(_on_died)
 	# Combat only emits; the visual decides how to look (CLAUDE.md §5).
 	health.damaged.connect(func(_a: float): visual.on_hit())
+	health.damaged.connect(_on_damaged_aggro)
 	phase_changed.connect(visual.set_phase)
-	enraged_changed.connect(visual.set_enraged)
+	aggro_changed.connect(visual.set_aggro)
 	stagger_changed.connect(visual.set_staggered)
 	defeated.connect(visual.set_defeated)
+
+## Moves the boss and makes this spot its home (ArenaMap does this from the map layout).
+func set_home(pos: Vector2) -> void:
+	home = pos
+	global_position = pos
 
 ## Lets a test (or a spawner) assign the player without a scene NodePath.
 func set_target(node: Node2D) -> void:
@@ -96,7 +115,7 @@ func _physics_process(delta: float) -> void:
 	for a in _attacks.values():
 		(a as BossAttack).tick_cooldown(delta)
 	_update_phase()
-	_update_enrage(delta)
+	_update_aggro(delta)
 
 	if mode == Mode.STAGGER:
 		_stagger_left -= delta
@@ -104,6 +123,10 @@ func _physics_process(delta: float) -> void:
 			mode = Mode.IDLE
 			_decision_timer = 0.0
 			stagger_changed.emit(false)
+		return
+
+	if aggro == Aggro.RETURNING:   # before the passive/dead check: it must never freeze half-reset
+		_walk_home(delta)
 		return
 
 	if passive or _target == null or _target_dead():
@@ -118,6 +141,15 @@ func _physics_process(delta: float) -> void:
 			current_action = ""
 			mode = Mode.IDLE
 			_decision_timer = 0.0
+		return
+
+	if aggro == Aggro.IDLE and _forced == "":
+		# Waiting at home: no decisions, no attacks. (A forced attack can leave it away from home.)
+		var to_home := home - global_position
+		velocity = to_home.normalized() * return_speed if to_home.length() > maxf(return_speed * delta, 2.0) else Vector2.ZERO
+		if velocity == Vector2.ZERO:
+			global_position = home
+		move_and_slide()
 		return
 
 	_decision_timer -= delta
@@ -155,7 +187,6 @@ func build_state() -> Dictionary:
 		"player_angle": to_target.angle(),
 		"player_weapon": _player_weapon(),
 		"cooldowns": cds,
-		"enraged": enraged,
 	}
 
 func _player_weapon() -> String:
@@ -209,19 +240,72 @@ func _update_phase() -> void:
 		phase = 2
 		phase_changed.emit(phase)
 
-func _update_enrage(delta: float) -> void:
+func _player_in_zone() -> bool:
 	if _zone == null or not (_target is PhysicsBody2D):
+		return true   # no zone to judge by: always fight (a bare boss in a test)
+	return _zone.overlaps_body(_target as PhysicsBody2D)
+
+func _set_aggro(a: Aggro) -> void:
+	aggro = a
+	aggro_changed.emit(int(a))
+
+func _update_aggro(delta: float) -> void:
+	if _target == null or _target_dead():
 		return
-	if _zone.overlaps_body(_target as PhysicsBody2D):
+	var inside := _player_in_zone()
+	match aggro:
+		Aggro.IDLE, Aggro.RETURNING:
+			if inside:   # re-entering while walking home engages again (it was already reset)
+				_leave_return()
+				outside_time = 0.0
+				_set_aggro(Aggro.ENGAGED)
+		Aggro.ENGAGED:
+			if inside:
+				outside_time = 0.0
+			else:
+				outside_time += delta
+				if outside_time > leash_delay:
+					_begin_return()
+
+## A hit wakes an idle boss (a pull), so it cannot be sniped from outside the zone: if the
+## shooter stays out, the normal leash resets and heals it after leash_delay.
+func _on_damaged_aggro(_amount: float) -> void:
+	if aggro == Aggro.IDLE and not _target_dead():
 		outside_time = 0.0
-		if enraged:
-			enraged = false
-			enraged_changed.emit(false)
-	else:
-		outside_time += delta
-		if not enraged and outside_time > enrage_delay:
-			enraged = true
-			enraged_changed.emit(true)
+		_set_aggro(Aggro.ENGAGED)
+
+## Gives up: drops the attack in progress (bolts already flying keep flying), heals, resets.
+func _begin_return() -> void:
+	_abort_action()
+	if mode == Mode.STAGGER:
+		stagger_changed.emit(false)
+	mode = Mode.IDLE
+	_chasing = false
+	_forced = ""
+	if reset_heals:
+		health.hp = health.max_hp
+		if phase != 1:
+			phase = 1
+			phase_changed.emit(phase)
+	if invulnerable_while_returning:
+		health.invulnerable = true
+	_set_aggro(Aggro.RETURNING)
+
+func _leave_return() -> void:
+	if aggro == Aggro.RETURNING:
+		health.invulnerable = false
+
+func _walk_home(delta: float) -> void:
+	var to_home := home - global_position
+	var step := return_speed * delta
+	if to_home.length() <= maxf(step, 2.0):
+		global_position = home
+		velocity = Vector2.ZERO
+		_leave_return()
+		_set_aggro(Aggro.IDLE)
+		return
+	velocity = to_home.normalized() * return_speed
+	move_and_slide()
 
 func _target_dead() -> bool:
 	return _target_health != null and _target_health.hp <= 0.0
@@ -241,8 +325,10 @@ func _on_died() -> void:
 # ---- debug (F3 panel / tests) ----
 
 ## Debug: next decision runs this action, ignoring cooldown and phase.
+## Idle boss: runs it once and stays idle (no engage, so the leash cannot cancel it).
+## Returning boss: ignored (it is invulnerable and walking home).
 func force_next(action: String) -> void:
-	if _attacks.has(action):
+	if _attacks.has(action) and aggro != Aggro.RETURNING:
 		_forced = action
 
 ## Debug: jump to phase 2 by dropping hp just under the threshold.
@@ -263,7 +349,7 @@ func status_text() -> String:
 	for n in _attacks:
 		cds.append("%s %.1f" % [n, (_attacks[n] as BossAttack).cooldown_left])
 	lines.append("cooldowns: " + "  ".join(cds))
-	lines.append("enraged: %s  outside: %.1f/%.1fs" % [enraged, outside_time, enrage_delay])
+	lines.append("aggro: %s  outside: %.1f/%.1fs  home: (%d, %d)" % [Aggro.keys()[aggro].to_lower(), outside_time, leash_delay, roundi(home.x), roundi(home.y)])
 	lines.append("brain: %s -> '%s'" % [_brain.get_script().get_global_name() if _brain else "none", last_decision])
 	if mode == Mode.STAGGER:
 		lines.append("staggered: %.2fs left" % _stagger_left)

@@ -7,6 +7,75 @@ extends Node2D
 ##
 ## Fair fight: rocks never touch the FightZone or the spawns, and never wall off any floor
 ## (see MapGen). Dirt patches are looks only.
+##
+## ArenaMap is the ONE owner of: the outer walls (built from map_cols x map_rows), the player's
+## Camera2D (child of the player, limits = the map), the Background size, and where the FightZone,
+## Boss, Player and Dummy start. Layout is a pure function of the exports below (no seed, no live
+## node positions), so the same exports always give the same layout. Moving those nodes in the
+## editor has no effect: change the numbers here (a size/layout change in F3 moves them again).
+
+## patch_count and obstacle_count are "per screen-sized area" (36 x 21 cells) and scale with the
+## map, so density stays the same on a bigger map.
+const REF_CELLS := 36 * 21
+
+## Map size in cells (1 cell = tile_size * pixel_scale px = 32). 72 x 40 = 2304 x 1280 px = 2x the screen.
+@export var map_cols := 72:
+	set(v):
+		map_cols = v
+		_changed(false, true)
+@export var map_rows := 40:
+	set(v):
+		map_rows = v
+		_changed(false, true)
+## The boss zone (= the aggro zone). Its centre is a fraction of the map, so it follows the size.
+@export var zone_width := 880.0:
+	set(v):
+		zone_width = v
+		_changed(false, true)
+@export var zone_height := 460.0:
+	set(v):
+		zone_height = v
+		_changed(false, true)
+@export var zone_x := 0.72:
+	set(v):
+		zone_x = v
+		_changed(false, true)
+@export var zone_y := 0.5:
+	set(v):
+		zone_y = v
+		_changed(false, true)
+## The boss waits this many px to the right of the zone centre.
+@export var boss_offset_x := 220.0:
+	set(v):
+		boss_offset_x = v
+		_changed(false, true)
+## The player starts here (fraction of the map): far left, outside the zone.
+@export var player_spawn_x := 0.14:
+	set(v):
+		player_spawn_x = v
+		_changed(false, true)
+@export var player_spawn_y := 0.5:
+	set(v):
+		player_spawn_y = v
+		_changed(false, true)
+## The training dummy stands this far from the player's spawn.
+@export var dummy_offset_x := 290.0:
+	set(v):
+		dummy_offset_x = v
+		_changed(false, true)
+@export var dummy_offset_y := -190.0:
+	set(v):
+		dummy_offset_y = v
+		_changed(false, true)
+@export var camera_smoothing := true:
+	set(v):
+		camera_smoothing = v
+		_apply_camera()
+## Higher = snappier. 7 is mild.
+@export var camera_smoothing_speed := 7.0:
+	set(v):
+		camera_smoothing_speed = v
+		_apply_camera()
 
 @export var style: MapStyle
 ## 0 = a new random seed every run.
@@ -75,15 +144,21 @@ extends Node2D
 @export var boss_path: NodePath
 @export var dummy_path: NodePath
 @export var fight_zone_path: NodePath
+## A ColorRect behind everything; resized to the map.
+@export var background_path: NodePath
 
 var current_seed := 0
 var result: MapGen.Result
 
 var _spawns := PackedVector2Array()
 var _player_spawn := Vector2.ZERO
+var _zone := Rect2()
 var _ready_done := false
 var _rebuild_queued := false
 var _want_new_seed := false
+var _want_relayout := false
+var _walls: Node2D
+var _camera: Camera2D
 var _dirt: TileMapLayer
 var _grass: TileMapLayer
 var _deco: Node2D
@@ -101,23 +176,29 @@ func _ready() -> void:
 	_obstacles = $Obstacles
 	for layer in [_dirt, _grass]:
 		layer.scale = Vector2.ONE * style.pixel_scale
-	# Spawns are read ONCE: the same seed must give the same map however far the player has walked.
-	for path in [player_path, boss_path, dummy_path]:
-		var n := get_node_or_null(path) as Node2D
-		if n:
-			_spawns.append(n.global_position)
-	var player := get_node_or_null(player_path) as Node2D
-	_player_spawn = player.global_position if player else Vector2(409, 321)
+	_walls = Node2D.new()
+	_walls.name = "Walls"
+	add_child(_walls)
 	_ready_done = true
 	_want_new_seed = false
+	_want_relayout = false
+	_place_actors()
+	var player := get_node_or_null(player_path) as Node2D
+	if player:
+		_camera = Camera2D.new()
+		_camera.name = "Camera"
+		player.add_child(_camera)
+		_apply_camera()
+		_camera.reset_smoothing()
 	rebuild(true)
 
 
 func status_text() -> String:
 	if result == null:
 		return "n/a"
-	return "seed: %d  dirt patches: %d  rocks: %d  deco: %d  bushes: %d" % [
-		current_seed, result.patches.size(), result.obstacles.size(), result.deco.size(), result.border.size()]
+	return "seed: %d  size: %dx%d cells (%dx%d px)\ndirt patches: %d  rocks: %d  deco: %d  bushes: %d" % [
+		current_seed, map_cols, map_rows, map_size().x, map_size().y,
+		result.patches.size(), result.obstacles.size(), result.deco.size(), result.border.size()]
 
 
 ## F3 Save asks this instead of reading the export: map_seed 0 means "random", but a saved file
@@ -132,10 +213,27 @@ func new_map() -> void:
 	rebuild(false)
 
 
+## F3 "Generate": rebuild with exactly this seed (1..9999, the same range as New map and the slider).
+## Goes through map_seed so the F3 slider and a later Save show it too.
+func generate_seed(s: int) -> void:
+	var v := clampi(s, 1, 9999)
+	if v == map_seed:
+		rebuild(true)   # the setter would not fire for an unchanged value
+	else:
+		map_seed = v
+		_apply_pending_now()
+
+
 ## new_seed: roll map_seed (or a random one if it is 0); otherwise rebuild the current seed.
-func rebuild(new_seed: bool) -> void:
+## relayout: also move the zone / boss / player / dummy to the layout.
+func rebuild(new_seed: bool, relayout := false) -> void:
 	if not _ready_done:
 		return
+	if relayout:
+		_place_actors()
+		if _camera:
+			_camera.reset_smoothing()
+	_apply_size()
 	if new_seed:
 		current_seed = map_seed if map_seed != 0 else _fresh_seed()
 	result = MapGen.generate(style, make_params(), current_seed)
@@ -147,8 +245,9 @@ func _fresh_seed() -> int:
 
 
 ## Setters call this. Several changes in one frame (Load in the F3 panel) rebuild once.
-func _changed(new_seed := false) -> void:
+func _changed(new_seed := false, relayout := false) -> void:
 	_want_new_seed = _want_new_seed or new_seed
+	_want_relayout = _want_relayout or relayout
 	if not _ready_done or _rebuild_queued:
 		return
 	_rebuild_queued = true
@@ -156,49 +255,144 @@ func _changed(new_seed := false) -> void:
 
 
 func _rebuild_deferred() -> void:
+	if not _rebuild_queued:
+		return
 	_rebuild_queued = false
 	var new_seed := _want_new_seed
+	var relayout := _want_relayout
 	_want_new_seed = false
-	rebuild(new_seed)
+	_want_relayout = false
+	rebuild(new_seed, relayout)
+
+
+## Runs a queued rebuild now (the caller needs the new map in this same frame).
+func _apply_pending_now() -> void:
+	_rebuild_deferred()
 
 
 func make_params() -> MapGen.Params:
 	var p := MapGen.Params.new()
-	var cell := float(style.tile_size * style.pixel_scale)
-	# The project's design size, not the window: the same map in a headless test and on screen.
-	var vp := Vector2(ProjectSettings.get_setting("display/window/size/viewport_width"), ProjectSettings.get_setting("display/window/size/viewport_height"))
+	var cell := cell_px()
+	var scale := float(map_cols * map_rows) / REF_CELLS
 	p.cell = cell
-	p.world = vp
-	p.cols = ceili(vp.x / cell)
-	p.rows = ceili(vp.y / cell)
-	p.patch_count = patch_count
+	p.world = map_size()
+	p.cols = map_cols
+	p.rows = map_rows
+	p.patch_count = roundi(patch_count * scale)
 	p.patch_min_size = patch_min_size
 	p.patch_max_size = patch_max_size
 	p.noise_frequency = noise_frequency
 	p.patch_noise_threshold = patch_noise_threshold
 	p.deco_density = deco_density
 	p.deco_min_spacing = deco_min_spacing
-	p.obstacle_count = obstacle_count
+	p.obstacle_count = roundi(obstacle_count * scale)
 	p.obstacle_min_spacing = obstacle_min_spacing
 	p.spawn_clear_radius = spawn_clear_radius
 	p.border_density = border_density
 	p.dark_grass_chance = dark_grass_chance
 	p.agent_radius = agent_radius
-	p.zone = _zone_rect()
+	p.zone = _zone
 	p.spawns = _spawns
 	p.player_spawn = _player_spawn
 	return p
 
 
-func _zone_rect() -> Rect2:
+func cell_px() -> float:
+	return float(style.tile_size * style.pixel_scale)
+
+
+func map_size() -> Vector2:
+	return Vector2(maxi(map_cols, 12), maxi(map_rows, 12)) * cell_px()
+
+
+## Where everything starts. Pure function of the exports.
+func layout() -> Dictionary:
+	var size := map_size()
+	var zsize := Vector2(zone_width, zone_height)
+	var c := Vector2(size.x * zone_x, size.y * zone_y)
+	var pad := cell_px()   # keep the zone off the walls
+	c.x = clampf(c.x, minf(pad + zsize.x * 0.5, size.x * 0.5), maxf(size.x - pad - zsize.x * 0.5, size.x * 0.5))
+	c.y = clampf(c.y, minf(pad + zsize.y * 0.5, size.y * 0.5), maxf(size.y - pad - zsize.y * 0.5, size.y * 0.5))
+	var player := Vector2(size.x * player_spawn_x, size.y * player_spawn_y)
+	return {
+		"zone": Rect2(c - zsize * 0.5, zsize),
+		"boss": c + Vector2(boss_offset_x, 0.0),
+		"player": player,
+		"dummy": player + Vector2(dummy_offset_x, dummy_offset_y),
+	}
+
+
+## Moves the FightZone, Boss, Player and Dummy to the layout and remembers the spawns for MapGen.
+## Spawns come from the layout, never from live positions: the same exports = the same map.
+func _place_actors() -> void:
+	var l := layout()
+	_zone = l["zone"]
+	_player_spawn = l["player"]
+	_spawns = PackedVector2Array([l["player"], l["boss"], l["dummy"]])
 	var zone := get_node_or_null(fight_zone_path) as Node2D
-	if zone == null:
-		return Rect2()
-	var cs := zone.get_node_or_null("CollisionShape2D") as CollisionShape2D
-	if cs == null or not (cs.shape is RectangleShape2D):
-		return Rect2()
-	var size: Vector2 = (cs.shape as RectangleShape2D).size
-	return Rect2(cs.global_position - size * 0.5, size)
+	if zone:
+		zone.global_position = _zone.get_center()
+		var cs := zone.get_node_or_null("CollisionShape2D") as CollisionShape2D
+		if cs:
+			var shape := RectangleShape2D.new()
+			shape.size = _zone.size
+			cs.shape = shape
+	var boss := get_node_or_null(boss_path) as Node2D
+	if boss:
+		if boss.has_method("set_home"):
+			boss.call("set_home", l["boss"])
+		else:
+			boss.global_position = l["boss"]
+	var player := get_node_or_null(player_path) as Node2D
+	if player:
+		player.global_position = l["player"]
+	var dummy := get_node_or_null(dummy_path) as Node2D
+	if dummy:
+		dummy.global_position = l["dummy"]
+
+
+## Walls (4 bodies, one cell thick, inside the map rect), camera limits, background size.
+func _apply_size() -> void:
+	var size := map_size()
+	var t := cell_px()
+	for c in _walls.get_children():
+		_walls.remove_child(c)
+		c.queue_free()
+	var specs := {
+		"Top": [Vector2(size.x * 0.5, t * 0.5), Vector2(size.x, t)],
+		"Bottom": [Vector2(size.x * 0.5, size.y - t * 0.5), Vector2(size.x, t)],
+		"Left": [Vector2(t * 0.5, size.y * 0.5), Vector2(t, size.y)],
+		"Right": [Vector2(size.x - t * 0.5, size.y * 0.5), Vector2(t, size.y)],
+	}
+	for n in specs:
+		var body := StaticBody2D.new()      # default layer 1, as the hand-placed walls had
+		body.name = n
+		body.collision_mask = 0
+		body.position = specs[n][0]
+		var shape := RectangleShape2D.new()
+		shape.size = specs[n][1]
+		var cs := CollisionShape2D.new()
+		cs.name = "CollisionShape2D"
+		cs.shape = shape
+		body.add_child(cs)
+		_walls.add_child(body)
+	_apply_camera()
+	var bg := get_node_or_null(background_path) as Control
+	if bg:
+		bg.position = Vector2.ZERO
+		bg.size = size
+
+
+func _apply_camera() -> void:
+	if _camera == null:
+		return
+	var size := map_size()
+	_camera.limit_left = 0
+	_camera.limit_top = 0
+	_camera.limit_right = int(size.x)
+	_camera.limit_bottom = int(size.y)
+	_camera.position_smoothing_enabled = camera_smoothing
+	_camera.position_smoothing_speed = camera_smoothing_speed
 
 
 # ------------------------------------------------------------------- build ---
@@ -232,6 +426,7 @@ func _build() -> void:
 		var shape := CircleShape2D.new()
 		shape.radius = o["radius"]
 		var cs := CollisionShape2D.new()
+		cs.name = "CollisionShape2D"   # F1 looks it up by this name
 		cs.shape = shape
 		body.add_child(cs)
 		_obstacles.add_child(body)

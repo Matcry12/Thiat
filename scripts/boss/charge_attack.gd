@@ -13,9 +13,6 @@ const LINGER_FRAMES := 3
 
 @export var speed := 500.0
 @export var distance := 400.0
-## While enraged: faster dash, and it may start again almost at once.
-@export var enrage_speed_multiplier := 2.0
-@export var enraged_cooldown := 0.3
 
 @onready var _hitbox: Hitbox = $Hitbox
 @onready var _telegraph: Telegraph = $Telegraph
@@ -33,9 +30,6 @@ func _ready() -> void:
 func _radius() -> float:
 	var c := _shape_of(_hitbox) as CircleShape2D
 	return c.radius if c else 24.0
-
-func _is_enraged() -> bool:
-	return boss != null and boss.get("enraged") == true
 
 func _on_telegraph() -> void:
 	_dir = (target.global_position - boss.global_position).normalized()
@@ -55,8 +49,7 @@ func _on_active() -> void:
 	_hitbox.start_swing()
 
 func _active_tick(delta: float) -> bool:
-	var v := speed * (enrage_speed_multiplier if _is_enraged() else 1.0)
-	var step := minf(v * delta, distance - _travelled)
+	var step := minf(speed * delta, distance - _travelled)
 	var hit := (boss as CharacterBody2D).move_and_collide(_dir * step)
 	_travelled += step
 	if hit != null or _travelled >= distance - 0.01:
@@ -69,9 +62,6 @@ func _on_recovery() -> void:
 func _on_cancel() -> void:
 	_hitbox.end_swing()
 	_telegraph.hide_now()
-
-func _cooldown_after() -> float:
-	return enraged_cooldown if _is_enraged() else cooldown
 
 func debug_areas() -> Array:
 	if phase != Phase.TELEGRAPH and phase != Phase.ACTIVE:
