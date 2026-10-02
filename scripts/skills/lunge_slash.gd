@@ -70,7 +70,7 @@ func _physics_process(delta: float) -> void:
 		_hit.append(hurtbox.owner)
 		var health := hurtbox.get_health()
 		if health:
-			health.take_damage(damage, _user, parryable)
+			health.take_damage(damage, _user, parryable, &"lunge")
 	if _left <= 0.0:
 		_stop()
 		finished.emit()

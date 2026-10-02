@@ -11,13 +11,11 @@ class_name BossVisual
 @export var returning_color := Color(0.55, 0.7, 0.85)
 @export var staggered_color := Color(0.85, 0.8, 0.3)
 @export var defeated_color := Color(0.25, 0.25, 0.25)
-@export var flash_time := 0.05
 
 var _phase := 1
 var _returning := false
 var _staggered := false
 var _defeated := false
-var _flash := 0.0
 
 func set_phase(p: int) -> void:
 	_phase = p
@@ -36,16 +34,6 @@ func set_defeated() -> void:
 	_defeated = true
 	queue_redraw()
 
-func on_hit() -> void:
-	_flash = flash_time
-	queue_redraw()
-
-func _process(delta: float) -> void:
-	if _flash > 0.0:
-		_flash -= delta
-		if _flash <= 0.0:
-			queue_redraw()
-
 func _draw() -> void:
 	var c := base_color if _phase < 2 else phase2_color
 	if _returning:
@@ -54,7 +42,5 @@ func _draw() -> void:
 		c = staggered_color
 	if _defeated:
 		c = defeated_color
-	if _flash > 0.0:
-		c = Color.WHITE
 	draw_circle(Vector2.ZERO, radius, c)
 	draw_arc(Vector2.ZERO, radius, 0.0, TAU, 32, c.lightened(0.4), 2.0)

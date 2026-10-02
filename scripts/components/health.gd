@@ -8,6 +8,9 @@ class_name Health
 ## emits `dodged` instead, so feedback (HUD/overlay) can hook either signal.
 
 signal damaged(amount: float)
+## Same moment as `damaged`, with the story of the hit: {amount, victim, source, direction (source -> victim), tag}.
+## Effects listen here (HitFx). `tag` is the damage dealer's own label (&"melee", &"arrow", ...), empty if unknown.
+signal hit_taken(info: Dictionary)
 signal dodged
 signal died
 
@@ -42,7 +45,7 @@ func _physics_process(delta: float) -> void:
 ## `source`/`parryable` feed an optional sibling Guard (slice 3): a parry
 ## negates the hit entirely, a block chips it, both duck-type a `stagger()`
 ## call onto `source` on a successful parry.
-func take_damage(raw_damage: float, source: Node = null, parryable := true) -> void:
+func take_damage(raw_damage: float, source: Node = null, parryable := true, tag: StringName = &"") -> void:
 	if invulnerable:
 		dodged.emit()
 		return
@@ -51,6 +54,7 @@ func take_damage(raw_damage: float, source: Node = null, parryable := true) -> v
 		if through <= 0.0:
 			return
 		raw_damage *= through
+	var was_alive := hp > 0.0
 	_time_since_hit = 0.0
 	var remaining: float = maxf(1.0, raw_damage - armor * 0.5)
 	if shield > 0.0:
@@ -59,6 +63,13 @@ func take_damage(raw_damage: float, source: Node = null, parryable := true) -> v
 		remaining -= absorbed
 	if remaining > 0.0:
 		hp = maxf(1.0 if immortal else 0.0, hp - remaining)
-	damaged.emit(maxf(1.0, raw_damage - armor * 0.5))
+	var dealt := maxf(1.0, raw_damage - armor * 0.5)
+	damaged.emit(dealt)
+	var victim := get_parent()
+	var dir := Vector2.ZERO
+	if source is Node2D and victim is Node2D:
+		dir = ((victim as Node2D).global_position - (source as Node2D).global_position).normalized()
+	if was_alive:   # no hit feel on a corpse (a bolt still in flight when the player died)
+		hit_taken.emit({"amount": dealt, "victim": victim, "source": source, "direction": dir, "tag": tag})
 	if hp <= 0.0:
 		died.emit()

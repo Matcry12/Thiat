@@ -56,4 +56,4 @@ func _fire() -> void:
 	var parent: Node = get_tree().current_scene if get_tree().current_scene else get_tree().root
 	parent.add_child(p)
 	p.global_position = muzzle.global_position
-	p.setup(aim_direction, arrow_speed, arrow_range, damage, parryable, _user, true)
+	p.setup(aim_direction, arrow_speed, arrow_range, damage, parryable, _user, true, 1 | 4, null, &"charged_arrow")

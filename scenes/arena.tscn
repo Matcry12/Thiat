@@ -9,6 +9,18 @@
 [ext_resource type="Script" path="res://scripts/end_screen.gd" id="7"]
 [ext_resource type="Script" path="res://scripts/map/arena_map.gd" id="8"]
 [ext_resource type="Resource" path="res://data/maps/grass.tres" id="9"]
+[ext_resource type="Script" path="res://scripts/fx/hit_fx.gd" id="hf_script"]
+[ext_resource type="Script" path="res://scripts/fx/hit_fx_profile.gd" id="hfp_script"]
+[ext_resource type="Resource" path="res://data/hit_fx/sword.tres" id="hf_sword"]
+[ext_resource type="Resource" path="res://data/hit_fx/sword_boss.tres" id="hf_sword_boss"]
+[ext_resource type="Resource" path="res://data/hit_fx/lunge.tres" id="hf_lunge"]
+[ext_resource type="Resource" path="res://data/hit_fx/arrow.tres" id="hf_arrow"]
+[ext_resource type="Resource" path="res://data/hit_fx/charged_arrow.tres" id="hf_charged_arrow"]
+[ext_resource type="Resource" path="res://data/hit_fx/parry.tres" id="hf_parry"]
+[ext_resource type="Resource" path="res://data/hit_fx/block.tres" id="hf_block"]
+[ext_resource type="Resource" path="res://data/hit_fx/player_hit.tres" id="hf_player_hit"]
+[ext_resource type="Resource" path="res://data/hit_fx/phase_change.tres" id="hf_phase_change"]
+[ext_resource type="Resource" path="res://data/hit_fx/kill.tres" id="hf_kill"]
 
 [sub_resource type="RectangleShape2D" id="ZoneShape"]
 size = Vector2(880, 460)
@@ -66,6 +78,13 @@ position = Vector2(1879, 640)
 target_path = NodePath("../Player")
 fight_zone_path = NodePath("../FightZone")
 
+[node name="HitFx" type="Node" parent="."]
+script = ExtResource("hf_script")
+player_path = NodePath("../Player")
+boss_path = NodePath("../Boss")
+dummy_path = NodePath("../Dummy")
+profiles = Array[ExtResource("hfp_script")]([ExtResource("hf_sword"), ExtResource("hf_sword_boss"), ExtResource("hf_lunge"), ExtResource("hf_arrow"), ExtResource("hf_charged_arrow"), ExtResource("hf_parry"), ExtResource("hf_block"), ExtResource("hf_player_hit"), ExtResource("hf_phase_change"), ExtResource("hf_kill")])
+
 [node name="DebugOverlay" type="CanvasLayer" parent="." unique_id=1487825587]
 script = ExtResource("3")
 player_path = NodePath("../Player")
@@ -87,6 +106,7 @@ dummy_path = NodePath("../Dummy")
 boss_path = NodePath("../Boss")
 debug_overlay_path = NodePath("../DebugOverlay")
 map_path = NodePath("../ArenaMap")
+hit_fx_path = NodePath("../HitFx")
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=1974175763]
 script = ExtResource("5")

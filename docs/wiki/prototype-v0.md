@@ -337,6 +337,12 @@ together — an exception to "no stacking unverified slices".
    second ring, idle enrage) — all fixed in one round · user (2026-09-30): gameplay acceptable; wants smoother visuals + better poses.
 5. **Tune** — adjust only the numbers in §2 until it feels right. No new features.
 
+**Feel slice F1 — hit feel slice 1 (2026-10-02).** Research + plan first ([0023](../decision/0023-hit-feel.md)):
+flash for all actors, global hit-stop, generated SFX, trauma shake, kill slow-mo; F3 switches + test buttons.
+   Log F1: built by Sonnet 5.5 agent · Opus judge: 5 confirmed (audio stuck at F2 speed, F2 lost during a
+   stop, dead F3 field for player-hit stop, hit feel on corpses / dead player) + 5 plausible — all fixed in
+   one round · user: pending.
+
 **Visual slice V2 — chibi egg + round hands (2026-10-02, user's call).** User rejected pixel-sprite
 characters (Gemini + hand-cleaned); kept the egg placeholder, 32x30, plus 2 hands that sit on
 `HandMain`/`HandOff` markers in each weapon model (bow off-hand pulls while drawing).

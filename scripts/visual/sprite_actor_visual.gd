@@ -62,6 +62,9 @@ func _process(delta: float) -> void:
 	_bob_t += delta * bob_speed
 	body.position = _rest_position + Vector2(0, sin(_bob_t) * run_bob)
 
+func flash_target() -> CanvasItem:
+	return get_node_or_null("Body") as CanvasItem
+
 func set_move_state(state: String) -> void:
 	_running = state == "run"
 	if not _running:

@@ -20,6 +20,7 @@ var _travelled := 0.0
 var _shooter_rid: RID
 var _first_step := true   ## see _physics_process: the first ray starts at the shooter, not the spawn point
 var _mask := 1 | 4       ## what this bolt hits: world + enemy hurtbox by default (player shots)
+var _tag: StringName = &"arrow"   ## what Health/HitFx are told this shot is
 var _pierce := false      ## passes through targets instead of stopping (Piercing Shot)
 var _hit: Array[Node] = []   ## targets already damaged: a piercing arrow hits each once
 var _pierced: Array[RID] = []   ## their hurtbox + body: kept across frames, or the body (a "wall") would stop the arrow next step
@@ -30,7 +31,8 @@ func _ready() -> void:
 	# reaching into it — same pattern as hitbox.gd's "hitbox" group.
 	add_to_group("projectile")
 
-func setup(dir: Vector2, speed: float, range: float, damage: float, parryable: bool, shooter: Node, pierce := false, hit_mask := 1 | 4, damage_source: Node = null) -> void:
+func setup(dir: Vector2, speed: float, range: float, damage: float, parryable: bool, shooter: Node, pierce := false, hit_mask := 1 | 4, damage_source: Node = null, hit_tag: StringName = &"arrow") -> void:
+	_tag = hit_tag
 	_mask = hit_mask
 	_source = damage_source if damage_source else shooter
 	_dir = dir.normalized() if dir != Vector2.ZERO else Vector2.RIGHT
@@ -114,4 +116,4 @@ func _damage_hurtbox(hurtbox: Hurtbox) -> void:
 	_hit.append(hurtbox.owner)
 	var health := hurtbox.get_health()
 	if health:
-		health.take_damage(_damage, _source, _parryable)
+		health.take_damage(_damage, _source, _parryable, _tag)

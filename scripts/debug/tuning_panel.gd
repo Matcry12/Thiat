@@ -18,6 +18,7 @@ class_name TuningPanel
 @export var boss_path: NodePath
 @export var debug_overlay_path: NodePath
 @export var map_path: NodePath
+@export var hit_fx_path: NodePath
 
 ## Per-property range override, for the few properties where "derive from the
 ## current value" (see `_range_for`) gives a bad slider range. Keyed by
@@ -40,6 +41,21 @@ class_name TuningPanel
 	"dark_grass_chance": {"min": 0.0, "max": 1.0},
 	"noise_frequency": {"min": 0.01, "max": 0.5},
 	"border_density": {"min": 0.1, "max": 2.0},
+	"shake_strength": {"min": 0.0, "max": 2.0},
+	"hitstop_scale": {"min": 0.0, "max": 2.0},
+	"max_frames": {"min": 0.0, "max": 30.0},
+	"stop_frames": {"min": 0.0, "max": 12.0},
+	"max_offset": {"min": 0.0, "max": 30.0},
+	"decay": {"min": 0.0, "max": 5.0},
+	"noise_speed": {"min": 1.0, "max": 80.0},
+	"pitch_variation": {"min": 0.0, "max": 0.3},
+	"shake": {"min": 0.0, "max": 1.0},
+	"slowmo_scale": {"min": 0.05, "max": 1.0},
+	"slowmo_time": {"min": 0.0, "max": 3.0},
+	"flash_time": {"min": 0.0, "max": 0.5},
+	"volume_db": {"min": -30.0, "max": 12.0},
+	"pitch": {"min": 0.3, "max": 2.0},
+	"stop_time_scale": {"min": 0.0001, "max": 0.2},
 }
 
 const SAVE_PATH := "user://tuning.json"
@@ -58,6 +74,7 @@ var _loadout: Loadout
 var _skill_slot: SkillSlot
 var _boss: Boss
 var _map: ArenaMap
+var _hit_fx: HitFx
 
 var _targets: Array = []          # [{"name": String, "object": Object}]
 var _controls: Dictionary = {}    # "Target.prop" -> {obj, prop, control, value_label, is_bool, is_int}
@@ -92,6 +109,7 @@ func _ready() -> void:
 	_skill_slot = _player.get_node_or_null("SkillSlot")
 	_boss = get_node_or_null(boss_path) as Boss
 	_map = get_node_or_null(map_path) as ArenaMap
+	_hit_fx = get_node_or_null(hit_fx_path) as HitFx
 
 	_weapon_holder.state_changed.connect(_on_weapon_state_changed)
 	_dummy_health.damaged.connect(_on_dummy_damaged)
@@ -138,6 +156,15 @@ func _ready() -> void:
 
 	if _map:
 		_targets.append({"name": "Map", "object": _map})
+
+	# Hit feel: the master switches, the three effect nodes, and one section per hit type (its .tres numbers).
+	if _hit_fx:
+		_targets.append({"name": "HitFx", "object": _hit_fx})
+		_targets.append({"name": "HitStop", "object": _hit_fx.stop})
+		_targets.append({"name": "CameraShake", "object": _hit_fx.shake})
+		_targets.append({"name": "HitSound", "object": _hit_fx.sound})
+		for prof in _hit_fx.profile_list():
+			_targets.append({"name": "Hit " + String(prof.hit_type), "object": prof})
 
 	_build_ui()
 	visible = false
@@ -223,6 +250,9 @@ func _update_status_text() -> void:
 		"",
 		"[Map]",
 		_map.status_text() if _map else "n/a",
+		"",
+		"[Hit FX]",
+		_hit_fx.status_text() if _hit_fx else "n/a",
 		"",
 		"[Loadout]",
 		_loadout_status_text(),
@@ -389,6 +419,14 @@ func _build_ui() -> void:
 		_add_button(boss_row2, "Boss passive", func(): _boss.passive = not _boss.passive)
 		_add_button(boss_row2, "Heal boss", func(): _boss.health.hp = _boss.health.max_hp)
 		_add_button(boss_row2, "Restart", func(): get_tree().reload_current_scene())
+
+	if _hit_fx:
+		var fx_row := HBoxContainer.new()
+		tuning_vbox.add_child(fx_row)
+		_add_button(fx_row, "Test sword hit", func(): _hit_fx.test_hit(&"sword"))
+		_add_button(fx_row, "Test parry", func(): _hit_fx.test_hit(&"parry"))
+		_add_button(fx_row, "Test player hit", func(): _hit_fx.test_hit(&"player_hit"))
+		_add_button(fx_row, "Test kill FX", func(): _hit_fx.test_hit(&"kill"))
 
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(340, 480)

@@ -60,7 +60,7 @@ func _ready() -> void:
 
 	# The storyboards use screen coordinates: run them on the screen-sized arena with the old layout.
 	# The showcase scenarios use the real big map instead.
-	if _scenario in ["showcase", "hands"]:
+	if _scenario in ["showcase", "hands", "hitfeel"]:
 		_arena = load("res://scenes/arena.tscn").instantiate()
 		(_arena.get_node("ArenaMap") as ArenaMap).map_seed = _seed
 	else:
@@ -114,7 +114,7 @@ var _cap_gen := 0
 func _build_captions() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
-	if _scenario in ["showcase", "hands"]:
+	if _scenario in ["showcase", "hands", "hitfeel"]:
 		# Small, bottom-centre, semi-transparent; each caption fades out by itself.
 		_cap_panel = PanelContainer.new()
 		_cap_panel.anchor_left = 0.5
@@ -260,6 +260,7 @@ func _run() -> void:
 		"swingfx": await _run_swingfx()
 		"showcase": await _run_showcase()
 		"hands": await _run_hands()
+		"hitfeel": await _run_hitfeel()
 		_: await _run_guard()
 
 func _run_guard() -> void:
@@ -1087,4 +1088,56 @@ func _run_hands() -> void:
 		await get_tree().physics_frame
 	_player.aim_override = Vector2.RIGHT
 	await _wait(0.5)
+	get_tree().quit()
+
+## Hit feel (decision 0023): sword on the dummy and the boss, a parry, the player getting hit, a charged arrow.
+##   tools/demo/record.sh hit_feel --scenario=hitfeel --seed=21
+func _run_hitfeel() -> void:
+	_boss = _arena.get_node("Boss")
+	_overlay(false)
+	_dummy_off(_dummy)
+	_boss.set_brain(Brain.new())          # attacks only when the bot forces one
+	var cam: Camera2D = _player.get_node("Camera")
+	cam.zoom = Vector2(2, 2)
+	_guard.parried.connect(func(_s: Node): _ev["parried"] += 1)
+	_aim_at = _dummy
+	_player.global_position = _dummy.global_position + Vector2(-70, 40)
+	cam.reset_smoothing()
+	await _wait(0.5)
+	await _walk_near(_dummy, 56.0, 2.0)
+	_say("Sword hits: flash, freeze, thud, shake")
+	await _swings(3, 0.5)
+	_dummy.get_node("Health").hp = _dummy.get_node("Health").max_hp
+
+	_aim_at = _boss
+	_player.global_position = _boss.home + Vector2(-230, 0)
+	cam.reset_smoothing()
+	await _wait(0.6)
+	await _walk_near(_boss, 60.0, 4.0)
+	_say("Same on the boss: heavier")
+	await _swings(3, 0.5)
+
+	await _walk_near(_boss, 260.0, 4.0)
+	_say("Parry: biggest freeze, chime")
+	var ch := await _boss_attack("charge")
+	await _until(func(): return ch.phase == BossAttack.Phase.ACTIVE, 3.0)
+	await _until(func(): return _boss.global_position.distance_to(_player.global_position) < 125.0 or ch.phase != BossAttack.Phase.ACTIVE, 2.0)
+	await _tap("parry")
+	await _wait(1.0)
+	print("[demo] parried %d" % _ev["parried"])
+	await _boss_settled()
+
+	await _walk_near(_boss, 75.0, 3.0)
+	_say("You get hit: red flash, shake, no freeze")
+	var sl := await _boss_attack("slam")
+	await _until(func(): return sl.phase == BossAttack.Phase.IDLE, 4.0)
+	await _wait(0.4)
+	await _boss_settled()
+
+	await _walk_near(_boss, 215.0, 3.0)
+	await _tap("weapon_2")
+	await _until(func(): return not _loadout.is_casting(), 3.0)
+	_say("Charged arrow")
+	await _tap("skill")
+	await _wait(1.3)
 	get_tree().quit()

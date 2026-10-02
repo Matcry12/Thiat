@@ -73,8 +73,7 @@ func _ready() -> void:
 	if t:
 		set_target(t)
 	health.died.connect(_on_died)
-	# Combat only emits; the visual decides how to look (CLAUDE.md §5).
-	health.damaged.connect(func(_a: float): visual.on_hit())
+	# Combat only emits; the visual decides how to look (CLAUDE.md §5). Hit flashes come from HitFx.
 	health.damaged.connect(_on_damaged_aggro)
 	phase_changed.connect(visual.set_phase)
 	aggro_changed.connect(visual.set_aggro)

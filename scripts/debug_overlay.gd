@@ -41,7 +41,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		enabled = not enabled
 		_update_label()
 	elif event.is_action_pressed("debug_slowmo"):
-		Engine.time_scale = 0.25 if Engine.time_scale == 1.0 else 1.0
+		var hs := get_tree().get_first_node_in_group("hit_stop") as HitStop
+		if hs:
+			hs.toggle_slowmo()   # HitStop owns time_scale while a hit-stop / kill slow-mo runs
+		else:
+			Engine.time_scale = 0.25 if Engine.time_scale == 1.0 else 1.0
 
 func _process(delta: float) -> void:
 	_track_projectiles()

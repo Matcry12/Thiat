@@ -139,4 +139,4 @@ func _try_hit(area: Area2D) -> void:
 	_hit_this_swing.append(target)
 	var health := hurtbox.get_health()
 	if health:
-		health.take_damage(weapon.damage, owner, weapon.parryable)
+		health.take_damage(weapon.damage, owner, weapon.parryable, &"melee")
