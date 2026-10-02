@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://irytr6tq00f5" path="res://scripts/player.gd" id="1"]
 [ext_resource type="Script" uid="uid://cj3m53hayxeaq" path="res://scripts/visual/sprite_actor_visual.gd" id="2"]
 [ext_resource type="Script" uid="uid://b2k3y42aktkbx" path="res://scripts/components/hurtbox.gd" id="3"]
-[ext_resource type="Script" uid="uid://d0s5saauew0b5" path="res://scripts/components/hitbox.gd" id="4"]
 [ext_resource type="Script" uid="uid://d0awtsvbienb8" path="res://scripts/weapons/weapon_holder.gd" id="5"]
 [ext_resource type="Resource" uid="uid://gvjnvct47q1q" path="res://data/weapons/sword.tres" id="6"]
 [ext_resource type="Script" uid="uid://bdm85dlwvqabq" path="res://scripts/visual/weapon_visual.gd" id="7"]
@@ -13,12 +12,12 @@
 [ext_resource type="Script" uid="uid://cu3cx00235xph" path="res://scripts/components/dodge.gd" id="12"]
 [ext_resource type="Script" uid="uid://b7gjgeew8j7ga" path="res://scripts/components/guard.gd" id="13"]
 [ext_resource type="Script" uid="uid://10nk8ph3115l" path="res://scripts/visual/guard_visual.gd" id="14"]
+[ext_resource type="Script" uid="uid://b8cxxfxugrtmd" path="res://scripts/weapons/weapon_data.gd" id="15_fulsm"]
 [ext_resource type="Script" uid="uid://bjs01qfet1ww8" path="res://scripts/visual/cover_arc.gd" id="17"]
-[ext_resource type="Script" path="res://scripts/components/loadout.gd" id="18"]
+[ext_resource type="Script" uid="uid://cme80rjx7alqm" path="res://scripts/components/loadout.gd" id="18"]
 [ext_resource type="Resource" path="res://data/weapons/bow.tres" id="19"]
-
-[ext_resource type="Script" path="res://scripts/components/skill_slot.gd" id="20"]
-[ext_resource type="Script" path="res://scripts/visual/swing_fx.gd" id="21"]
+[ext_resource type="Script" uid="uid://ba6y0wkjj6tcb" path="res://scripts/components/skill_slot.gd" id="20"]
+[ext_resource type="Script" uid="uid://bhkdre3n8h4wt" path="res://scripts/visual/swing_fx.gd" id="21"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -51,13 +50,12 @@ texture = ExtResource("9")
 position = Vector2(0, -9)
 script = ExtResource("7")
 preview_guard_pose = true
-preview_weapon_from = NodePath("../Loadout")
 
 [node name="SwingPivot" type="Node2D" parent="WeaponVisual" unique_id=1733221144]
 position = Vector2(6, 15)
 rotation = -1.5707964
 
-[node name="SwingFx" type="Node2D" parent="WeaponVisual"]
+[node name="SwingFx" type="Node2D" parent="WeaponVisual" unique_id=2963882]
 script = ExtResource("21")
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=186865809]
@@ -95,11 +93,11 @@ cover_path = NodePath("CoverArc")
 position = Vector2(0, -9)
 script = ExtResource("17")
 
-[node name="Loadout" type="Node" parent="."]
+[node name="Loadout" type="Node" parent="." unique_id=519427683]
 script = ExtResource("18")
-weapons = Array[ExtResource("6")]([ExtResource("6"), ExtResource("19")])
+weapons = Array[ExtResource("15_fulsm")]([ExtResource("6"), ExtResource("19")])
 weapon_holder_path = NodePath("../WeaponHolder")
 
-[node name="SkillSlot" type="Node" parent="."]
+[node name="SkillSlot" type="Node" parent="." unique_id=1996829668]
 script = ExtResource("20")
 weapon_holder_path = NodePath("../WeaponHolder")
