@@ -62,6 +62,7 @@ def ellipse(w, h, fill, name=""):
 
 if __name__ == "__main__":
     capsule(32, 44, (235, 235, 240, 255), name="player")
+    capsule(32, 30, (235, 235, 240, 255), name="player_chibi")   # squat egg, same style (hands slice)
     capsule(28, 38, (210, 70, 70, 255), name="enemy")
     capsule(96, 120, (120, 30, 30, 255), name="boss")
     # Weapons point +X (right) at rotation 0, pivot at the LEFT edge = the hand.

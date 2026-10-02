@@ -337,6 +337,13 @@ together — an exception to "no stacking unverified slices".
    second ring, idle enrage) — all fixed in one round · user (2026-09-30): gameplay acceptable; wants smoother visuals + better poses.
 5. **Tune** — adjust only the numbers in §2 until it feels right. No new features.
 
+**Visual slice V2 — chibi egg + round hands (2026-10-02, user's call).** User rejected pixel-sprite
+characters (Gemini + hand-cleaned); kept the egg placeholder, 32x30, plus 2 hands that sit on
+`HandMain`/`HandOff` markers in each weapon model (bow off-hand pulls while drawing).
+   Log V2: built by Sonnet 5.5 agent · Opus judge: no gameplay bugs; 2 confirmed (Hands missing
+   from F3, invisible in editor) + untested real wiring + pre-existing flaky test_swing_snap (7/15
+   fails on base) — all fixed in one round · user: pending.
+
 **Visual slice V1 — grass arena (2026-10-01, outside the v0 numbered plan, user's call).**
    *Does a generated arena look natural enough to keep?* Pixel Crawler tiles, seeded generator,
    dirt patches, deco, bush border, rocks outside the FightZone ([0021](../decision/0021-procedural-arena.md)).

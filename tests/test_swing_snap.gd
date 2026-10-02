@@ -21,13 +21,21 @@ func _init():
 	await _until_phase(WeaponHolder.Phase.ACTIVE)
 	var t := 0.0
 	var at_end_after := -1.0
+	var first_dt := -1.0          # the frame the state arrived in (it arrives mid-frame)
+	var cross_dt := 0.0           # length of the frame in which the blade got there
 	while _holder.phase == WeaponHolder.Phase.ACTIVE:
 		await process_frame
-		t += wv.get_process_delta_time()
+		var dt := wv.get_process_delta_time()
+		t += dt
+		if first_dt < 0.0:
+			first_dt = dt
 		if at_end_after < 0.0 and absf(rad_to_deg(pivot.rotation) - end_deg) <= 3.0:
 			at_end_after = t
-	# The snap may take one frame more than snap_time (the state arrives mid-frame).
-	var snapped_ok: bool = at_end_after >= 0.0 and at_end_after <= wv.snap_time + 2.0 * wv.get_process_delta_time()
+			cross_dt = dt
+	# Deterministic: frame lengths vary run to run, so judge by what is counted, not by one
+	# frame's length. The blade may only be late by the frame the state arrived in plus the frame
+	# it crossed in: the time BEFORE the crossing frame must not exceed snap_time + first frame.
+	var snapped_ok: bool = at_end_after >= 0.0 and (at_end_after - cross_dt) <= wv.snap_time + first_dt + 0.0001
 	print("blade at +arc/2 after %.3fs of ACTIVE (snap_time %.3f)  %s" % [at_end_after, wv.snap_time, snapped_ok])
 	ok = ok and snapped_ok
 	# RECOVERY: the blade stays at the end until (about) follow_through_hold has passed.

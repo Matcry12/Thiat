@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://d0awtsvbienb8" path="res://scripts/weapons/weapon_holder.gd" id="5"]
 [ext_resource type="Resource" uid="uid://gvjnvct47q1q" path="res://data/weapons/sword.tres" id="6"]
 [ext_resource type="Script" uid="uid://bdm85dlwvqabq" path="res://scripts/visual/weapon_visual.gd" id="7"]
-[ext_resource type="Texture2D" uid="uid://bbeyf40b8qn4h" path="res://assets/placeholder/player.png" id="8"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/player_chibi.png" id="8"]
 [ext_resource type="Texture2D" uid="uid://c850m4ii26ok3" path="res://assets/placeholder/shadow.png" id="9"]
 [ext_resource type="Script" uid="uid://cfhocpi452k6r" path="res://scripts/components/health.gd" id="11"]
 [ext_resource type="Script" uid="uid://cu3cx00235xph" path="res://scripts/components/dodge.gd" id="12"]
@@ -18,6 +18,7 @@
 [ext_resource type="Resource" path="res://data/weapons/bow.tres" id="19"]
 [ext_resource type="Script" uid="uid://ba6y0wkjj6tcb" path="res://scripts/components/skill_slot.gd" id="20"]
 [ext_resource type="Script" uid="uid://bhkdre3n8h4wt" path="res://scripts/visual/swing_fx.gd" id="21"]
+[ext_resource type="Script" path="res://scripts/visual/hands_visual.gd" id="22"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -38,7 +39,7 @@ body_texture = ExtResource("8")
 shadow_texture = ExtResource("9")
 
 [node name="Body" type="Sprite2D" parent="Visual" unique_id=557419974]
-position = Vector2(0, -12)
+position = Vector2(0, -7)
 texture = ExtResource("8")
 
 [node name="Shadow" type="Sprite2D" parent="Visual" unique_id=882274028]
@@ -57,6 +58,10 @@ rotation = -1.5707964
 
 [node name="SwingFx" type="Node2D" parent="WeaponVisual" unique_id=2963882]
 script = ExtResource("21")
+
+[node name="Hands" type="Node2D" parent="." unique_id=1873400221]
+position = Vector2(0, -9)
+script = ExtResource("22")
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=186865809]
 collision_layer = 2

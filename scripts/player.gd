@@ -11,6 +11,7 @@ extends CharacterBody2D
 # delete the weapon with it (same trap as the shadow).
 @onready var weapon_visual: WeaponVisual = $WeaponVisual
 @onready var swing_fx: SwingFx = $WeaponVisual/SwingFx
+@onready var hands: HandsVisual = $Hands
 @onready var weapon_holder: WeaponHolder = $WeaponHolder
 @onready var health: Health = $Health
 @onready var dodge: Dodge = $Dodge
@@ -49,6 +50,9 @@ func _ready() -> void:
 	weapon_holder.bind_model(weapon_visual.get_model())
 	weapon_visual.model_changed.connect(swing_fx.bind_model)
 	swing_fx.bind_model(weapon_visual.get_model())
+	weapon_visual.model_changed.connect(hands.bind_model)
+	hands.bind_model(weapon_visual.get_model())
+	skill_slot.skill_state_changed.connect(func(st: String): hands.set_drawing(st == "charge"))
 	guard.state_changed.connect(guard_visual.on_guard_state)
 	guard.tank_changed.connect(func(_c: float, _m: float): guard_visual.set_tank_fill(guard.tank_fraction()))
 	# Block pose: the sword rises while guarding (decision 0015).
@@ -96,6 +100,7 @@ func _physics_process(_delta: float) -> void:
 	# 2.5D: the body stays upright, only the aim indicator/weapon turn (decision 0009).
 	visual.set_aim_angle(aim_direction.angle())
 	weapon_visual.set_aim_angle(aim_direction.angle())
+	hands.set_aim_angle(aim_direction.angle())
 	weapon_holder.aim_direction = aim_direction
 	skill_slot.aim_direction = aim_direction
 	guard.aim_direction = aim_direction
@@ -147,6 +152,9 @@ func _on_weapon_state_changed(state: String) -> void:
 	visual.set_weapon_state(state)
 	weapon_visual.on_weapon_state(state)
 	swing_fx.on_weapon_state(state)
+	# A bow's wind-up is its draw: the off hand pulls back (the piercing charge does the same via the skill).
+	if weapon_holder.weapon and weapon_holder.weapon.behavior == "projectile":
+		hands.set_drawing(state == "windup")
 
 func _on_swap_finished(w: WeaponData) -> void:
 	skill_slot.cancel()   # defensive: swaps are refused while a skill runs

@@ -16,6 +16,12 @@ texture = ExtResource("1")
 centered = false
 offset = Vector2(-8, -44)
 
+[node name="HandMain" type="Marker2D" parent="."]
+position = Vector2(14, 5)
+
+[node name="HandOff" type="Marker2D" parent="."]
+position = Vector2(4, 5)
+
 [node name="Hitbox" type="Area2D" parent="."]
 collision_layer = 8
 collision_mask = 4

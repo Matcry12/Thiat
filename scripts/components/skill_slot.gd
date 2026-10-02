@@ -8,6 +8,9 @@ class_name SkillSlot
 
 @export var weapon_holder_path: NodePath
 
+## Forwarded from the running skill, so visuals can follow it (e.g. the bow draw) without reaching into skills.
+signal skill_state_changed(state: String)
+
 ## Written by the owner every frame; forwarded to the running skill.
 var aim_direction := Vector2.RIGHT
 
@@ -32,6 +35,7 @@ func skill_for(weapon: WeaponData) -> Skill:
 		s.weapon_holder = _weapon_holder
 		assert(s != null, "SkillSlot: %s.skill scene root must extend Skill (scripts/skills/skill.gd)" % weapon.resource_path)
 		add_child(s)   # no owner set on purpose
+		s.state_changed.connect(skill_state_changed.emit)
 		_skills[weapon] = s
 	return _skills[weapon]
 
