@@ -30,7 +30,7 @@ xvfb-run -a --server-args="-screen 0 1152x648x24" \
 [ -f "$RAW" ] || { echo "no video written — see the log above" >&2; exit 1; }
 
 echo "encoding..."
-ffmpeg -y -loglevel error -i "$RAW" -vf "scale=1152:-2" -c:v libx264 -pix_fmt yuv420p \
+ffmpeg -y -loglevel error -i "$RAW" -an -vf "scale=1152:-2:out_range=tv,format=yuv420p" -c:v libx264 -color_range tv \
 	-crf 24 -movflags +faststart "$OUT_DIR/${NAME}.mp4"
 rm -rf "$(dirname "$RAW")"
 

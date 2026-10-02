@@ -43,6 +43,8 @@ var _player_health: Health
 var _caption: Label
 var _subtitle: Label
 var _beat_pool := 0.0
+## Map seed for the showcase scenarios (`--seed=N`).
+var _seed := 21
 
 ## Which storyboard to run — `record.sh <name> --scenario=X` forwards X here
 ## via OS.get_cmdline_user_args() (record.sh passes everything after <name>
@@ -53,9 +55,16 @@ func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--scenario="):
 			_scenario = arg.substr("--scenario=".length())
+		elif arg.begins_with("--seed="):
+			_seed = int(arg.substr("--seed=".length()))
 
 	# The storyboards use screen coordinates: run them on the screen-sized arena with the old layout.
-	_arena = ClassicArena.make()
+	# The showcase scenarios use the real big map instead.
+	if _scenario in ["showcase", "hands"]:
+		_arena = load("res://scenes/arena.tscn").instantiate()
+		(_arena.get_node("ArenaMap") as ArenaMap).map_seed = _seed
+	else:
+		_arena = ClassicArena.make()
 	add_child(_arena)
 	_player = _arena.get_node("Player")
 	_dummy = _arena.get_node("Dummy")
@@ -89,13 +98,46 @@ func _process(_delta: float) -> void:
 	# directional parry read as broken when it was working perfectly.
 	if is_instance_valid(_aim_at) and _player:
 		_player.aim_override = _aim_at.global_position - _player.global_position
+	if _scenario == "showcase" and _player:   # off-camera help: never let the bar run dry
+		if _player_health.hp < 45.0:
+			_player_health.hp = _player_health.max_hp
+		if _guard.tank < _guard.tank_max * 0.3:
+			_guard.tank = _guard.tank_max
 
 func _trace(what: String) -> void:
 	print("[trace %6.2fs] %s" % [Time.get_ticks_msec() / 1000.0, what])
 
+var _cap_panel: PanelContainer
+var _cap_label: Label
+var _cap_gen := 0
+
 func _build_captions() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
+	if _scenario in ["showcase", "hands"]:
+		# Small, bottom-centre, semi-transparent; each caption fades out by itself.
+		_cap_panel = PanelContainer.new()
+		_cap_panel.anchor_left = 0.5
+		_cap_panel.anchor_right = 0.5
+		_cap_panel.anchor_top = 1.0
+		_cap_panel.anchor_bottom = 1.0
+		_cap_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		_cap_panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+		_cap_panel.offset_bottom = -22
+		_cap_panel.visible = false
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(0, 0, 0, 0.55)
+		sb.set_corner_radius_all(8)
+		sb.content_margin_left = 14
+		sb.content_margin_right = 14
+		sb.content_margin_top = 5
+		sb.content_margin_bottom = 6
+		_cap_panel.add_theme_stylebox_override("panel", sb)
+		_cap_label = Label.new()
+		_cap_label.add_theme_font_size_override("font_size", 19)
+		_cap_panel.add_child(_cap_label)
+		layer.add_child(_cap_panel)
+		return
 	_caption = Label.new()
 	_caption.add_theme_font_size_override("font_size", caption_font_size)
 	_caption.position = Vector2(24, 436)
@@ -107,6 +149,16 @@ func _build_captions() -> void:
 	layer.add_child(_subtitle)
 
 func _say(title: String, detail := "") -> void:
+	if _cap_panel:
+		_cap_label.text = title
+		_cap_panel.visible = true
+		_cap_gen += 1
+		var g := _cap_gen
+		get_tree().create_timer(2.8).timeout.connect(func():
+			if g == _cap_gen:
+				_cap_panel.visible = false)
+		print("[demo] ", title)
+		return
 	_caption.text = title
 	_subtitle.text = detail
 	print("[demo] %s — %s" % [title, detail])
@@ -206,6 +258,8 @@ func _run() -> void:
 		"skills": await _run_skills()
 		"boss": await _run_boss()
 		"swingfx": await _run_swingfx()
+		"showcase": await _run_showcase()
+		"hands": await _run_hands()
 		_: await _run_guard()
 
 func _run_guard() -> void:
@@ -719,4 +773,318 @@ func _run_swingfx() -> void:
 	await _wait(0.3)
 	await swing.call()
 	Engine.time_scale = 1.0
+	get_tree().quit()
+
+# ---------------------------------------------------------------------------
+# Showcase videos (docs/demo/showcase.mp4, hands_closeup.mp4). Real arena, big map.
+#   tools/demo/record.sh showcase --scenario=showcase --seed=21
+#   tools/demo/record.sh hands_closeup --scenario=hands --seed=21
+
+## Holds the four move keys for a direction vector (zero = release all).
+func _hold_vec(v: Vector2) -> void:
+	var n := v.normalized() if v.length() > 0.01 else Vector2.ZERO
+	_hold("move_right", n.x > 0.35)
+	_hold("move_left", n.x < -0.35)
+	_hold("move_down", n.y > 0.35)
+	_hold("move_up", n.y < -0.35)
+
+## Walks to `pos`; sidesteps when a rock holds the player up.
+func _walk(pos: Vector2, tol := 14.0, timeout := 12.0) -> void:
+	var left := timeout
+	var last := _player.global_position
+	var check := 0.0
+	var side := 0.0
+	var side_dir := 1.0
+	while _player.global_position.distance_to(pos) > tol and left > 0.0:
+		var d := pos - _player.global_position
+		var dt := get_physics_process_delta_time()
+		if side > 0.0:
+			side -= dt
+			_hold_vec(Vector2(d.normalized().x * 0.4, side_dir))
+		else:
+			_hold_vec(d)
+			check += dt
+			if check >= 0.4:
+				if _player.global_position.distance_to(last) < 25.0:
+					side = 0.6
+					side_dir = -side_dir
+				last = _player.global_position
+				check = 0.0
+		await get_tree().physics_frame
+		left -= dt
+	_hold_vec(Vector2.ZERO)
+
+## A point inside the boss zone (margin px from its edge): leaving it makes the boss give up.
+func _in_zone(pos: Vector2, margin := 130.0) -> Vector2:
+	var z := _boss.get_fight_zone()
+	var size: Vector2 = ((z.get_node("CollisionShape2D") as CollisionShape2D).shape as RectangleShape2D).size
+	var r := Rect2(z.global_position - size * 0.5 + Vector2(margin, margin), size - Vector2(margin, margin) * 2.0)
+	return Vector2(clampf(pos.x, r.position.x, r.end.x), clampf(pos.y, r.position.y, r.end.y))
+
+## Walks to `dist` px from `node`, on the side the player is already on.
+func _walk_near(node: Node2D, dist: float, timeout := 4.0) -> void:
+	var from := (_player.global_position - node.global_position).normalized()
+	var goal := node.global_position + from * dist
+	if node == _boss:
+		goal = _in_zone(goal)
+	await _walk(goal, 12.0, timeout)
+	print("[demo]   walk_near want %.0f got %.0f (%s)" % [dist, _player.global_position.distance_to(node.global_position), node.name])
+
+func _swings(n: int, gap := 0.5) -> void:
+	for i in n:
+		await _tap("attack")
+		await _wait(gap)
+
+## Perpendicular to `d`, on the side that points toward the zone centre.
+func _side_to_zone(d: Vector2) -> Vector2:
+	var perp := d.rotated(PI / 2.0)
+	var to_c := _boss.get_fight_zone().global_position - _player.global_position
+	return perp if perp.dot(to_c) >= 0.0 else -perp
+
+## Dodges sideways (perpendicular to the boss) so the dash is not into the hit.
+func _dodge_side() -> void:
+	var to_b := _boss.global_position - _player.global_position
+	_hold_vec(_side_to_zone(to_b))
+	await _tap("dodge")
+	await _wait(0.28)
+	_hold_vec(Vector2.ZERO)
+
+## A small autopilot for the free-for-all parts: keeps a good distance, shoots/slashes at the
+## boss and dodges a wind-up late in its telegraph.
+func _fight(secs: float, bow: bool, until_dead := false) -> void:
+	var t := 0.0
+	var next_atk := 0.3
+	var lock := 0.0
+	var lock_dir := Vector2.ZERO
+	while t < secs and _boss.mode != Boss.Mode.DEAD:
+		await get_tree().physics_frame
+		var dt := get_physics_process_delta_time()
+		t += dt
+		next_atk -= dt
+		if int(t * 60.0) % 90 == 0:
+			print("[demo]   fight t=%.1f player %s boss %s aggro %d hp %.0f act '%s'" % [t, _player.global_position.round(), _boss.global_position.round(), _boss.aggro, _boss.health.hp, _boss.current_action])
+		var d := _boss.global_position - _player.global_position
+		var dist := d.length()
+		var dir := d.normalized()
+		var att: BossAttack = _boss.get_attack(_boss.current_action) if _boss.current_action != "" else null
+		var move := Vector2.ZERO
+		if lock > 0.0:
+			lock -= dt
+			move = lock_dir
+		else:
+			if att and att.phase == BossAttack.Phase.TELEGRAPH and att.phase_time() >= att.telegraph_time * 0.7 \
+					and _player.dodge.cooldown_remaining() <= 0.0 and (dist < 420.0 or _boss.current_action == "charge"):
+				lock_dir = _side_to_zone(dir)
+				lock = 0.3
+				_hold_vec(lock_dir)
+				_tap("dodge")
+				continue
+			if bow:
+				# Stand ~280 px from the boss but inside the zone (else it gives up and heals).
+				var want := _in_zone(_boss.global_position - dir * 280.0)
+				if _player.global_position.distance_to(want) > 40.0:
+					move = want - _player.global_position
+				else:
+					move = dir.rotated(PI / 2.0) * 0.6
+			else:
+				if att and dist < 170.0:
+					move = -dir
+				elif dist > 68.0:
+					move = dir
+		_hold_vec(move)
+		var reach := 480.0 if bow else 88.0
+		if next_atk <= 0.0 and dist < reach and lock <= 0.0 and not _loadout.is_casting():
+			next_atk = 0.7 if bow else 0.6
+			_tap("attack")
+	_hold_vec(Vector2.ZERO)
+
+func _run_showcase() -> void:
+	_boss = _arena.get_node("Boss")
+	_overlay(false)                       # no F1 outlines
+	_dummy_off(_dummy)
+	_boss.set_brain(Brain.new())          # asleep-ish: attacks only when the bot forces one
+	var cam: Camera2D = _player.get_node("Camera")
+	_boss.health.died.connect(func(): _hold_vec(Vector2.ZERO))
+	_guard.parried.connect(func(_s: Node): _ev["parried"] += 1)
+	var dummy_health: Health = _dummy.get_node("Health")
+
+	# 1. Spawn, walk to the dummy.
+	_aim_at = null
+	_player.aim_override = Vector2.RIGHT
+	await _wait(0.8)
+	_say("Chibi hero, sword in hand. Walk to the boss")
+	_aim_at = _dummy
+	await _walk(_dummy.global_position + Vector2(-90, 60), 14.0, 8.0)
+	await _walk_near(_dummy, 56.0, 2.0)
+	_say("Sword combo on the training dummy")
+	await _wait(0.3)
+	await _swings(3, 0.55)
+	dummy_health.hp = dummy_health.max_hp
+
+	# 2. Walk to the boss area.
+	_aim_at = null
+	_player.aim_override = Vector2.RIGHT
+	_say("Camera follows you across the map")
+	await _walk(Vector2(900, 600), 20.0, 8.0)
+	await _walk(Vector2(1180, 650), 20.0, 6.0)
+	_say("The boss sleeps until you enter its area")
+	await _wait(1.0)
+	_aim_at = _boss
+	await _walk(Vector2(1340, 650), 20.0, 4.0)
+	_say("Boss wakes up!")
+	await _until(func(): return _boss.aggro == Boss.Aggro.ENGAGED, 2.0)
+	await _wait(1.3)
+
+	# 3. Sword combo on the boss.
+	await _walk_near(_boss, 60.0, 5.0)
+	_say("Sword combo")
+	await _swings(3, 0.5)
+	await _wait(0.2)
+
+	# 4. Dodge a slam.
+	await _walk_near(_boss, 70.0, 2.0)
+	_say("Dodge through the slam")
+	var a := await _boss_attack("slam")
+	await _wait(a.telegraph_time * 0.72)
+	await _dodge_side()
+	await _until(func(): return a.phase == BossAttack.Phase.IDLE, 3.0)
+	await _boss_settled()
+	await _wait(0.4)
+
+	# 5. Parry a charge, then punish.
+	await _walk_near(_boss, 260.0, 4.0)
+	_say("Parry the charge: the boss is stunned")
+	_ev["parried"] = 0
+	var ch := await _boss_attack("charge")
+	await _until(func(): return ch.phase == BossAttack.Phase.ACTIVE, 3.0)
+	var okd := await _until(func(): return _boss.global_position.distance_to(_player.global_position) < 125.0 or ch.phase != BossAttack.Phase.ACTIVE, 2.0)
+	print("[demo]   charge: dist %.0f phase %d ok %s boss %s player %s" % [_boss.global_position.distance_to(_player.global_position), ch.phase, okd, _boss.global_position.round(), _player.global_position.round()])
+	await _tap("parry")
+	await _wait(0.15)
+	print("[demo] parried %d, staggered %s" % [_ev["parried"], _boss.mode == Boss.Mode.STAGGER])
+	await _walk_near(_boss, 58.0, 2.0)
+	await _swings(2, 0.45)
+	await _boss_settled()
+
+	# 6. Guard against the spread.
+	await _walk_near(_boss, 280.0, 3.0)
+	_say("Hold F to guard against bolts")
+	var sp := await _boss_attack("spread")
+	_hold("parry", true)
+	await _until(func(): return sp.phase == BossAttack.Phase.IDLE, 4.0)
+	await _wait(0.9)
+	_hold("parry", false)
+	await _boss_settled()
+
+	# 7. E lunge slash.
+	await _walk_near(_boss, 185.0, 3.0)
+	await _wait(0.2)
+	_say("E: lunge slash")
+	await _tap("skill")
+	await _until(func(): return not _player.skill_slot.is_active(), 2.0)
+	await _wait(0.6)
+	await _walk_near(_boss, 58.0, 2.0)
+	await _swings(2, 0.5)
+
+	# 8. Swap to the bow, charged piercing shot.
+	await _walk_near(_boss, 215.0, 3.0)
+	_say("Swap to the bow")
+	await _tap("weapon_2")
+	await _until(func(): return not _loadout.is_casting(), 3.0)
+	create_tween().tween_property(cam, "zoom", Vector2(1.3, 1.3), 0.7)
+	await _wait(0.9)
+	_say("E: charged piercing shot (watch the back hand)")
+	await _tap("skill")
+	await _wait(1.2)
+	_say("Normal arrows")
+	await _swings(3, 0.7)
+	create_tween().tween_property(cam, "zoom", Vector2.ONE, 0.7)
+
+	# 9. Phase 2 and the ring.
+	_say("Phase 2 below 60% HP: new ring attack")
+	_boss.force_phase_2()
+	await _wait(1.2)
+	var ring := _boss.get_attack("ring")
+	var ra := await _boss_attack("ring")
+	await _wait(0.5)
+	await _dodge_side()
+	await _until(func(): return ring.phase == BossAttack.Phase.IDLE, 4.0)
+	await _boss_settled()
+	_say("Free fight in phase 2")
+	_boss.set_brain(ScriptedBrain.new())
+	await _fight(9.0, true)
+
+	# 10. Leash: leave the area.
+	_say("Leave the area: the boss gives up")
+	_hold_vec(Vector2.ZERO)
+	await _walk(Vector2(1020, 650), 20.0, 8.0)
+	await _until(func(): return _boss.aggro == Boss.Aggro.RETURNING, 6.0)
+	_say("It turns pale, heals fully and walks home")
+	await _until(func(): return _boss.aggro == Boss.Aggro.IDLE, 12.0)
+	await _wait(0.8)
+
+	# 11. Come back and finish.
+	_say("Come back and finish the fight")
+	await _walk(Vector2(1500, 650), 25.0, 8.0)
+	_boss.set_brain(ScriptedBrain.new())
+	_boss.health.hp = 130.0
+	await _fight(30.0, true)
+	await _until(func(): return _boss.mode == Boss.Mode.DEAD, 6.0)
+	_hold_vec(Vector2.ZERO)
+	await _wait(4.0)
+	get_tree().quit()
+
+func _run_hands() -> void:
+	_arena.get_node("Boss").passive = true
+	_overlay(false)
+	_dummy_off(_dummy)
+	_dummy.global_position = Vector2(200, 200)
+	_player.global_position = Vector2(760, 760)
+	var cam: Camera2D = _player.get_node("Camera")
+	cam.zoom = Vector2(3, 3)
+	cam.reset_smoothing()
+	_aim_at = null
+	_player.aim_override = Vector2.RIGHT
+	await _wait(0.5)
+	_say("Idle")
+	await _wait(1.1)
+	_say("Sword swing: wind-up, snap, slash")
+	await _swings(2, 0.9)
+	Engine.time_scale = 0.3
+	_say("Same swing in slow motion")
+	await _wait(0.2)
+	await _tap("attack")
+	await _wait(1.0)
+	Engine.time_scale = 1.0
+	_say("Guard")
+	_hold("parry", true)
+	await _wait(1.2)
+	_hold("parry", false)
+	await _wait(0.4)
+	_say("Dodge")
+	_hold("move_left", true)
+	await _tap("dodge")
+	await _wait(0.3)
+	_hold("move_left", false)
+	await _wait(0.8)
+	_say("Swap to the bow")
+	await _tap("weapon_2")
+	await _until(func(): return not _loadout.is_casting(), 3.0)
+	await _wait(0.5)
+	_say("Bow draw: the back hand pulls")
+	Engine.time_scale = 0.5
+	await _tap("attack")
+	await _wait(1.0)
+	_say("Charged shot (E)")
+	await _tap("skill")
+	await _wait(1.2)
+	Engine.time_scale = 1.0
+	_say("Aim around: the hands mirror left and right")
+	var ang := 0.0
+	while ang < TAU * 1.0:
+		ang += get_physics_process_delta_time() * TAU / 3.0
+		_player.aim_override = Vector2.RIGHT.rotated(ang)
+		await get_tree().physics_frame
+	_player.aim_override = Vector2.RIGHT
+	await _wait(0.5)
 	get_tree().quit()
