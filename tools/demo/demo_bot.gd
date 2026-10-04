@@ -60,7 +60,7 @@ func _ready() -> void:
 
 	# The storyboards use screen coordinates: run them on the screen-sized arena with the old layout.
 	# The showcase scenarios use the real big map instead.
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust"]:
 		_arena = load("res://scenes/arena.tscn").instantiate()
 		(_arena.get_node("ArenaMap") as ArenaMap).map_seed = _seed
 	else:
@@ -114,7 +114,7 @@ var _cap_gen := 0
 func _build_captions() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust"]:
 		# Small, bottom-centre, semi-transparent; each caption fades out by itself.
 		_cap_panel = PanelContainer.new()
 		_cap_panel.anchor_left = 0.5
@@ -264,6 +264,7 @@ func _run() -> void:
 		"hitfeel2": await _run_hitfeel2()
 		"charanim": await _run_charanim()
 		"runbounce": await _run_runbounce()
+		"rundust": await _run_rundust()
 		_: await _run_guard()
 
 func _run_guard() -> void:
@@ -1284,4 +1285,49 @@ func _run_runbounce() -> void:
 			_player.aim_override = d
 			await _wait(1.0)
 	_hold_vec(Vector2.ZERO)
+	get_tree().quit()
+
+## Shadow breathing + dust puffs: FPS=60 tools/demo/record.sh run_dust_shadow --scenario=rundust --seed=21
+func _run_rundust() -> void:
+	_arena.get_node("Boss").passive = true
+	_overlay(false)
+	_dummy_off(_dummy)
+	_player.global_position = Vector2(760, 760)
+	_dummy.global_position = Vector2(860, 900)
+	var cam: Camera2D = _player.get_node("Camera")
+	cam.zoom = Vector2(3, 3)
+	cam.reset_smoothing()
+	_aim_at = null
+	var vis: SpriteActorVisual = _player.get_node("Visual")
+	vis.run_bounce_on = true
+	_say("run: left, right, up, down")
+	for d in [Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN]:
+		_hold_vec(d)
+		_player.aim_override = d
+		await _wait(0.9)
+	_hold_vec(Vector2.ZERO)
+	await _wait(0.6)
+	_say("start from standing")
+	_hold_vec(Vector2.RIGHT)
+	_player.aim_override = Vector2.RIGHT
+	await _wait(0.9)
+	_hold_vec(Vector2.ZERO)
+	await _wait(0.5)
+	_say("slow motion 0.25x: shadow shrinks on lift")
+	Engine.time_scale = 0.25
+	_hold_vec(Vector2.LEFT)
+	_player.aim_override = Vector2.LEFT
+	await _wait(0.5)   # waits scaled time? see below
+	_hold_vec(Vector2.ZERO)
+	Engine.time_scale = 1.0
+	await _wait(0.4)
+	_say("dodge")
+	for d in [Vector2.RIGHT, Vector2.LEFT]:
+		_hold_vec(d)
+		_player.aim_override = d
+		await _wait(0.3)
+		await _tap("dodge")
+		await _wait(0.9)
+	_hold_vec(Vector2.ZERO)
+	await _wait(0.5)
 	get_tree().quit()

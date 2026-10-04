@@ -45,7 +45,15 @@ enum SnapMode { NONE, WORLD_PX, ART_PX }
 @export var squash_time := 0.06                           ## seconds the squash lasts, fading back to normal
 @export var squash_frames := PackedInt32Array([0, 3])     ## 0-based run frames where a foot lands
 @export var feet_row := 29.0                              ## art row (from sprite top) of the feet's bottom edge; squash keeps this row still
+@export_group("Shadow (breathes with the bounce)")
+@export var shadow_on := true
+@export var shadow_min_scale := 0.8   ## Shadow scale at full lift (1 = no change)
+@export var shadow_min_alpha := 0.75  ## Shadow opacity at full lift (1 = no change)
 @export_group("")
+
+## Run-bounce events for RunDust (and any future effect). The visual announces; listeners decide.
+signal landed        ## lift just returned to 0 while running
+signal run_started   ## standing -> running
 
 ## Body is a Sprite2D (static, e.g. the dummy) or an AnimatedSprite2D (the player). Both share
 ## flip_h / modulate / material, so flash, tint and recoil need no special case.
@@ -59,6 +67,9 @@ var _bob_t := 0.0
 var _rest_scale := Vector2.ONE
 var _last_frame := -1
 var _squash_left := 0.0
+var _prev_lift := 0.0
+var _shadow_rest_scale := Vector2.ONE
+var _shadow_rest_alpha := 1.0
 
 ## "idle"/"run" fps = SpriteFrames' own speed * speed_scale, so the .tres is never written to.
 func _anim() -> AnimatedSprite2D:
@@ -78,10 +89,31 @@ func status_text() -> String:
 	var a := _anim()
 	if a == null or a.sprite_frames == null:
 		return "static body"
-	return "anim: %s  frame: %d/%d  fps: %.1f  y: %+.1f  squash: %.2f" % [a.animation, a.frame + 1, a.sprite_frames.get_frame_count(a.animation), a.sprite_frames.get_animation_speed(a.animation) * a.speed_scale, a.position.y - _rest_position.y, _squash_left]
+	return "anim: %s  frame: %d/%d  fps: %.1f  y: %+.1f  squash: %.2f  shadow: %.2f  dust: %d" % [a.animation, a.frame + 1, a.sprite_frames.get_frame_count(a.animation), a.sprite_frames.get_animation_speed(a.animation) * a.speed_scale, a.position.y - _rest_position.y, _squash_left, _shadow_scale_now(), _dust_alive()]
+
+func _shadow_scale_now() -> float:
+	return shadow.scale.x / _shadow_rest_scale.x if shadow else 1.0
+
+func _dust_alive() -> int:
+	var d := get_node_or_null("RunDust")
+	return d.alive_count() if d else 0
+
+## The ONLY writer of Shadow.scale / alpha (never its position: that stays hand-placed). `lift` is world px.
+func _update_shadow(lift: float) -> void:
+	if shadow == null:
+		return
+	var k := 0.0
+	if shadow_on:
+		var full := bounce_amp_px if bounce_mode == BounceMode.SMOOTH else maxf(float(Array(bounce_offsets).max()) * bounce_px * _rest_scale.y, 0.001)
+		k = clampf(lift / maxf(full, 0.001), 0.0, 1.0)
+	shadow.scale = _shadow_rest_scale * lerpf(1.0, shadow_min_scale, k)
+	shadow.modulate.a = _shadow_rest_alpha * lerpf(1.0, shadow_min_alpha, k)
 
 func _ready() -> void:
 	_apply_all()
+	if not Engine.is_editor_hint() and has_node("Shadow"):
+		_shadow_rest_scale = $Shadow.scale
+		_shadow_rest_alpha = $Shadow.modulate.a
 	var b := get_node_or_null("Body") as Node2D
 	if b:
 		_rest_position = b.position
@@ -121,6 +153,8 @@ func _process(delta: float) -> void:
 func _update_run_bounce(a: AnimatedSprite2D, delta: float) -> void:
 	if not (_running and run_bounce_on and a.animation == &"run"):
 		_last_frame = -1
+		_prev_lift = 0.0
+		_update_shadow(0.0)
 		_reset_body(a)
 		return
 	var f := a.frame
@@ -142,6 +176,10 @@ func _update_run_bounce(a: AnimatedSprite2D, delta: float) -> void:
 		if bounce_snap:
 			lift = roundf(lift)
 		lift_world = lift * _rest_scale.y
+	_update_shadow(lift_world)
+	if lift_world <= 0.0 and _prev_lift > 0.0:
+		landed.emit()
+	_prev_lift = lift_world
 	var k := (_squash_left / squash_time) if (squash_on and squash_time > 0.0) else 0.0
 	a.scale = _rest_scale * Vector2(1.0 + squash_amount * k, 1.0 - squash_amount * k)
 	# feet stay put: the sprite is centred, so the feet sit (feet_row - h/2) art px below the node origin
@@ -157,9 +195,14 @@ func flash_target() -> CanvasItem:
 	return get_node_or_null("Body") as CanvasItem
 
 func set_move_state(state: String) -> void:
+	var was_running := _running
 	_running = state == "run"
+	if _running and not was_running:
+		run_started.emit()
 	_play(&"run" if _running else &"idle")   # dodge counts as run too
 	if not _running:
+		_prev_lift = 0.0
+		_update_shadow(0.0)
 		body.position = _rest_position
 		body.scale = _rest_scale
 		_last_frame = -1

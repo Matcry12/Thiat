@@ -21,6 +21,7 @@
 [ext_resource type="Script" uid="uid://bhkdre3n8h4wt" path="res://scripts/visual/swing_fx.gd" id="21"]
 [ext_resource type="Script" path="res://scripts/visual/hands_visual.gd" id="22"]
 [ext_resource type="Script" path="res://scripts/components/knockback.gd" id="kb_script"]
+[ext_resource type="Script" path="res://scripts/visual/run_dust.gd" id="dust_script"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -51,6 +52,10 @@ autoplay = "idle"
 z_index = -1
 position = Vector2(0, 4)
 texture = ExtResource("9")
+
+[node name="RunDust" type="Node2D" parent="Visual"]
+z_index = -1
+script = ExtResource("dust_script")
 
 [node name="WeaponVisual" type="Node2D" parent="." unique_id=1080354139]
 position = Vector2(0, -9)

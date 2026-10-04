@@ -154,6 +154,7 @@ func _ready() -> void:
 		{"name": "Player", "object": _player},
 		{"name": "WeaponVisual", "object": _player.get_node("WeaponVisual")},
 		{"name": "Visual", "object": _player.visual},
+		{"name": "RunDust", "object": _player.get_node("Visual/RunDust")},
 		{"name": "Dodge", "object": _dodge},
 		{"name": "Guard", "object": _guard},
 		{"name": "GuardVisual", "object": _guard_visual},
