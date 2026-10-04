@@ -3,6 +3,9 @@ class_name WeaponData
 ## Data-driven weapon numbers. A new weapon is a new .tres file, zero code.
 
 @export_enum("arc", "projectile") var behavior := "arc"
+## HUD hotbar look. Both optional: no icon = the model's Art sprite is shown; no name = the file name prettified.
+@export var icon: Texture2D
+@export var display_name := ""
 @export var damage := 30.0
 @export var windup := 0.15
 @export var active := 0.1
@@ -50,3 +53,11 @@ class_name WeaponData
 ## a new scene, nothing else changes. Cooldown is per weapon, kept by SkillSlot.
 @export var skill: PackedScene
 @export var skill_cooldown := 6.0
+
+## Name shown in the hotbar: display_name, else "iron_sword.tres" -> "Iron Sword".
+func item_name() -> String:
+	if display_name != "":
+		return display_name
+	if resource_path != "":
+		return resource_path.get_file().get_basename().replace("_", " ").capitalize()
+	return "Weapon"

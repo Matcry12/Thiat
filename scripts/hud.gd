@@ -1,7 +1,7 @@
 extends CanvasLayer
 class_name HUD
-## Ugly-on-purpose HUD (prototype-v0 §3: throwaway, ugly is fine, must exist).
-## Player HP bar, and the dodge cooldown as a number — a gated action with no
+## HUD. Top-right: HealthBar + Hotbar (scripts/ui/, decision 0024). Bottom-left: still
+## the ugly prototype text (dodge / E skill / guard), a later slice. The dodge cooldown is a number — a gated action with no
 ## visible timer reads as broken (CLAUDE.md rule 7).
 ##
 ## No shield bar here: the guard's shield is the curved GuardBar next to the
@@ -9,6 +9,12 @@ class_name HUD
 
 @export var player_path: NodePath
 @export var boss_path: NodePath
+@export var tuning_panel_path: NodePath
+## Top-right block: distance from the screen edge, and how far it moves while the F3 panel
+## (352 px wide, full height, right edge) is open: left to clear it, down to clear the boss bar.
+@export var margin := Vector2i(16, 12)
+@export var block_gap := 8
+@export var f3_shift := Vector2i(368, 64)
 
 var _health: Health
 var _dodge: Dodge
@@ -17,9 +23,11 @@ var _skill_slot: SkillSlot
 var _guard: Guard
 var _boss: Boss
 
-var _hp_bar: ProgressBar
+var _health_bar: HealthBar
+var _hotbar: Hotbar
+var _block: VBoxContainer
+var _tuning: CanvasLayer
 var _dodge_label: Label
-var _weapon_label: Label
 var _skill_label: Label
 var _guard_label: Label
 var _boss_bar: ProgressBar
@@ -34,17 +42,22 @@ func _ready() -> void:
 	_skill_slot = player.get_node_or_null("SkillSlot")
 	_guard = player.get_node_or_null("Guard")
 	_boss = get_node_or_null(boss_path) as Boss
+	_tuning = get_node_or_null(tuning_panel_path) as CanvasLayer
 	_build_ui()
 
+func health_bar() -> HealthBar:
+	return _health_bar
+
+func hotbar() -> Hotbar:
+	return _hotbar
+
 func _process(_delta: float) -> void:
-	if _health:
-		_hp_bar.max_value = _health.max_hp
-		_hp_bar.value = _health.hp
+	var shift := f3_shift if (_tuning and _tuning.visible) else Vector2i.ZERO
+	_block.offset_right = -margin.x - shift.x
+	_block.offset_top = margin.y + shift.y
 	if _dodge:
 		var cd := _dodge.cooldown_remaining()
 		_dodge_label.text = "dodge: ready" if cd <= 0.0 else "dodge: %.1fs" % cd
-	if _loadout:
-		_weapon_label.text = "weapon: %s | swap: %s" % [_weapon_name(), _swap_text()]
 	if _skill_slot and _loadout:
 		_skill_label.text = _skill_text()
 	if _guard:
@@ -69,18 +82,6 @@ func _skill_text() -> String:
 	var cd := _skill_slot.cooldown_left(w)
 	return "E: %s ready" % s.skill_name if cd <= 0.0 else "E: %.1fs" % cd
 
-func _weapon_name() -> String:
-	var w: WeaponData = _loadout.active_weapon()
-	if w == null:
-		return "(none)"
-	return w.resource_path.get_file().get_basename() if w.resource_path != "" else "(unsaved)"
-
-func _swap_text() -> String:
-	if _loadout.is_casting():
-		return "swapping… %.1fs" % _loadout.cast_left()
-	var cd := _loadout.cooldown_left()
-	return "ready" if cd <= 0.0 else "%.1fs" % cd
-
 func _build_ui() -> void:
 	var root := Control.new()
 	root.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
@@ -91,17 +92,8 @@ func _build_ui() -> void:
 	var vbox := VBoxContainer.new()
 	root.add_child(vbox)
 
-	_hp_bar = ProgressBar.new()
-	_hp_bar.custom_minimum_size = Vector2(220, 18)
-	_hp_bar.show_percentage = false
-	_hp_bar.modulate = Color.RED
-	vbox.add_child(_hp_bar)
-
 	_dodge_label = Label.new()
 	vbox.add_child(_dodge_label)
-
-	_weapon_label = Label.new()
-	vbox.add_child(_weapon_label)
 
 	_skill_label = Label.new()
 	vbox.add_child(_skill_label)
@@ -109,8 +101,27 @@ func _build_ui() -> void:
 	_guard_label = Label.new()
 	vbox.add_child(_guard_label)
 
+	_build_top_right()
 	if _boss:
 		_build_boss_bar()
+
+## Top-right block: life bar, then the hotbar. Right-aligned, so N slots grow to the left.
+func _build_top_right() -> void:
+	_block = VBoxContainer.new()
+	_block.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_block.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	_block.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_block.add_theme_constant_override("separation", block_gap)
+	add_child(_block)
+	_health_bar = HealthBar.new()
+	_health_bar.size_flags_horizontal = Control.SIZE_SHRINK_END
+	_block.add_child(_health_bar)
+	_health_bar.bind(_health)
+	if _loadout:
+		_hotbar = Hotbar.new()
+		_hotbar.size_flags_horizontal = Control.SIZE_SHRINK_END
+		_block.add_child(_hotbar)
+		_hotbar.bind(_loadout)
 
 ## Boss HP, top centre. The thin marker sits where phase 2 starts.
 func _build_boss_bar() -> void:

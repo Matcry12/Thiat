@@ -60,7 +60,7 @@ func _ready() -> void:
 
 	# The storyboards use screen coordinates: run them on the screen-sized arena with the old layout.
 	# The showcase scenarios use the real big map instead.
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud"]:
 		_arena = load("res://scenes/arena.tscn").instantiate()
 		(_arena.get_node("ArenaMap") as ArenaMap).map_seed = _seed
 	else:
@@ -114,7 +114,7 @@ var _cap_gen := 0
 func _build_captions() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud"]:
 		# Small, bottom-centre, semi-transparent; each caption fades out by itself.
 		_cap_panel = PanelContainer.new()
 		_cap_panel.anchor_left = 0.5
@@ -265,6 +265,7 @@ func _run() -> void:
 		"charanim": await _run_charanim()
 		"runbounce": await _run_runbounce()
 		"rundust": await _run_rundust()
+		"hud": await _run_hud()
 		_: await _run_guard()
 
 func _run_guard() -> void:
@@ -1330,4 +1331,30 @@ func _run_rundust() -> void:
 		await _wait(0.9)
 	_hold_vec(Vector2.ZERO)
 	await _wait(0.5)
+	get_tree().quit()
+
+## Top-right HUD: life bar trail, hotbar swap cast + cooldown.
+## FPS=60 tools/demo/record.sh hud_hotbar --scenario=hud --seed=21
+func _run_hud() -> void:
+	_arena.get_node("Boss").passive = true
+	_overlay(false)
+	_dummy_off(_dummy)
+	_aim_at = null
+	_player.aim_override = Vector2.RIGHT
+	await _wait(1.0)
+	_say("Take damage: the lost chunk drains after a short delay")
+	for i in 3:
+		_player_health.take_damage(20.0, null, false)
+		await _wait(1.6)
+	_player_health.take_damage(25.0, null, false)
+	await _wait(2.0)
+	_say("Swap to the bow: slot 2 fills while casting")
+	await _tap("weapon_2")
+	while _loadout.is_casting():
+		await get_tree().physics_frame
+	_say("Swap cooldown: slot 1 is shaded with seconds left")
+	await _wait(5.5)
+	_say("Cooldown over: swap back")
+	await _tap("weapon_1")
+	await _wait(2.0)
 	get_tree().quit()

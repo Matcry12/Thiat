@@ -337,6 +337,9 @@ together — an exception to "no stacking unverified slices".
    second ring, idle enrage) — all fixed in one round · user (2026-09-30): gameplay acceptable; wants smoother visuals + better poses.
 5. **Tune** — adjust only the numbers in §2 until it feels right. No new features.
 
+**UI slice U1 — top-right HUD: life bar + hotbar (2026-10-04).** User: Terraria-like health bar and item change, top right ([0024](../decision/0024-hud-top-right.md)).
+   Log U1: built by Sonnet 5.5 · judge: pending · user: pending.
+
 **Feel slice F2 — knockback, recoil, swing step, sparks, numbers (2026-10-04).** User: real knockback on
 enemies, boss only jolts visually.
    Log F2: built by Sonnet 5.5 agent (session died before its report; work survived, all tests green) ·

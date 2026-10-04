@@ -205,6 +205,14 @@ func _ready() -> void:
 		for prof in _hit_fx.profile_list():
 			_targets.append({"name": "Hit " + String(prof.hit_type), "object": prof})
 
+	# HUD top-right (decision 0024). The HUD node sits BEFORE this panel in arena.tscn so its children exist here.
+	var hud := get_node_or_null("../HUD") as HUD
+	if hud:
+		_targets.append({"name": "HUD", "object": hud})
+		_targets.append({"name": "HealthBar", "object": hud.health_bar()})
+		if hud.hotbar():
+			_targets.append({"name": "Hotbar", "object": hud.hotbar()})
+
 	_targets.append({"name": "Dummy", "object": _dummy})
 
 	# Real knockback (gameplay): one section per Knockback component (Dummy, Player, ...). The boss has none.
@@ -446,6 +454,7 @@ func _build_ui() -> void:
 	tuning_vbox.add_child(action_row)
 	_add_button(action_row, "Heal dummy", _on_heal_dummy)
 	_add_button(action_row, "Heal player", _on_heal_player)
+	_add_button(action_row, "Hurt player 20", func(): _player_health.take_damage(20.0, null, false))
 	_add_button(action_row, "Reset stats", _on_reset_stats)
 	_add_button(action_row, "Reset skill cd", func(): _skill_slot.reset_cooldowns())
 	if _map:

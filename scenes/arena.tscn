@@ -99,6 +99,12 @@ offset_top = 8.0
 offset_right = 300.0
 offset_bottom = 60.0
 
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1974175763]
+script = ExtResource("5")
+player_path = NodePath("../Player")
+boss_path = NodePath("../Boss")
+tuning_panel_path = NodePath("../TuningPanel")
+
 [node name="TuningPanel" type="CanvasLayer" parent="." unique_id=651466513]
 script = ExtResource("4")
 player_path = NodePath("../Player")
@@ -107,11 +113,6 @@ boss_path = NodePath("../Boss")
 debug_overlay_path = NodePath("../DebugOverlay")
 map_path = NodePath("../ArenaMap")
 hit_fx_path = NodePath("../HitFx")
-
-[node name="HUD" type="CanvasLayer" parent="." unique_id=1974175763]
-script = ExtResource("5")
-player_path = NodePath("../Player")
-boss_path = NodePath("../Boss")
 
 [node name="EndScreen" type="CanvasLayer" parent="."]
 script = ExtResource("7")
