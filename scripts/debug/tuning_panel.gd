@@ -263,6 +263,7 @@ func _update_status_text() -> void:
 		"pos: (%d, %d)" % [roundi(_player.global_position.x), roundi(_player.global_position.y)],
 		"vel: %.0f  state: %s  facing: %s" % [vel.length(), move_state, facing],
 		"aim: %.0f deg" % aim_deg,
+		_player.visual.status_text() if _player.visual.has_method("status_text") else "",
 		"",
 		"[Weapon]",
 		"%s  phase: %s  left: %.2fs" % [weapon_name, phase_name, time_left],

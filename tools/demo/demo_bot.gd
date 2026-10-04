@@ -60,7 +60,7 @@ func _ready() -> void:
 
 	# The storyboards use screen coordinates: run them on the screen-sized arena with the old layout.
 	# The showcase scenarios use the real big map instead.
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim"]:
 		_arena = load("res://scenes/arena.tscn").instantiate()
 		(_arena.get_node("ArenaMap") as ArenaMap).map_seed = _seed
 	else:
@@ -114,7 +114,7 @@ var _cap_gen := 0
 func _build_captions() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim"]:
 		# Small, bottom-centre, semi-transparent; each caption fades out by itself.
 		_cap_panel = PanelContainer.new()
 		_cap_panel.anchor_left = 0.5
@@ -262,6 +262,7 @@ func _run() -> void:
 		"hands": await _run_hands()
 		"hitfeel": await _run_hitfeel()
 		"hitfeel2": await _run_hitfeel2()
+		"charanim": await _run_charanim()
 		_: await _run_guard()
 
 func _run_guard() -> void:
@@ -1196,4 +1197,56 @@ func _run_hitfeel2() -> void:
 	var sl := await _boss_attack("slam")
 	await _until(func(): return sl.phase == BossAttack.Phase.IDLE, 4.0)
 	await _wait(1.5)
+	get_tree().quit()
+
+## Player idle/run animation (camera 3x on the player; aim follows the move direction so the left/right flip shows):
+##   FPS=60 tools/demo/record.sh character_anim --scenario=charanim --seed=21
+func _run_charanim() -> void:
+	_arena.get_node("Boss").passive = true
+	_overlay(false)
+	_dummy_off(_dummy)
+	_player.global_position = Vector2(760, 760)
+	_dummy.global_position = Vector2(860, 760)
+	var cam: Camera2D = _player.get_node("Camera")
+	cam.zoom = Vector2(3, 3)
+	cam.reset_smoothing()
+	_aim_at = null
+	_player.aim_override = Vector2.RIGHT
+	_say("Idle")
+	await _wait(2.5)
+	_say("Run in a circle")
+	var ang := 0.0
+	while ang < TAU * 1.2:
+		ang += get_physics_process_delta_time() * TAU / 3.0
+		var v := Vector2.RIGHT.rotated(ang)
+		_hold_vec(v)
+		_player.aim_override = v
+		await get_tree().physics_frame
+	_say("Left, right, up, down")
+	for v in [Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN]:
+		_hold_vec(v)
+		_player.aim_override = v
+		await _wait(0.55)
+	_hold_vec(Vector2.ZERO)
+	_say("Stop: back to idle")
+	_player.aim_override = Vector2.RIGHT
+	await _wait(1.0)
+	_say("Sword")
+	await _swings(3, 0.55)
+	_say("Swap to the bow")
+	await _tap("weapon_2")
+	await _until(func(): return not _loadout.is_casting(), 3.0)
+	await _wait(0.3)
+	_say("Charged shot")
+	await _tap("skill")
+	await _wait(1.3)
+	_say("Run again")
+	_hold_vec(Vector2.LEFT)
+	_player.aim_override = Vector2.LEFT
+	await _wait(0.8)
+	_hold_vec(Vector2.UP + Vector2.RIGHT)
+	_player.aim_override = Vector2.RIGHT
+	await _wait(0.8)
+	_hold_vec(Vector2.ZERO)
+	await _wait(0.5)
 	get_tree().quit()

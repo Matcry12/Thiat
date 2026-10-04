@@ -21,10 +21,14 @@ class_name SpriteActorVisual
 @export var body_texture: Texture2D: set = _set_body_texture
 @export var shadow_texture: Texture2D: set = _set_shadow_texture
 @export var flip_when_facing_left := true
-@export var run_bob := 2.0                ## pixels of vertical bob while running (never rotate, decision 0009)
+@export var idle_fps := 3.5               ## idle animation speed (frames per second); only used when Body is an AnimatedSprite2D
+@export var run_fps := 10.0               ## run animation speed
+@export var run_bob := 2.0                ## pixels of vertical bob while running, STATIC bodies only (an animated Body bobs by itself)
 @export var bob_speed := 10.0             ## bob cycles per second-ish (radians/sec fed to sin())
 
-@onready var body: Sprite2D = $Body
+## Body is a Sprite2D (static, e.g. the dummy) or an AnimatedSprite2D (the player). Both share
+## flip_h / modulate / material, so flash, tint and recoil need no special case.
+@onready var body: Node2D = $Body
 @onready var shadow: Sprite2D = $Shadow
 
 var _rest_position := Vector2.ZERO   ## the position you dragged Body to; bob returns here
@@ -32,14 +36,36 @@ var _facing_left := false
 var _running := false
 var _bob_t := 0.0
 
+## "idle"/"run" fps = SpriteFrames' own speed * speed_scale, so the .tres is never written to.
+func _anim() -> AnimatedSprite2D:
+	return get_node_or_null("Body") as AnimatedSprite2D
+
+func _play(anim_name: StringName) -> void:
+	var a := _anim()
+	if a == null or a.sprite_frames == null or not a.sprite_frames.has_animation(anim_name):
+		return
+	var fps := run_fps if anim_name == &"run" else idle_fps
+	a.speed_scale = fps / maxf(a.sprite_frames.get_animation_speed(anim_name), 0.001)
+	if a.animation != anim_name or not a.is_playing():
+		a.play(anim_name)
+
+## Current animation name, for F3.
+func status_text() -> String:
+	var a := _anim()
+	if a == null or a.sprite_frames == null:
+		return "static body"
+	return "anim: %s  frame: %d/%d  fps: %.1f" % [a.animation, a.frame + 1, a.sprite_frames.get_frame_count(a.animation), a.sprite_frames.get_animation_speed(a.animation) * a.speed_scale]
+
 func _ready() -> void:
 	_apply_all()
-	var b := get_node_or_null("Body") as Sprite2D
+	var b := get_node_or_null("Body") as Node2D
 	if b:
 		_rest_position = b.position
+	if not Engine.is_editor_hint():
+		_play(&"idle")
 
 func _apply_all() -> void:
-	var b := get_node_or_null("Body") as Sprite2D
+	var b := get_node_or_null("Body") as Sprite2D   ## null for an AnimatedSprite2D: its frames come from SpriteFrames
 	var sh := get_node_or_null("Shadow") as Sprite2D
 	if b:
 		b.texture = body_texture
@@ -57,7 +83,7 @@ func _set_shadow_texture(v: Texture2D) -> void:
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
-	if not _running:
+	if not _running or _anim() != null:
 		return
 	_bob_t += delta * bob_speed
 	body.position = _rest_position + Vector2(0, sin(_bob_t) * run_bob)
@@ -67,6 +93,7 @@ func flash_target() -> CanvasItem:
 
 func set_move_state(state: String) -> void:
 	_running = state == "run"
+	_play(&"run" if _running else &"idle")   # dodge counts as run too
 	if not _running:
 		body.position = _rest_position
 
@@ -76,7 +103,7 @@ func set_facing(dir: Vector2) -> void:
 	# TODO: an 8-direction sprite set would pick an animation/frame name here
 	# instead of a left/right flip.
 	_facing_left = dir.x < 0.0
-	body.flip_h = _facing_left
+	(body as Object).set("flip_h", _facing_left)
 
 func set_weapon_state(state: String) -> void:
 	match state:
