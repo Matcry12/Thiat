@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://d0awtsvbienb8" path="res://scripts/weapons/weapon_holder.gd" id="5"]
 [ext_resource type="Resource" uid="uid://gvjnvct47q1q" path="res://data/weapons/sword.tres" id="6"]
 [ext_resource type="Script" uid="uid://bdm85dlwvqabq" path="res://scripts/visual/weapon_visual.gd" id="7"]
-[ext_resource type="Texture2D" path="res://assets/characters/player_template.png" id="8"]
+[ext_resource type="Texture2D" path="res://assets/characters/player_template_original.png" id="8"]
 [ext_resource type="Texture2D" uid="uid://c850m4ii26ok3" path="res://assets/placeholder/shadow.png" id="9"]
 [ext_resource type="Script" uid="uid://cfhocpi452k6r" path="res://scripts/components/health.gd" id="11"]
 [ext_resource type="Script" uid="uid://cu3cx00235xph" path="res://scripts/components/dodge.gd" id="12"]
