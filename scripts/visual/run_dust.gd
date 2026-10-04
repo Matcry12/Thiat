@@ -16,7 +16,10 @@ extends Node2D
 @export var dust_back_speed := 22.0      ## extra speed away from the run direction, px/s
 @export var dust_foot_spread := 5.0      ## random sideways start offset at the feet, px
 @export var dust_color := Color(0.9, 0.85, 0.72, 0.95)
-@export var pool_size := 48
+@export var pool_size := 48:   ## live-resizable from F3: resizing clears the pool
+	set(v):
+		pool_size = maxi(v, 1)
+		_resize_pool()
 @export_node_path("Node") var dodge_path: NodePath = ^"../../Dodge"
 
 var _pos := PackedVector2Array()
@@ -30,10 +33,7 @@ var _dir := Vector2.ZERO   ## last movement direction (from our own position cha
 func _ready() -> void:
 	top_level = true   # puffs stay where they were dropped; _draw() works in world coordinates
 	global_position = Vector2.ZERO
-	_pos.resize(pool_size)
-	_vel.resize(pool_size)
-	_age.resize(pool_size)
-	_age.fill(-1.0)
+	_resize_pool()
 	if Engine.is_editor_hint():
 		return
 	var vis := get_parent()
@@ -93,12 +93,18 @@ func _draw() -> void:
 	for i in pool_size:
 		if _age[i] < 0.0:
 			continue
-		var k := 1.0 - _age[i] / dust_life
+		var k := 1.0 - _age[i] / maxf(dust_life, 0.001)
 		var s := maxf(roundf(dust_size_px * (0.5 + 0.5 * k)), 1.0)
 		draw_rect(Rect2((_pos[i] - Vector2(s, s) * 0.5).round(), Vector2(s, s)), Color(dust_color, dust_color.a * sqrt(k)))
 
 func alive_count() -> int:
 	return _alive
+
+func _resize_pool() -> void:
+	_pos.resize(pool_size)
+	_vel.resize(pool_size)
+	_age.resize(pool_size)
+	clear()
 
 func clear() -> void:
 	_age.fill(-1.0)

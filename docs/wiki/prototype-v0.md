@@ -353,7 +353,7 @@ flash for all actors, global hit-stop, generated SFX, trauma shake, kill slow-mo
 **Visual slice V3 — run juice (2026-10-04).** The existing `Shadow` shrinks/fades with the run-bounce lift
 (`SpriteActorVisual`), and a pooled `RunDust` node puffs at the feet on landings (every 2nd), run start and
 dodge (it listens to `landed`/`run_started` and the existing `Dodge.used`; combat untouched). Demo: `docs/demo/run_dust_shadow.mp4`.
-   Log V3: built by Sonnet 5.5 agent · judge: pending · user: pending.
+   Log V3: built by Sonnet 5.5 agent · judge Opus: 1 bug (changing pool_size live in F3 leaked or crashed the pool), fixed with a resizing setter; minor: hardcoded shape ranges, dodge from standing = start+dodge puff (13) · user: pending.
 
 **Visual slice V2 — chibi egg + round hands (2026-10-02, user's call).** User rejected pixel-sprite
 characters (Gemini + hand-cleaned); kept the egg placeholder, 32x30, plus 2 hands that sit on
