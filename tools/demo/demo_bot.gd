@@ -1252,7 +1252,7 @@ func _run_charanim() -> void:
 	await _wait(0.5)
 	get_tree().quit()
 
-## Run bounce before/after (camera 4x): FPS=60 tools/demo/record.sh run_bounce --scenario=runbounce --seed=21
+## Run bounce old vs smooth (4x, 4x, 1x): FPS=60 tools/demo/record.sh run_bounce_smooth --scenario=runbounce --seed=21
 func _run_runbounce() -> void:
 	_arena.get_node("Boss").passive = true
 	_overlay(false)
@@ -1264,11 +1264,19 @@ func _run_runbounce() -> void:
 	cam.reset_smoothing()
 	_aim_at = null
 	var vis: SpriteActorVisual = _player.get_node("Visual")
-	var steps := [["before", false, false], ["after: bounce", true, false], ["+ squash", true, true]]
+	vis.run_bounce_on = true
+	vis.squash_on = false
+	# [caption, mode, run_fps, zoom, seconds]
+	var steps := [
+		["old: stepped", SpriteActorVisual.BounceMode.STEPPED, 10.0, 4.0, 4],
+		["new: smooth", SpriteActorVisual.BounceMode.SMOOTH, 8.0, 4.0, 4],
+		["new: smooth, 1x zoom", SpriteActorVisual.BounceMode.SMOOTH, 8.0, 1.0, 4]]
 	for st in steps:
-		vis.run_bounce_on = st[1]
-		vis.squash_on = st[2]
-		for i in 4:   # 4 x 1.0 s: left, right, left, right
+		vis.bounce_mode = st[1]
+		vis.run_fps = st[2]
+		cam.zoom = Vector2(st[3], st[3])
+		cam.reset_smoothing()
+		for i in int(st[4]):   # 1.0 s each: left, right, left, right
 			if i % 2 == 0:
 				_say(st[0])
 			var d := Vector2.LEFT if i % 2 == 0 else Vector2.RIGHT

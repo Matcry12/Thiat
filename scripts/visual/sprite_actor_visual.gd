@@ -22,12 +22,19 @@ class_name SpriteActorVisual
 @export var shadow_texture: Texture2D: set = _set_shadow_texture
 @export var flip_when_facing_left := true
 @export var idle_fps := 3.5               ## idle animation speed (frames per second); only used when Body is an AnimatedSprite2D
-@export var run_fps := 10.0               ## run animation speed
+@export var run_fps := 8.0                ## run animation speed
 @export var run_bob := 2.0                ## pixels of vertical bob while running, STATIC bodies only (an animated Body bobs by itself)
 @export var bob_speed := 10.0             ## bob cycles per second-ish (radians/sec fed to sin())
 
 @export_group("Run bounce (animated body only)")
+enum BounceMode { STEPPED, SMOOTH }
+enum SnapMode { NONE, WORLD_PX, ART_PX }
 @export var run_bounce_on := true
+@export var bounce_mode := BounceMode.SMOOTH              ## SMOOTH = eased curve (floaty); STEPPED = the per-frame table below
+@export var snap_mode := SnapMode.WORLD_PX                ## SMOOTH only: round the lift to whole world px (1/2 art px), whole art px, or not at all
+@export var bounce_amp_px := 3.0                          ## SMOOTH: lift at the top, in world px
+@export var bounces_per_cycle := 2.0                      ## SMOOTH: bounces per full run cycle (6 frames). 2 = one per step
+@export var ease_power := 1.5                             ## SMOOTH: >1 = longer, softer near the ground; <1 = more rounded top
 @export var bounce_px := 1.0                              ## art pixels of lift on an "up" frame (x the per-frame value below)
 @export var bounce_snap := true                           ## round the lift to whole art pixels (keeps pixel art crisp)
 ## Lift per run frame, in art-pixel units (1 = up). Frames 2 and 5 are the passing poses (legs
@@ -122,15 +129,25 @@ func _update_run_bounce(a: AnimatedSprite2D, delta: float) -> void:
 		_squash_left = squash_time if squash_frames.has(f) else 0.0
 	else:
 		_squash_left = maxf(_squash_left - delta, 0.0)
-	var lift := (bounce_offsets[f] if f < bounce_offsets.size() else 0.0) * bounce_px
-	if bounce_snap:
-		lift = roundf(lift)
+	var lift_world: float   ## world px
+	if bounce_mode == BounceMode.SMOOTH:
+		var n := a.sprite_frames.get_frame_count(a.animation)
+		var phase := (f + a.frame_progress) / float(n) * bounces_per_cycle
+		lift_world = bounce_amp_px * pow(absf(sin(phase * PI)), ease_power)
+		match snap_mode:
+			SnapMode.WORLD_PX: lift_world = roundf(lift_world)
+			SnapMode.ART_PX: lift_world = roundf(lift_world / _rest_scale.y) * _rest_scale.y
+	else:
+		var lift := (bounce_offsets[f] if f < bounce_offsets.size() else 0.0) * bounce_px
+		if bounce_snap:
+			lift = roundf(lift)
+		lift_world = lift * _rest_scale.y
 	var k := (_squash_left / squash_time) if (squash_on and squash_time > 0.0) else 0.0
 	a.scale = _rest_scale * Vector2(1.0 + squash_amount * k, 1.0 - squash_amount * k)
 	# feet stay put: the sprite is centred, so the feet sit (feet_row - h/2) art px below the node origin
 	var half_h := a.sprite_frames.get_frame_texture(a.animation, f).get_height() * 0.5
 	var feet := (feet_row - half_h) * _rest_scale.y
-	a.position = _rest_position + Vector2(0, -lift * _rest_scale.y + feet * (1.0 - a.scale.y / _rest_scale.y))
+	a.position = _rest_position + Vector2(0, -lift_world + feet * (1.0 - a.scale.y / _rest_scale.y))
 
 func _reset_body(a: AnimatedSprite2D) -> void:
 	a.position = _rest_position

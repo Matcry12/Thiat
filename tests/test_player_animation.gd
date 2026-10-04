@@ -56,6 +56,8 @@ func _init():
 func _bounce_tests(vis: SpriteActorVisual, body: AnimatedSprite2D) -> void:
 	var rest := Vector2(0, -19)
 	vis.set_move_state("run")
+	await _smooth_tests(vis, body)
+	vis.bounce_mode = SpriteActorVisual.BounceMode.STEPPED
 	body.pause()   # we pick the frame ourselves
 	var ok_map := true
 	var ok_whole := true
@@ -106,3 +108,39 @@ func _bounce_tests(vis: SpriteActorVisual, body: AnimatedSprite2D) -> void:
 	check("idle has no offset", body.position == rest and body.scale == Vector2(2, 2))
 	vis.set_move_state("run")
 	body.play()
+
+func _smooth_tests(vis: SpriteActorVisual, body: AnimatedSprite2D) -> void:
+	var rest_y := -19.0
+	body.pause()
+	var cycle := 6.0 / vis.run_fps   # seconds
+	var prev := 0.0
+	var worst := 0.0
+	var peak := 0.0
+	var whole := true
+	var t := 0.0
+	while t < cycle * 2.0:
+		var ph := fposmod(t * vis.run_fps, 6.0)
+		body.frame = int(ph)
+		body.frame_progress = ph - floorf(ph)
+		vis._process(0.0)
+		var lift := rest_y - body.position.y   # world px
+		worst = maxf(worst, absf(lift - prev) if t > 0.0 else 0.0)
+		prev = lift
+		peak = maxf(peak, lift)
+		if not is_equal_approx(lift, roundf(lift)):
+			whole = false
+		t += 1.0 / 60.0
+	check("smooth: no jump over 1 world px between physics frames (worst %.1f)" % worst, worst <= 1.0)
+	check("smooth: reaches the amplitude (peak %.1f)" % peak, peak >= vis.bounce_amp_px - 1.0 and peak <= vis.bounce_amp_px)
+	check("smooth: whole world px with WORLD_PX snap", whole)
+	vis.snap_mode = SpriteActorVisual.SnapMode.NONE
+	body.frame = 1
+	body.frame_progress = 0.37
+	vis._process(0.0)
+	var raw := rest_y - body.position.y
+	check("smooth: snap NONE gives fractional lift", not is_equal_approx(raw, roundf(raw)))
+	vis.snap_mode = SpriteActorVisual.SnapMode.WORLD_PX
+	vis.set_move_state("idle")
+	check("smooth: stopping resets at once", body.position == Vector2(0, rest_y) and body.scale == Vector2(2, 2))
+	vis.set_move_state("run")
+	body.pause()
