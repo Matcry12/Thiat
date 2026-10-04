@@ -27,7 +27,8 @@ func _init():
 	vis.set_move_state("run")
 	check("run_fps export changes the speed", is_equal_approx(body.sprite_frames.get_animation_speed(&"run") * body.speed_scale, 20.0))
 	await process_frame
-	check("no code bob on an animated body", body.position == Vector2(0, -19))
+	check("no code bob on an animated body", body.position == Vector2(0, -19) or body.frame != 0)
+	await _bounce_tests(vis, body)
 	vis.set_move_state("idle")
 	check("standing plays idle at idle_fps", body.animation == &"idle" and is_equal_approx(body.sprite_frames.get_animation_speed(&"idle") * body.speed_scale, vis.idle_fps))
 	check("F3 status shows the animation", vis.status_text().contains("anim: idle"))
@@ -51,3 +52,57 @@ func _init():
 	check("flash restores the previous material", body.material == mine)
 
 	quit(0 if _ok else 1)
+
+func _bounce_tests(vis: SpriteActorVisual, body: AnimatedSprite2D) -> void:
+	var rest := Vector2(0, -19)
+	vis.set_move_state("run")
+	body.pause()   # we pick the frame ourselves
+	var ok_map := true
+	var ok_whole := true
+	for f in 6:
+		body.frame = f
+		vis._process(0.0)
+		var up := -(body.position.y - rest.y) / 2.0   # art px (scale 2)
+		if not is_equal_approx(up, vis.bounce_offsets[f] * vis.bounce_px) and not vis.squash_frames.has(f):
+			ok_map = false
+		if not is_equal_approx(up, roundf(up)) and not vis.squash_frames.has(f):
+			ok_whole = false
+	check("run bounce follows the per-frame mapping", ok_map)
+	check("bounce is whole art pixels with snap on", ok_whole)
+	vis.bounce_px = 1.4
+	body.frame = 1
+	vis._process(0.0)
+	check("snap rounds 1.4 art px to 1", is_equal_approx(rest.y - body.position.y, 2.0))
+	vis.bounce_px = 1.0
+
+	# squash keeps the feet row: feet world y = position.y + (feet_row - 16) * scale.y, bounce excluded (frame 0 lift 0)
+	vis.squash_on = true
+	var feet_base := rest.y + (vis.feet_row - 16.0) * 2.0
+	body.frame = 0
+	vis._last_frame = -1
+	vis._process(0.0)
+	check("squash on a landing frame changes scale", body.scale.x > 2.0 and body.scale.y < 2.0)
+	check("squash keeps the feet row constant", is_equal_approx(body.position.y + (vis.feet_row - 16.0) * body.scale.y, feet_base))
+	vis._process(vis.squash_time + 0.01)
+	check("squash fades back to base scale", body.scale.is_equal_approx(Vector2(2, 2)))
+	vis.squash_on = false
+	vis._last_frame = -1
+	vis._process(0.0)
+	check("squash_on=false keeps scale", body.scale == Vector2(2, 2))
+	vis.squash_on = true
+
+	vis.run_bounce_on = false
+	body.frame = 1
+	vis._process(0.0)
+	check("run_bounce_on=false gives offset 0", body.position == rest and body.scale == Vector2(2, 2))
+	vis.run_bounce_on = true
+
+	body.frame = 0
+	vis._last_frame = -1
+	vis._process(0.0)
+	vis.set_move_state("idle")
+	check("stopping resets position and scale at once", body.position == rest and body.scale == Vector2(2, 2))
+	vis._process(0.1)
+	check("idle has no offset", body.position == rest and body.scale == Vector2(2, 2))
+	vis.set_move_state("run")
+	body.play()

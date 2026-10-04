@@ -60,7 +60,7 @@ func _ready() -> void:
 
 	# The storyboards use screen coordinates: run them on the screen-sized arena with the old layout.
 	# The showcase scenarios use the real big map instead.
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce"]:
 		_arena = load("res://scenes/arena.tscn").instantiate()
 		(_arena.get_node("ArenaMap") as ArenaMap).map_seed = _seed
 	else:
@@ -114,7 +114,7 @@ var _cap_gen := 0
 func _build_captions() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce"]:
 		# Small, bottom-centre, semi-transparent; each caption fades out by itself.
 		_cap_panel = PanelContainer.new()
 		_cap_panel.anchor_left = 0.5
@@ -263,6 +263,7 @@ func _run() -> void:
 		"hitfeel": await _run_hitfeel()
 		"hitfeel2": await _run_hitfeel2()
 		"charanim": await _run_charanim()
+		"runbounce": await _run_runbounce()
 		_: await _run_guard()
 
 func _run_guard() -> void:
@@ -1249,4 +1250,30 @@ func _run_charanim() -> void:
 	await _wait(0.8)
 	_hold_vec(Vector2.ZERO)
 	await _wait(0.5)
+	get_tree().quit()
+
+## Run bounce before/after (camera 4x): FPS=60 tools/demo/record.sh run_bounce --scenario=runbounce --seed=21
+func _run_runbounce() -> void:
+	_arena.get_node("Boss").passive = true
+	_overlay(false)
+	_dummy_off(_dummy)
+	_player.global_position = Vector2(760, 760)
+	_dummy.global_position = Vector2(860, 900)
+	var cam: Camera2D = _player.get_node("Camera")
+	cam.zoom = Vector2(4, 4)
+	cam.reset_smoothing()
+	_aim_at = null
+	var vis: SpriteActorVisual = _player.get_node("Visual")
+	var steps := [["before", false, false], ["after: bounce", true, false], ["+ squash", true, true]]
+	for st in steps:
+		vis.run_bounce_on = st[1]
+		vis.squash_on = st[2]
+		for i in 4:   # 4 x 1.0 s: left, right, left, right
+			if i % 2 == 0:
+				_say(st[0])
+			var d := Vector2.LEFT if i % 2 == 0 else Vector2.RIGHT
+			_hold_vec(d)
+			_player.aim_override = d
+			await _wait(1.0)
+	_hold_vec(Vector2.ZERO)
 	get_tree().quit()

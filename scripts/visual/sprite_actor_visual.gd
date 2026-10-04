@@ -26,6 +26,20 @@ class_name SpriteActorVisual
 @export var run_bob := 2.0                ## pixels of vertical bob while running, STATIC bodies only (an animated Body bobs by itself)
 @export var bob_speed := 10.0             ## bob cycles per second-ish (radians/sec fed to sin())
 
+@export_group("Run bounce (animated body only)")
+@export var run_bounce_on := true
+@export var bounce_px := 1.0                              ## art pixels of lift on an "up" frame (x the per-frame value below)
+@export var bounce_snap := true                           ## round the lift to whole art pixels (keeps pixel art crisp)
+## Lift per run frame, in art-pixel units (1 = up). Frames 2 and 5 are the passing poses (legs
+## together-ish, mid-step) = up; 1/3/4/6 are planted/contact = 0. Two bounces per 6-frame cycle.
+@export var bounce_offsets := PackedFloat32Array([0, 1, 0, 0, 1, 0])
+@export var squash_on := false                         ## default off: a non-integer scale (2.06) makes pixel widths uneven
+@export var squash_amount := 1.0 / 32.0                   ## wider by this fraction, shorter by the same (1/32 = one art pixel)
+@export var squash_time := 0.06                           ## seconds the squash lasts, fading back to normal
+@export var squash_frames := PackedInt32Array([0, 3])     ## 0-based run frames where a foot lands
+@export var feet_row := 29.0                              ## art row (from sprite top) of the feet's bottom edge; squash keeps this row still
+@export_group("")
+
 ## Body is a Sprite2D (static, e.g. the dummy) or an AnimatedSprite2D (the player). Both share
 ## flip_h / modulate / material, so flash, tint and recoil need no special case.
 @onready var body: Node2D = $Body
@@ -35,6 +49,9 @@ var _rest_position := Vector2.ZERO   ## the position you dragged Body to; bob re
 var _facing_left := false
 var _running := false
 var _bob_t := 0.0
+var _rest_scale := Vector2.ONE
+var _last_frame := -1
+var _squash_left := 0.0
 
 ## "idle"/"run" fps = SpriteFrames' own speed * speed_scale, so the .tres is never written to.
 func _anim() -> AnimatedSprite2D:
@@ -54,13 +71,14 @@ func status_text() -> String:
 	var a := _anim()
 	if a == null or a.sprite_frames == null:
 		return "static body"
-	return "anim: %s  frame: %d/%d  fps: %.1f" % [a.animation, a.frame + 1, a.sprite_frames.get_frame_count(a.animation), a.sprite_frames.get_animation_speed(a.animation) * a.speed_scale]
+	return "anim: %s  frame: %d/%d  fps: %.1f  y: %+.1f  squash: %.2f" % [a.animation, a.frame + 1, a.sprite_frames.get_frame_count(a.animation), a.sprite_frames.get_animation_speed(a.animation) * a.speed_scale, a.position.y - _rest_position.y, _squash_left]
 
 func _ready() -> void:
 	_apply_all()
 	var b := get_node_or_null("Body") as Node2D
 	if b:
 		_rest_position = b.position
+		_rest_scale = b.scale
 	if not Engine.is_editor_hint():
 		_play(&"idle")
 
@@ -83,10 +101,40 @@ func _set_shadow_texture(v: Texture2D) -> void:
 func _process(delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
-	if not _running or _anim() != null:
+	var a := _anim()
+	if a != null:
+		_update_run_bounce(a, delta)
+		return
+	if not _running:
 		return
 	_bob_t += delta * bob_speed
 	body.position = _rest_position + Vector2(0, sin(_bob_t) * run_bob)
+
+## Only writer of Body.position.y and Body.scale for an animated body. Keyed to the animation frame.
+func _update_run_bounce(a: AnimatedSprite2D, delta: float) -> void:
+	if not (_running and run_bounce_on and a.animation == &"run"):
+		_last_frame = -1
+		_reset_body(a)
+		return
+	var f := a.frame
+	if f != _last_frame:
+		_last_frame = f
+		_squash_left = squash_time if squash_frames.has(f) else 0.0
+	else:
+		_squash_left = maxf(_squash_left - delta, 0.0)
+	var lift := (bounce_offsets[f] if f < bounce_offsets.size() else 0.0) * bounce_px
+	if bounce_snap:
+		lift = roundf(lift)
+	var k := (_squash_left / squash_time) if (squash_on and squash_time > 0.0) else 0.0
+	a.scale = _rest_scale * Vector2(1.0 + squash_amount * k, 1.0 - squash_amount * k)
+	# feet stay put: the sprite is centred, so the feet sit (feet_row - h/2) art px below the node origin
+	var half_h := a.sprite_frames.get_frame_texture(a.animation, f).get_height() * 0.5
+	var feet := (feet_row - half_h) * _rest_scale.y
+	a.position = _rest_position + Vector2(0, -lift * _rest_scale.y + feet * (1.0 - a.scale.y / _rest_scale.y))
+
+func _reset_body(a: AnimatedSprite2D) -> void:
+	a.position = _rest_position
+	a.scale = _rest_scale
 
 func flash_target() -> CanvasItem:
 	return get_node_or_null("Body") as CanvasItem
@@ -96,6 +144,8 @@ func set_move_state(state: String) -> void:
 	_play(&"run" if _running else &"idle")   # dodge counts as run too
 	if not _running:
 		body.position = _rest_position
+		body.scale = _rest_scale
+		_last_frame = -1
 
 func set_facing(dir: Vector2) -> void:
 	if not flip_when_facing_left or absf(dir.x) < 0.001:
