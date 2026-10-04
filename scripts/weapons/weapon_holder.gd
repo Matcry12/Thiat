@@ -55,6 +55,7 @@ func _physics_process(delta: float) -> void:
 	if phase == Phase.IDLE:
 		return
 	_phase_time += delta
+	_step(delta)
 	match phase:
 		Phase.WINDUP:
 			if _phase_time >= weapon.windup:
@@ -68,6 +69,17 @@ func _physics_process(delta: float) -> void:
 		Phase.RECOVERY:
 			if _phase_time >= weapon.recovery:
 				_set_phase(Phase.IDLE)
+
+## Swing step: a melee swing leans forward `step_distance` px over windup + active. move_and_collide, so it
+## never pushes the user into a wall or a body. Dodge/guard/skills cancel the swing first, so they never overlap.
+func _step(delta: float) -> void:
+	if weapon == null or weapon.step_distance <= 0.0 or weapon.behavior != "arc":
+		return
+	if phase != Phase.WINDUP and phase != Phase.ACTIVE:
+		return
+	var body := get_parent() as CharacterBody2D
+	if body:
+		body.move_and_collide(aim_direction * weapon.step_distance * delta / maxf(weapon.windup + weapon.active, 0.001))
 
 func _start_attack() -> void:
 	if hitbox:

@@ -56,12 +56,47 @@ class_name TuningPanel
 	"volume_db": {"min": -30.0, "max": 12.0},
 	"pitch": {"min": 0.3, "max": 2.0},
 	"stop_time_scale": {"min": 0.0001, "max": 0.2},
+	"knockback": {"min": 0.0, "max": 150.0},
+	"decay_rate": {"min": 1.0, "max": 40.0},
+	"max_pending": {"min": 0.0, "max": 300.0},
+	"knockback_scale": {"min": 0.0, "max": 3.0},
+	"step_distance": {"min": 0.0, "max": 60.0},
+	"recoil_px": {"min": 0.0, "max": 20.0},
+	"recoil_time": {"min": 0.02, "max": 0.5},
+	"spark_count": {"min": 0.0, "max": 30.0},
+	"spark_speed": {"min": 0.0, "max": 500.0},
+	"spark_life": {"min": 0.02, "max": 1.0},
+	"spark_size": {"min": 1.0, "max": 6.0},
+	"number_size": {"min": 0.0, "max": 32.0},
+	"max_sparks": {"min": 16.0, "max": 400.0},
+	"max_per_frame": {"min": 0.0, "max": 60.0},
+	"spread_degrees": {"min": 0.0, "max": 180.0},
+	"speed_jitter": {"min": 0.0, "max": 1.0},
+	"drag": {"min": 0.0, "max": 20.0},
+	"max_numbers": {"min": 4.0, "max": 60.0},
+	"rise_speed": {"min": 0.0, "max": 200.0},
+	"drift_speed": {"min": 0.0, "max": 100.0},
+	"gravity": {"min": 0.0, "max": 600.0},
+	"life": {"min": 0.1, "max": 2.0},
+	"offset_y": {"min": -80.0, "max": 20.0},
+	"scatter_x": {"min": 0.0, "max": 30.0},
+	"merge_time": {"min": 0.0, "max": 1.0},
+	"outline_size": {"min": 0.0, "max": 8.0},
+	"pop_scale": {"min": 1.0, "max": 3.0},
+	"pop_time": {"min": 0.01, "max": 0.5},
+	"home_return_delay": {"min": 0.0, "max": 5.0},
+	"home_return_speed": {"min": 10.0, "max": 600.0},
+	"recoil_ease": {"min": 0.5, "max": 5.0},
+	"fallback_hit_radius": {"min": 0.0, "max": 40.0},
+	"life_min": {"min": 0.0, "max": 1.0},
+	"fade_rate": {"min": 0.5, "max": 6.0},
+	"test_amount": {"min": 1.0, "max": 200.0},
 }
 
 const SAVE_PATH := "user://tuning.json"
 
 var _player: CharacterBody2D
-var _dummy: StaticBody2D
+var _dummy: CharacterBody2D
 var _debug_overlay: CanvasLayer
 var _weapon_holder: WeaponHolder
 var _dummy_health: Health
@@ -111,6 +146,7 @@ func _ready() -> void:
 	_map = get_node_or_null(map_path) as ArenaMap
 	_hit_fx = get_node_or_null(hit_fx_path) as HitFx
 
+	_dummy.set_meta("spot", _dummy.global_position)
 	_weapon_holder.state_changed.connect(_on_weapon_state_changed)
 	_dummy_health.damaged.connect(_on_dummy_damaged)
 
@@ -163,8 +199,16 @@ func _ready() -> void:
 		_targets.append({"name": "HitStop", "object": _hit_fx.stop})
 		_targets.append({"name": "CameraShake", "object": _hit_fx.shake})
 		_targets.append({"name": "HitSound", "object": _hit_fx.sound})
+		_targets.append({"name": "HitSparks", "object": _hit_fx.sparks})
+		_targets.append({"name": "DamageNumbers", "object": _hit_fx.numbers})
 		for prof in _hit_fx.profile_list():
 			_targets.append({"name": "Hit " + String(prof.hit_type), "object": prof})
+
+	_targets.append({"name": "Dummy", "object": _dummy})
+
+	# Real knockback (gameplay): one section per Knockback component (Dummy, Player, ...). The boss has none.
+	for kb in get_tree().get_nodes_in_group("knockback"):
+		_targets.append({"name": "Knockback " + kb.get_parent().name, "object": kb})
 
 	_build_ui()
 	visible = false
@@ -229,6 +273,7 @@ func _update_status_text() -> void:
 		"",
 		"[Entities]",
 		"hurtboxes: %d  dummy hp: %.0f" % [hurtbox_count, _dummy_health.hp],
+		_dummy.status_text(),
 		"",
 		"[Hands]",
 		(_player.get_node("Hands") as HandsVisual).status_text(),
@@ -254,12 +299,23 @@ func _update_status_text() -> void:
 		"[Hit FX]",
 		_hit_fx.status_text() if _hit_fx else "n/a",
 		"",
+		"[Knockback (gameplay)]",
+		_knockback_status_text(),
+		"",
 		"[Loadout]",
 		_loadout_status_text(),
 		"",
 		"[Skills (E)]",
 		_skill_status_text(),
 	])
+
+func _knockback_status_text() -> String:
+	var lines: Array[String] = []
+	for kb in get_tree().get_nodes_in_group("knockback"):
+		lines.append((kb as Knockback).status_text())
+	lines.append("boss: no Knockback (visual jolt only)")
+	return "\n".join(lines)
+
 
 func _loadout_status_text() -> String:
 	if _loadout == null:
@@ -427,6 +483,15 @@ func _build_ui() -> void:
 		_add_button(fx_row, "Test parry", func(): _hit_fx.test_hit(&"parry"))
 		_add_button(fx_row, "Test player hit", func(): _hit_fx.test_hit(&"player_hit"))
 		_add_button(fx_row, "Test kill FX", func(): _hit_fx.test_hit(&"kill"))
+		var fx_row2 := HBoxContainer.new()
+		tuning_vbox.add_child(fx_row2)
+		_add_button(fx_row2, "Test boss hit", func(): _hit_fx.test_hit(&"boss_sword"))
+		_add_button(fx_row2, "Test lunge", func(): _hit_fx.test_hit(&"lunge"))
+		_add_button(fx_row2, "Test charged arrow", func(): _hit_fx.test_hit(&"charged_arrow"))
+	var kb_row := HBoxContainer.new()
+	tuning_vbox.add_child(kb_row)
+	_add_button(kb_row, "Knockback on/off", _toggle_knockback)
+	_add_button(kb_row, "Dummy to spot", func(): _reset_dummy_spot())
 
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(340, 480)
@@ -600,6 +665,25 @@ func _on_reset_pressed() -> void:
 	for key in _initial_values.keys():
 		_apply_value(key, _initial_values[key])
 	print("tuning: reset to startup values")
+
+
+## Knockback switch for every actor that has one (gameplay; independent from the Hit FX switch).
+func _toggle_knockback() -> void:
+	var kbs := get_tree().get_nodes_in_group("knockback")
+	var on := true
+	for kb in kbs:
+		on = on and not kb.enabled
+	for kb in kbs:
+		kb.enabled = on
+		if _controls.has("Knockback %s.enabled" % kb.get_parent().name):
+			_controls["Knockback %s.enabled" % kb.get_parent().name]["control"].set_pressed_no_signal(on)
+	print("tuning: knockback -> %s" % ("on" if on else "off"))
+
+
+func _reset_dummy_spot() -> void:
+	if _dummy.has_meta("spot"):
+		_dummy.global_position = _dummy.get_meta("spot")
+		_dummy.home = _dummy.get_meta("spot")
 
 
 func _on_heal_dummy() -> void:

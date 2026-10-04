@@ -19,6 +19,7 @@
 [ext_resource type="Script" uid="uid://ba6y0wkjj6tcb" path="res://scripts/components/skill_slot.gd" id="20"]
 [ext_resource type="Script" uid="uid://bhkdre3n8h4wt" path="res://scripts/visual/swing_fx.gd" id="21"]
 [ext_resource type="Script" path="res://scripts/visual/hands_visual.gd" id="22"]
+[ext_resource type="Script" path="res://scripts/components/knockback.gd" id="kb_script"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -106,3 +107,7 @@ weapon_holder_path = NodePath("../WeaponHolder")
 [node name="SkillSlot" type="Node" parent="." unique_id=1996829668]
 script = ExtResource("20")
 weapon_holder_path = NodePath("../WeaponHolder")
+
+[node name="Knockback" type="Node" parent="."]
+script = ExtResource("kb_script")
+fixed_type = &"player_hit"

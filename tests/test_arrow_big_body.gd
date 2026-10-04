@@ -15,6 +15,8 @@ func _init():
 	var d2 = load("res://scenes/dummy.tscn").instantiate()
 	arena.add_child(d2)
 	d2.global_position = d1.global_position + Vector2(110, 0)
+	d1.set_physics_process(false)   # no home return: the test places the dummies itself
+	d2.set_physics_process(false)
 	# Body radius 20 > hurtbox radius 13 (the shape resource is shared by both).
 	(d1.get_node("CollisionShape2D").shape as CircleShape2D).radius = 20.0
 	var h1: Health = d1.get_node("Health")

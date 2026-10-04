@@ -15,6 +15,7 @@ func _init():
 	boss.passive = false
 	var player = arena.get_node("Player")
 	player.set_physics_process(false)
+	player.get_node("Knockback").enabled = false   # the bolts' shove would move the target mid-test
 	boss.global_position = Vector2(900, 321)
 	var health: Health = player.get_node("Health")
 	health.armor = 0.0

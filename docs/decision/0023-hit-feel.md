@@ -22,3 +22,15 @@ proven Nuclear Throne approach.
 ## Consequences
 - Bullets also pause during hit-stop.
 - Audio enters the project (CC0 or generated), behind one node.
+
+## Amendment — slice 2 (2026-10-04)
+- **Knockback is gameplay, not an effect.** A `Knockback` component on actors (move_and_collide, decay),
+  with its own on/off, separate from the Hit FX master switch. Strength per hit type lives in the
+  `HitFxProfile.knockback` field.
+- **User decision:** normal enemies get real knockback; **the boss gets none** — its body never moves from
+  hits, only its Visual jolts (`recoil_px`). Keeps its attacks and charges predictable.
+- Player: 20 px shove when hit (dodge not cancelled), 12 px slide on a block, one shove on a guard break.
+- Swing step: `WeaponData.step_distance` (sword 8, bow 0).
+- The training dummy walks back to its spot after a short pause, so knockback does not turn combos into a chase.
+- **Known risk:** a player holding guard at the aggro-zone edge can be slid out by repeated blocks and trigger
+  the leash (boss heals). Watch in playtest; fix by clamping shoves at the zone edge if it happens.

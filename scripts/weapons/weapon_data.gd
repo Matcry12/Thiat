@@ -29,6 +29,9 @@ class_name WeaponData
 ## shape is tried at this many angles across the arc. 12 = about 8 deg apart for 90 deg.
 @export var sweep_samples := 12
 @export var color := Color.WHITE
+## Melee only: the swing carries the user this many px forward (aim direction) from windup to the end of active.
+## Moves the body with move_and_collide, so it stops at walls and bodies. 0 = no step (the bow).
+@export var step_distance := 0.0
 ## False = unparryable (purple telegraph) — cannot be parried or blocked.
 @export var parryable := true
 ## The block pose: where the blade is held while F is down, in degrees relative

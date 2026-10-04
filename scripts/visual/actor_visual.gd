@@ -10,7 +10,7 @@ class_name ActorVisual
 ## nothing outside the visual script changes — `player.gd` still just calls
 ## `visual.set_move_state(...)`.
 ##
-## `flash()` is called by the hit effects (HitFx), never by combat code.
+## `flash()` and `recoil()` are called by the hit effects (HitFx), never by combat code.
 ##
 ## Every method has a working no-op default so a subclass can override only
 ## the ones it needs.
@@ -42,3 +42,8 @@ func flash(color: Color, duration: float) -> void:
 ## The CanvasItem that should turn white: the body, never the shadow. Default: this node.
 func flash_target() -> CanvasItem:
 	return self
+
+## Hit recoil: the visual jolts `px` along `dir` (away from the hit) and springs back in `time` s. Visual only:
+## the body, hurtbox and weapon are never touched. Called by HitFx. Override for an animated visual.
+func recoil(dir: Vector2, px: float, time: float, out_fraction := 0.25, ease_curve := 2.0) -> void:
+	HitRecoil.play(self, dir, px, time, out_fraction, ease_curve)

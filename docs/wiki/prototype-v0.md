@@ -337,6 +337,13 @@ together — an exception to "no stacking unverified slices".
    second ring, idle enrage) — all fixed in one round · user (2026-09-30): gameplay acceptable; wants smoother visuals + better poses.
 5. **Tune** — adjust only the numbers in §2 until it feels right. No new features.
 
+**Feel slice F2 — knockback, recoil, swing step, sparks, numbers (2026-10-04).** User: real knockback on
+enemies, boss only jolts visually.
+   Log F2: built by Sonnet 5.5 agent (session died before its report; work survived, all tests green) ·
+   Opus judge: complete; 3 confirmed (double shove on guard break, slide after death, hardcoded feel
+   numbers) + dummy drifts out of reach, knockback-off killed the jolt, weak test — fixed by a new Sonnet
+   agent · user: pending.
+
 **Feel slice F1 — hit feel slice 1 (2026-10-02).** Research + plan first ([0023](../decision/0023-hit-feel.md)):
 flash for all actors, global hit-stop, generated SFX, trauma shake, kill slow-mo; F3 switches + test buttons.
    Log F1: built by Sonnet 5.5 agent · Opus judge: 5 confirmed (audio stuck at F2 speed, F2 lost during a

@@ -122,6 +122,13 @@ func _on_draw() -> void:
 				_draw_shape(pose[0], pose[1], Color(1.0, 0.3, 0.3, 0.3), 1.0)
 			_draw_hitbox_outline(hb)
 
+	# Knockback: an orange line from where the body stood to where the shove sends it, for 0.6 s after a hit.
+	for kb in get_tree().get_nodes_in_group("knockback"):
+		if Time.get_ticks_msec() - kb.last_msec < 600:
+			var tip: Vector2 = kb.last_origin + kb.last_vector
+			_draw_layer.draw_line(kb.last_origin, tip, Color(1.0, 0.6, 0.1), 2.0)
+			_draw_layer.draw_circle(tip, 3.0, Color(1.0, 0.6, 0.1))
+
 	# Player i-frames: blue outline for the dodge window's whole duration.
 	var dodge: Dodge = _player.get_node_or_null("Dodge")
 	if dodge and dodge.iframes_active():

@@ -11,10 +11,12 @@ func _init():
 	await process_frame
 	var player = arena.get_node("Player")
 	var dummy = arena.get_node("Dummy")
+	dummy.set_physics_process(false)   # no home return: the test places the dummy itself
 	var hp: Health = dummy.get_node("Health")
 	player.set_physics_process(false)
 	_holder = player.get_node("WeaponHolder")
 	var wv: WeaponVisual = player.get_node("WeaponVisual")
+	wv.weapon.step_distance = 0.0   # this test measures sweep geometry from a fixed spot
 	var half := wv.weapon.arc_degrees * 0.5
 	var ok := true
 	# [name, angle from the aim line in the weapon's own frame (deg), expected hits]
