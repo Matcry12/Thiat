@@ -22,3 +22,4 @@
   player.tscn (a `preview_width_from = null` line that silently broke the arc's editor preview) →
   never `commit -a`. Stage files by name, and `git diff` every .tscn before it goes in.
 - 2026-10-01: unzipped a third-party pack inside res:// with read-only dirs → Godot spammed "Cannot open .import" errors. Raw packs get a `.gdignore`; copy the sheets we use elsewhere.
+- 2026-10-04: cleaned (recoloured + re-outlined) the user's drawing without asking → never alter user art beyond what was asked; ask first, keep an untouched copy in assets/characters/source/.
