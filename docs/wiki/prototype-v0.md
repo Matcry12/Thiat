@@ -338,7 +338,7 @@ together — an exception to "no stacking unverified slices".
 5. **Tune** — adjust only the numbers in §2 until it feels right. No new features.
 
 **UI slice U1 — top-right HUD: life bar + hotbar (2026-10-04).** User: Terraria-like health bar and item change, top right ([0024](../decision/0024-hud-top-right.md)).
-   Log U1: built by Sonnet 5.5 · judge: pending · user: pending.
+   Log U1: built by Sonnet 5.5 · judge Opus: 4 bugs (live tuning ignored, Vector2i/colors not in F3, replaced weapon kept old icon, F3 panel drew over HUD) — fixed · user: pending.
 
 **Feel slice F2 — knockback, recoil, swing step, sparks, numbers (2026-10-04).** User: real knockback on
 enemies, boss only jolts visually.

@@ -5,7 +5,8 @@ class_name HealthBar
 ## Looks are slots: `frame_style` (any StyleBox, e.g. a StyleBoxTexture) and
 ## `fill_texture` can be dropped in later with no code change.
 
-@export var bar_size := Vector2i(220, 18)
+@export var bar_width := 220
+@export var bar_height := 18
 @export var text_gap := 2
 @export var font_size := 14
 @export var label_format := "Life %d/%d"
@@ -20,7 +21,9 @@ class_name HealthBar
 @export var trail_delay := 0.5                      ## seconds the "lost HP" chunk waits
 @export var trail_speed := 0.6                      ## then drains this fraction of max HP per second
 
+var width_override := 0      ## set by the HUD while F3 is open (0 = use bar_width); code-owned, not an export
 var _health: Health
+var _layout_key := []
 var _frac := 1.0
 var _trail := 1.0
 var _since_hit := 0.0
@@ -41,9 +44,7 @@ func trail_fraction() -> float:
 
 func _ready() -> void:
 	_font = ThemeDB.fallback_font
-	_text_h = int(ceilf(_font.get_height(font_size)))
-	custom_minimum_size = Vector2(bar_size.x, _text_h + text_gap + bar_size.y)
-	size = custom_minimum_size
+	_relayout()
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	if frame_style == null:
@@ -53,10 +54,26 @@ func _ready() -> void:
 		f.border_color = Color(0.0, 0.0, 0.0, 0.95)
 		frame_style = f
 
+func label_text() -> String:
+	return label_format % [roundi(_health.hp), roundi(_health.max_hp)] if _health else ""
+
+func _bar_w() -> int:
+	return width_override if width_override > 0 else bar_width
+
+## Re-measure when a size export (or the F3 width override) changed.
+func _relayout() -> void:
+	_layout_key = [font_size, text_gap, _bar_w(), bar_height]
+	_text_h = int(ceilf(_font.get_height(font_size)))
+	custom_minimum_size = Vector2(_bar_w(), _text_h + text_gap + bar_height)
+	size = custom_minimum_size
+
 func _read_frac() -> float:
 	return clampf(_health.hp / maxf(_health.max_hp, 1.0), 0.0, 1.0) if _health else 0.0
 
 func _process(delta: float) -> void:
+	if _font and _layout_key != [font_size, text_gap, _bar_w(), bar_height]:
+		_relayout()
+	delta /= maxf(Engine.time_scale, 0.0001)   # real seconds, like camera_shake.gd
 	_time += delta
 	var f := _read_frac()
 	if f < _frac:
@@ -74,12 +91,12 @@ func _draw() -> void:
 	if _font == null:
 		return
 	var bar_top := _text_h + text_gap
-	var txt := label_format % [roundi(_health.hp), roundi(_health.max_hp)] if _health else ""
+	var txt := label_text()
 	var tp := Vector2(0, _text_h - 3)
 	draw_string(_font, tp + Vector2(1, 1), txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8))
 	draw_string(_font, tp, txt, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color.WHITE)
-	draw_style_box(frame_style, Rect2(0, bar_top, bar_size.x, bar_size.y))
-	var inner := Rect2(frame_margin, bar_top + frame_margin, bar_size.x - 2 * frame_margin, bar_size.y - 2 * frame_margin)
+	draw_style_box(frame_style, Rect2(0, bar_top, _bar_w(), bar_height))
+	var inner := Rect2(frame_margin, bar_top + frame_margin, _bar_w() - 2 * frame_margin, bar_height - 2 * frame_margin)
 	_draw_part(inner, _trail, trail_color)
 	var c := fill_color
 	if _frac <= low_threshold and _frac > 0.0:

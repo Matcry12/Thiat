@@ -19,6 +19,7 @@ class_name Hotbar
 var _loadout: Loadout
 var _slots: Array[HotbarSlot] = []
 var _cast_to := -1
+var _layout_key := []
 var name_label: Label
 
 func bind(l: Loadout) -> void:
@@ -90,7 +91,13 @@ func _key_text(i: int) -> String:
 func _process(_delta: float) -> void:
 	if _loadout == null or name_label == null:
 		return
-	if _slots.size() != _loadout.weapons.size():
+	var key := [slot_size, slot_gap, selected_grow, name_gap, name_font_size]
+	var stale := key != _layout_key or _slots.size() != _loadout.weapons.size()
+	for i in mini(_slots.size(), _loadout.weapons.size()):
+		stale = stale or _slots[i].weapon != _loadout.weapons[i]   # a weapon was replaced in place
+	if stale:
+		_layout_key = key
+		name_label.add_theme_font_size_override("font_size", name_font_size)
 		_rebuild()
 	var active := _loadout.active_index()
 	var cd := _loadout.cooldown_left()

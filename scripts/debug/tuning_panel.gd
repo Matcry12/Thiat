@@ -116,6 +116,8 @@ var _controls: Dictionary = {}    # "Target.prop" -> {obj, prop, control, value_
 var _initial_values: Dictionary = {}  # "Target.prop" -> value captured at startup, for Reset
 
 var _status_label: Label
+var _status_panel: Control
+var _right_panel: Control
 var _seed_edit: LineEdit
 var _tuning_list: VBoxContainer
 
@@ -205,8 +207,10 @@ func _ready() -> void:
 		for prof in _hit_fx.profile_list():
 			_targets.append({"name": "Hit " + String(prof.hit_type), "object": prof})
 
-	# HUD top-right (decision 0024). The HUD node sits BEFORE this panel in arena.tscn so its children exist here.
+	# HUD top-right (decision 0024).
 	var hud := get_node_or_null("../HUD") as HUD
+	if hud and not hud.is_node_ready():
+		await hud.ready          # tree order of HUD vs this panel does not matter
 	if hud:
 		_targets.append({"name": "HUD", "object": hud})
 		_targets.append({"name": "HealthBar", "object": hud.health_bar()})
@@ -424,6 +428,7 @@ func _build_ui() -> void:
 	status_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	status_panel.add_theme_stylebox_override("panel", panel_bg)
 	root.add_child(status_panel)
+	_status_panel = status_panel
 
 	_status_label = Label.new()
 	_status_label.add_theme_font_size_override("font_size", 13)
@@ -440,6 +445,7 @@ func _build_ui() -> void:
 	tuning_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	tuning_panel.add_theme_stylebox_override("panel", panel_bg)
 	root.add_child(tuning_panel)
+	_right_panel = tuning_panel
 
 	var tuning_vbox := VBoxContainer.new()
 	tuning_panel.add_child(tuning_vbox)
@@ -714,3 +720,11 @@ func _on_reset_stats() -> void:
 	_hits = 0
 	_swings = 0
 	print("tuning: stats reset")
+
+
+## For the HUD: how wide the right panel is (from the screen edge) and where the status panel ends, in px.
+func right_panel_width() -> float:
+	return -_right_panel.offset_left if _right_panel else 0.0
+
+func left_panel_right() -> float:
+	return _status_panel.position.x + _status_panel.size.x if _status_panel else 0.0

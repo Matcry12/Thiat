@@ -10,11 +10,14 @@ class_name HUD
 @export var player_path: NodePath
 @export var boss_path: NodePath
 @export var tuning_panel_path: NodePath
-## Top-right block: distance from the screen edge, and how far it moves while the F3 panel
-## (352 px wide, full height, right edge) is open: left to clear it, down to clear the boss bar.
-@export var margin := Vector2i(16, 12)
+## Top-right block: distance from the screen edge, and while the F3 panels are open it moves
+## to the free gap between them (width read from the panels) and drops f3_shift_y below the boss bar.
+@export var margin_x := 16
+@export var margin_y := 12
 @export var block_gap := 8
-@export var f3_shift := Vector2i(368, 64)
+@export var f3_shift_y := 64
+@export var f3_min_bar_width := 80
+@export var top_right_layer := 10   ## above the F3 layer, so draw order never depends on tree order
 
 var _health: Health
 var _dodge: Dodge
@@ -26,6 +29,7 @@ var _boss: Boss
 var _health_bar: HealthBar
 var _hotbar: Hotbar
 var _block: VBoxContainer
+var _tr_layer: CanvasLayer
 var _tuning: CanvasLayer
 var _dodge_label: Label
 var _skill_label: Label
@@ -52,9 +56,19 @@ func hotbar() -> Hotbar:
 	return _hotbar
 
 func _process(_delta: float) -> void:
-	var shift := f3_shift if (_tuning and _tuning.visible) else Vector2i.ZERO
-	_block.offset_right = -margin.x - shift.x
-	_block.offset_top = margin.y + shift.y
+	_tr_layer.layer = top_right_layer
+	_block.add_theme_constant_override("separation", block_gap)
+	var right := margin_x
+	var drop := 0
+	_health_bar.width_override = 0
+	if _tuning and _tuning.visible and _tuning.has_method("right_panel_width"):
+		right = int(_tuning.right_panel_width()) + block_gap
+		drop = f3_shift_y
+		var gap := int(get_viewport().get_visible_rect().size.x) - right - int(_tuning.left_panel_right()) - block_gap
+		if gap < _health_bar.bar_width:
+			_health_bar.width_override = maxi(gap, f3_min_bar_width)
+	_block.offset_right = -right
+	_block.offset_top = margin_y + drop
 	if _dodge:
 		var cd := _dodge.cooldown_remaining()
 		_dodge_label.text = "dodge: ready" if cd <= 0.0 else "dodge: %.1fs" % cd
@@ -107,12 +121,15 @@ func _build_ui() -> void:
 
 ## Top-right block: life bar, then the hotbar. Right-aligned, so N slots grow to the left.
 func _build_top_right() -> void:
+	_tr_layer = CanvasLayer.new()
+	_tr_layer.layer = top_right_layer
+	add_child(_tr_layer)
 	_block = VBoxContainer.new()
 	_block.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	_block.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	_block.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_block.add_theme_constant_override("separation", block_gap)
-	add_child(_block)
+	_tr_layer.add_child(_block)
 	_health_bar = HealthBar.new()
 	_health_bar.size_flags_horizontal = Control.SIZE_SHRINK_END
 	_block.add_child(_health_bar)

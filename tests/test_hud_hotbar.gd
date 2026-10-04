@@ -39,7 +39,10 @@ func _init():
 	hp.hp = hp.max_hp
 	bar._process(0.016)
 	check("healing snaps the trail up", is_equal_approx(bar.trail_fraction(), 1.0))
-	check("text shows Life x/y", true if bar._health != null else false)
+	check("text shows Life x/y", bar.label_text() == "Life %d/%d" % [roundi(hp.max_hp), roundi(hp.max_hp)])
+	bar.font_size = 24
+	bar._process(0.016)
+	check("font_size change re-measures live", bar.custom_minimum_size.y > 18 + 2 + 14 and bar.size.y == bar.custom_minimum_size.y)
 
 	# --- hotbar ---
 	hb._process(0.016)
@@ -71,6 +74,21 @@ func _init():
 	hb._process(0.016)
 	check("shade gone when cooldown ends", hb.slots()[0].cooldown_frac == 0.0)
 
+	# --- live tuning + replaced weapon ---
+	hb.slot_size = 60
+	hb._process(0.016)
+	check("slot_size applies live", hb.slots()[0].size.x == 60 and hb.slots()[1].position.x == 60 + hb.slot_gap)
+	var old_icon = hb.slots()[1]._icon
+	var other: WeaponData = lo.weapons[0].duplicate()
+	other.model = lo.weapons[0].model
+	var keep: WeaponData = lo.weapons[1]
+	lo.weapons[1] = other
+	hb._process(0.016)
+	check("replaced weapon rebuilds the slot", hb.slots()[1].weapon == other and hb.slots()[1]._icon != old_icon)
+	lo.weapons[1] = keep
+	hb.slot_size = 44
+	hb._process(0.016)
+
 	# --- N slots ---
 	lo.weapons.append(lo.weapons[0])
 	hb._process(0.016)
@@ -84,4 +102,9 @@ func _init():
 	tp.visible = true
 	hud._process(0.016)
 	check("HUD block moves out of the way of F3", hud._block.offset_right < right_closed)
+	await process_frame
+	await process_frame
+	var vw: float = hud.get_viewport().get_visible_rect().size.x   # 64 headless, 1152 in the real window; clearing of the status panel is checked on the screenshot
+	check("shifted block ends at the F3 right panel", is_equal_approx(hud._block.get_global_rect().end.x, vw - tp.right_panel_width() - hud.block_gap))
+	check("block is above the F3 layer", hud._tr_layer.layer > tp.layer)
 	quit(0 if _ok else 1)
