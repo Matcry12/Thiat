@@ -8,6 +8,7 @@ Single durable design synthesis. See [decision 0001](../decision/0001-design-ref
 ## 1. Pillars
 
 - Combat is the product. Story/world/meta come later and never constrain the fight.
+  - *v1 update ([0025](../decision/0025-v1-open-world.md)):* v1 adds an open world, but it exists to prepare for the boss; the fight stays the main event.
 - Top-down combat that reads clearly at a glance, human or RL boss.
 - Bosses are puzzles with phases and rules, not HP sponges with a damage slider.
 - Progression is boss-gated, not grind-gated — gear tier = kill order, not playtime.
