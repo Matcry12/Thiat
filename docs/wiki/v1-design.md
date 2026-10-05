@@ -81,7 +81,7 @@ at its altar and beat it. Beating it wins the game. One run: **20–30 minutes**
 
 ## 8. Death
 
-Respawn at home after a short delay. Keep weapons, tools and armor slots. Drop **50%** (tune) of each
+Respawn at home after a short delay. Keep weapons and tools. Drop **50%** (tune) of each
 material stack in a bag at the death spot; walking over it gives it back. The boss resets.
 
 ## 9. Game frame
