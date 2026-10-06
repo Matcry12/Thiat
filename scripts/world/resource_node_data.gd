@@ -12,6 +12,10 @@ extends Resource
 @export var drop_max := 3
 ## Collision circle, screen px.
 @export var radius := 14.0
+## How much bigger the gather Hurtbox circle is than the body, px.
+@export var hurtbox_pad := 6.0
+## Drop spread when no Collector exists, px.
+@export var drop_scatter := 26.0
 ## Nodes per 100 land cells of that area.
 @export var density_forest := 0.0
 @export var density_rocky := 0.0
@@ -23,6 +27,9 @@ extends Resource
 ## What stays after it breaks (a stump). Empty = nothing stays.
 @export var remains_region := Rect2()
 @export var pixel_scale := 2
+## Body alpha while the player stands hidden behind the picture.
+@export var fade_when_behind := false
+@export_range(0.0, 1.0) var fade_alpha := 0.45
 ## Placeholder colour when there is no texture.
 @export var color := Color.WHITE
 @export_group("Hit feel")

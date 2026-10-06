@@ -17,6 +17,7 @@ class_name HUD
 @export var block_gap := 8
 @export var f3_shift_y := 64
 @export var f3_min_bar_width := 80
+@export var counter_gap := 12   ## item counter spacing
 @export var top_right_layer := 10   ## above the F3 layer, so draw order never depends on tree order
 
 var _health: Health
@@ -28,6 +29,7 @@ var _boss: Boss
 
 var _health_bar: HealthBar
 var _hotbar: Hotbar
+var _counter: ItemCounter
 var _block: VBoxContainer
 var _tr_layer: CanvasLayer
 var _tuning: CanvasLayer
@@ -58,6 +60,8 @@ func hotbar() -> Hotbar:
 func _process(_delta: float) -> void:
 	_tr_layer.layer = top_right_layer
 	_block.add_theme_constant_override("separation", block_gap)
+	if _counter:
+		_counter.add_theme_constant_override("separation", counter_gap)
 	var right := margin_x
 	var drop := 0
 	_health_bar.width_override = 0
@@ -129,6 +133,8 @@ func _build_top_right() -> void:
 	_block.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	_block.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_block.add_theme_constant_override("separation", block_gap)
+	if _counter:
+		_counter.add_theme_constant_override("separation", counter_gap)
 	_tr_layer.add_child(_block)
 	_health_bar = HealthBar.new()
 	_health_bar.size_flags_horizontal = Control.SIZE_SHRINK_END
@@ -141,10 +147,10 @@ func _build_top_right() -> void:
 		_hotbar.bind(_loadout)
 	var inv := get_node(player_path).get_node_or_null("Inventory") as Inventory
 	if inv:
-		var counter := ItemCounter.new()
-		counter.size_flags_horizontal = Control.SIZE_SHRINK_END
-		_block.add_child(counter)
-		counter.bind(inv)
+		_counter = ItemCounter.new()
+		_counter.size_flags_horizontal = Control.SIZE_SHRINK_END
+		_block.add_child(_counter)
+		_counter.bind(inv)
 
 ## Boss HP, top centre. The thin marker sits where phase 2 starts.
 func _build_boss_bar() -> void:

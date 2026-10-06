@@ -6,6 +6,8 @@ extends Node
 @export var magnet_speed := 420.0
 @export var pickup_radius := 14.0
 @export var inventory_path: NodePath = ^"../Inventory"
+@export var pickup_hop_time := 0.35   ## read by Pickup
+@export var pickup_size := 7.0   ## placeholder diamond, read by Pickup
 @export var scatter_radius := 26.0   ## read by ResourceNode for drop spread
 
 var last_pickup := ""   # for F3

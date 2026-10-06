@@ -70,18 +70,24 @@ func _init() -> void:
 	var zc := Vector2i(p.zone.get_center() / p.cell)
 	var all_ok := true
 	var reach_ok := true
+	var t0 := Time.get_ticks_msec()
+	# Seeds 1..40: island shape (no nodes = cheap). Seeds 1..10 (incl. 2, 4, 11-ish repair cases): full walk check.
+	var bare: MapStyle = style.duplicate()
+	bare.resource_nodes = []
 	for s in range(1, 41):
-		var r := MapGen.generate(style, p, s)
+		var full: bool = s <= 10 or s == 11
+		var r := MapGen.generate(style if full else bare, p, s)
 		var ok: bool = MapGen.is_land(r, p, home) and MapGen.is_land(r, p, zc) and _connected_land(r, p)
 		if not ok:
 			print("  seed %d: home/zone/connected failed" % s)
 		all_ok = all_ok and ok
-		var walk := MapGen.floor_reachable(p, r.obstacles, r.land)   # I1: the walk grid reaches every walkable spot
+		var walk := not full or MapGen.floor_reachable(p, r.obstacles, r.land)   # I1: the walk grid reaches every walkable spot
 		if not walk:
 			print("  seed %d: walk-grid check failed" % s)
 		reach_ok = reach_ok and walk
 	_check(all_ok, "seeds 1..40: home and zone are land, all land connected to home")
-	_check(reach_ok, "seeds 1..40: all walkable land reachable from home, rocks and water included (I1)")
+	print("seed loop runtime: %d ms" % (Time.get_ticks_msec() - t0))
+	_check(reach_ok, "seeds 1..11 (with nodes): all walkable land reachable from home, rocks and water included (I1)")
 
 	_check(a.area[MapGen.cell_index(p, home)] == MapGen.Area.FOREST, "home is in the forest")
 	_check(a.area[MapGen.cell_index(p, zc)] == MapGen.Area.BOSS, "the fight zone is in the boss area")

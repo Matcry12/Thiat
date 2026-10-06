@@ -6,9 +6,11 @@
 
 [sub_resource type="CircleShape2D" id="Body_shape"]
 radius = 14.0
+resource_local_to_scene = true
 
 [sub_resource type="CircleShape2D" id="Hurt_shape"]
 radius = 20.0
+resource_local_to_scene = true
 
 [node name="ResourceNode" type="StaticBody2D"]
 collision_layer = 1

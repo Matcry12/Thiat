@@ -572,6 +572,8 @@ static func _repair_reach(res: Result, p: Params) -> void:
 					break
 			if not near:
 				kept.append(o)
+		if kept.size() == res.obstacles.size():
+			return   # nothing removable: do not loop forever
 		res.obstacles = kept
 		res.obstacle_grid.clear()
 		for o in kept:

@@ -2,16 +2,14 @@ class_name ItemCounter
 extends HBoxContainer
 ## HUD: "Wood 3  Stone 2" under the hotbar. Hidden while the inventory is empty.
 
-@export var gap := 12
-
 func bind(inv: Inventory) -> void:
 	inv.changed.connect(_rebuild.bind(inv))
 	_rebuild(inv)
 
 func _rebuild(inv: Inventory) -> void:
 	for c in get_children():
+		remove_child(c)   # not just queue_free: freed children still count this frame
 		c.queue_free()
-	add_theme_constant_override("separation", gap)
 	var counts := inv.items()
 	for id in counts:
 		if counts[id] <= 0:

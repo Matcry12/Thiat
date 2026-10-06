@@ -92,9 +92,12 @@ func _physics_process(delta: float) -> void:
 			# That Hurtbox is on a layer this shot does not target (a boss bolt
 			# and the training Dummy): the body is not a target, and not a wall
 			# either. Skip it, so the Dummy cannot shield the player.
+			# A Hurtbox on a non-combat layer (a tree's gather box) is no target: the body is a wall.
 			if hurtbox and (hurtbox.collision_layer & _mask) == 0:
-				exclude.append(hit.rid)
-				continue
+				if hurtbox.collision_layer & (2 | 4) != 0:
+					exclude.append(hit.rid)
+					continue
+				hurtbox = null
 		if hurtbox and _pierce:
 			_damage_hurtbox(hurtbox)
 			for rid in [hurtbox.get_rid(), (hurtbox.owner as CollisionObject2D).get_rid() if hurtbox.owner is CollisionObject2D else RID()]:

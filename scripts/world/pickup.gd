@@ -5,9 +5,9 @@ extends Node2D
 
 const SCENE := preload("res://scenes/world/pickup.tscn")
 
-@export var settle_time := 0.35
-@export var hop_height := 18.0
-@export var size := 7.0
+## Feel numbers live on the Collector (F3 section "Collector"), not per drop.
+var settle_time := 0.35
+var size := 7.0
 
 var item: ItemData
 var amount := 1
@@ -18,6 +18,10 @@ static func spawn(parent: Node, it: ItemData, n: int, from: Vector2, to: Vector2
 	p.item = it
 	p.amount = n
 	p.position = from
+	var col := parent.get_tree().get_first_node_in_group("collector") as Collector
+	if col:
+		p.settle_time = col.pickup_hop_time
+		p.size = col.pickup_size
 	parent.add_child(p)
 	p._hop(to)
 	return p

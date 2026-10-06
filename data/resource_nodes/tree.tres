@@ -20,5 +20,6 @@ density_boss = 0.6
 texture = ExtResource("3")
 regions = Array[Rect2]([Rect2(16, 2, 48, 62), Rect2(80, 2, 48, 62), Rect2(16, 66, 48, 62)])
 remains_region = Rect2(5, 59, 6, 5)
+fade_when_behind = true
 color = Color(0.25, 0.55, 0.25, 1)
 hit_type = &"chop"

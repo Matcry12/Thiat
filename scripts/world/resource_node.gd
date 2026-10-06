@@ -21,7 +21,7 @@ func _ready() -> void:
 	add_to_group("resource_node")
 	collision_mask = 0
 	(get_node("CollisionShape2D").shape as CircleShape2D).radius = data.radius
-	(get_node("Hurtbox/CollisionShape2D").shape as CircleShape2D).radius = data.radius + 6.0
+	(get_node("Hurtbox/CollisionShape2D").shape as CircleShape2D).radius = data.radius + data.hurtbox_pad
 	_hit_fx = get_tree().get_first_node_in_group("hit_fx")
 	get_node("Visual").show_variant(data, variant)
 
@@ -66,7 +66,7 @@ func _break(source: Node) -> void:
 
 func _drop() -> void:
 	var col := get_tree().get_first_node_in_group("collector") as Collector
-	var radius: float = col.scatter_radius if col else 26.0
+	var radius: float = col.scatter_radius if col else data.drop_scatter
 	var m := get_tree().get_first_node_in_group("arena_map") as ArenaMap
 	for i in randi_range(data.drop_min, data.drop_max):
 		var to := position + Vector2.from_angle(randf() * TAU) * radius * sqrt(randf())

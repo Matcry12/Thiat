@@ -66,7 +66,8 @@ func is_holstered() -> bool:
 	return _holstered
 
 func toggle_hands() -> bool:
-	if unarmed == null or _casting:
+	# Not mid-swing / mid-draw: cancelling would skip the recovery for free (0003).
+	if unarmed == null or _casting or (_weapon_holder and _weapon_holder.phase != WeaponHolder.Phase.IDLE):
 		return false
 	_holstered = not _holstered
 	if _weapon_holder:
