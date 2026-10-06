@@ -4,6 +4,12 @@ extends SceneTree
 # same seed, and the F1 overlay can find the rocks.
 func _init() -> void:
 	var arena = load("res://scenes/arena.tscn").instantiate()
+	var mm = arena.get_node("ArenaMap")
+	mm.island_on = false
+	mm.map_cols = 72
+	mm.map_rows = 40
+	mm.zone_x = 0.72
+	mm.player_spawn_x = 0.14
 	root.add_child(arena)
 	arena.get_node("Boss").passive = true
 	await process_frame

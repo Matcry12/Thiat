@@ -19,11 +19,11 @@ extends Node2D
 const REF_CELLS := 36 * 21
 
 ## Map size in cells (1 cell = tile_size * pixel_scale px = 32). 72 x 40 = 2304 x 1280 px = 2x the screen.
-@export var map_cols := 72:
+@export var map_cols := 200:
 	set(v):
 		map_cols = v
 		_changed(false, true)
-@export var map_rows := 40:
+@export var map_rows := 120:
 	set(v):
 		map_rows = v
 		_changed(false, true)
@@ -36,7 +36,7 @@ const REF_CELLS := 36 * 21
 	set(v):
 		zone_height = v
 		_changed(false, true)
-@export var zone_x := 0.72:
+@export var zone_x := 0.86:
 	set(v):
 		zone_x = v
 		_changed(false, true)
@@ -50,7 +50,7 @@ const REF_CELLS := 36 * 21
 		boss_offset_x = v
 		_changed(false, true)
 ## The player starts here (fraction of the map): far left, outside the zone.
-@export var player_spawn_x := 0.14:
+@export var player_spawn_x := 0.12:
 	set(v):
 		player_spawn_x = v
 		_changed(false, true)
@@ -140,6 +140,52 @@ const REF_CELLS := 36 * 21
 		agent_radius = v
 		_changed()
 
+## Island (W1): shape of the land, the areas along home -> boss. Water is everything else.
+@export var island_on := true:
+	set(v):
+		island_on = v
+		_changed(false, true)
+@export var island_noise_frequency := 0.035:
+	set(v):
+		island_noise_frequency = v
+		_changed()
+@export var island_noise := 0.3:
+	set(v):
+		island_noise = v
+		_changed()
+@export var island_falloff := 2.0:
+	set(v):
+		island_falloff = v
+		_changed()
+@export var island_threshold := 0.15:
+	set(v):
+		island_threshold = v
+		_changed()
+@export var coast_cells := 3:
+	set(v):
+		coast_cells = v
+		_changed()
+@export var home_clear_cells := 6:
+	set(v):
+		home_clear_cells = v
+		_changed()
+@export var corridor_half := 2:
+	set(v):
+		corridor_half = v
+		_changed()
+@export var forest_end := 0.45:
+	set(v):
+		forest_end = v
+		_changed()
+@export var rocky_end := 0.8:
+	set(v):
+		rocky_end = v
+		_changed()
+@export var area_wobble := 0.12:
+	set(v):
+		area_wobble = v
+		_changed()
+
 @export var player_path: NodePath
 @export var boss_path: NodePath
 @export var dummy_path: NodePath
@@ -148,6 +194,7 @@ const REF_CELLS := 36 * 21
 @export var background_path: NodePath
 
 var current_seed := 0
+var build_ms := 0   ## last rebuild, in ms
 var result: MapGen.Result
 
 var _spawns := PackedVector2Array()
@@ -159,6 +206,8 @@ var _want_new_seed := false
 var _want_relayout := false
 var _walls: Node2D
 var _camera: Camera2D
+var _water: TileMapLayer
+var _water_body: StaticBody2D
 var _dirt: TileMapLayer
 var _grass: TileMapLayer
 var _deco: Node2D
@@ -169,13 +218,18 @@ var _border: Node2D
 func _ready() -> void:
 	# The layers live in arena.tscn: Ground (z -10: under every character and shadow) holds the flat
 	# stuff; Obstacles is Y-sorted with the characters, so a rock hides whoever stands behind it.
+	_water = $Ground/Water
 	_dirt = $Ground/Dirt
 	_grass = $Ground/Grass
 	_deco = $Ground/Deco
 	_border = $Ground/Border
 	_obstacles = $Obstacles
-	for layer in [_dirt, _grass]:
+	for layer in [_water, _dirt, _grass]:
 		layer.scale = Vector2.ONE * style.pixel_scale
+	_water_body = StaticBody2D.new()
+	_water_body.name = "Water"
+	_water_body.collision_mask = 0
+	add_child(_water_body)
 	_walls = Node2D.new()
 	_walls.name = "Walls"
 	add_child(_walls)
@@ -196,9 +250,15 @@ func _ready() -> void:
 func status_text() -> String:
 	if result == null:
 		return "n/a"
-	return "seed: %d  size: %dx%d cells (%dx%d px)\ndirt patches: %d  rocks: %d  deco: %d  bushes: %d" % [
+	var player := get_node_or_null(player_path) as Node2D
+	var ai := area_at(player.global_position) if player else -1
+	var land := 0
+	for v in result.land:
+		land += v
+	return "seed: %d  size: %dx%d cells (%dx%d px)\ndirt patches: %d  rocks: %d  deco: %d  bushes: %d\narea %s  land %d%%  build %d ms" % [
 		current_seed, map_cols, map_rows, map_size().x, map_size().y,
-		result.patches.size(), result.obstacles.size(), result.deco.size(), result.border.size()]
+		result.patches.size(), result.obstacles.size(), result.deco.size(), result.border.size(),
+		["forest", "rocky", "boss"][ai] if ai >= 0 else "water", 100 * land / maxi(result.land.size(), 1), build_ms]
 
 
 ## F3 Save asks this instead of reading the export: map_seed 0 means "random", but a saved file
@@ -229,6 +289,7 @@ func generate_seed(s: int) -> void:
 func rebuild(new_seed: bool, relayout := false) -> void:
 	if not _ready_done:
 		return
+	var t0 := Time.get_ticks_msec()
 	if relayout:
 		_place_actors()
 		if _camera:
@@ -238,6 +299,7 @@ func rebuild(new_seed: bool, relayout := false) -> void:
 		current_seed = map_seed if map_seed != 0 else _fresh_seed()
 	result = MapGen.generate(style, make_params(), current_seed)
 	_build()
+	build_ms = maxi(Time.get_ticks_msec() - t0, 1)
 
 
 func _fresh_seed() -> int:
@@ -291,10 +353,44 @@ func make_params() -> MapGen.Params:
 	p.border_density = border_density
 	p.dark_grass_chance = dark_grass_chance
 	p.agent_radius = agent_radius
+	p.island_on = island_on
+	p.island_noise_frequency = island_noise_frequency
+	p.island_noise = island_noise
+	p.island_falloff = island_falloff
+	p.island_threshold = island_threshold
+	p.coast_cells = coast_cells
+	p.home_clear_cells = home_clear_cells
+	p.corridor_half = corridor_half
+	p.forest_end = forest_end
+	p.rocky_end = rocky_end
+	p.area_wobble = area_wobble
 	p.zone = _zone
 	p.spawns = _spawns
 	p.player_spawn = _player_spawn
 	return p
+
+
+## MapGen.Area at a world position, or -1 on water / off the map.
+func area_at(pos: Vector2) -> int:
+	var i := MapGen.cell_index(make_params(), Vector2i((pos / cell_px()).floor()))
+	if i < 0 or result == null or result.land[i] == 0:
+		return -1
+	return result.area[i]
+
+
+func home_point() -> Vector2:
+	return _player_spawn
+
+
+## "home" or "boss" (zone left edge - 96 px, zone centre y).
+func teleport_player(to: String) -> void:
+	var player := get_node_or_null(player_path) as CharacterBody2D
+	if player == null:
+		return
+	player.global_position = _player_spawn if to == "home" else Vector2(_zone.position.x - 96.0, _zone.get_center().y)
+	player.velocity = Vector2.ZERO
+	if _camera:
+		_camera.reset_smoothing()
 
 
 func cell_px() -> float:
@@ -398,6 +494,7 @@ func _apply_camera() -> void:
 # ------------------------------------------------------------------- build ---
 
 func _build() -> void:
+	_build_water()
 	var ts := _make_tileset()
 	_dirt.tile_set = ts
 	_grass.tile_set = ts
@@ -439,14 +536,50 @@ func _build() -> void:
 		_add_sprite(body, style.obstacles, o["region"], Vector2(0, o["radius"]), s, false)
 
 
-func _make_tileset() -> TileSet:
+func _build_water() -> void:
+	_water.clear()
+	if style.water_texture and not result.water.is_empty():
+		_water.tile_set = _make_tileset(style.water_texture, result.water.values())
+		for cell in result.water:
+			_water.set_cell(cell, 0, result.water[cell])
+	for c in _water_body.get_children():
+		_water_body.remove_child(c)
+		c.queue_free()
+	# One rectangle per run of coast water (water touching land, 8 neighbours) in a row.
+	var p := make_params()
+	var cell := cell_px()
+	for y in map_rows:
+		var x0 := -1
+		for x in map_cols + 1:
+			var coast := x < map_cols and not MapGen.is_land(result, p, Vector2i(x, y)) and _touches_land(p, x, y)
+			if coast and x0 < 0:
+				x0 = x
+			elif not coast and x0 >= 0:
+				var shape := RectangleShape2D.new()
+				shape.size = Vector2((x - x0) * cell, cell)
+				var cs := CollisionShape2D.new()
+				cs.shape = shape
+				cs.position = Vector2((x0 + x) * 0.5 * cell, (y + 0.5) * cell)
+				_water_body.add_child(cs)
+				x0 = -1
+
+
+func _touches_land(p: MapGen.Params, x: int, y: int) -> bool:
+	for dy in range(-1, 2):
+		for dx in range(-1, 2):
+			if MapGen.is_land(result, p, Vector2i(x + dx, y + dy)):
+				return true
+	return false
+
+
+func _make_tileset(texture: Texture2D = null, coord_list: Array = []) -> TileSet:
 	var ts := TileSet.new()
 	ts.tile_size = Vector2i(style.tile_size, style.tile_size)
 	var src := TileSetAtlasSource.new()
-	src.texture = style.tileset_texture
+	src.texture = texture if texture else style.tileset_texture
 	src.texture_region_size = ts.tile_size
 	var used: Dictionary = {}
-	for coords in result.dirt.values() + result.grass.values():
+	for coords in (coord_list if texture else result.dirt.values() + result.grass.values()):
 		used[coords] = true
 	for coords in used:
 		src.create_tile(coords)

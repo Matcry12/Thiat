@@ -5,6 +5,7 @@ extends RefCounted
 static func make() -> Node:
 	var arena: Node = load("res://scenes/arena.tscn").instantiate()
 	var m = arena.get_node("ArenaMap")
+	m.island_on = false
 	m.map_cols = 36
 	m.map_rows = 21
 	m.zone_x = 0.5

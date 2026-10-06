@@ -33,7 +33,7 @@ offset_right = 2304.0
 offset_bottom = 1280.0
 z_index = -20
 mouse_filter = 2
-color = Color(0.35, 0.35, 0.35, 1)
+color = Color(0.18, 0.42, 0.62, 1)
 
 [node name="ArenaMap" type="Node2D" parent="."]
 y_sort_enabled = true
@@ -47,6 +47,8 @@ background_path = NodePath("../Background")
 
 [node name="Ground" type="Node2D" parent="ArenaMap"]
 z_index = -10
+
+[node name="Water" type="TileMapLayer" parent="ArenaMap/Ground"]
 
 [node name="Dirt" type="TileMapLayer" parent="ArenaMap/Ground"]
 
