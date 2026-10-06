@@ -115,6 +115,33 @@ func _init():
 	hands.set_aim_angle(PI)
 	p = hands.hand_positions()
 	_check("no model, aim left: hands in front of the body on the left", p[0].x < hands.global_position.x and p[1].x < hands.global_position.x)
+
+	# Holster toggle (key 3): instant, free, always back to the same weapon.
+	var lo: Loadout = loadout
+	var wh: WeaponHolder = holder
+	lo._cooldown_left = 0.0   # the swap above charged the cooldown; this block starts fresh
+	var first: WeaponData = lo.active_weapon()
+	_check("hands: instant holster", lo.toggle_hands() and lo.is_holstered() and wh.weapon == lo.unarmed)
+	_check("holster costs no cast and no cooldown", lo.cooldown_left() == 0.0 and not lo.is_casting())
+	_check("hands again: same weapon back, instant", lo.toggle_hands() and not lo.is_holstered() and wh.weapon == first)
+	lo.toggle_hands()
+	var other := 1 - lo.active_index()
+	_check("from hands to the OTHER weapon = a normal swap cast", lo.try_swap(other) and lo.is_casting())
+	for i in 60:
+		await physics_frame
+	_check("...and it charges the cooldown", not lo.is_holstered() and wh.weapon == lo.weapons[other] and lo.cooldown_left() > 0.0)
+	_check("holster allowed during the swap cooldown", lo.toggle_hands() and lo.is_holstered())
+	# Punch the dummy (still holstered): fists deal damage like any weapon.
+	var dummy = arena.get_node("Dummy")
+	var dh: Health = dummy.get_node("Health")
+	player.global_position = dummy.global_position - Vector2(24, 0)
+	wv.set_aim_angle(0.0)
+	await physics_frame
+	var hp_before := dh.hp
+	wh.try_attack()
+	for i in 30:
+		await physics_frame
+	_check("a punch hurts the dummy (%.0f -> %.0f)" % [hp_before, dh.hp], dh.hp < hp_before)
 	quit(0 if _ok else 1)
 
 func _on_markers(hands: HandsVisual, model: Node2D) -> bool:

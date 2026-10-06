@@ -112,7 +112,7 @@ func _process(_delta: float) -> void:
 		s.icon_tilt_degrees = icon_tilt_degrees
 		s.cast_color = cast_color
 		s.cooldown_color = cooldown_color
-		s.selected = i == active
+		s.selected = i == active and not _loadout.is_holstered()
 		s.cast_progress = cast_frac if (_loadout.is_casting() and i == _cast_to) else 0.0
 		s.cooldown_frac = cd_frac if (cd > 0.0 and i != active) else 0.0
 		s.cooldown_text = "%.1f" % cd

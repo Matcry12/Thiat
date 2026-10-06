@@ -13,7 +13,12 @@ signal swap_cancelled
 @export var swap_cooldown := 5.0
 @export var weapon_holder_path: NodePath
 
+## Bare hands (v1 W2). Holstering is instant and free: it always returns to the same weapon, so it can
+## never skip the swap cast/cooldown of decision 0003.
+@export var unarmed: WeaponData
+
 var _weapon_holder: WeaponHolder
+var _holstered := false
 var _active_index := 0
 var _casting := false
 var _cast_left := 0.0
@@ -24,6 +29,8 @@ func _ready() -> void:
 	_weapon_holder = get_node_or_null(weapon_holder_path) as WeaponHolder
 
 func active_weapon() -> WeaponData:
+	if _holstered:
+		return unarmed
 	return weapons[_active_index] if _active_index < weapons.size() else null
 
 func active_index() -> int:
@@ -41,6 +48,8 @@ func cooldown_left() -> float:
 ## Fails (returns false) if `index` is already active, out of range, a swap
 ## is already casting, or the cooldown from the last swap hasn't cleared.
 func try_swap(index: int) -> bool:
+	if _holstered and index == _active_index:
+		return toggle_hands()
 	if index == _active_index or index < 0 or index >= weapons.size():
 		return false
 	if _casting or _cooldown_left > 0.0:
@@ -51,6 +60,18 @@ func try_swap(index: int) -> bool:
 	if _weapon_holder:
 		_weapon_holder.cancel()   # a swap cancels an in-progress swing
 	swap_started.emit(index)
+	return true
+
+func is_holstered() -> bool:
+	return _holstered
+
+func toggle_hands() -> bool:
+	if unarmed == null or _casting:
+		return false
+	_holstered = not _holstered
+	if _weapon_holder:
+		_weapon_holder.cancel()
+	swap_finished.emit(active_weapon())
 	return true
 
 ## Cancels an in-progress cast (dodge/guard call this). No cooldown charged.
@@ -67,6 +88,7 @@ func _physics_process(delta: float) -> void:
 		if _cast_left <= 0.0:
 			_casting = false
 			_active_index = _cast_to
+			_holstered = false
 			_cooldown_left = swap_cooldown
 			swap_finished.emit(active_weapon())
 	elif _cooldown_left > 0.0:

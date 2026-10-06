@@ -17,6 +17,7 @@
 [ext_resource type="Script" uid="uid://bjs01qfet1ww8" path="res://scripts/visual/cover_arc.gd" id="17"]
 [ext_resource type="Script" uid="uid://cme80rjx7alqm" path="res://scripts/components/loadout.gd" id="18"]
 [ext_resource type="Resource" path="res://data/weapons/bow.tres" id="19"]
+[ext_resource type="Resource" path="res://data/weapons/fists.tres" id="fists"]
 [ext_resource type="Script" uid="uid://ba6y0wkjj6tcb" path="res://scripts/components/skill_slot.gd" id="20"]
 [ext_resource type="Script" uid="uid://bhkdre3n8h4wt" path="res://scripts/visual/swing_fx.gd" id="21"]
 [ext_resource type="Script" path="res://scripts/visual/hands_visual.gd" id="22"]
@@ -114,6 +115,7 @@ script = ExtResource("17")
 script = ExtResource("18")
 weapons = Array[ExtResource("15_fulsm")]([ExtResource("6"), ExtResource("19")])
 weapon_holder_path = NodePath("../WeaponHolder")
+unarmed = ExtResource("fists")
 
 [node name="SkillSlot" type="Node" parent="." unique_id=1996829668]
 script = ExtResource("20")

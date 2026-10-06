@@ -147,6 +147,8 @@ func _physics_process(_delta: float) -> void:
 		loadout.try_swap(0)
 	if Input.is_action_just_pressed("weapon_2") and not guard.is_guarding() and not dodge.is_dashing() and not skill_slot.is_active():
 		loadout.try_swap(1)
+	if Input.is_action_just_pressed("hands") and not guard.is_guarding() and not dodge.is_dashing() and not skill_slot.is_active():
+		loadout.toggle_hands()
 
 func _on_weapon_state_changed(state: String) -> void:
 	visual.set_weapon_state(state)

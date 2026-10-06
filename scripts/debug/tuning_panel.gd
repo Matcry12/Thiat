@@ -350,7 +350,7 @@ func _loadout_status_text() -> String:
 		swap_state = "casting %.2fs" % _loadout.cast_left()
 	elif _loadout.cooldown_left() > 0.0:
 		swap_state = "cooldown %.2fs" % _loadout.cooldown_left()
-	return "active: %s (%d)  swap: %s" % [active_name, _loadout.active_index(), swap_state]
+	return "active: %s (%d)%s  swap: %s" % [active_name, _loadout.active_index(), " HOLSTERED" if _loadout.is_holstered() else "", swap_state]
 
 
 func _skill_status_text() -> String:

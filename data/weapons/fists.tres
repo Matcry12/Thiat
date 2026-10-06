@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/fists_model.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Hands"
+behavior = "arc"
+damage = 6.0
+gather_damage = 1.0
+tool_power = 0
+windup = 0.08
+active = 0.08
+recovery = 0.15
+model = ExtResource("2")
+arc_degrees = 60.0
+sweep_samples = 6
+step_distance = 4.0
+parryable = true
