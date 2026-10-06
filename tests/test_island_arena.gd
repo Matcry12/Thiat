@@ -49,5 +49,15 @@ func _init() -> void:
 	_check(m.build_ms > 0, "build time measured (%d ms)" % m.build_ms)
 	_check(m.status_text().contains("area"), "F3 status shows the area")
 
+	var hp: Node2D = arena.get_node("HomePoint")
+	_check(hp is HomePoint and hp.get_node("Visual") != null, "HomePoint with a Visual slot")
+	_check(hp.global_position.distance_to(m.home_point() + Vector2(m.home_offset_x, m.home_offset_y)) < 1.0, "campfire next to the start")
+	var clear := true
+	for o in m.result.obstacles:
+		clear = clear and o["pos"].distance_to(hp.global_position) > m.spawn_clear_radius
+	_check(clear, "no rock on the campfire")
+	var panel = arena.get_node("TuningPanel")
+	_check(panel.range_overrides.has("map_cols") and panel.range_overrides["map_cols"]["max"] >= 300, "F3 map_cols slider reaches 300")
+
 	print("PASS" if _ok else "FAIL")
 	quit(0 if _ok else 1)

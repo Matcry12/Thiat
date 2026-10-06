@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://d1skviyhs5c7r" path="res://scripts/debug/tuning_panel.gd" id="4"]
 [ext_resource type="Script" uid="uid://bjng3ujrudrq1" path="res://scripts/hud.gd" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/boss.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/world/home_point.tscn" id="home_pt"]
 [ext_resource type="Script" path="res://scripts/end_screen.gd" id="7"]
 [ext_resource type="Script" path="res://scripts/map/arena_map.gd" id="8"]
 [ext_resource type="Resource" path="res://data/maps/grass.tres" id="9"]
@@ -63,6 +64,8 @@ y_sort_enabled = true
 
 [node name="Player" parent="." unique_id=669736211 instance=ExtResource("1")]
 position = Vector2(323, 640)
+
+[node name="HomePoint" parent="." instance=ExtResource("home_pt")]
 
 [node name="Dummy" parent="." unique_id=934264551 instance=ExtResource("2")]
 position = Vector2(613, 450)

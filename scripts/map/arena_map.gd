@@ -187,6 +187,16 @@ const REF_CELLS := 36 * 21
 		_changed()
 
 @export var player_path: NodePath
+@export var home_path: NodePath = ^"../HomePoint"
+## The campfire sits this far from the player start.
+@export var home_offset_x := -70.0:
+	set(v):
+		home_offset_x = v
+		_changed(false, true)
+@export var home_offset_y := -50.0:
+	set(v):
+		home_offset_y = v
+		_changed(false, true)
 @export var boss_path: NodePath
 @export var dummy_path: NodePath
 @export var fight_zone_path: NodePath
@@ -424,7 +434,11 @@ func _place_actors() -> void:
 	var l := layout()
 	_zone = l["zone"]
 	_player_spawn = l["player"]
-	_spawns = PackedVector2Array([l["player"], l["boss"], l["dummy"]])
+	var home_pos: Vector2 = l["player"] + Vector2(home_offset_x, home_offset_y)
+	_spawns = PackedVector2Array([l["player"], l["boss"], l["dummy"], home_pos])
+	var home := get_node_or_null(home_path) as Node2D
+	if home:
+		home.global_position = home_pos
 	var zone := get_node_or_null(fight_zone_path) as Node2D
 	if zone:
 		zone.global_position = _zone.get_center()

@@ -29,8 +29,15 @@ class_name TuningPanel
 	"art_angle_degrees": {"min": -180.0, "max": 180.0},
 	"rest_angle_degrees": {"min": -180.0, "max": 180.0},
 	"map_seed": {"min": 0.0, "max": 9999.0},
-	"map_cols": {"min": 12.0, "max": 160.0},
-	"map_rows": {"min": 12.0, "max": 100.0},
+	"map_cols": {"min": 12.0, "max": 300.0},
+	"map_rows": {"min": 12.0, "max": 200.0},
+	"forest_end": {"min": 0.0, "max": 1.0},
+	"rocky_end": {"min": 0.0, "max": 1.0},
+	"island_threshold": {"min": 0.0, "max": 1.0},
+	"island_noise": {"min": 0.0, "max": 1.0},
+	"area_wobble": {"min": 0.0, "max": 1.0},
+	"island_falloff": {"min": 0.5, "max": 4.0},
+	"island_noise_frequency": {"min": 0.005, "max": 0.2},
 	"zone_x": {"min": 0.0, "max": 1.0},
 	"zone_y": {"min": 0.0, "max": 1.0},
 	"player_spawn_x": {"min": 0.0, "max": 1.0},
@@ -465,6 +472,8 @@ func _build_ui() -> void:
 	_add_button(action_row, "Reset skill cd", func(): _skill_slot.reset_cooldowns())
 	if _map:
 		_add_button(action_row, "New map", func(): _map.new_map())
+		_add_button(action_row, "Go home", func(): _map.teleport_player("home"))
+		_add_button(action_row, "Go to boss", func(): _map.teleport_player("boss"))
 
 	if _map:
 		var seed_row := HBoxContainer.new()
