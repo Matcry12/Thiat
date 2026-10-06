@@ -17,6 +17,12 @@ extends Resource
 @export var grass_fills: Array[Vector2i] = []
 ## Darker full grass tiles (used only where dark_grass_chance says so).
 @export var grass_dark_fills: Array[Vector2i] = []
+## Island areas (v1, decision 0026). Empty = use dirt_fills (placeholder look).
+@export var rocky_fills: Array[Vector2i] = []
+@export var boss_fills: Array[Vector2i] = []
+## Water art: its own sheet. Empty water_fills = no water tiles, the Background colour shows.
+@export var water_texture: Texture2D
+@export var water_fills: Array[Vector2i] = []
 
 ## Edge pieces of look-variant A. Keys:
 ##   hole corners  nw ne sw se

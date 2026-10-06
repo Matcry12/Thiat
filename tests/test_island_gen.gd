@@ -93,5 +93,40 @@ func _init() -> void:
 		all_land = all_land and v == 1
 	_check(all_land, "island_on = false: every cell is land (old map)")
 
+	# --- Task 2: everything sits on land ---
+	var on_land := true
+	for o in a.obstacles:
+		var r: float = o["radius"] + MapGen.rock_clearance(p)
+		for dy in [-r, 0.0, r]:
+			for dx in [-r, 0.0, r]:
+				on_land = on_land and MapGen.is_land(a, p, Vector2i((o["pos"] + Vector2(dx, dy)) / p.cell))
+	_check(on_land and a.obstacles.size() > 50, "rocks on land, clear of water (%d rocks)" % a.obstacles.size())
+	var deco_ok := true
+	for d in a.deco:
+		deco_ok = deco_ok and MapGen.is_land(a, p, Vector2i(d["pos"] / p.cell))
+	_check(deco_ok and a.deco.size() > 100, "deco on land (%d)" % a.deco.size())
+	var patches_ok := true
+	for r in a.patches:
+		for y in range(r.position.y - 1, r.end.y + 1):
+			for x in range(r.position.x - 1, r.end.x + 1):
+				var i := MapGen.cell_index(p, Vector2i(x, y))
+				patches_ok = patches_ok and i >= 0 and a.land[i] == 1 and a.area[i] == MapGen.Area.FOREST
+	_check(patches_ok, "dirt patches (and their ring) only in forest land")
+	var ground_ok := true
+	for i in a.land.size():
+		var cell := Vector2i(i % p.cols, i / p.cols)
+		if a.land[i] == 0:
+			ground_ok = ground_ok and a.kind[i] == MapGen.WATER and not a.dirt.has(cell) and not a.grass.has(cell)
+		elif a.area[i] != MapGen.Area.FOREST:
+			ground_ok = ground_ok and a.dirt.has(cell) and not a.grass.has(cell)
+	_check(ground_ok, "water cells have no ground; rocky and boss cells have no grass")
+	_check(a.border.is_empty(), "no wall bushes on the island (the water is the edge)")
+	var reach_ok := true
+	for s in [1, 2, 3, 4, 5]:
+		var r := MapGen.generate(style, p, s)
+		reach_ok = reach_ok and MapGen.floor_reachable(p, r.obstacles, r.land)
+	_check(reach_ok, "seeds 1..5: all walkable land reachable from home, rocks and water included")
+	_check(not flat.land.is_empty() and MapGen.floor_reachable(q, flat.obstacles), "flat map still reachable (old call)")
+
 	print("PASS" if _ok else "FAIL")
 	quit(0 if _ok else 1)

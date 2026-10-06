@@ -28,6 +28,9 @@ groups (a guide, not exact tile coordinates).
 | `Wall_Variations.png` | Tall cliff faces (3 colours), one with a cave entrance | `cliff` |
 | `Water_tiles.png` | Water with islands, water fills | `water` |
 
+Plain 16 px fill tiles used by the island map (`data/maps/grass.tres`): cobble `Floors_Tiles` (6..8, 10) = rocky area;
+dark grass (1..3, 11) = boss area; `Water_tiles` (1..3, 12) = water.
+
 ![Floors](img/ground-Floors_Tiles.png)
 ![Dungeon](img/ground-Dungeon_Tiles.png)
 ![Walls / cliffs](img/ground-Wall_Tiles.png)

@@ -63,6 +63,7 @@ class Result:
 	var deco: Array[Dictionary] = []         ## {set, region, pos}  pos = bottom-centre of the sprite
 	var obstacles: Array[Dictionary] = []    ## {region, pos (collision circle centre), radius}
 	var border: Array[Dictionary] = []       ## {region, pos (bottom-centre), flip}
+	var water: Dictionary = {}               ## Vector2i cell -> atlas coord on style.water_texture (empty = no water art)
 	var land := PackedByteArray()            ## 1 land, 0 water, per cell
 	var area := PackedByteArray()            ## Area per cell (ignore on water)
 
@@ -78,7 +79,8 @@ static func generate(style: MapStyle, p: Params, rng_seed: int) -> Result:
 	_assign_ground(res, style, p, rng)
 	_place_obstacles(res, style, p, rng)
 	_place_deco(res, style, p, rng, _noise(rng_seed + 2, p.noise_frequency))
-	_place_border(res, style, p, rng)
+	if not p.island_on:
+		_place_border(res, style, p, rng)   # on the island the water is the edge
 	return res
 
 
@@ -136,6 +138,7 @@ static func _shape_island(res: Result, p: Params) -> void:
 			var v := 1.0 - pow(d, p.island_falloff) + (_n01(noise, x, y) - 0.5) * 2.0 * p.island_noise
 			if v > p.island_threshold or Vector2(c).distance_to(Vector2(home)) <= p.home_clear_cells or zc.has_point(c):
 				res.land[y * p.cols + x] = 1
+	_open_land(res, p, home, zc)
 	if not _flood_land(res, p, home).has(zc.get_center()):
 		_carve(res, p, home, zc.get_center())
 	var keep := _flood_land(res, p, home)
@@ -143,6 +146,36 @@ static func _shape_island(res: Result, p: Params) -> void:
 		if res.land[i] == 1 and not keep.has(Vector2i(i % p.cols, i / p.cols)):
 			res.land[i] = 0      # islands cut off from home: drop them
 	_assign_areas(res, p, home, zc)
+
+
+## Morphological opening (erode then dilate, 4-neighbour): removes land strips 1 cell wide. A walker
+## cannot stand on them, and they would make "all land is walkable" false. Home disc and zone stay.
+static func _open_land(res: Result, p: Params, home: Vector2i, zc: Rect2i) -> void:
+	var dirs := [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
+	var core := PackedByteArray()
+	core.resize(res.land.size())
+	for y in p.rows:
+		for x in p.cols:
+			var c := Vector2i(x, y)
+			var ok := is_land(res, p, c)
+			for d in dirs:
+				ok = ok and is_land(res, p, c + d)
+			core[y * p.cols + x] = 1 if ok else 0
+	var opened := core.duplicate()
+	for y in p.rows:
+		for x in p.cols:
+			if core[y * p.cols + x] == 1:
+				for d in dirs:
+					var i := cell_index(p, Vector2i(x, y) + d)
+					if i >= 0:
+						opened[i] = 1
+	for y in p.rows:
+		for x in p.cols:
+			var c := Vector2i(x, y)
+			var i := y * p.cols + x
+			if Vector2(c).distance_to(Vector2(home)) <= p.home_clear_cells or zc.has_point(c):
+				continue
+			res.land[i] = opened[i]
 
 
 ## Land cells reachable from `from` (4-neighbour). Returns a set (Dictionary cell -> true).
@@ -205,6 +238,8 @@ static func _place_patches(res: Result, p: Params, rng: RandomNumberGenerator, n
 		var r := Rect2i(rng.randi_range(1, p.cols - 1 - w), rng.randi_range(1, p.rows - 1 - h), w, h)
 		if _n01(noise, r.position.x + w * 0.5, r.position.y + h * 0.5) < p.patch_noise_threshold:
 			continue
+		if not _all_forest_land(res, p, r.grow(1)):
+			continue
 		var clear := true
 		for other in res.patches:
 			if r.grow(MIN_GAP).intersects(other):
@@ -214,10 +249,22 @@ static func _place_patches(res: Result, p: Params, rng: RandomNumberGenerator, n
 			res.patches.append(r)
 
 
-## Fills res.kind, res.grass and res.dirt.
+static func _all_forest_land(res: Result, p: Params, r: Rect2i) -> bool:
+	for y in range(r.position.y, r.end.y):
+		for x in range(r.position.x, r.end.x):
+			var i := cell_index(p, Vector2i(x, y))
+			if i < 0 or res.land[i] == 0 or res.area[i] != Area.FOREST:
+				return false
+	return true
+
+
+## Fills res.kind, res.grass and res.dirt (and res.water).
 static func _assign_ground(res: Result, style: MapStyle, p: Params, rng: RandomNumberGenerator) -> void:
 	res.kind.resize(p.cols * p.rows)
 	res.kind.fill(FILL)
+	for i in res.land.size():
+		if res.land[i] == 0:
+			res.kind[i] = WATER
 	var special: Dictionary = {}   # cell -> atlas coord, or null for "no grass tile"
 	for r in res.patches:
 		var v := rng.randi() % style.variant_count()
@@ -248,7 +295,7 @@ static func _assign_ground(res: Result, style: MapStyle, p: Params, rng: RandomN
 	var fills: Array[Vector2i] = []
 	for y in p.rows:
 		for x in p.cols:
-			if not special.has(Vector2i(x, y)):
+			if not special.has(Vector2i(x, y)) and res.kind[y * p.cols + x] == FILL and res.area[y * p.cols + x] == Area.FOREST:
 				fills.append(Vector2i(x, y))
 	var values: Array[float] = []
 	for c in fills:
@@ -269,7 +316,17 @@ static func _assign_ground(res: Result, style: MapStyle, p: Params, rng: RandomN
 			res.grass[cell] = special[cell]
 	for y in p.rows:
 		for x in p.cols:
-			res.dirt[Vector2i(x, y)] = style.dirt_fills[rng.randi() % style.dirt_fills.size()]
+			var i := y * p.cols + x
+			if res.land[i] == 0:
+				if not style.water_fills.is_empty():
+					res.water[Vector2i(x, y)] = style.water_fills[rng.randi() % style.water_fills.size()]
+				continue
+			var pool: Array[Vector2i] = style.dirt_fills
+			if res.area[i] == Area.ROCKY and not style.rocky_fills.is_empty():
+				pool = style.rocky_fills
+			elif res.area[i] == Area.BOSS and not style.boss_fills.is_empty():
+				pool = style.boss_fills
+			res.dirt[Vector2i(x, y)] = pool[rng.randi() % pool.size()]
 
 
 static func _ring(res: Result, p: Params, special: Dictionary, c: Vector2i, coord: Vector2i) -> void:
@@ -284,23 +341,35 @@ static func _place_obstacles(res: Result, style: MapStyle, p: Params, rng: Rando
 	if set == null or set.regions.is_empty() or set.radii.size() < set.regions.size():
 		return
 	var size := p.size_px()
+	var spacing := maxf(p.obstacle_min_spacing, rock_clearance(p))
+	var pad := p.cell + rock_clearance(p)
 	for _attempt in p.obstacle_count * 60:
 		if res.obstacles.size() >= p.obstacle_count:
 			break
 		var idx := rng.randi() % set.regions.size()
 		var r := set.radii[idx]
 		var pos := Vector2(
-			rng.randf_range(p.cell + r, size.x - p.cell - r),
-			rng.randf_range(p.cell + r, size.y - p.cell - r))
+			rng.randf_range(pad + r, size.x - pad - r),
+			rng.randf_range(pad + r, size.y - pad - r))
 		var sprite := set.regions[idx].size * float(style.pixel_scale)
-		if not _obstacle_legal(res, p, pos, r, sprite):
+		if not _obstacle_legal(res, p, pos, r, sprite, spacing):
 			continue
 		res.obstacles.append({"region": idx, "pos": pos, "radius": r})
-		if not floor_reachable(p, res.obstacles):
-			res.obstacles.pop_back()   # it walled something off: drop it
 
 
-static func _obstacle_legal(res: Result, p: Params, pos: Vector2, r: float, sprite: Vector2) -> bool:
+## A walker's width plus one FLOW_STEP: rocks keep this far from water, walls and each other, so every
+## gap is wide enough for the 16 px walkability grid of floor_reachable to see a path through it.
+static func rock_clearance(p: Params) -> float:
+	return p.agent_radius * 2.0 + FLOW_STEP
+
+
+static func _obstacle_legal(res: Result, p: Params, pos: Vector2, r: float, sprite: Vector2, spacing: float) -> bool:
+	var reach := r + rock_clearance(p)
+	for dy in [-reach, 0.0, reach]:
+		for dx in [-reach, 0.0, reach]:
+			# ponytail: 9 samples can miss a 1-cell water notch between them; full cell scan if a rock ever touches water
+			if not is_land(res, p, Vector2i((pos + Vector2(dx, dy)) / p.cell)):
+				return false
 	# Never touching the fight zone: the boss has no pathfinding.
 	var closest := Vector2(clampf(pos.x, p.zone.position.x, p.zone.end.x), clampf(pos.y, p.zone.position.y, p.zone.end.y))
 	if pos.distance_to(closest) < r + 4.0:
@@ -313,14 +382,14 @@ static func _obstacle_legal(res: Result, p: Params, pos: Vector2, r: float, spri
 		if pos.distance_to(s) < p.spawn_clear_radius + r:
 			return false
 	for o in res.obstacles:
-		if pos.distance_to(o["pos"]) < r + o["radius"] + p.obstacle_min_spacing:
+		if pos.distance_to(o["pos"]) < r + o["radius"] + spacing:
 			return false
 	return true
 
 
 ## Flood fill on a coarse grid from the player's spawn: every cell a walker of agent_radius can stand
 ## on (inside the walls, clear of every rock) must be reachable. Public: the tests call it too.
-static func floor_reachable(p: Params, obstacles: Array[Dictionary]) -> bool:
+static func floor_reachable(p: Params, obstacles: Array[Dictionary], land := PackedByteArray()) -> bool:
 	var size := p.size_px()
 	var nx := int(size.x / FLOW_STEP)
 	var ny := int(size.y / FLOW_STEP)
@@ -332,6 +401,12 @@ static func floor_reachable(p: Params, obstacles: Array[Dictionary]) -> bool:
 			var c := Vector2((x + 0.5) * FLOW_STEP, (y + 0.5) * FLOW_STEP)
 			var ok := c.x >= p.cell + p.agent_radius and c.x <= size.x - p.cell - p.agent_radius \
 				and c.y >= p.cell + p.agent_radius and c.y <= size.y - p.cell - p.agent_radius
+			if ok and not land.is_empty():
+				for off in [Vector2.ZERO, Vector2(p.agent_radius, 0), Vector2(-p.agent_radius, 0), Vector2(0, p.agent_radius), Vector2(0, -p.agent_radius)]:
+					var cc := Vector2i((c + off) / p.cell)
+					if cc.x < 0 or cc.y < 0 or cc.x >= p.cols or cc.y >= p.rows or land[cc.y * p.cols + cc.x] == 0:
+						ok = false
+						break
 			if ok:
 				for o in obstacles:
 					if c.distance_to(o["pos"]) <= o["radius"] + p.agent_radius:
@@ -373,6 +448,8 @@ static func _place_deco(res: Result, style: MapStyle, p: Params, rng: RandomNumb
 		return
 	var size := p.size_px()
 	var target := int(p.deco_density * p.cols * p.rows)
+	var grid := {}   # Vector2i bucket -> Array of positions; bucket size = deco_min_spacing
+	var bucket := maxf(p.deco_min_spacing, 1.0)
 	for _attempt in target * 25:
 		if res.deco.size() >= target:
 			break
@@ -387,15 +464,19 @@ static func _place_deco(res: Result, style: MapStyle, p: Params, rng: RandomNumb
 			pick -= w
 		var set: PropSet = sets[si]
 		var cell := Vector2i(pos / p.cell)
+		if res.land[cell.y * p.cols + cell.x] == 0:
+			continue
 		if res.kind[cell.y * p.cols + cell.x] != FILL and not set.on_dirt:
 			continue                      # plants only on full grass
 		if rng.randf() > _n01(noise, pos.x / p.cell, pos.y / p.cell):
 			continue                      # likelier where the noise is high
 		var ok := true
-		for d in res.deco:
-			if pos.distance_to(d["pos"]) < p.deco_min_spacing:
-				ok = false
-				break
+		var b := Vector2i(pos / bucket)
+		for by in range(b.y - 1, b.y + 2):
+			for bx in range(b.x - 1, b.x + 2):
+				for other: Vector2 in grid.get(Vector2i(bx, by), []):
+					if pos.distance_to(other) < p.deco_min_spacing:
+						ok = false
 		if ok:
 			for o in res.obstacles:
 				if pos.distance_to(o["pos"]) < o["radius"] + 8.0:
@@ -403,6 +484,7 @@ static func _place_deco(res: Result, style: MapStyle, p: Params, rng: RandomNumb
 					break
 		if ok:
 			res.deco.append({"set": si, "region": rng.randi() % set.regions.size(), "pos": pos})
+			grid.get_or_add(b, []).append(pos)
 
 
 # ------------------------------------------------------------------- border ---
