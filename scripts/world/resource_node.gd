@@ -34,13 +34,20 @@ func take_gather_hit(weapon: WeaponData, source: Node2D) -> bool:
 		return false
 	var info := {"source": source, "direction": (global_position - source.global_position).normalized()}
 	if weapon.gather_damage <= 0.0 or weapon.tool_power < data.required_power:
+		_note_hit()
 		_fx(data.clink_type, source, info)
 		return false
 	hp = maxf(hp - weapon.gather_damage, 0.0)
+	_note_hit()
 	_fx(data.hit_type, source, info)
 	if is_broken():
 		_break(source)
 	return true
+
+func _note_hit() -> void:   # for the F3 [Gather] line
+	var col := get_tree().get_first_node_in_group("collector") as Collector
+	if col:
+		col.last_gather = status_text()
 
 func _fx(type: StringName, source: Node, info: Dictionary) -> void:
 	if _hit_fx:

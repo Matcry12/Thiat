@@ -174,6 +174,15 @@ func _on_draw() -> void:
 		var rcs := rock.get_node_or_null("CollisionShape2D") as CollisionShape2D
 		if rcs and rcs.shape:
 			_draw_shape(rcs.shape, rcs.global_transform, Color(1.0, 0.8, 0.2), 2.0)
+		var hcs := rock.get_node_or_null("Hurtbox/CollisionShape2D") as CollisionShape2D   # gather target (layer 32)
+		if hcs and hcs.shape:
+			_draw_shape(hcs.shape, hcs.global_transform, Color(0.3, 1.0, 0.4, 0.6), 1.0)
+
+	# Gathering: the magnet (pulls drops in) and pickup (banks them) circles around the player.
+	var col := get_tree().get_first_node_in_group("collector") as Collector
+	if col and _player:
+		_draw_ground_circle(_player.global_position, col.magnet_radius, Color(0.3, 0.9, 1.0, 0.7), 1.0)
+		_draw_ground_circle(_player.global_position, col.pickup_radius, Color(0.3, 0.9, 1.0), 2.0)
 
 	# Enemy strike: hitbox red only while STRIKE, telegraph area outlined
 	# while TELEGRAPH (redundant with Telegraph's own border — cheap, and

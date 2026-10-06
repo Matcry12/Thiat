@@ -60,7 +60,7 @@ func _ready() -> void:
 
 	# The storyboards use screen coordinates: run them on the screen-sized arena with the old layout.
 	# The showcase scenarios use the real big map instead.
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather"]:
 		_arena = load("res://scenes/arena.tscn").instantiate()
 		(_arena.get_node("ArenaMap") as ArenaMap).map_seed = _seed
 	else:
@@ -114,7 +114,7 @@ var _cap_gen := 0
 func _build_captions() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather"]:
 		# Small, bottom-centre, semi-transparent; each caption fades out by itself.
 		_cap_panel = PanelContainer.new()
 		_cap_panel.anchor_left = 0.5
@@ -267,6 +267,7 @@ func _run() -> void:
 		"rundust": await _run_rundust()
 		"hud": await _run_hud()
 		"island": await _run_island()
+		"gather": await _run_gather()
 		_: await _run_guard()
 
 func _run_guard() -> void:
@@ -1407,4 +1408,56 @@ func _run_island() -> void:
 	m.teleport_player("boss")
 	_say("Boss area", "far from home; the boss waits in its zone")
 	await _wait(3.0)
+	get_tree().quit()
+
+
+## The W2 loop: bare hands, punch a tree and a rock, copper clinks.
+func _nearest_node(id: StringName, to: Vector2) -> ResourceNode:
+	var best: ResourceNode
+	for n: ResourceNode in get_tree().get_nodes_in_group("resource_node"):
+		if n.data.id == id and not n.is_broken() and (best == null or n.global_position.distance_to(to) < best.global_position.distance_to(to)):
+			best = n
+	return best
+
+func _punch_until_broken(n: ResourceNode, max_punches := 14) -> void:
+	for i in max_punches:
+		if not is_instance_valid(n) or n.is_broken():   # a rock frees itself on break
+			break
+		_player.aim_override = n.global_position - _player.global_position
+		await _tap("attack")
+		await _wait(0.45)
+
+func _run_gather() -> void:
+	_arena.get_node("Boss").passive = true
+	_overlay(false)
+	var m: ArenaMap = _arena.get_node("ArenaMap")
+	var inv: Inventory = _player.get_node("Inventory")
+	_aim_at = null
+	var tree := _nearest_node(&"tree", m.home_point())
+	_player.global_position = tree.global_position + Vector2(-44, 0)
+	_player.velocity = Vector2.ZERO
+	await _wait(1.0)
+	_say("Bare hands: press 3", "your weapon goes away; press 3 again and it is back at once")
+	await _tap("hands")
+	await _wait(1.2)
+	_say("Punch the tree", "it shakes, chips fly, about 6 punches")
+	await _punch_until_broken(tree)
+	_say("Wood flies to you", "walk close and it is banked: see the counter")
+	await _wait(2.0)
+	var rock := _nearest_node(&"rock", _player.global_position)
+	_player.global_position = rock.global_position + Vector2(-34, 0)
+	await _wait(0.6)
+	_say("Punch a rock", "stone drops")
+	await _punch_until_broken(rock)
+	await _wait(2.0)
+	var cu := _nearest_node(&"copper_rock", _player.global_position)
+	_player.global_position = cu.global_position + Vector2(-34, 0)
+	await _wait(0.8)
+	_say("Too hard: needs a pickaxe (W3/W4)", "copper clinks, no damage")
+	for i in 3:
+		_player.aim_override = cu.global_position - _player.global_position
+		await _tap("attack")
+		await _wait(0.6)
+	_say("Items: wood %d, stone %d" % [inv.count(&"wood"), inv.count(&"stone")], "the counter is under the hotbar")
+	await _wait(2.5)
 	get_tree().quit()

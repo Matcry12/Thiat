@@ -117,6 +117,7 @@ var _skill_slot: SkillSlot
 var _boss: Boss
 var _map: ArenaMap
 var _hit_fx: HitFx
+var _collector: Collector
 
 var _targets: Array = []          # [{"name": String, "object": Object}]
 var _controls: Dictionary = {}    # "Target.prop" -> {obj, prop, control, value_label, is_bool, is_int}
@@ -202,6 +203,15 @@ func _ready() -> void:
 
 	if _map:
 		_targets.append({"name": "Map", "object": _map})
+
+	# Gathering (W2): the collector, the three node kinds (density applies on the next New map), the fists.
+	_collector = _player.get_node_or_null("Collector") as Collector
+	if _collector:
+		_targets.append({"name": "Collector", "object": _collector})
+	for k in ["tree", "rock", "copper_rock"]:
+		_targets.append({"name": "Node " + k.replace("_rock", ""), "object": load("res://data/resource_nodes/%s.tres" % k)})
+	if _loadout and _loadout.unarmed:
+		_targets.append({"name": "Fists", "object": _loadout.unarmed})
 
 	# Hit feel: the master switches, the three effect nodes, and one section per hit type (its .tres numbers).
 	if _hit_fx:
@@ -326,6 +336,9 @@ func _update_status_text() -> void:
 		"[Loadout]",
 		_loadout_status_text(),
 		"",
+		"[Gather]",
+		_gather_status_text(),
+		"",
 		"[Skills (E)]",
 		_skill_status_text(),
 	])
@@ -351,6 +364,42 @@ func _loadout_status_text() -> String:
 	elif _loadout.cooldown_left() > 0.0:
 		swap_state = "cooldown %.2fs" % _loadout.cooldown_left()
 	return "active: %s (%d)%s  swap: %s" % [active_name, _loadout.active_index(), " HOLSTERED" if _loadout.is_holstered() else "", swap_state]
+
+
+func _gather_status_text() -> String:
+	if _collector == null or _loadout == null:
+		return "n/a"
+	var w: WeaponData = _loadout.active_weapon()
+	var inv := _collector.inventory()
+	var counts := []
+	for id in inv.items():
+		counts.append("%s %d" % [id, inv.count(id)])
+	return "%s  gather_damage %.1f  tool_power %d\nlast hit: %s\nitems: %s  on ground: %d\n(density changes apply on New map)" % [
+		"HOLSTERED" if _loadout.is_holstered() else "armed",
+		w.gather_damage if w else 0.0, w.tool_power if w else 0,
+		_collector.last_gather if _collector.last_gather != "" else "-",
+		", ".join(counts) if counts else "none",
+		get_tree().get_nodes_in_group("pickup").size()]
+
+
+func _break_nearest_node() -> void:
+	var best: ResourceNode
+	for n: ResourceNode in get_tree().get_nodes_in_group("resource_node"):
+		if n.is_broken():
+			continue
+		if best == null or n.global_position.distance_to(_player.global_position) < best.global_position.distance_to(_player.global_position):
+			best = n
+	if best:
+		var w := WeaponData.new()
+		w.gather_damage = 999.0
+		w.tool_power = 9
+		best.take_gather_hit(w, _player)
+
+
+func _give_items(amount: int) -> void:
+	for f in DirAccess.get_files_at("res://data/items"):
+		if f.ends_with(".tres"):
+			_collector.inventory().add(load("res://data/items/" + f), amount)
 
 
 func _skill_status_text() -> String:
@@ -514,6 +563,12 @@ func _build_ui() -> void:
 		_add_button(fx_row2, "Test boss hit", func(): _hit_fx.test_hit(&"boss_sword"))
 		_add_button(fx_row2, "Test lunge", func(): _hit_fx.test_hit(&"lunge"))
 		_add_button(fx_row2, "Test charged arrow", func(): _hit_fx.test_hit(&"charged_arrow"))
+	if _collector:
+		var gather_row := HBoxContainer.new()
+		tuning_vbox.add_child(gather_row)
+		_add_button(gather_row, "Break nearest node", _break_nearest_node)
+		_add_button(gather_row, "Give 10 each", func(): _give_items(10))
+		_add_button(gather_row, "Clear items", func(): _collector.inventory().clear())
 	var kb_row := HBoxContainer.new()
 	tuning_vbox.add_child(kb_row)
 	_add_button(kb_row, "Knockback on/off", _toggle_knockback)

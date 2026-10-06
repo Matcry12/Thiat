@@ -9,6 +9,7 @@ extends Node
 @export var scatter_radius := 26.0   ## read by ResourceNode for drop spread
 
 var last_pickup := ""   # for F3
+var last_gather := ""   # status of the last node hit, for F3
 
 func _ready() -> void:
 	add_to_group("collector")
