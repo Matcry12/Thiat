@@ -59,5 +59,12 @@ func _init() -> void:
 	var panel = arena.get_node("TuningPanel")
 	_check(panel.range_overrides.has("map_cols") and panel.range_overrides["map_cols"]["max"] >= 300, "F3 map_cols slider reaches 300")
 
+	var times: Array[int] = []
+	for s in [3, 4, 5]:
+		m.generate_seed(s)
+		times.append(m.build_ms)
+	print("  build ms per seed: %s" % [times])
+	_check(times.max() < 2000, "a full island rebuild stays under 2 s headless")
+
 	print("PASS" if _ok else "FAIL")
 	quit(0 if _ok else 1)
