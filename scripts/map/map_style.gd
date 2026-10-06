@@ -23,6 +23,8 @@ extends Resource
 ## Water art: its own sheet. Empty water_fills = no water tiles, the Background colour shows.
 @export var water_texture: Texture2D
 @export var water_fills: Array[Vector2i] = []
+## Shows where there is no water art (the Background colour behind everything).
+@export var water_color := Color(0.18, 0.42, 0.62, 1)
 
 ## Edge pieces of look-variant A. Keys:
 ##   hole corners  nw ne sw se

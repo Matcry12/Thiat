@@ -69,13 +69,19 @@ func _init() -> void:
 	var home := Vector2i(p.player_spawn / p.cell)
 	var zc := Vector2i(p.zone.get_center() / p.cell)
 	var all_ok := true
+	var reach_ok := true
 	for s in range(1, 41):
 		var r := MapGen.generate(style, p, s)
 		var ok: bool = MapGen.is_land(r, p, home) and MapGen.is_land(r, p, zc) and _connected_land(r, p)
 		if not ok:
 			print("  seed %d: home/zone/connected failed" % s)
 		all_ok = all_ok and ok
+		var walk := MapGen.floor_reachable(p, r.obstacles, r.land)   # I1: the walk grid reaches every walkable spot
+		if not walk:
+			print("  seed %d: walk-grid check failed" % s)
+		reach_ok = reach_ok and walk
 	_check(all_ok, "seeds 1..40: home and zone are land, all land connected to home")
+	_check(reach_ok, "seeds 1..40: all walkable land reachable from home, rocks and water included (I1)")
 
 	_check(a.area[MapGen.cell_index(p, home)] == MapGen.Area.FOREST, "home is in the forest")
 	_check(a.area[MapGen.cell_index(p, zc)] == MapGen.Area.BOSS, "the fight zone is in the boss area")
@@ -121,11 +127,26 @@ func _init() -> void:
 			ground_ok = ground_ok and a.dirt.has(cell) and not a.grass.has(cell)
 	_check(ground_ok, "water cells have no ground; rocky and boss cells have no grass")
 	_check(a.border.is_empty(), "no wall bushes on the island (the water is the edge)")
-	var reach_ok := true
-	for s in [1, 2, 3, 4, 5]:
-		var r := MapGen.generate(style, p, s)
-		reach_ok = reach_ok and MapGen.floor_reachable(p, r.obstacles, r.land)
-	_check(reach_ok, "seeds 1..5: all walkable land reachable from home, rocks and water included")
+	# M1: home inside the coast rim keeps its disc and the zone (no all-water island)
+	var rim := _params()
+	rim.player_spawn = Vector2(0.01 * rim.world.x, 0.5 * rim.world.y)
+	var rr := MapGen.generate(style, rim, 7)
+	var rim_land := 0
+	for v in rr.land:
+		rim_land += v
+	_check(rim_land > 1000 and MapGen.is_land(rr, rim, Vector2i(rim.player_spawn / rim.cell)), "home in the coast rim: island is not water (%d land)" % rim_land)
+
+	# M2: corridor_half 0 still connects home and the zone when they are on different rows
+	var cor := _params()
+	cor.corridor_half = 0
+	cor.player_spawn.y = 0.25 * cor.world.y
+	cor.island_threshold = 0.7
+	var cor_ok := true
+	for s in [1, 2, 3]:
+		var cr := MapGen.generate(style, cor, s)
+		cor_ok = cor_ok and MapGen.is_land(cr, cor, zc) and _connected_land(cr, cor)
+	_check(cor_ok, "corridor_half 0: the boss zone is still land and connected")
+	_check(a.cols == 200 and a.rows == 120, "result remembers the grid size it was built with")
 	_check(not flat.land.is_empty() and MapGen.floor_reachable(q, flat.obstacles), "flat map still reachable (old call)")
 
 	print("PASS" if _ok else "FAIL")

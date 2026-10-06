@@ -66,6 +66,8 @@ class Result:
 	var water: Dictionary = {}               ## Vector2i cell -> atlas coord on style.water_texture (empty = no water art)
 	var land := PackedByteArray()            ## 1 land, 0 water, per cell
 	var area := PackedByteArray()            ## Area per cell (ignore on water)
+	var cols := 0                            ## grid size land/area were built with (Params may change later)
+	var rows := 0
 
 
 static func generate(style: MapStyle, p: Params, rng_seed: int) -> Result:
@@ -119,6 +121,8 @@ static func zone_cells(p: Params) -> Rect2i:
 ## is kept, and a bridge is carved if the boss zone is cut off.
 static func _shape_island(res: Result, p: Params) -> void:
 	var n := p.cols * p.rows
+	res.cols = p.cols
+	res.rows = p.rows
 	res.land.resize(n)
 	res.area.resize(n)
 	res.area.fill(Area.FOREST)
@@ -131,21 +135,51 @@ static func _shape_island(res: Result, p: Params) -> void:
 	var zc := zone_cells(p)
 	for y in p.rows:
 		for x in p.cols:
-			if x < p.coast_cells or y < p.coast_cells or x >= p.cols - p.coast_cells or y >= p.rows - p.coast_cells:
-				continue
 			var c := Vector2i(x, y)
+			var forced := Vector2(c).distance_to(Vector2(home)) <= p.home_clear_cells or zc.has_point(c)
+			# the home disc and the zone stay land even inside the coast rim (else home in the rim = no island)
+			if not forced and (x < p.coast_cells or y < p.coast_cells or x >= p.cols - p.coast_cells or y >= p.rows - p.coast_cells):
+				continue
 			var d := Vector2(float(x) / (p.cols - 1) * 2.0 - 1.0, float(y) / (p.rows - 1) * 2.0 - 1.0).length()
 			var v := 1.0 - pow(d, p.island_falloff) + (_n01(noise, x, y) - 0.5) * 2.0 * p.island_noise
-			if v > p.island_threshold or Vector2(c).distance_to(Vector2(home)) <= p.home_clear_cells or zc.has_point(c):
+			if forced or v > p.island_threshold:
 				res.land[y * p.cols + x] = 1
 	_open_land(res, p, home, zc)
 	if not _flood_land(res, p, home).has(zc.get_center()):
 		_carve(res, p, home, zc.get_center())
+	_drop_cut_off(res, p, home)
+	_prune_unwalkable(res, p)
+	_drop_cut_off(res, p, home)
+	_assign_areas(res, p, home, zc)
+
+
+static func _drop_cut_off(res: Result, p: Params, home: Vector2i) -> void:
 	var keep := _flood_land(res, p, home)
-	for i in n:
+	for i in res.land.size():
 		if res.land[i] == 1 and not keep.has(Vector2i(i % p.cols, i / p.cols)):
 			res.land[i] = 0      # islands cut off from home: drop them
-	_assign_areas(res, p, home, zc)
+
+
+## Land a walker cannot reach from home (a 1-cell neck behind a lobe) must not exist: drop the cell under
+## every walk-grid sample that floor_reachable would call cut off. Repeats until none is left (each pass
+## only removes land, so it ends). Done once per generate, before rocks.
+static func _prune_unwalkable(res: Result, p: Params) -> void:
+	var nx := int(p.size_px().x / FLOW_STEP)
+	var ny := int(p.size_px().y / FLOW_STEP)
+	var start := Vector2i(clampi(int(p.player_spawn.x / FLOW_STEP), 0, nx - 1), clampi(int(p.player_spawn.y / FLOW_STEP), 0, ny - 1))
+	while true:
+		var free := _walk_free(p, res.land)
+		if free[start.y * nx + start.x] == 0:
+			return
+		var seen := _walk_flood(free, nx, ny, start)
+		var dropped := false
+		for i in free.size():
+			if free[i] == 1 and seen[i] == 0:
+				var c := Vector2i(Vector2((i % nx + 0.5) * FLOW_STEP, (i / nx + 0.5) * FLOW_STEP) / p.cell)
+				res.land[c.y * p.cols + c.x] = 0
+				dropped = true
+		if not dropped:
+			return
 
 
 ## Morphological opening (erode then dilate, 4-neighbour): removes land strips 1 cell wide. A walker
@@ -195,13 +229,14 @@ static func _flood_land(res: Result, p: Params, from: Vector2i) -> Dictionary:
 	return seen
 
 
-## A straight land bridge, (2 * corridor_half + 1) cells wide. Never touches the coast_cells rim.
+## A straight land bridge, (2 * max(corridor_half, 1) + 1) cells wide. Never touches the coast_cells rim.
 static func _carve(res: Result, p: Params, a: Vector2i, b: Vector2i) -> void:
+	var half := maxi(p.corridor_half, 1)   # 0 would be an 8-connected line: the 4-neighbour flood cuts it
 	var steps := maxi(absi(b.x - a.x), absi(b.y - a.y))
 	for s in steps + 1:
 		var c := Vector2i(Vector2(a).lerp(Vector2(b), float(s) / maxf(steps, 1)).round())
-		for dy in range(-p.corridor_half, p.corridor_half + 1):
-			for dx in range(-p.corridor_half, p.corridor_half + 1):
+		for dy in range(-half, half + 1):
+			for dx in range(-half, half + 1):
 				var q := c + Vector2i(dx, dy)
 				if q.x >= p.coast_cells and q.y >= p.coast_cells and q.x < p.cols - p.coast_cells and q.y < p.rows - p.coast_cells:
 					res.land[q.y * p.cols + q.x] = 1
@@ -387,42 +422,45 @@ static func _obstacle_legal(res: Result, p: Params, pos: Vector2, r: float, spri
 	return true
 
 
-## Flood fill on a coarse grid from the player's spawn: every cell a walker of agent_radius can stand
-## on (inside the walls, clear of every rock) must be reachable. Public: the tests call it too.
-static func floor_reachable(p: Params, obstacles: Array[Dictionary], land := PackedByteArray()) -> bool:
+## Walk grid (FLOW_STEP px): 1 where a walker of agent_radius can stand, ignoring rocks. Inside the walls,
+## and (if `land` is given) with all four sides and the centre on land.
+static func _walk_free(p: Params, land := PackedByteArray()) -> PackedByteArray:
 	var size := p.size_px()
 	var nx := int(size.x / FLOW_STEP)
 	var ny := int(size.y / FLOW_STEP)
 	var free := PackedByteArray()
 	free.resize(nx * ny)
-	var total := 0
+	var r := p.agent_radius
+	var lo := p.cell + r   # inside the walls: every sample below is >= 1 cell from the grid edge, so no bounds checks
 	for y in ny:
+		var cy := (y + 0.5) * FLOW_STEP
+		if cy < lo or cy > size.y - lo:
+			continue
+		var row := int(cy / p.cell) * p.cols
+		var row_up := int((cy - r) / p.cell) * p.cols
+		var row_dn := int((cy + r) / p.cell) * p.cols
 		for x in nx:
-			var c := Vector2((x + 0.5) * FLOW_STEP, (y + 0.5) * FLOW_STEP)
-			var ok := c.x >= p.cell + p.agent_radius and c.x <= size.x - p.cell - p.agent_radius \
-				and c.y >= p.cell + p.agent_radius and c.y <= size.y - p.cell - p.agent_radius
-			if ok and not land.is_empty():
-				for off in [Vector2.ZERO, Vector2(p.agent_radius, 0), Vector2(-p.agent_radius, 0), Vector2(0, p.agent_radius), Vector2(0, -p.agent_radius)]:
-					var cc := Vector2i((c + off) / p.cell)
-					if cc.x < 0 or cc.y < 0 or cc.x >= p.cols or cc.y >= p.rows or land[cc.y * p.cols + cc.x] == 0:
-						ok = false
-						break
-			if ok:
-				for o in obstacles:
-					if c.distance_to(o["pos"]) <= o["radius"] + p.agent_radius:
-						ok = false
-						break
-			if ok:
+			var cx := (x + 0.5) * FLOW_STEP
+			if cx < lo or cx > size.x - lo:
+				continue
+			if land.is_empty():
 				free[y * nx + x] = 1
-				total += 1
-	var start := Vector2i(clampi(int(p.player_spawn.x / FLOW_STEP), 0, nx - 1), clampi(int(p.player_spawn.y / FLOW_STEP), 0, ny - 1))
-	if free[start.y * nx + start.x] == 0:
-		return false
+				continue
+			var col := int(cx / p.cell)
+			if land[row + col] == 1 and land[row + int((cx - r) / p.cell)] == 1 and land[row + int((cx + r) / p.cell)] == 1 \
+					and land[row_up + col] == 1 and land[row_dn + col] == 1:
+				free[y * nx + x] = 1
+	return free
+
+
+## 4-neighbour flood over a walk grid; returns the seen mask.
+static func _walk_flood(free: PackedByteArray, nx: int, ny: int, start: Vector2i) -> PackedByteArray:
 	var seen := PackedByteArray()
 	seen.resize(nx * ny)
+	if free[start.y * nx + start.x] == 0:
+		return seen
 	var stack: Array[Vector2i] = [start]
 	seen[start.y * nx + start.x] = 1
-	var reached := 1
 	while not stack.is_empty():
 		var c: Vector2i = stack.pop_back()
 		for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
@@ -432,9 +470,31 @@ static func floor_reachable(p: Params, obstacles: Array[Dictionary], land := Pac
 			var i := q.y * nx + q.x
 			if free[i] == 1 and seen[i] == 0:
 				seen[i] = 1
-				reached += 1
 				stack.append(q)
-	return reached == total
+	return seen
+
+
+## Flood fill on a coarse grid from the player's spawn: every cell a walker of agent_radius can stand
+## on (inside the walls, clear of every rock) must be reachable. Public: the tests call it too.
+static func floor_reachable(p: Params, obstacles: Array[Dictionary], land := PackedByteArray()) -> bool:
+	var nx := int(p.size_px().x / FLOW_STEP)
+	var ny := int(p.size_px().y / FLOW_STEP)
+	var free := _walk_free(p, land)
+	for o in obstacles:   # each rock clears only the samples in its own box
+		var reach: float = o["radius"] + p.agent_radius
+		var pos: Vector2 = o["pos"]
+		for y in range(maxi(int((pos.y - reach) / FLOW_STEP), 0), mini(int((pos.y + reach) / FLOW_STEP) + 1, ny)):
+			for x in range(maxi(int((pos.x - reach) / FLOW_STEP), 0), mini(int((pos.x + reach) / FLOW_STEP) + 1, nx)):
+				if Vector2((x + 0.5) * FLOW_STEP, (y + 0.5) * FLOW_STEP).distance_to(pos) <= reach:
+					free[y * nx + x] = 0
+	var start := Vector2i(clampi(int(p.player_spawn.x / FLOW_STEP), 0, nx - 1), clampi(int(p.player_spawn.y / FLOW_STEP), 0, ny - 1))
+	if free[start.y * nx + start.x] == 0:
+		return false
+	var seen := _walk_flood(free, nx, ny, start)
+	for i in free.size():
+		if free[i] == 1 and seen[i] == 0:
+			return false
+	return true
 
 
 # --------------------------------------------------------------------- deco ---

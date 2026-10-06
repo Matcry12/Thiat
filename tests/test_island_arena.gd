@@ -44,8 +44,22 @@ func _init() -> void:
 
 	m.teleport_player("boss")
 	_check(m.area_at(player.global_position) == MapGen.Area.BOSS, "Go to boss puts the player in the boss area")
+	var tp := player.global_position
+	var tp_clear := m._walker_fits(tp)
+	_check(tp_clear, "Go to boss lands on free land (no rock, no water)")
 	m.teleport_player("home")
 	_check(player.global_position.distance_to(m.home_point()) < 1.0, "Go home puts the player at home")
+	# M3: a size change before the deferred rebuild must not index past the old arrays
+	player.global_position = Vector2(5000, 3600)
+	m.map_cols = 300
+	var st := m.status_text()
+	_check(st.contains("area") and m.area_at(Vector2(9000, 100)) == -1, "area_at/status_text survive a size change before the rebuild")
+	await process_frame
+	m.map_cols = 200
+	await process_frame
+	_check(m.land_pct > 20 and m.status_text().contains("land %d%%" % m.land_pct), "land %% cached (%d)" % m.land_pct)
+	var bg: ColorRect = arena.get_node("Background")
+	_check(bg.color == m.style.water_color, "Background uses MapStyle.water_color")
 	_check(m.build_ms > 0, "build time measured (%d ms)" % m.build_ms)
 	_check(m.status_text().contains("area"), "F3 status shows the area")
 

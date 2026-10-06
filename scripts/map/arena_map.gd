@@ -205,6 +205,7 @@ const REF_CELLS := 36 * 21
 
 var current_seed := 0
 var build_ms := 0   ## last rebuild, in ms
+var land_pct := 0   ## share of land cells in the current result, cached at build time
 var result: MapGen.Result
 
 var _spawns := PackedVector2Array()
@@ -262,13 +263,10 @@ func status_text() -> String:
 		return "n/a"
 	var player := get_node_or_null(player_path) as Node2D
 	var ai := area_at(player.global_position) if player else -1
-	var land := 0
-	for v in result.land:
-		land += v
 	return "seed: %d  size: %dx%d cells (%dx%d px)\ndirt patches: %d  rocks: %d  deco: %d  bushes: %d\narea %s  land %d%%  build %d ms" % [
 		current_seed, map_cols, map_rows, map_size().x, map_size().y,
 		result.patches.size(), result.obstacles.size(), result.deco.size(), result.border.size(),
-		["forest", "rocky", "boss"][ai] if ai >= 0 else "water", 100 * land / maxi(result.land.size(), 1), build_ms]
+		["forest", "rocky", "boss"][ai] if ai >= 0 else "water", land_pct, build_ms]
 
 
 ## F3 Save asks this instead of reading the export: map_seed 0 means "random", but a saved file
@@ -308,6 +306,10 @@ func rebuild(new_seed: bool, relayout := false) -> void:
 	if new_seed:
 		current_seed = map_seed if map_seed != 0 else _fresh_seed()
 	result = MapGen.generate(style, make_params(), current_seed)
+	var land := 0
+	for v in result.land:
+		land += v
+	land_pct = 100 * land / maxi(result.land.size(), 1)
 	_build()
 	build_ms = maxi(Time.get_ticks_msec() - t0, 1)
 
@@ -382,10 +384,13 @@ func make_params() -> MapGen.Params:
 
 ## MapGen.Area at a world position, or -1 on water / off the map.
 func area_at(pos: Vector2) -> int:
-	var i := MapGen.cell_index(make_params(), Vector2i((pos / cell_px()).floor()))
-	if i < 0 or result == null or result.land[i] == 0:
+	if result == null:
 		return -1
-	return result.area[i]
+	var c := Vector2i((pos / cell_px()).floor())
+	if c.x < 0 or c.y < 0 or c.x >= result.cols or c.y >= result.rows:   # the size the result was built with
+		return -1
+	var i := c.y * result.cols + c.x
+	return -1 if result.land[i] == 0 else result.area[i]
 
 
 func home_point() -> Vector2:
@@ -397,10 +402,34 @@ func teleport_player(to: String) -> void:
 	var player := get_node_or_null(player_path) as CharacterBody2D
 	if player == null:
 		return
-	player.global_position = _player_spawn if to == "home" else Vector2(_zone.position.x - 96.0, _zone.get_center().y)
+	player.global_position = _player_spawn if to == "home" else _free_spot(Vector2(_zone.position.x - 96.0, _zone.get_center().y))
 	player.velocity = Vector2.ZERO
 	if _camera:
 		_camera.reset_smoothing()
+
+
+## Nearest spot to `target` (rings of 16 px, up to 480 px out) where a walker stands on land, clear of every rock.
+func _free_spot(target: Vector2) -> Vector2:
+	if result == null:
+		return target
+	for ring in 31:
+		for k in maxi(ring * 8, 1):
+			var a := TAU * k / maxi(ring * 8, 1)
+			var pos := target + Vector2.from_angle(a) * ring * 16.0
+			if _walker_fits(pos):
+				return pos
+	return target
+
+
+func _walker_fits(pos: Vector2) -> bool:
+	for off in [Vector2.ZERO, Vector2(agent_radius, 0), Vector2(-agent_radius, 0), Vector2(0, agent_radius), Vector2(0, -agent_radius)]:
+		var c := Vector2i(((pos + off) / cell_px()).floor())
+		if c.x < 0 or c.y < 0 or c.x >= result.cols or c.y >= result.rows or result.land[c.y * result.cols + c.x] == 0:
+			return false
+	for o in result.obstacles:
+		if pos.distance_to(o["pos"]) <= o["radius"] + agent_radius:
+			return false
+	return true
 
 
 func cell_px() -> float:
@@ -491,6 +520,8 @@ func _apply_size() -> void:
 	if bg:
 		bg.position = Vector2.ZERO
 		bg.size = size
+		if bg is ColorRect and style:
+			(bg as ColorRect).color = style.water_color
 
 
 func _apply_camera() -> void:

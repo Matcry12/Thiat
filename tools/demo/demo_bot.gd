@@ -1374,6 +1374,7 @@ func _run_island() -> void:
 	cam.limit_right = 100000
 	cam.limit_bottom = 100000
 	cam.zoom = Vector2.ONE * (1152.0 / m.map_size().x)
+	var smoothing := cam.position_smoothing_enabled
 	cam.position_smoothing_enabled = false
 	cam.global_position = m.map_size() * 0.5
 	await _wait(4.0)
@@ -1383,6 +1384,7 @@ func _run_island() -> void:
 	cam.limit_top = lim[1]
 	cam.limit_right = lim[2]
 	cam.limit_bottom = lim[3]
+	cam.position_smoothing_enabled = smoothing
 	_say("Home: the campfire", "you start (and later respawn) here")
 	await _wait(2.0)
 	await _walk(m.home_point() + Vector2(600, 0))
