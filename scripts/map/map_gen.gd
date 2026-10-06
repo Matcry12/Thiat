@@ -13,6 +13,8 @@ const FILL := 0   ## cell kinds: full grass, hole (dirt shows), ring (grass with
 const HOLE := 1
 const RING := 2
 const FLOW_STEP := 16.0   ## cell size of the walkability grid, in px
+const WATER := 3          ## fourth cell kind: no ground tile, water shows
+enum Area { FOREST, ROCKY, BOSS }
 
 
 class Params:
@@ -36,6 +38,17 @@ class Params:
 	var zone := Rect2()           ## FightZone: obstacles never touch it
 	var spawns := PackedVector2Array()
 	var player_spawn := Vector2.ZERO
+	var island_on := false            ## false = the old flat map (every cell land, one area)
+	var island_noise_frequency := 0.035
+	var island_noise := 0.3           ## how ragged the coast is
+	var island_falloff := 2.0         ## higher = land reaches further to the edges
+	var island_threshold := 0.15      ## higher = smaller island
+	var coast_cells := 3              ## this many cells at the map edge are always water
+	var home_clear_cells := 6         ## land disc around home, always
+	var corridor_half := 2            ## half width of the land bridge carved when home and boss are cut apart
+	var forest_end := 0.45            ## area by distance home -> boss (0 = home, 1 = boss)
+	var rocky_end := 0.8
+	var area_wobble := 0.12           ## noise on the area borders, so they are not circles
 
 	func size_px() -> Vector2:
 		return world
@@ -50,11 +63,14 @@ class Result:
 	var deco: Array[Dictionary] = []         ## {set, region, pos}  pos = bottom-centre of the sprite
 	var obstacles: Array[Dictionary] = []    ## {region, pos (collision circle centre), radius}
 	var border: Array[Dictionary] = []       ## {region, pos (bottom-centre), flip}
+	var land := PackedByteArray()            ## 1 land, 0 water, per cell
+	var area := PackedByteArray()            ## Area per cell (ignore on water)
 
 
 static func generate(style: MapStyle, p: Params, rng_seed: int) -> Result:
 	var res := Result.new()
 	res.seed = rng_seed
+	_shape_island(res, p)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = rng_seed
 	var noise := _noise(rng_seed, p.noise_frequency)
@@ -76,6 +92,101 @@ static func _noise(noise_seed: int, freq: float) -> FastNoiseLite:
 
 static func _n01(n: FastNoiseLite, x: float, y: float) -> float:
 	return n.get_noise_2d(x, y) * 0.5 + 0.5
+
+
+# ------------------------------------------------------------------- island ---
+
+static func cell_index(p: Params, c: Vector2i) -> int:
+	if c.x < 0 or c.y < 0 or c.x >= p.cols or c.y >= p.rows:
+		return -1
+	return c.y * p.cols + c.x
+
+
+static func is_land(res: Result, p: Params, c: Vector2i) -> bool:
+	var i := cell_index(p, c)
+	return i >= 0 and res.land[i] == 1
+
+
+static func zone_cells(p: Params) -> Rect2i:
+	var a := Vector2i((p.zone.position / p.cell).floor())
+	var b := Vector2i((p.zone.end / p.cell).ceil())
+	return Rect2i(a, b - a).grow(3)
+
+
+## Fills res.land and res.area. Shape = radial falloff + noise; then only the land connected to home
+## is kept, and a bridge is carved if the boss zone is cut off.
+static func _shape_island(res: Result, p: Params) -> void:
+	var n := p.cols * p.rows
+	res.land.resize(n)
+	res.area.resize(n)
+	res.area.fill(Area.FOREST)
+	if not p.island_on:
+		res.land.fill(1)
+		return
+	res.land.fill(0)
+	var noise := _noise(res.seed + 3, p.island_noise_frequency)
+	var home := Vector2i(p.player_spawn / p.cell)
+	var zc := zone_cells(p)
+	for y in p.rows:
+		for x in p.cols:
+			if x < p.coast_cells or y < p.coast_cells or x >= p.cols - p.coast_cells or y >= p.rows - p.coast_cells:
+				continue
+			var c := Vector2i(x, y)
+			var d := Vector2(float(x) / (p.cols - 1) * 2.0 - 1.0, float(y) / (p.rows - 1) * 2.0 - 1.0).length()
+			var v := 1.0 - pow(d, p.island_falloff) + (_n01(noise, x, y) - 0.5) * 2.0 * p.island_noise
+			if v > p.island_threshold or Vector2(c).distance_to(Vector2(home)) <= p.home_clear_cells or zc.has_point(c):
+				res.land[y * p.cols + x] = 1
+	if not _flood_land(res, p, home).has(zc.get_center()):
+		_carve(res, p, home, zc.get_center())
+	var keep := _flood_land(res, p, home)
+	for i in n:
+		if res.land[i] == 1 and not keep.has(Vector2i(i % p.cols, i / p.cols)):
+			res.land[i] = 0      # islands cut off from home: drop them
+	_assign_areas(res, p, home, zc)
+
+
+## Land cells reachable from `from` (4-neighbour). Returns a set (Dictionary cell -> true).
+static func _flood_land(res: Result, p: Params, from: Vector2i) -> Dictionary:
+	var seen := {}
+	if not is_land(res, p, from):
+		return seen
+	var stack: Array[Vector2i] = [from]
+	seen[from] = true
+	while not stack.is_empty():
+		var c: Vector2i = stack.pop_back()
+		for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+			var q: Vector2i = c + d
+			if is_land(res, p, q) and not seen.has(q):
+				seen[q] = true
+				stack.append(q)
+	return seen
+
+
+## A straight land bridge, (2 * corridor_half + 1) cells wide. Never touches the coast_cells rim.
+static func _carve(res: Result, p: Params, a: Vector2i, b: Vector2i) -> void:
+	var steps := maxi(absi(b.x - a.x), absi(b.y - a.y))
+	for s in steps + 1:
+		var c := Vector2i(Vector2(a).lerp(Vector2(b), float(s) / maxf(steps, 1)).round())
+		for dy in range(-p.corridor_half, p.corridor_half + 1):
+			for dx in range(-p.corridor_half, p.corridor_half + 1):
+				var q := c + Vector2i(dx, dy)
+				if q.x >= p.coast_cells and q.y >= p.coast_cells and q.x < p.cols - p.coast_cells and q.y < p.rows - p.coast_cells:
+					res.land[q.y * p.cols + q.x] = 1
+
+
+static func _assign_areas(res: Result, p: Params, home: Vector2i, zc: Rect2i) -> void:
+	var noise := _noise(res.seed + 4, p.island_noise_frequency * 2.0)
+	var span := maxf(Vector2(home).distance_to(Vector2(zc.get_center())), 1.0)
+	for y in p.rows:
+		for x in p.cols:
+			var i := y * p.cols + x
+			if res.land[i] == 0:
+				continue
+			var t := Vector2(home).distance_to(Vector2(x, y)) / span + (_n01(noise, x, y) - 0.5) * 2.0 * p.area_wobble
+			var a := Area.FOREST if t < p.forest_end else (Area.ROCKY if t < p.rocky_end else Area.BOSS)
+			if zc.has_point(Vector2i(x, y)):
+				a = Area.BOSS
+			res.area[i] = a
 
 
 # ------------------------------------------------------------------ patches ---
