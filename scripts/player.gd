@@ -34,6 +34,7 @@ var _move_state := "idle"
 var _move_dir := Vector2.ZERO
 
 func _ready() -> void:
+	add_to_group("player")   # trees fade when the player stands behind them
 	# Loadout is the ONE owner of "current weapon" (decision: three owners —
 	# WeaponHolder.weapon, WeaponVisual.weapon, Loadout.weapons[0] — could
 	# desync). Both are plain vars now; set them from Loadout here and again
