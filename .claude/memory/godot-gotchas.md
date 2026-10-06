@@ -64,3 +64,4 @@ Reference docs in `docs/reference/godot/` were researched against 4.3/4.4 — if
   PHYSICS steps. Headless physics can lag the clock, so `await create_timer(1.6)` sometimes lands
   before a 1.5s physics timer has expired → a flaky test (hit test_unparryable_breaks_guard 1 in ~4).
   Poll `physics_frame` until the condition holds, with a timeout.
+- Tests loading arena.tscn get a random island (map_seed 0); trees/rocks stop arrows. tools/run_tests.sh sets BOSSFIGHT_TEST_SEED=11 (ArenaMap reads it only when map_seed == 0); export it for single runs.

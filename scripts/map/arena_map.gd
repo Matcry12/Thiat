@@ -307,7 +307,7 @@ func rebuild(new_seed: bool, relayout := false) -> void:
 			_camera.reset_smoothing()
 	_apply_size()
 	if new_seed:
-		current_seed = map_seed if map_seed != 0 else _fresh_seed()
+		current_seed = map_seed if map_seed != 0 else _test_seed()
 	result = MapGen.generate(style, make_params(), current_seed)
 	var land := 0
 	for v in result.land:
@@ -319,6 +319,11 @@ func rebuild(new_seed: bool, relayout := false) -> void:
 	_build()
 	build_ms = maxi(Time.get_ticks_msec() - t0, 1)
 
+
+## tools/run_tests.sh sets BOSSFIGHT_TEST_SEED so tests get the same island every run.
+func _test_seed() -> int:
+	var e := OS.get_environment("BOSSFIGHT_TEST_SEED")
+	return int(e) if e.is_valid_int() and int(e) > 0 else _fresh_seed()
 
 func _fresh_seed() -> int:
 	return randi_range(1, 9999)   # F3's map_seed slider goes to 9999: any shown seed can be typed back

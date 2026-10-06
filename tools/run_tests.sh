@@ -3,6 +3,9 @@
 # report false failures. Judges by EXIT CODE, not by grepping for "PASS": some
 # tests only call quit(0/1).
 cd "$(dirname "$0")/.."
+# Tests that load arena.tscn (map_seed 0 = random island) get a fixed island, so a tree on the line of
+# fire cannot flake a shooting test. Single runs stay random unless you export this yourself.
+export BOSSFIGHT_TEST_SEED=${BOSSFIGHT_TEST_SEED:-11}
 fails=0
 for t in tests/test_*.gd; do
 	printf '%-42s ' "$t"
