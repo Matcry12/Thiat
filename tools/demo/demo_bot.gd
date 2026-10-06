@@ -60,7 +60,7 @@ func _ready() -> void:
 
 	# The storyboards use screen coordinates: run them on the screen-sized arena with the old layout.
 	# The showcase scenarios use the real big map instead.
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island"]:
 		_arena = load("res://scenes/arena.tscn").instantiate()
 		(_arena.get_node("ArenaMap") as ArenaMap).map_seed = _seed
 	else:
@@ -114,7 +114,7 @@ var _cap_gen := 0
 func _build_captions() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island"]:
 		# Small, bottom-centre, semi-transparent; each caption fades out by itself.
 		_cap_panel = PanelContainer.new()
 		_cap_panel.anchor_left = 0.5
@@ -266,6 +266,7 @@ func _run() -> void:
 		"runbounce": await _run_runbounce()
 		"rundust": await _run_rundust()
 		"hud": await _run_hud()
+		"island": await _run_island()
 		_: await _run_guard()
 
 func _run_guard() -> void:
@@ -1357,4 +1358,51 @@ func _run_hud() -> void:
 	_say("Cooldown over: swap back")
 	await _tap("weapon_1")
 	await _wait(2.0)
+	get_tree().quit()
+
+## FPS=30 tools/demo/record.sh w1_island --scenario=island --seed=11
+func _run_island() -> void:
+	_arena.get_node("Boss").passive = true
+	_overlay(false)
+	var m: ArenaMap = _arena.get_node("ArenaMap")
+	var cam: Camera2D = _player.get_node("Camera")
+	_say("The whole island", "seed %d - forest near home, rocky in the middle, boss area far right" % m.current_seed)
+	# At zoom < 1 the camera limits clamp the view: lift them for the overview, restore after.
+	var lim := [cam.limit_left, cam.limit_top, cam.limit_right, cam.limit_bottom]
+	cam.limit_left = -100000
+	cam.limit_top = -100000
+	cam.limit_right = 100000
+	cam.limit_bottom = 100000
+	cam.zoom = Vector2.ONE * (1152.0 / m.map_size().x)
+	cam.position_smoothing_enabled = false
+	cam.global_position = m.map_size() * 0.5
+	await _wait(4.0)
+	cam.position = Vector2.ZERO
+	cam.zoom = Vector2.ONE
+	cam.limit_left = lim[0]
+	cam.limit_top = lim[1]
+	cam.limit_right = lim[2]
+	cam.limit_bottom = lim[3]
+	_say("Home: the campfire", "you start (and later respawn) here")
+	await _wait(2.0)
+	await _walk(m.home_point() + Vector2(600, 0))
+	_say("Water stops you", "walking into the coast")
+	# Find an east-coast land cell (land, with water to its east), start 2 cells inside, walk east.
+	var p := m.make_params()
+	var coast := Vector2i(-1, -1)
+	for y in range(p.rows / 3, p.rows * 2 / 3):
+		for x in range(p.cols - 2, p.cols / 2, -1):
+			if MapGen.is_land(m.result, p, Vector2i(x, y)) and not MapGen.is_land(m.result, p, Vector2i(x + 1, y)):
+				coast = Vector2i(x, y)
+				break
+		if coast.x >= 0:
+			break
+	if coast.x >= 0:
+		_player.global_position = (Vector2(coast) + Vector2(-3.5, 0.5)) * p.cell
+		await _wait(0.3)
+		await _walk((Vector2(coast) + Vector2(3.0, 0.5)) * p.cell, 14.0, 4.0)
+	await _wait(2.0)
+	m.teleport_player("boss")
+	_say("Boss area", "far from home; the boss waits in its zone")
+	await _wait(3.0)
 	get_tree().quit()

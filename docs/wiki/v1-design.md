@@ -125,3 +125,9 @@ Already in Pixel Crawler (`assets/third_party/pixel_crawler/`): Workbench, Furna
 Trees, Rocks, Resources, Tools, Water tiles, Orc/Skeleton mobs. Still needed (by slice): see the table
 above. Until art exists, each slice ships with a placeholder that has the **same interface**
 (CLAUDE.md §5) — dropping the art in is a swap, never a rewrite.
+
+## 13. Slice log
+
+| Slice | Built by | Judge | Result |
+|---|---|---|---|
+| W1 big island | Sonnet 5.5 (all 6 tasks) | judge: pending | Rebuild takes 460-505 ms (seeds 3/4/5, budget 2000). Walk home to boss: 4956 px at 260 px/s = about 19 s straight, about 25 s with the bends. The spec hoped for 1-2 min, so the island is too small or the player too fast. Decide after the playtest. Demo: `docs/demo/w1_island.mp4`. |
