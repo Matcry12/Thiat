@@ -58,7 +58,14 @@ func _break(source: Node) -> void:
 		queue_free()
 
 func _drop() -> void:
-	pass   # Task 4 spawns pickups here
+	var col := get_tree().get_first_node_in_group("collector") as Collector
+	var radius: float = col.scatter_radius if col else 26.0
+	var m := get_tree().get_first_node_in_group("arena_map") as ArenaMap
+	for i in randi_range(data.drop_min, data.drop_max):
+		var to := position + Vector2.from_angle(randf() * TAU) * radius * sqrt(randf())
+		if m and m.area_at(get_parent().to_global(to)) == -1:
+			to = position
+		Pickup.spawn(get_parent(), data.drop_item, 1, position, to)
 
 func status_text() -> String:
 	return "%s %.0f/%.0f hp, needs power %d" % [data.display_name, hp, data.max_hp, data.required_power]

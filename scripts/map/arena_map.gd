@@ -227,6 +227,7 @@ var _border: Node2D
 
 
 func _ready() -> void:
+	add_to_group("arena_map")
 	# The layers live in arena.tscn: Ground (z -10: under every character and shadow) holds the flat
 	# stuff; Obstacles is Y-sorted with the characters, so a rock hides whoever stands behind it.
 	_water = $Ground/Water

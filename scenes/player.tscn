@@ -23,6 +23,8 @@
 [ext_resource type="Script" path="res://scripts/visual/hands_visual.gd" id="22"]
 [ext_resource type="Script" path="res://scripts/components/knockback.gd" id="kb_script"]
 [ext_resource type="Script" path="res://scripts/visual/run_dust.gd" id="dust_script"]
+[ext_resource type="Script" path="res://scripts/components/inventory.gd" id="inv_s"]
+[ext_resource type="Script" path="res://scripts/components/collector.gd" id="col_s"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -120,6 +122,12 @@ unarmed = ExtResource("fists")
 [node name="SkillSlot" type="Node" parent="." unique_id=1996829668]
 script = ExtResource("20")
 weapon_holder_path = NodePath("../WeaponHolder")
+
+[node name="Inventory" type="Node" parent="."]
+script = ExtResource("inv_s")
+
+[node name="Collector" type="Node" parent="."]
+script = ExtResource("col_s")
 
 [node name="Knockback" type="Node" parent="."]
 script = ExtResource("kb_script")

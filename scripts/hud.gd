@@ -139,6 +139,12 @@ func _build_top_right() -> void:
 		_hotbar.size_flags_horizontal = Control.SIZE_SHRINK_END
 		_block.add_child(_hotbar)
 		_hotbar.bind(_loadout)
+	var inv := get_node(player_path).get_node_or_null("Inventory") as Inventory
+	if inv:
+		var counter := ItemCounter.new()
+		counter.size_flags_horizontal = Control.SIZE_SHRINK_END
+		_block.add_child(counter)
+		counter.bind(inv)
 
 ## Boss HP, top centre. The thin marker sits where phase 2 starts.
 func _build_boss_bar() -> void:
