@@ -16,6 +16,7 @@ extends Node2D
 
 ## patch_count and obstacle_count are "per screen-sized area" (36 x 21 cells) and scale with the
 ## map, so density stays the same on a bigger map.
+const RESOURCE_NODE := preload("res://scenes/world/resource_node.tscn")
 const REF_CELLS := 36 * 21
 
 ## Map size in cells (1 cell = tile_size * pixel_scale px = 32). 72 x 40 = 2304 x 1280 px = 2x the screen.
@@ -205,6 +206,7 @@ const REF_CELLS := 36 * 21
 
 var current_seed := 0
 var build_ms := 0   ## last rebuild, in ms
+var node_count := 0   ## resource nodes in the current result, cached at build time
 var land_pct := 0   ## share of land cells in the current result, cached at build time
 var result: MapGen.Result
 
@@ -264,10 +266,10 @@ func status_text() -> String:
 		return "n/a"
 	var player := get_node_or_null(player_path) as Node2D
 	var ai := area_at(player.global_position) if player else -1
-	return "seed: %d  size: %dx%d cells (%dx%d px)\ndirt patches: %d  rocks: %d  deco: %d  bushes: %d\narea %s  land %d%%  build %d ms" % [
+	return "seed: %d  size: %dx%d cells (%dx%d px)\ndirt patches: %d  rocks: %d  deco: %d  bushes: %d\narea %s  land %d%%  nodes %d  build %d ms" % [
 		current_seed, map_cols, map_rows, map_size().x, map_size().y,
 		result.patches.size(), result.obstacles.size(), result.deco.size(), result.border.size(),
-		["forest", "rocky", "boss"][ai] if ai >= 0 else "water", land_pct, build_ms]
+		["forest", "rocky", "boss"][ai] if ai >= 0 else "water", land_pct, node_count, build_ms]
 
 
 ## F3 Save asks this instead of reading the export: map_seed 0 means "random", but a saved file
@@ -311,6 +313,9 @@ func rebuild(new_seed: bool, relayout := false) -> void:
 	for v in result.land:
 		land += v
 	land_pct = 100 * land / maxi(result.land.size(), 1)
+	node_count = 0
+	for o in result.obstacles:
+		node_count += 1 if o["node"] >= 0 else 0
 	_build()
 	build_ms = maxi(Time.get_ticks_msec() - t0, 1)
 
@@ -561,6 +566,15 @@ func _build() -> void:
 	for d in result.deco:
 		_add_sprite(_deco, style.deco[d["set"]], d["region"], d["pos"], s, false)
 	for o in result.obstacles:
+		if o["node"] >= 0:
+			var rn: ResourceNode = RESOURCE_NODE.instantiate()
+			rn.setup(style.resource_nodes[o["node"]], o["region"])
+			rn.position = o["pos"]
+			_obstacles.add_child(rn)
+			var node_boss := get_node_or_null(boss_path) as PhysicsBody2D
+			if node_boss:
+				node_boss.add_collision_exception_with(rn)
+			continue
 		var body := StaticBody2D.new()      # default layer 1 = the walls' layer
 		body.name = "Rock"
 		body.collision_mask = 0

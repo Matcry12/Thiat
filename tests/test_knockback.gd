@@ -331,8 +331,9 @@ func _init():
 	if rock:
 		dummy.set_physics_process(false)
 		var rr := 0.0
-		for c in rock.find_children("*", "CollisionShape2D", true, false):
-			if (c as CollisionShape2D).shape is CircleShape2D:
+		# the body's own shape only: a resource node also has a bigger Hurtbox shape one level down
+		for c in rock.get_children():
+			if c is CollisionShape2D and (c as CollisionShape2D).shape is CircleShape2D:
 				rr = ((c as CollisionShape2D).shape as CircleShape2D).radius
 		var rpos := rock.global_position
 		var dr := ((dummy.get_node("CollisionShape2D") as CollisionShape2D).shape as CircleShape2D).radius

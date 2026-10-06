@@ -6,6 +6,10 @@
 [ext_resource type="Texture2D" path="res://assets/map/Vegetation.png" id="4"]
 [ext_resource type="Texture2D" path="res://assets/map/Rocks.png" id="5"]
 [ext_resource type="Texture2D" path="res://assets/map/Water_tiles.png" id="6"]
+[ext_resource type="Script" path="res://scripts/world/resource_node_data.gd" id="23"]
+[ext_resource type="Resource" path="res://data/resource_nodes/tree.tres" id="20"]
+[ext_resource type="Resource" path="res://data/resource_nodes/rock.tres" id="21"]
+[ext_resource type="Resource" path="res://data/resource_nodes/copper_rock.tres" id="22"]
 
 [sub_resource type="Resource" id="Border"]
 script = ExtResource("2")
@@ -64,3 +68,4 @@ edge_tiles = {"nw": Vector2i(1, 1), "ne": Vector2i(3, 1), "sw": Vector2i(1, 3), 
 border = SubResource("Border")
 deco = Array[ExtResource("2")]([SubResource("Tufts"), SubResource("Plants"), SubResource("Flowers"), SubResource("Mushrooms"), SubResource("Pebbles")])
 obstacles = SubResource("Rocks")
+resource_nodes = Array[ExtResource("23")]([ExtResource("20"), ExtResource("21"), ExtResource("22")])

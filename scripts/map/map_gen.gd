@@ -61,13 +61,15 @@ class Result:
 	var grass: Dictionary = {}               ## Vector2i cell -> Vector2i atlas coord (no entry = no grass tile)
 	var dirt: Dictionary = {}                ## Vector2i cell -> Vector2i atlas coord (every cell)
 	var deco: Array[Dictionary] = []         ## {set, region, pos}  pos = bottom-centre of the sprite
-	var obstacles: Array[Dictionary] = []    ## {region, pos (collision circle centre), radius}
+	var obstacles: Array[Dictionary] = []    ## {region, pos (collision circle centre), radius, node}  node = index into style.resource_nodes, -1 = plain cover rock
 	var border: Array[Dictionary] = []       ## {region, pos (bottom-centre), flip}
 	var water: Dictionary = {}               ## Vector2i cell -> atlas coord on style.water_texture (empty = no water art)
 	var land := PackedByteArray()            ## 1 land, 0 water, per cell
 	var area := PackedByteArray()            ## Area per cell (ignore on water)
 	var cols := 0                            ## grid size land/area were built with (Params may change later)
 	var rows := 0
+	var obstacle_grid := {}                  ## Vector2i bucket -> Array of obstacle dicts (spacing lookups)
+	var obstacle_bucket := 1.0               ## bucket size: at least 2 * the largest radius + spacing
 
 
 static func generate(style: MapStyle, p: Params, rng_seed: int) -> Result:
@@ -79,7 +81,10 @@ static func generate(style: MapStyle, p: Params, rng_seed: int) -> Result:
 	var noise := _noise(rng_seed, p.noise_frequency)
 	_place_patches(res, p, rng, noise)
 	_assign_ground(res, style, p, rng)
-	_place_obstacles(res, style, p, rng)
+	if p.island_on and not style.resource_nodes.is_empty():
+		_place_nodes(res, style, p, rng)   # on the island every rock is a resource node
+	else:
+		_place_obstacles(res, style, p, rng)
 	_place_deco(res, style, p, rng, _noise(rng_seed + 2, p.noise_frequency))
 	if not p.island_on:
 		_place_border(res, style, p, rng)   # on the island the water is the edge
@@ -378,6 +383,7 @@ static func _place_obstacles(res: Result, style: MapStyle, p: Params, rng: Rando
 	var size := p.size_px()
 	var spacing := maxf(p.obstacle_min_spacing, rock_clearance(p))
 	var pad := p.cell + rock_clearance(p)
+	res.obstacle_bucket = 2.0 * float(Array(set.radii).max()) + spacing
 	for _attempt in p.obstacle_count * 60:
 		if res.obstacles.size() >= p.obstacle_count:
 			break
@@ -389,7 +395,55 @@ static func _place_obstacles(res: Result, style: MapStyle, p: Params, rng: Rando
 		var sprite := set.regions[idx].size * float(style.pixel_scale)
 		if not _obstacle_legal(res, p, pos, r, sprite, spacing):
 			continue
-		res.obstacles.append({"region": idx, "pos": pos, "radius": r})
+		_add_obstacle(res, {"region": idx, "pos": pos, "radius": r, "node": -1})
+
+
+## Trees, rocks and copper by area: per kind and area, round(density * land cells / 100) nodes, each at a
+## random spot of a random land cell of that area. Same legality rules as the plain rocks.
+static func _place_nodes(res: Result, style: MapStyle, p: Params, rng: RandomNumberGenerator) -> void:
+	var cells: Array = [[], [], []]   # per Area: land cells
+	for i in res.land.size():
+		if res.land[i] == 1:
+			cells[res.area[i]].append(Vector2i(i % p.cols, i / p.cols))
+	var spacing := maxf(p.obstacle_min_spacing, rock_clearance(p))
+	var widest := 0.0
+	for k in style.resource_nodes:
+		widest = maxf(widest, k.radius)
+	res.obstacle_bucket = 2.0 * widest + spacing
+	for ki in style.resource_nodes.size():
+		var kind: ResourceNodeData = style.resource_nodes[ki]
+		for a in 3:
+			var list: Array = cells[a]
+			var density := [kind.density_forest, kind.density_rocky, kind.density_boss][a] as float
+			var target := roundi(density * list.size() / 100.0)
+			var made := 0
+			for _attempt in target * 60:
+				if made >= target:
+					break
+				var c: Vector2i = list[rng.randi() % list.size()]
+				var pos := (Vector2(c) + Vector2(rng.randf(), rng.randf())) * p.cell
+				var v := rng.randi() % maxi(kind.regions.size(), 1)
+				var sprite := kind.regions[v].size * float(kind.pixel_scale) if v < kind.regions.size() else Vector2.ZERO
+				if _obstacle_legal(res, p, pos, kind.radius, sprite, spacing):
+					_add_obstacle(res, {"region": v, "pos": pos, "radius": kind.radius, "node": ki})
+					made += 1
+	_repair_reach(res, p)
+
+
+static func _add_obstacle(res: Result, o: Dictionary) -> void:
+	res.obstacles.append(o)
+	res.obstacle_grid.get_or_add(Vector2i(o["pos"] / res.obstacle_bucket), []).append(o)
+
+
+## True if any obstacle is closer than r + its radius + spacing. Bucket lookup; needs that sum <= obstacle_bucket.
+static func _obstacle_near(res: Result, pos: Vector2, r: float, spacing: float) -> bool:
+	var b := Vector2i(pos / res.obstacle_bucket)
+	for by in range(b.y - 1, b.y + 2):
+		for bx in range(b.x - 1, b.x + 2):
+			for o: Dictionary in res.obstacle_grid.get(Vector2i(bx, by), []):
+				if pos.distance_to(o["pos"]) < r + o["radius"] + spacing:
+					return true
+	return false
 
 
 ## A walker's width plus one FLOW_STEP: rocks keep this far from water, walls and each other, so every
@@ -416,10 +470,7 @@ static func _obstacle_legal(res: Result, p: Params, pos: Vector2, r: float, spri
 	for s in p.spawns:
 		if pos.distance_to(s) < p.spawn_clear_radius + r:
 			return false
-	for o in res.obstacles:
-		if pos.distance_to(o["pos"]) < r + o["radius"] + spacing:
-			return false
-	return true
+	return not _obstacle_near(res, pos, r, spacing)
 
 
 ## Walk grid (FLOW_STEP px): 1 where a walker of agent_radius can stand, ignoring rocks. Inside the walls,
@@ -477,6 +528,12 @@ static func _walk_flood(free: PackedByteArray, nx: int, ny: int, start: Vector2i
 ## Flood fill on a coarse grid from the player's spawn: every cell a walker of agent_radius can stand
 ## on (inside the walls, clear of every rock) must be reachable. Public: the tests call it too.
 static func floor_reachable(p: Params, obstacles: Array[Dictionary], land := PackedByteArray()) -> bool:
+	return _unreached(p, obstacles, land).is_empty()
+
+
+## Centres of the walk-grid samples a walker could stand on but cannot reach from home (see floor_reachable).
+## If home itself is blocked, returns [Vector2.INF].
+static func _unreached(p: Params, obstacles: Array[Dictionary], land: PackedByteArray) -> PackedVector2Array:
 	var nx := int(p.size_px().x / FLOW_STEP)
 	var ny := int(p.size_px().y / FLOW_STEP)
 	var free := _walk_free(p, land)
@@ -489,12 +546,36 @@ static func floor_reachable(p: Params, obstacles: Array[Dictionary], land := Pac
 					free[y * nx + x] = 0
 	var start := Vector2i(clampi(int(p.player_spawn.x / FLOW_STEP), 0, nx - 1), clampi(int(p.player_spawn.y / FLOW_STEP), 0, ny - 1))
 	if free[start.y * nx + start.x] == 0:
-		return false
+		return PackedVector2Array([Vector2.INF])
 	var seen := _walk_flood(free, nx, ny, start)
+	var out := PackedVector2Array()
 	for i in free.size():
 		if free[i] == 1 and seen[i] == 0:
-			return false
-	return true
+			out.append(Vector2((i % nx + 0.5) * FLOW_STEP, (i / nx + 0.5) * FLOW_STEP))
+	return out
+
+
+## Many nodes can close a pocket between them and the coast. Drop the nodes around any walkable spot
+## the walker cannot reach, until none is left (each pass only removes, so it ends).
+static func _repair_reach(res: Result, p: Params) -> void:
+	while true:
+		var lost := _unreached(p, res.obstacles, res.land)
+		if lost.is_empty() or lost[0] == Vector2.INF:
+			return
+		var kept: Array[Dictionary] = []
+		for o in res.obstacles:
+			var reach: float = o["radius"] + p.agent_radius + 2.0 * FLOW_STEP
+			var near := false
+			for q in lost:
+				if q.distance_to(o["pos"]) <= reach:
+					near = true
+					break
+			if not near:
+				kept.append(o)
+		res.obstacles = kept
+		res.obstacle_grid.clear()
+		for o in kept:
+			res.obstacle_grid.get_or_add(Vector2i(o["pos"] / res.obstacle_bucket), []).append(o)
 
 
 # --------------------------------------------------------------------- deco ---

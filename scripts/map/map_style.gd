@@ -41,6 +41,8 @@ extends Resource
 @export var deco: Array[PropSet] = []
 ## Rocks that block movement.
 @export var obstacles: PropSet
+## Gatherable trees / rocks placed by area on the island (index = the "node" key of an obstacle).
+@export var resource_nodes: Array[ResourceNodeData] = []
 
 
 ## Atlas coordinate of an edge role in the given look-variant (0 = A, 1 = B).
