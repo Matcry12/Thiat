@@ -130,4 +130,4 @@ above. Until art exists, each slice ships with a placeholder that has the **same
 
 | Slice | Built by | Judge | Result |
 |---|---|---|---|
-| W1 big island | Sonnet 5.5 (all 6 tasks) | judge: pending | Rebuild takes 460-505 ms (seeds 3/4/5, budget 2000). Walk home to boss: 4956 px at 260 px/s = about 19 s straight, about 25 s with the bends. The spec hoped for 1-2 min, so the island is too small or the player too fast. Decide after the playtest. Demo: `docs/demo/w1_island.mp4`. |
+| W1 big island | Sonnet 5.5 (all 6 tasks) | Opus judge: 0 critical, 1 important (5 of 40 seeds had small land pockets the walk check could not reach), 9 minor. All fixed except the walk time (user call) and max-size rebuild (1776 ms at 300x200, under budget). Fixes re-checked clean. User playtest: pending | Rebuild takes about 600 ms after the fixes (budget 2000). Walk home to boss: 4956 px at 260 px/s = about 19 s straight, about 25 s with the bends. The spec hoped for 1-2 min, so the island is too small or the player too fast. Decide after the playtest. Demo: `docs/demo/w1_island.mp4`. |
