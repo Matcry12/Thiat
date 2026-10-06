@@ -7,6 +7,10 @@ class_name WeaponData
 @export var icon: Texture2D
 @export var display_name := ""
 @export var damage := 30.0
+## Gathering (v1 §4). HP taken from a tree/rock per hit; 0 = this weapon can't gather.
+@export var gather_damage := 0.0
+## Must be >= the node's required_power, or the hit only clinks.
+@export var tool_power := 0
 @export var windup := 0.15
 @export var active := 0.1
 @export var recovery := 0.2
