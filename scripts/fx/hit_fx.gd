@@ -51,6 +51,7 @@ var _boss: Node
 var _dummy: Node
 
 func _ready() -> void:
+	add_to_group("hit_fx")
 	for n in [stop, sound, shake, sparks, numbers]:
 		add_child(n)
 	sparks.name = "HitSparks"

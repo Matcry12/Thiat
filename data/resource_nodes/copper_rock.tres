@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ResourceNodeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/resource_node_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/items/copper_ore.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"copper_rock"
+display_name = "Copper rock"
+max_hp = 10.0
+required_power = 1
+drop_item = ExtResource("2")
+drop_min = 2
+drop_max = 3
+radius = 16.0
+density_forest = 0.0
+density_rocky = 0.6
+density_boss = 0.0
+color = Color(0.8, 0.5, 0.3, 1)
+hit_type = &"mine"

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ResourceNodeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/resource_node_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/items/stone.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/map/Rocks.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = &"rock"
+display_name = "Rock"
+max_hp = 8.0
+required_power = 0
+drop_item = ExtResource("2")
+drop_min = 2
+drop_max = 3
+radius = 16.0
+density_forest = 0.4
+density_rocky = 2.0
+density_boss = 0.5
+texture = ExtResource("3")
+regions = Array[Rect2]([Rect2(2, 19, 28, 43), Rect2(35, 19, 26, 27), Rect2(98, 19, 28, 43), Rect2(131, 19, 26, 27)])
+color = Color(0.55, 0.55, 0.58, 1)
+hit_type = &"mine"

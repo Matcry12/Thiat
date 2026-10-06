@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ResourceNodeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/resource_node_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/items/wood.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/world/trees.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = &"tree"
+display_name = "Tree"
+max_hp = 6.0
+required_power = 0
+drop_item = ExtResource("2")
+drop_min = 2
+drop_max = 4
+radius = 14.0
+density_forest = 2.5
+density_rocky = 0.3
+density_boss = 0.6
+texture = ExtResource("3")
+regions = Array[Rect2]([Rect2(16, 2, 48, 62), Rect2(80, 2, 48, 62), Rect2(16, 66, 48, 62)])
+remains_region = Rect2(5, 59, 6, 5)
+color = Color(0.25, 0.55, 0.25, 1)
+hit_type = &"chop"

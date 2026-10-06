@@ -137,6 +137,9 @@ func _try_hit(area: Area2D) -> void:
 	if target in _hit_this_swing:
 		return
 	_hit_this_swing.append(target)
+	if target.has_method("take_gather_hit"):
+		target.take_gather_hit(weapon, owner)
+		return
 	var health := hurtbox.get_health()
 	if health:
 		health.take_damage(weapon.damage, owner, weapon.parryable, &"melee")
