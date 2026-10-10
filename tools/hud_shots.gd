@@ -1,34 +1,58 @@
 extends SceneTree
-## Full-screen HUD screenshots of the real arena:
+## Full-screen HUD screenshots of the real arena (decision 0030):
 ##   xvfb-run -a godot --rendering-driver opengl3 --resolution 1152x648 --script tools/hud_shots.gd -- <out_dir>
-## Saves hud_top_right.png (normal), hud_swap.png (cast + cooldown), hud_f3.png (F3 open).
+## Saves hud_layout.png (boss asleep: no boss bar), hud_swap_cooldown.png, hud_bag_open.png, hud_tooltip.png,
+## hud_f3_open.png, hud_boss_phase2.png (boss awake, phase 2, bottom centre), hud_boss_phase2_f3.png.
 var _out := ""
 
 func _init() -> void:
 	_out = OS.get_cmdline_user_args()[0]
 	var arena = load("res://scenes/arena.tscn").instantiate()
 	root.add_child(arena)
-	arena.get_node("Boss").passive = true
+	var boss: Boss = arena.get_node("Boss")
+	boss.passive = true
 	arena.get_node("DebugOverlay").enabled = false
 	var player = arena.get_node("Player")
 	var hp: Health = player.get_node("Health")
 	var lo: Loadout = player.get_node("Loadout")
+	var inv: Inventory = player.get_node("Inventory")
+	var hud: HUD = arena.get_node("HUD")
 	hp.immortal = true
+	inv.add(load("res://data/items/wood.tres"), 37)
+	inv.add(load("res://data/items/stone.tres"), 12)
+	inv.add(load("res://data/items/copper_ore.tres"), 3)
 	await _frames(10)
-	hp.hp = hp.max_hp * 0.8
-	await _frames(20)
-	await _shot("hud_top_right")
-	hp.hp = hp.max_hp * 0.2
+	hp.hp = hp.max_hp * 0.7
+	await _frames(40)
+	await _shot("hud_layout")
 	lo.try_swap(1)
-	await _frames(20)
-	await _shot("hud_swap_cast")
 	while lo.is_casting():
 		await physics_frame
 	await _frames(40)
 	await _shot("hud_swap_cooldown")
+	hud.bag().toggle()
+	await _frames(10)
+	await _shot("hud_bag_open")
+	var tip := hud.tooltip()
+	tip.mouse_override = hud.bag().cells()[0].get_global_rect().get_center()
+	await _frames(5)
+	await _shot("hud_tooltip")
+	tip.mouse_override = Vector2(2000, 2000)
 	arena.get_node("TuningPanel").visible = true
 	await _frames(10)
-	await _shot("hud_f3")
+	await _shot("hud_f3_open")
+	arena.get_node("TuningPanel").visible = false
+	hud.bag().toggle()
+	boss.set_physics_process(false)
+	boss._set_aggro(Boss.Aggro.ENGAGED)
+	boss.phase = 2
+	boss.phase_changed.emit(2)
+	boss.health.hp = boss.health.max_hp * 0.45
+	await _frames(45)
+	await _shot("hud_boss_phase2")
+	arena.get_node("TuningPanel").visible = true
+	await _frames(10)
+	await _shot("hud_boss_phase2_f3")
 	quit()
 
 func _frames(n: int) -> void:

@@ -63,6 +63,7 @@ var _forced := ""
 
 func _ready() -> void:
 	home = global_position
+	add_to_group("boss")   # Inventory locks the bag while this one is engaged
 	for c in $Attacks.get_children():
 		if c is BossAttack:
 			_attacks[(c as BossAttack).get_action_name()] = c

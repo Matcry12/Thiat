@@ -162,7 +162,7 @@ func _tap(action: String) -> void:
 ## active.
 func _tap_swap_to_other(loadout: Loadout) -> void:
 	var target := 1 - loadout.active_index()
-	await _tap("weapon_1" if target == 0 else "weapon_2")
+	await _tap("slot_1" if target == 0 else "slot_2")
 
 
 func _wait_until(cond: Callable, timeout: float) -> void:

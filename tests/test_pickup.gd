@@ -41,22 +41,28 @@ func _init() -> void:
 	_check(inv.count(&"wood") >= 3, "walking next to the drops collects them (%d)" % inv.count(&"wood"))
 
 	var hud = arena.get_node("HUD")
-	_check(hud.get_node_or_null("%ItemCounter") != null or _find_counter(hud) != null, "HUD has an item counter")
+	_check(hud.hotbar() != null and hud.bag() != null, "HUD has the hotbar and the bag panel (the old counter is gone)")
+
+	# Full inventory: a pickup stays on the ground and is not eaten.
+	for pk in get_nodes_in_group("pickup"):
+		pk.free()
+	var stone: ItemData = load("res://data/items/stone.tres")
+	inv.add(wood, 99999)
+	_check(inv.room_for(stone) == 0 and inv.used_slots() == Inventory.SIZE, "inventory is full")
+	var rest := Pickup.spawn(arena, stone, 3, player.global_position + Vector2(20, 0), player.global_position + Vector2(20, 0))
+	for i in 90:
+		await physics_frame
+	_check(is_instance_valid(rest) and rest.amount == 3 and inv.count(&"stone") == 0, "full: the pickup stays on the ground (still x3)")
+	inv.clear()   # frees the stacks of materials
+	for i in 60:
+		await physics_frame
+	_check(inv.count(&"stone") == 3 and not is_instance_valid(rest), "after making room it is collected")
 	await _water_edge()
 	print("PASS" if _ok else "FAIL")
 	quit(0 if _ok else 1)
 
 func get_nodes_in_group_count(_a) -> int:
 	return root.get_tree().root.get_tree().get_nodes_in_group("pickup").size()
-
-func _find_counter(n: Node) -> Node:
-	if n is ItemCounter:
-		return n
-	for c in n.get_children():
-		var f := _find_counter(c)
-		if f:
-			return f
-	return null
 
 func _water_edge() -> void:
 	var arena = load("res://scenes/arena.tscn").instantiate()

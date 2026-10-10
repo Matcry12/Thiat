@@ -1,3 +1,5 @@
+> **Superseded in part by [0030](0030-hud-layout-icons.md):** the HUD moved (hotbar top-left, health bottom-left) and shows no words.
+
 # 0024 — HUD top-right: life bar and hotbar (Terraria style)
 
 ## Context

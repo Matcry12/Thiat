@@ -37,7 +37,8 @@ func take_gather_hit(weapon: WeaponData, source: Node2D) -> bool:
 		_note_hit()
 		_fx(data.clink_type, source, info)
 		return false
-	hp = maxf(hp - weapon.gather_damage, 0.0)
+	var bonus := data.tool_bonus if data.preferred_tool != &"" and weapon.tool_kind == data.preferred_tool else 1.0
+	hp = maxf(hp - weapon.gather_damage * bonus, 0.0)
 	_note_hit()
 	_fx(data.hit_type, source, info)
 	if is_broken():

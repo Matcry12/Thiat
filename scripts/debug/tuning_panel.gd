@@ -118,6 +118,8 @@ var _boss: Boss
 var _map: ArenaMap
 var _hit_fx: HitFx
 var _collector: Collector
+var _inventory: Inventory
+var _bag: BagPanel
 
 var _targets: Array = []          # [{"name": String, "object": Object}]
 var _controls: Dictionary = {}    # "Target.prop" -> {obj, prop, control, value_label, is_bool, is_int}
@@ -125,6 +127,7 @@ var _initial_values: Dictionary = {}  # "Target.prop" -> value captured at start
 
 var _status_label: Label
 var _status_panel: Control
+var _status_scroll: ScrollContainer
 var _right_panel: Control
 var _seed_edit: LineEdit
 var _tuning_list: VBoxContainer
@@ -212,6 +215,18 @@ func _ready() -> void:
 		_targets.append({"name": "Node " + k.replace("_rock", ""), "object": load("res://data/resource_nodes/%s.tres" % k)})
 	if _loadout and _loadout.unarmed:
 		_targets.append({"name": "Fists", "object": _loadout.unarmed})
+	# Inventory (W3): the rules, each material's max stack, and the two starter tools' numbers.
+	_inventory = _player.get_node_or_null("Inventory") as Inventory
+	if _inventory:
+		_targets.append({"name": "Inventory", "object": _inventory})
+		for f in DirAccess.get_files_at("res://data/items"):
+			var it := load("res://data/items/" + f) as ItemData
+			if it == null:
+				continue
+			if it.category == "material":
+				_targets.append({"name": "Item " + String(it.id), "object": it})
+			elif it.category == "tool":
+				_targets.append({"name": "Tool " + String(it.id), "object": it.weapon})
 
 	# Hit feel: the master switches, the three effect nodes, and one section per hit type (its .tres numbers).
 	if _hit_fx:
@@ -233,6 +248,10 @@ func _ready() -> void:
 		_targets.append({"name": "HealthBar", "object": hud.health_bar()})
 		if hud.hotbar():
 			_targets.append({"name": "Hotbar", "object": hud.hotbar()})
+		_bag = hud.bag()
+		if _bag:
+			_targets.append({"name": "BagPanel", "object": _bag})
+			_targets.append({"name": "InventorySkin", "object": _bag.get_skin()})
 
 	_targets.append({"name": "Dummy", "object": _dummy})
 
@@ -252,6 +271,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _process(_delta: float) -> void:
 	if not visible:
 		return
+	_clear_of_hud()
 	_update_status_text()
 
 
@@ -339,6 +359,9 @@ func _update_status_text() -> void:
 		"[Gather]",
 		_gather_status_text(),
 		"",
+		"[Inventory]",
+		_inventory_status_text(),
+		"",
 		"[Skills (E)]",
 		_skill_status_text(),
 	])
@@ -382,6 +405,28 @@ func _gather_status_text() -> String:
 		get_tree().get_nodes_in_group("pickup").size()]
 
 
+func _inventory_status_text() -> String:
+	if _inventory == null or _loadout == null:
+		return "n/a"
+	var it := _inventory.slot_item(_loadout.selected_slot)
+	var w := _loadout.active_weapon()
+	var bag := "locked (boss engaged)" if _inventory.locked() else ("open" if _bag and _bag.is_open() else "closed")
+	var held := "%s x%d" % [_inventory.held_item.display_name, _inventory.held_count] if _inventory.held_item else "-"
+	return "slot %d: %s  hands: %s%s\nslots used %d/%d  hotbar weapons %d/%d\nbag: %s  cursor: %s" % [
+		_loadout.selected_slot + 1, it.display_name if it else "(empty)",
+		w.item_name() if w else "-", " (swap casting)" if _loadout.is_casting() else "",
+		_inventory.used_slots(), Inventory.SIZE, _inventory.hotbar_weapon_count(), _inventory.max_hotbar_weapons,
+		bag, held]
+
+
+func _give(id: String, amount := 1) -> void:
+	_inventory.add(load("res://data/items/%s.tres" % id), amount)
+
+
+func _fill_bag() -> void:
+	_give("wood", 99999)   # fills every free slot with wood stacks; leftover is dropped
+
+
 func _break_nearest_node() -> void:
 	var best: ResourceNode
 	for n: ResourceNode in get_tree().get_nodes_in_group("resource_node"):
@@ -398,8 +443,9 @@ func _break_nearest_node() -> void:
 
 func _give_items(amount: int) -> void:
 	for f in DirAccess.get_files_at("res://data/items"):
-		if f.ends_with(".tres"):
-			_collector.inventory().add(load("res://data/items/" + f), amount)
+		var it := load("res://data/items/" + f) as ItemData if f.ends_with(".tres") else null
+		if it and it.category == "material":
+			_collector.inventory().add(it, amount)
 
 
 func _skill_status_text() -> String:
@@ -486,9 +532,13 @@ func _build_ui() -> void:
 	root.add_child(status_panel)
 	_status_panel = status_panel
 
+	_status_scroll = ScrollContainer.new()
+	_status_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
+	_status_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	status_panel.add_child(_status_scroll)
 	_status_label = Label.new()
 	_status_label.add_theme_font_size_override("font_size", 13)
-	status_panel.add_child(_status_label)
+	_status_scroll.add_child(_status_label)
 
 	# --- tuning, top-right, scrollable ---
 	var tuning_panel := PanelContainer.new()
@@ -569,6 +619,13 @@ func _build_ui() -> void:
 		_add_button(gather_row, "Break nearest node", _break_nearest_node)
 		_add_button(gather_row, "Give 10 each", func(): _give_items(10))
 		_add_button(gather_row, "Clear items", func(): _collector.inventory().clear())
+	if _inventory:
+		var inv_row := HBoxContainer.new()
+		tuning_vbox.add_child(inv_row)
+		_add_button(inv_row, "Give axe", func(): _give("stone_axe"))
+		_add_button(inv_row, "Give pickaxe", func(): _give("stone_pickaxe"))
+		_add_button(inv_row, "Give sword", func(): _give("sword"))
+		_add_button(inv_row, "Fill bag", _fill_bag)
 	var kb_row := HBoxContainer.new()
 	tuning_vbox.add_child(kb_row)
 	_add_button(kb_row, "Knockback on/off", _toggle_knockback)
@@ -787,6 +844,18 @@ func _on_reset_stats() -> void:
 
 
 ## For the HUD: how wide the right panel is (from the screen edge) and where the status panel ends, in px.
+## The status panel sits on the left, where the HUD now lives: keep it below the top-left block and above
+## the bottom-left one, so nothing overlaps while F3 is open. It clips (scrolls) instead of growing.
+func _clear_of_hud() -> void:
+	var hud := get_node_or_null("../HUD") as HUD
+	if hud == null or _status_scroll == null:
+		return
+	var ins := hud.f3_insets()
+	var vh := get_viewport().get_visible_rect().size.y
+	_status_panel.position.y = ins.x
+	_status_scroll.custom_minimum_size.y = maxf(vh - ins.x - ins.y - 12.0, 40.0)
+
+
 func right_panel_width() -> float:
 	return -_right_panel.offset_left if _right_panel else 0.0
 

@@ -1,6 +1,5 @@
 extends SceneTree
-# Top-right HUD (decision 0024): life bar follows Health, trail lags then catches up; hotbar has one slot per
-# weapon, highlight follows the active weapon, cast fill during a swap, cooldown shade after it, item name.
+# Top-right HUD (decision 0024): life bar follows Health, trail lags then catches up; hotbar has 9 slots (W3), highlight follows the selected slot, cast fill during a swap, cooldown shade after it, item name.
 var _ok := true
 func check(name: String, cond: bool) -> void:
 	print("%s: %s" % [name, "ok" if cond else "FAIL"])
@@ -9,7 +8,10 @@ func check(name: String, cond: bool) -> void:
 
 func _init():
 	var arena = load("res://scenes/arena.tscn").instantiate()
-	root.add_child(arena)
+	var screen := SubViewport.new()   # headless starts with a 64 px window; layout checks need a real screen
+	screen.size = Vector2i(1152, 648)
+	root.add_child(screen)
+	screen.add_child(arena)
 	arena.get_node("Boss").passive = true
 	await process_frame
 	var player = arena.get_node("Player")
@@ -39,22 +41,27 @@ func _init():
 	hp.hp = hp.max_hp
 	bar._process(0.016)
 	check("healing snaps the trail up", is_equal_approx(bar.trail_fraction(), 1.0))
-	check("text shows Life x/y", bar.label_text() == "Life %d/%d" % [roundi(hp.max_hp), roundi(hp.max_hp)])
-	bar.font_size = 24
+	check("bar only: no text line, height = skin health_bar_height", bar.custom_minimum_size.y == bar.get_skin().health_bar_height)
+	check("hover text is the HP number", bar.tip_text() == "%d / %d" % [roundi(hp.max_hp), roundi(hp.max_hp)])
+	bar.get_skin().health_bar_height = 30
 	bar._process(0.016)
-	check("font_size change re-measures live", bar.custom_minimum_size.y > 18 + 2 + 14 and bar.size.y == bar.custom_minimum_size.y)
+	check("skin health_bar_height re-measures live", bar.custom_minimum_size.y == 30 and bar.size.y == 30)
+	bar.get_skin().health_bar_height = 18
+	bar._process(0.016)
 
 	# --- hotbar ---
+	var inv: Inventory = player.get_node("Inventory")
 	hb._process(0.016)
-	check("slot count == weapons count", hb.slots().size() == lo.weapons.size() and hb.slots().size() >= 2)
-	check("key numbers 1,2", hb.slots()[0].key_text == "1" and hb.slots()[1].key_text == "2")
+	check("9 slots, one per hotbar slot", hb.slots().size() == Inventory.HOTBAR)
+	check("key numbers 1..9", hb.slots()[0].key_text == "1" and hb.slots()[1].key_text == "2" and hb.slots()[8].key_text == "9")
 	check("slot 0 selected", hb.slots()[0].selected and not hb.slots()[1].selected)
-	check("name label = item name", hb.name_label.text == lo.active_weapon().item_name() and hb.name_label.text != "")
 	check("prettified file name", WeaponData.new().item_name() == "Weapon")
 	var w := WeaponData.new()
 	w.display_name = "Zed"
 	check("display_name wins", w.item_name() == "Zed")
-	check("icon fallback found (model art)", hb.slots()[0]._icon != null)
+	check("icon fallback found (model art)", hb.slots()[0].has_picture())
+	check("tool shows its icon (no letter, no word)", hb.slots()[2].item == inv.slot_item(2) and hb.slots()[2].has_picture() and inv.slot_item(2).icon != null)
+	check("empty slot shows nothing", hb.slots()[8].item == null)
 	check("no cast overlay at rest", hb.slots()[1].cast_progress == 0.0 and hb.slots()[1].cooldown_frac == 0.0)
 
 	check("swap starts", lo.try_swap(1))
@@ -67,44 +74,51 @@ func _init():
 		await physics_frame
 	hb._process(0.016)
 	check("highlight moved to slot 1", hb.slots()[1].selected and not hb.slots()[0].selected)
-	check("name changed", hb.name_label.text == lo.active_weapon().item_name())
-	check("cooldown shade on the inactive slot only", hb.slots()[0].cooldown_frac > 0.9 and hb.slots()[1].cooldown_frac == 0.0)
-	check("cooldown text", hb.slots()[0].cooldown_text != "")
+	check("cooldown shade on the other WEAPON slot only", hb.slots()[0].cooldown_frac > 0.9 and hb.slots()[1].cooldown_frac == 0.0 and hb.slots()[2].cooldown_frac == 0.0)
 	lo._cooldown_left = 0.0
 	hb._process(0.016)
 	check("shade gone when cooldown ends", hb.slots()[0].cooldown_frac == 0.0)
 
-	# --- live tuning + replaced weapon ---
-	hb.slot_size = 60
+	# --- tool selected: highlight + name follow ---
+	lo.select(2)
 	hb._process(0.016)
-	check("slot_size applies live", hb.slots()[0].size.x == 60 and hb.slots()[1].position.x == 60 + hb.slot_gap)
-	var old_icon = hb.slots()[1]._icon
-	var other: WeaponData = lo.weapons[0].duplicate()
-	other.model = lo.weapons[0].model
-	var keep: WeaponData = lo.weapons[1]
-	lo.weapons[1] = other
+	check("axe selected: slot 3 highlighted", hb.slots()[2].selected and not hb.slots()[1].selected)
+
+	# --- items show their count ---
+	inv.add(load("res://data/items/wood.tres"), 12)
 	hb._process(0.016)
-	check("replaced weapon rebuilds the slot", hb.slots()[1].weapon == other and hb.slots()[1]._icon != old_icon)
-	lo.weapons[1] = keep
-	hb.slot_size = 44
+	check("shift click sends the stack to the first free hotbar slot", inv.shift_move(Inventory.HOTBAR) and inv.slot_item(4) != null and inv.slot_item(4).id == &"wood")
+	hb._process(0.016)
+	check("a stack placed in the hotbar shows its count and icon", hb.slots()[4].count == 12 and hb.slots()[4].has_picture())
+
+	# --- live tuning ---
+	var sk := hb.get_skin()
+	sk.slot_size = 60
+	hb._process(0.016)
+	await process_frame
+	await process_frame
+	check("skin slot_size applies live", hb.slots()[0].size.x == 60 and hb.slots()[1].position.x == 60 + sk.slot_gap)
+	sk.slot_size = 44
 	hb._process(0.016)
 
-	# --- N slots ---
-	lo.weapons.append(lo.weapons[0])
-	hb._process(0.016)
-	check("a third weapon makes a third slot", hb.slots().size() == 3 and hb.slots()[2].key_text == "3")
-	lo.weapons.pop_back()
+	# --- layout: hotbar top-left, health + abilities bottom-left ---
+	await process_frame
+	await process_frame
+	var vh: float = screen.get_visible_rect().size.y
+	var hbr := hb.get_global_rect()
+	check("hotbar sits in the top-left corner", hbr.position.x == hud.margin_x and hbr.position.y == hud.margin_y)
+	check("health bar sits in the bottom-left corner", is_equal_approx(bar.get_global_rect().end.y, vh - hud.margin_y) and bar.get_global_rect().position.x == hud.margin_x)
+	check("ability icons sit above the health bar", hud.abilities().get_global_rect().end.y <= bar.get_global_rect().position.y)
+	check("three ability slots", hud.abilities().slots().size() == 3)
+	check("health bar and hotbar do not overlap", not hbr.intersects(bar.get_global_rect()))
 
-	# --- F3 overlap ---
+	# --- F3 overlap: the status panel keeps clear of the HUD ---
 	var tp: CanvasLayer = arena.get_node("TuningPanel")
-	hud._process(0.016)
-	var right_closed: float = hud._block.offset_right
 	tp.visible = true
-	hud._process(0.016)
-	check("HUD block moves out of the way of F3", hud._block.offset_right < right_closed)
 	await process_frame
 	await process_frame
-	var vw: float = hud.get_viewport().get_visible_rect().size.x   # 64 headless, 1152 in the real window; clearing of the status panel is checked on the screenshot
-	check("shifted block ends at the F3 right panel", is_equal_approx(hud._block.get_global_rect().end.x, vw - tp.right_panel_width() - hud.block_gap))
-	check("block is above the F3 layer", hud._tr_layer.layer > tp.layer)
+	var sp: Control = tp._status_panel
+	check("F3 status panel starts below the hotbar", sp.get_global_rect().position.y >= hbr.end.y)
+	check("F3 status panel ends above the bottom-left block", sp.get_global_rect().end.y <= hud.abilities().get_global_rect().position.y)
+	check("block is above the F3 layer", hud._layer.layer > tp.layer)
 	quit(0 if _ok else 1)

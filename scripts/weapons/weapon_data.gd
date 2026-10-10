@@ -11,6 +11,8 @@ class_name WeaponData
 @export var gather_damage := 0.0
 ## Must be >= the node's required_power, or the hit only clinks.
 @export var tool_power := 0
+## "axe" / "pickaxe" / empty. A node with a matching `preferred_tool` takes `tool_bonus` times the gather_damage.
+@export var tool_kind: StringName = &""
 @export var windup := 0.15
 @export var active := 0.1
 @export var recovery := 0.2

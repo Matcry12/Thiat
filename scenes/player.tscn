@@ -4,7 +4,6 @@
 [ext_resource type="Script" uid="uid://cj3m53hayxeaq" path="res://scripts/visual/sprite_actor_visual.gd" id="2"]
 [ext_resource type="Script" uid="uid://b2k3y42aktkbx" path="res://scripts/components/hurtbox.gd" id="3"]
 [ext_resource type="Script" uid="uid://d0awtsvbienb8" path="res://scripts/weapons/weapon_holder.gd" id="5"]
-[ext_resource type="Resource" uid="uid://gvjnvct47q1q" path="res://data/weapons/sword.tres" id="6"]
 [ext_resource type="Script" uid="uid://bdm85dlwvqabq" path="res://scripts/visual/weapon_visual.gd" id="7"]
 [ext_resource type="Texture2D" path="res://assets/characters/player_character_template.png" id="8"]
 [ext_resource type="SpriteFrames" path="res://assets/characters/player/player_frames.tres" id="8b"]
@@ -13,10 +12,8 @@
 [ext_resource type="Script" uid="uid://cu3cx00235xph" path="res://scripts/components/dodge.gd" id="12"]
 [ext_resource type="Script" uid="uid://b7gjgeew8j7ga" path="res://scripts/components/guard.gd" id="13"]
 [ext_resource type="Script" uid="uid://10nk8ph3115l" path="res://scripts/visual/guard_visual.gd" id="14"]
-[ext_resource type="Script" uid="uid://b8cxxfxugrtmd" path="res://scripts/weapons/weapon_data.gd" id="15_fulsm"]
 [ext_resource type="Script" uid="uid://bjs01qfet1ww8" path="res://scripts/visual/cover_arc.gd" id="17"]
 [ext_resource type="Script" uid="uid://cme80rjx7alqm" path="res://scripts/components/loadout.gd" id="18"]
-[ext_resource type="Resource" path="res://data/weapons/bow.tres" id="19"]
 [ext_resource type="Resource" path="res://data/weapons/fists.tres" id="fists"]
 [ext_resource type="Script" uid="uid://ba6y0wkjj6tcb" path="res://scripts/components/skill_slot.gd" id="20"]
 [ext_resource type="Script" uid="uid://bhkdre3n8h4wt" path="res://scripts/visual/swing_fx.gd" id="21"]
@@ -25,6 +22,11 @@
 [ext_resource type="Script" path="res://scripts/visual/run_dust.gd" id="dust_script"]
 [ext_resource type="Script" path="res://scripts/components/inventory.gd" id="inv_s"]
 [ext_resource type="Script" path="res://scripts/components/collector.gd" id="col_s"]
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="item_s"]
+[ext_resource type="Resource" path="res://data/items/sword.tres" id="it_sword"]
+[ext_resource type="Resource" path="res://data/items/bow.tres" id="it_bow"]
+[ext_resource type="Resource" path="res://data/items/stone_axe.tres" id="it_axe"]
+[ext_resource type="Resource" path="res://data/items/stone_pickaxe.tres" id="it_pick"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -115,8 +117,8 @@ script = ExtResource("17")
 
 [node name="Loadout" type="Node" parent="." unique_id=519427683]
 script = ExtResource("18")
-weapons = Array[ExtResource("15_fulsm")]([ExtResource("6"), ExtResource("19")])
 weapon_holder_path = NodePath("../WeaponHolder")
+inventory_path = NodePath("../Inventory")
 unarmed = ExtResource("fists")
 
 [node name="SkillSlot" type="Node" parent="." unique_id=1996829668]
@@ -125,6 +127,7 @@ weapon_holder_path = NodePath("../WeaponHolder")
 
 [node name="Inventory" type="Node" parent="."]
 script = ExtResource("inv_s")
+start_items = Array[ExtResource("item_s")]([ExtResource("it_sword"), ExtResource("it_bow"), ExtResource("it_axe"), ExtResource("it_pick")])
 
 [node name="Collector" type="Node" parent="."]
 script = ExtResource("col_s")

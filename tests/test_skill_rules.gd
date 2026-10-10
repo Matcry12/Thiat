@@ -48,7 +48,7 @@ func _init():
 	await _wait_until(func(): return not dodge.is_dashing(), 2.0)
 
 	# 1c. swap cast (swap to the bow, then back to the sword later)
-	await _tap("weapon_2")
+	await _tap("slot_2")
 	var c: bool = loadout.is_casting()
 	await _tap("skill")
 	var r3: bool = not slot.is_active() and slot.cooldown_left(bow) == 0.0
@@ -56,14 +56,14 @@ func _init():
 	ok = ok and c and r3
 	await _wait_until(func(): return not loadout.is_casting() and loadout.cooldown_left() <= 0.0, 3.0)
 	# bow is now equipped. Go back to the sword for the per-weapon check.
-	await _tap("weapon_1")
+	await _tap("slot_1")
 	await _wait_until(func(): return not loadout.is_casting() and loadout.cooldown_left() <= 0.0, 3.0)
 
 	# 2. sword skill -> cooling; bow's skill is separate.
 	await _tap("skill")
 	await _wait_until(func(): return not slot.is_active(), 2.0)
 	var sword_cd: float = slot.cooldown_left(sword)
-	await _tap("weapon_2")
+	await _tap("slot_2")
 	await _wait_until(func(): return not loadout.is_casting() and loadout.cooldown_left() <= 0.0, 3.0)
 	var bow_ready: bool = slot.cooldown_left(bow) == 0.0
 	await _tap("skill")
@@ -82,7 +82,7 @@ func _init():
 	# 4. A swap press is REFUSED while a skill is active (swaps are vulnerable).
 	await _tap("skill")
 	var charging: bool = slot.is_active()
-	await _tap("weapon_1")
+	await _tap("slot_1")
 	await _frames(2)
 	var swap_refused: bool = charging and not loadout.is_casting() and loadout.active_index() == 1 and slot.is_active()
 	print("charging: %s | swap refused during the charge: %s" % [charging, swap_refused])
@@ -99,7 +99,7 @@ func _init():
 
 	# 6. Back to the sword: still cooling (not reset, not shared). Then, during
 	#    a lunge, dodge and guard presses are refused and change nothing.
-	await _tap("weapon_1")
+	await _tap("slot_1")
 	await _wait_until(func(): return not loadout.is_casting(), 3.0)
 	var sword_still: bool = slot.cooldown_left(sword) > 0.0 and slot.cooldown_left(sword) <= sword_cd
 	print("sword still cooling after swapping back: %s" % sword_still)

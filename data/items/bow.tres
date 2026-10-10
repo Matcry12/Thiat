@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/placeholder/bow.png" id="icon"]
+[ext_resource type="Resource" path="res://data/weapons/bow.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"bow"
+icon = ExtResource("icon")
+display_name = "Bow"
+color = Color(0.7, 0.5, 0.25, 1)
+category = "weapon"
+max_stack = 1
+weapon = ExtResource("2")

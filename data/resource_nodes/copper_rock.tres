@@ -8,6 +8,7 @@ script = ExtResource("1")
 id = &"copper_rock"
 display_name = "Copper rock"
 max_hp = 10.0
+preferred_tool = &"pickaxe"
 required_power = 1
 drop_item = ExtResource("2")
 drop_min = 2

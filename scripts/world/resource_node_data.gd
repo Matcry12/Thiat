@@ -7,6 +7,10 @@ extends Resource
 @export var max_hp := 6.0
 ## A weapon needs at least this tool_power to damage it; less = clink.
 @export var required_power := 0
+## The tool_kind that gathers this fast (trees: axe, rocks: pickaxe). Empty = no favourite.
+@export var preferred_tool: StringName = &""
+## gather_damage multiplier when the held tool_kind matches `preferred_tool`.
+@export var tool_bonus := 3.0
 @export var drop_item: ItemData
 @export var drop_min := 2
 @export var drop_max := 3

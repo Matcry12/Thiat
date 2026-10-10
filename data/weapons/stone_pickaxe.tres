@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/fists_model.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Stone Pickaxe"
+behavior = "arc"
+damage = 8.0
+gather_damage = 1.0
+tool_power = 2
+tool_kind = &"pickaxe"
+windup = 0.1
+active = 0.08
+recovery = 0.18
+model = ExtResource("2")
+arc_degrees = 70.0
+sweep_samples = 6
+step_distance = 4.0
+parryable = true

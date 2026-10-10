@@ -1,9 +1,11 @@
 [gd_resource type="Resource" script_class="ItemData" format=3]
 
 [ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/placeholder/stone.png" id="icon"]
 
 [resource]
 script = ExtResource("1")
 id = &"stone"
+icon = ExtResource("icon")
 display_name = "Stone"
 color = Color(0.6, 0.6, 0.62, 1)

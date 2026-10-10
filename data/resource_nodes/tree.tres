@@ -9,6 +9,7 @@ script = ExtResource("1")
 id = &"tree"
 display_name = "Tree"
 max_hp = 6.0
+preferred_tool = &"axe"
 required_power = 0
 drop_item = ExtResource("2")
 drop_min = 2

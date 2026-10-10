@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/placeholder/pickaxe.png" id="icon"]
+[ext_resource type="Resource" path="res://data/weapons/stone_pickaxe.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"stone_pickaxe"
+icon = ExtResource("icon")
+display_name = "Stone Pickaxe"
+color = Color(0.55, 0.55, 0.6, 1)
+category = "tool"
+max_stack = 1
+weapon = ExtResource("2")

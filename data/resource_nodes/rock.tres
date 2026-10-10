@@ -9,6 +9,7 @@ script = ExtResource("1")
 id = &"rock"
 display_name = "Rock"
 max_hp = 8.0
+preferred_tool = &"pickaxe"
 required_power = 0
 drop_item = ExtResource("2")
 drop_min = 2

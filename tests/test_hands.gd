@@ -116,7 +116,7 @@ func _init():
 	p = hands.hand_positions()
 	_check("no model, aim left: hands in front of the body on the left", p[0].x < hands.global_position.x and p[1].x < hands.global_position.x)
 
-	# Holster toggle (key 3): instant, free, always back to the same weapon.
+	# Holster toggle (Loadout.toggle_hands; the keys now use select()): instant, free, always back to the same weapon.
 	var lo: Loadout = loadout
 	var wh: WeaponHolder = holder
 	lo._cooldown_left = 0.0   # the swap above charged the cooldown; this block starts fresh

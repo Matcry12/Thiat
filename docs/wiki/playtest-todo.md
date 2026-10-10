@@ -3,7 +3,29 @@
 Things built but **not yet played by you**. Tick them off (or write what felt wrong) when you play.
 Newest slice at the top. Run the game, press `F3` for the test buttons.
 
-## W2 — trees and rocks (building now)
+## W3 — inventory and tools (building now)
+
+- [ ] HUD: hotbar top-left, health bottom-left, dodge / skill / guard icons above the health bar. No words. OK?
+- [ ] Hover a slot, an ability icon or the health bar: a small name (or "73 / 100") shows. It must not show while you carry a stack.
+- [ ] Are the placeholder icons (axe, pickaxe, wood, stone, copper, dodge, skill, guard) clear enough?
+- [ ] Open F3: nothing should overlap the HUD.
+
+- [ ] Keys `1` to `4`: sword, bow, axe, pickaxe. Does the hotbar show them clearly? (Tools are plain coloured squares with a letter for now.)
+- [ ] Press `3` (axe) or `4` (pickaxe): the switch is instant. Press `1` or `2`: weapon to weapon still has the cast and cooldown.
+- [ ] From the axe, press `1`: your sword comes back at once. Then press `2`: that one is a normal swap.
+- [ ] Press `5` to `9` (empty slots): bare hands, same as the old key `3`.
+- [ ] Mouse wheel: it waits a moment before it selects. Too slow? (F3 → `Player` → `wheel_settle`.)
+- [ ] Axe on a tree: 2 hits. Hands: 6 hits. Is the axe too strong or too weak? (F3 → `Tool stone_axe`, `Node tree` → `tool_bonus`)
+- [ ] Axe on copper: "clink". Pickaxe on copper: it breaks. Is it clear why?
+- [ ] `Tab` or `I`: the bag opens under the hotbar. Pick up a stack, put it down, right click for half, shift click to send it to the hotbar.
+- [ ] Try to put a 3rd weapon in the hotbar (F3 → `Give sword`, then move it). It must not go in.
+- [ ] Close the bag while holding a stack: the stack goes back.
+- [ ] Click on the bag: you should not swing your weapon.
+- [ ] Walk to the boss until it wakes up: the bag closes and says it is locked.
+- [ ] F3 → `Fill bag`, then punch a tree: the wood stays on the ground (bag is full). Does that feel right?
+- [ ] The bag is under the hotbar (top right), not above it. OK?
+
+## W2 — trees and rocks
 
 - [ ] Press `3`: your weapon goes away, bare hands. Press `3` again: the same weapon is back at once.
 - [ ] Hands → press `2` (the other weapon): it should be a normal swap (cast + cooldown), not free.

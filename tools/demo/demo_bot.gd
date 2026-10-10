@@ -60,7 +60,7 @@ func _ready() -> void:
 
 	# The storyboards use screen coordinates: run them on the screen-sized arena with the old layout.
 	# The showcase scenarios use the real big map instead.
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory"]:
 		_arena = load("res://scenes/arena.tscn").instantiate()
 		(_arena.get_node("ArenaMap") as ArenaMap).map_seed = _seed
 	else:
@@ -114,7 +114,7 @@ var _cap_gen := 0
 func _build_captions() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory"]:
 		# Small, bottom-centre, semi-transparent; each caption fades out by itself.
 		_cap_panel = PanelContainer.new()
 		_cap_panel.anchor_left = 0.5
@@ -268,6 +268,7 @@ func _run() -> void:
 		"hud": await _run_hud()
 		"island": await _run_island()
 		"gather": await _run_gather()
+		"w3_inventory": await _run_w3_inventory()
 		_: await _run_guard()
 
 func _run_guard() -> void:
@@ -384,7 +385,7 @@ func _run_weapons() -> void:
 	await _wait(0.8)
 
 	_say("PRESS 2 — SWAP TO BOW", "a %.1fs cast — you can't attack while it runs" % _loadout.swap_cast)
-	await _tap("weapon_2")
+	await _tap("slot_2")
 	while _loadout.is_casting():
 		await get_tree().physics_frame
 	print("[demo]   swap finished: active weapon %s" % _loadout.active_weapon().resource_path.get_file())
@@ -413,7 +414,7 @@ func _run_weapons() -> void:
 
 	_say("PRESS 1 — TOO SOON", "swap is on a %.1fs cooldown — the press does nothing" % _loadout.swap_cooldown)
 	var index_before := _loadout.active_index()
-	await _tap("weapon_1")
+	await _tap("slot_1")
 	await _wait(0.1)
 	var refused: bool = _loadout.active_index() == index_before and not _loadout.is_casting()
 	print("[demo]   refused: %s (cooldown left %.2fs)" % [refused, _loadout.cooldown_left()])
@@ -425,7 +426,7 @@ func _run_weapons() -> void:
 	await _wait(0.3)
 
 	_say("PRESS 1 — SWAP BACK", "%.1fs cast again" % _loadout.swap_cast)
-	await _tap("weapon_1")
+	await _tap("slot_1")
 	while _loadout.is_casting():
 		await get_tree().physics_frame
 	print("[demo]   swap finished: active weapon %s" % _loadout.active_weapon().resource_path.get_file())
@@ -539,7 +540,7 @@ func _run_skills() -> void:
 
 	# 3. Swap to bow.
 	_say("PRESS 2 — SWAP TO BOW", "%.1fs cast" % _loadout.swap_cast)
-	await _tap("weapon_2")
+	await _tap("slot_2")
 	await _until(func(): return not _loadout.is_casting(), 3.0)
 	var bow: WeaponData = _loadout.active_weapon()
 	print("[demo]   active %s | sword skill left %.1fs | bow skill left %.1fs" % [bow.resource_path.get_file(), slot.cooldown_left(sword), slot.cooldown_left(bow)])
@@ -997,7 +998,7 @@ func _run_showcase() -> void:
 	# 8. Swap to the bow, charged piercing shot.
 	await _walk_near(_boss, 215.0, 3.0)
 	_say("Swap to the bow")
-	await _tap("weapon_2")
+	await _tap("slot_2")
 	await _until(func(): return not _loadout.is_casting(), 3.0)
 	create_tween().tween_property(cam, "zoom", Vector2(1.3, 1.3), 0.7)
 	await _wait(0.9)
@@ -1076,7 +1077,7 @@ func _run_hands() -> void:
 	_hold("move_left", false)
 	await _wait(0.8)
 	_say("Swap to the bow")
-	await _tap("weapon_2")
+	await _tap("slot_2")
 	await _until(func(): return not _loadout.is_casting(), 3.0)
 	await _wait(0.5)
 	_say("Bow draw: the back hand pulls")
@@ -1142,7 +1143,7 @@ func _run_hitfeel() -> void:
 	await _boss_settled()
 
 	await _walk_near(_boss, 215.0, 3.0)
-	await _tap("weapon_2")
+	await _tap("slot_2")
 	await _until(func(): return not _loadout.is_casting(), 3.0)
 	_say("Charged arrow")
 	await _tap("skill")
@@ -1182,7 +1183,7 @@ func _run_hitfeel2() -> void:
 	await _swings(4, 0.6)
 
 	await _walk_near(_boss, 215.0, 4.0)
-	await _tap("weapon_2")
+	await _tap("slot_2")
 	await _until(func(): return not _loadout.is_casting(), 3.0)
 	_say("Charged arrow")
 	await _tap("skill")
@@ -1239,7 +1240,7 @@ func _run_charanim() -> void:
 	_say("Sword")
 	await _swings(3, 0.55)
 	_say("Swap to the bow")
-	await _tap("weapon_2")
+	await _tap("slot_2")
 	await _until(func(): return not _loadout.is_casting(), 3.0)
 	await _wait(0.3)
 	_say("Charged shot")
@@ -1351,13 +1352,13 @@ func _run_hud() -> void:
 	_player_health.take_damage(25.0, null, false)
 	await _wait(2.0)
 	_say("Swap to the bow: slot 2 fills while casting")
-	await _tap("weapon_2")
+	await _tap("slot_2")
 	while _loadout.is_casting():
 		await get_tree().physics_frame
 	_say("Swap cooldown: slot 1 is shaded with seconds left")
 	await _wait(5.5)
 	_say("Cooldown over: swap back")
-	await _tap("weapon_1")
+	await _tap("slot_1")
 	await _wait(2.0)
 	get_tree().quit()
 
@@ -1437,8 +1438,8 @@ func _run_gather() -> void:
 	_player.global_position = tree.global_position + Vector2(-44, 0)
 	_player.velocity = Vector2.ZERO
 	await _wait(1.0)
-	_say("Bare hands: press 3", "your weapon goes away; press 3 again and it is back at once")
-	await _tap("hands")
+	_say("Bare hands: press 5 (empty slot)", "your weapon goes away; press 1 and it is back at once")
+	await _tap("slot_5")
 	await _wait(1.2)
 	_say("Punch the tree", "it shakes, chips fly, about 6 punches")
 	await _punch_until_broken(tree)
@@ -1459,5 +1460,68 @@ func _run_gather() -> void:
 		await _tap("attack")
 		await _wait(0.6)
 	_say("Items: wood %d, stone %d" % [inv.count(&"wood"), inv.count(&"stone")], "the counter is under the hotbar")
+	await _wait(2.5)
+	get_tree().quit()
+
+func _run_w3_inventory() -> void:
+	_arena.get_node("Boss").passive = true
+	_overlay(false)
+	var m: ArenaMap = _arena.get_node("ArenaMap")
+	var inv: Inventory = _player.get_node("Inventory")
+	var bag: BagPanel = _arena.get_node("HUD").bag()
+	_aim_at = null
+	var tree := _nearest_node(&"tree", m.home_point())
+	_player.global_position = tree.global_position + Vector2(-44, 0)
+	_player.velocity = Vector2.ZERO
+	_player.aim_override = Vector2.RIGHT
+	await _wait(1.0)
+	_say("Hotbar: sword 1, bow 2, axe 3, pickaxe 4", "keys 1-9 or the mouse wheel")
+	await _wait(2.0)
+	_say("Press 3: the axe", "a tool switches at once: no swap cast")
+	await _tap("slot_3")
+	await _wait(1.0)
+	_say("Chop the tree: 2 hits", "axe hits 3 times harder than hands")
+	await _punch_until_broken(tree, 6)
+	await _wait(1.5)
+	var cu := _nearest_node(&"copper_rock", _player.global_position)
+	_player.global_position = cu.global_position + Vector2(-34, 0)
+	_player.velocity = Vector2.ZERO
+	await _wait(0.6)
+	_say("Axe on copper: clink", "the axe is too weak for copper")
+	_player.aim_override = cu.global_position - _player.global_position
+	await _tap("attack")
+	await _wait(0.8)
+	_say("Press 4: the pickaxe", "now copper breaks")
+	await _tap("slot_4")
+	await _wait(0.8)
+	await _punch_until_broken(cu, 14)
+	await _wait(2.0)
+	_say("Tab: open the bag", "27 slots; the game keeps running")
+	await _tap("bag")
+	await _wait(1.5)
+	_say("Click a stack to pick it up", "click another slot to place it")
+	var from := Inventory.HOTBAR
+	for i in range(Inventory.HOTBAR, Inventory.SIZE):
+		if inv.slot_item(i) != null:
+			from = i
+			break
+	inv.click_slot(from)
+	await _wait(1.0)
+	inv.click_slot(from + 9)
+	await _wait(1.0)
+	_say("Right click: take half", "shift click: send to the hotbar")
+	inv.click_slot(from + 9, true)
+	await _wait(0.8)
+	inv.click_slot(from + 10)
+	await _wait(0.8)
+	inv.shift_move(from + 9)
+	await _wait(1.5)
+	await _tap("bag")
+	await _wait(0.8)
+	_say("Press 1: the sword", "back to a weapon is instant too")
+	await _tap("slot_1")
+	await _wait(1.5)
+	_say("Press 2: the bow", "weapon to weapon still costs a cast + cooldown")
+	await _tap("slot_2")
 	await _wait(2.5)
 	get_tree().quit()

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="InventorySkin" format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/inventory_skin.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/placeholder/dodge.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/ui/placeholder/skill.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/ui/placeholder/guard.png" id="4"]
+
+[ext_resource type="Texture2D" path="res://assets/ui/placeholder/lock.png" id="5"]
+
+[resource]
+script = ExtResource("1")
+dodge_icon = ExtResource("2")
+skill_icon = ExtResource("3")
+guard_icon = ExtResource("4")
+lock_texture = ExtResource("5")

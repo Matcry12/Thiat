@@ -5,6 +5,8 @@ extends CharacterBody2D
 ## for internals (decision 0005, 0010).
 
 @export var speed := 260.0
+## Seconds of no scrolling before the wheel's hotbar slot is selected.
+@export var wheel_settle := 0.12
 
 @onready var visual: ActorVisual = $Visual
 # Sibling of Visual, NOT a child: replacing the Visual node must never
@@ -30,6 +32,8 @@ var aim_override := Vector2.ZERO
 ## True once Health.died fired: every input is ignored (the EndScreen shows the
 ## retry prompt). Code-owned, so not an @export.
 var dead := false
+var _wheel_slot := -1
+var _wheel_left := 0.0
 var _move_state := "idle"
 var _move_dir := Vector2.ZERO
 
@@ -73,7 +77,7 @@ func _on_died() -> void:
 	velocity = Vector2.ZERO
 	visual.set_move_state("idle")
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if dead:
 		return
 	# A text field (the F3 seed box) has focus: the keys belong to it, not to the game. Polling Input
@@ -113,7 +117,7 @@ func _physics_process(_delta: float) -> void:
 		return
 
 	if Input.is_action_just_pressed("attack") and guard.can_attack() and not loadout.is_casting() \
-			and not skill_slot.is_active():
+			and not skill_slot.is_active() and not mouse_over_ui():
 		weapon_holder.try_attack()
 
 	# E skill. Refused while guarding, dashing, casting a swap, mid-swing; the
@@ -144,12 +148,39 @@ func _physics_process(_delta: float) -> void:
 	# Weapon swap is vulnerable, like an attack (decision 0003) — refused
 	# while guarding or dashing, same as the attack gate above. Loadout stays
 	# input-agnostic; the gate lives here, next to the other input gates.
-	if Input.is_action_just_pressed("weapon_1") and not guard.is_guarding() and not dodge.is_dashing() and not skill_slot.is_active():
-		loadout.try_swap(0)
-	if Input.is_action_just_pressed("weapon_2") and not guard.is_guarding() and not dodge.is_dashing() and not skill_slot.is_active():
-		loadout.try_swap(1)
-	if Input.is_action_just_pressed("hands") and weapon_holder.phase == WeaponHolder.Phase.IDLE and not guard.is_guarding() and not dodge.is_dashing() and not skill_slot.is_active():
-		loadout.toggle_hands()
+	# Hotbar select (keys 1-9, wheel). Same gates as before: a swap is vulnerable, so it is refused
+	# while guarding, dashing or using a skill. Loadout decides swap (weapon) vs instant (tool / hands).
+	var can_select := not guard.is_guarding() and not dodge.is_dashing() and not skill_slot.is_active()
+	if can_select:
+		for n in Inventory.HOTBAR:
+			if Input.is_action_just_pressed("slot_%d" % (n + 1)):
+				loadout.select(n)
+		if _wheel_slot >= 0:
+			_wheel_left -= delta
+			if _wheel_left <= 0.0:
+				loadout.select(_wheel_slot)
+				_wheel_slot = -1
+
+func _unhandled_input(event: InputEvent) -> void:
+	# Wheel moves a cursor over the hotbar; the slot is only selected after `wheel_settle` seconds of
+	# calm, so scrolling past the bow does not start a swap cast on the way to the axe.
+	if dead or not event is InputEventMouseButton or not event.pressed:
+		return
+	var step := -1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else (1 if event.button_index == MOUSE_BUTTON_WHEEL_DOWN else 0)
+	if step == 0:
+		return
+	var from := _wheel_slot if _wheel_slot >= 0 else loadout.selected_slot
+	_wheel_slot = posmod(from + step, Inventory.HOTBAR)
+	_wheel_left = wheel_settle
+
+## Slot the wheel is moving to (-1 = none); the hotbar highlights it before it is selected.
+func pending_slot() -> int:
+	return _wheel_slot
+
+## True while the bag panel is open and the mouse is over it (or over the hotbar it makes clickable).
+func mouse_over_ui() -> bool:
+	var bag := get_tree().get_first_node_in_group("bag_panel")
+	return bag != null and bag.is_open() and get_viewport().gui_get_hovered_control() != null
 
 func _on_weapon_state_changed(state: String) -> void:
 	visual.set_weapon_state(state)

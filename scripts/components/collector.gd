@@ -1,6 +1,6 @@
 class_name Collector
 extends Node
-## Child of the Player. Pulls settled pickups in and banks them in the Inventory.
+## Child of the Player. Pulls settled pickups in and banks them in the Inventory. A full inventory leaves them on the ground.
 
 @export var magnet_radius := 70.0
 @export var magnet_speed := 420.0
@@ -27,10 +27,15 @@ func _physics_process(delta: float) -> void:
 	for p: Pickup in get_tree().get_nodes_in_group("pickup"):
 		if not p.settled:
 			continue
+		if inv.room_for(p.item) <= 0:
+			continue   # bag full: it stays on the ground
 		var d := p.global_position.distance_to(me.global_position)
 		if d <= pickup_radius:
-			inv.add(p.item, p.amount)
-			last_pickup = "%s x%d" % [p.item.display_name, p.amount]
-			p.queue_free()
+			var left := inv.add(p.item, p.amount)
+			last_pickup = "%s x%d" % [p.item.display_name, p.amount - left]
+			if left == 0:
+				p.queue_free()
+			else:
+				p.amount = left
 		elif d <= magnet_radius:
 			p.global_position = p.global_position.move_toward(me.global_position, magnet_speed * delta)
