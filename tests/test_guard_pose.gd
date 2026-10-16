@@ -30,8 +30,9 @@ func _init():
 	print("after F %.2fs: blade %.0f deg (guard %.0f): %s | pose beats the parry window: %s" % [
 		wv.guard_raise_time + 0.03, rad_to_deg(pivot.rotation), wv.weapon.guard_angle_degrees, raised, in_window])
 
-	var moved: bool = pivot.position.is_equal_approx(Vector2(10, -4))
-	print("arm offset in guard: %s (want (10, -4)): %s" % [pivot.position, moved])
+	var want_off: Vector2 = Vector2(10, -4) * wv.visual_scale()   # the block-pose arm offset is a picture matter: it scales with the character's BodyRig
+	var moved: bool = pivot.position.is_equal_approx(want_off)
+	print("arm offset in guard: %s (want %s): %s" % [pivot.position, want_off, moved])
 	raised = raised and moved
 
 

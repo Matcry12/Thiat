@@ -51,6 +51,11 @@ class Blocks extends Node2D:
 			draw_rect(Rect2(cells[i], Vector2.ONE * px), colors[i] if step == 0 else dim)
 
 var _weapon: WeaponData
+## Crescent scale about the grip (from the character's BodyRig). 1 = the real hitbox area; below 1 is smaller than the real reach.
+var _slash_scale := 1.0
+
+func set_slash_scale(v: float) -> void:
+	_slash_scale = v
 var _model: Node2D
 var _active := false
 
@@ -100,6 +105,10 @@ func _spawn_slash() -> void:
 	var merged: Array = []
 	for pose in hb.arc_poses(slash_samples):
 		var outline: PackedVector2Array = pose[1] * Hitbox.shape_outline(pose[0])
+		if _slash_scale != 1.0 and is_instance_valid(_model) and _model.get_parent() is Node2D:
+			var c: Vector2 = (_model.get_parent() as Node2D).global_position
+			for i in outline.size():
+				outline[i] = c + (outline[i] - c) * _slash_scale
 		if outline.size() < 3:
 			continue
 		merged.append(outline)

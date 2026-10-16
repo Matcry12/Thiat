@@ -27,6 +27,13 @@ func _ready() -> void:
 	_hook(_hitbox)
 	_telegraph.top_level = true   # the lane stays put while the boss moves
 
+## The dash lasts distance / speed (a wall can end it sooner: the RECOVERY signal is the real end).
+func _window_time(p: Phase) -> float:
+	return distance / maxf(speed, 1.0) if p == Phase.ACTIVE else super._window_time(p)
+
+func facing_dir() -> Vector2:
+	return _dir if phase != Phase.IDLE else Vector2.ZERO
+
 func _radius() -> float:
 	var c := _shape_of(_hitbox) as CircleShape2D
 	return c.radius if c else 24.0

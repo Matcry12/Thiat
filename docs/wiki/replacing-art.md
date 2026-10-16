@@ -166,3 +166,16 @@ The art sits with its feet on the bottom edge of the footprint, centred. If your
 | Tabs and station marker | `tab_size`, `craft_tab_icon` (hammer), `hand_icon` (hand), `tab_color`, `hand_color`, `furnace_tab_glow_color`, `furnace_tab_pulse_speed` | Placeholder PNGs `hand.png`, `hammer.png` in `assets/ui/placeholder/`. The marker only shows when there are no tabs. The Furnace tab pulses while the furnace works. The furnace tab and the marker show the station's item `icon` (found through the recipes) |
 
 New copper tools use the stone tool models, tinted: `model_tint` on the weapon file in `data/weapons/` (white = as drawn). When you have real copper art, point `model` at it and set `model_tint` back to white.
+
+## Temporary Tiny RPG art (Soldier player, Orc boss)
+
+Both are stand-ins ([0032](../decision/0032-temp-tiny-rpg-art.md)). Licence: no redistribution, so the pack stays out of anything you publish.
+
+| What | Where | Notes |
+|---|---|---|
+| Player body | `data/body_rigs/tiny_soldier.tres` (set on `player.tscn > Visual > Rig`) | `sprite_frames`, `body_position` (feet on the shadow), `body_scale` (3 now; whole numbers keep pixels crisp), `landing_frames` / `lift_frames` for a longer run cycle. Needs clips `idle_side`, `run_side`, `hit_side`; add `idle_front`, `run_front`, `hit_front` for a real front view |
+| Boss body | `boss.tscn > Visual` (`BossVisual`): `body_frames`, `body_position`, `body_scale` (3 now), `shadow_scale`, `shadow_position` | Clips: `idle`, `run`, `hit`, `death` + one per attack in `attack_anims` |
+| Boss attack animation | `attack_anims` (action -> clip), `strike_frame`, `recover_frame`, `hurt_time` | Telegraph / active / recovery of the attack (set on each `BossAttack` node) are stretched over the frames. Never change an attack's time to fit the art |
+| Back to the old look | Player: pick `blocky.tres` as the rig. Boss: clear `body_frames` | Placeholder circle returns |
+
+New character with a side view only: make a SpriteFrames with `idle_side` / `run_side` / `hit_side` and a BodyRig that points at it. The frames are 100x100 cells here: put the feet on the shadow with `body_position`, not by editing the art.

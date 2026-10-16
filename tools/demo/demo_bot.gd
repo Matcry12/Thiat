@@ -60,7 +60,7 @@ func _ready() -> void:
 
 	# The storyboards use screen coordinates: run them on the screen-sized arena with the old layout.
 	# The showcase scenarios use the real big map instead.
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory", "w4_crafting"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory", "w4_crafting", "tinyrpg"]:
 		_arena = load("res://scenes/arena.tscn").instantiate()
 		(_arena.get_node("ArenaMap") as ArenaMap).map_seed = _seed
 	else:
@@ -114,7 +114,7 @@ var _cap_gen := 0
 func _build_captions() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory", "w4_crafting"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory", "w4_crafting", "tinyrpg"]:
 		# Small, bottom-centre, semi-transparent; each caption fades out by itself.
 		_cap_panel = PanelContainer.new()
 		_cap_panel.anchor_left = 0.5
@@ -270,6 +270,7 @@ func _run() -> void:
 		"gather": await _run_gather()
 		"w3_inventory": await _run_w3_inventory()
 		"w4_crafting": await _run_w4_crafting()
+		"tinyrpg": await _run_tinyrpg()
 		_: await _run_guard()
 
 func _run_guard() -> void:
@@ -1256,6 +1257,54 @@ func _run_charanim() -> void:
 	await _wait(0.8)
 	_hold_vec(Vector2.ZERO)
 	await _wait(0.5)
+	get_tree().quit()
+
+##   FPS=30 tools/demo/record.sh tiny_rpg --scenario=tinyrpg --seed=11
+## Temp Tiny RPG art (decision 0032): soldier walks + swings, the orc boss walks, winds up (clip stretched to the telegraph), hits the soldier, dies.
+func _run_tinyrpg() -> void:
+	_boss = _arena.get_node("Boss")
+	_overlay(false)
+	_dummy_off(_dummy)
+	_dummy.global_position = _player.global_position + Vector2(900, 0)
+	_boss.passive = true
+	var cam: Camera2D = _player.get_node("Camera")
+	cam.zoom = Vector2(2, 2)
+	cam.reset_smoothing()
+	_aim_at = null
+	_say("Temp art: Tiny RPG soldier, 2D sword + hands on top")
+	await _wait(0.8)
+	_say("Walk (side view only, flipped for left)")
+	for v in [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP]:
+		_hold_vec(v)
+		_player.aim_override = v
+		await _wait(0.6)
+	_hold_vec(Vector2.ZERO)
+	_say("Swing")
+	for v in [Vector2.RIGHT, Vector2.LEFT]:
+		_player.aim_override = v
+		await _swings(2, 0.55)
+	_say("Orc boss: walks, winds up, strikes")
+	_boss.passive = false
+	_player.global_position = _boss.home + Vector2(-160, 40)
+	cam.zoom = Vector2(2, 2)
+	cam.reset_smoothing()
+	_aim_at = _boss
+	await _wait(1.2)
+	var sl := await _boss_attack("slam")
+	await _until(func(): return sl.phase == BossAttack.Phase.IDLE, 4.0)
+	_say("Soldier gets hit (hurt clip + flash)")
+	await _wait(0.8)
+	var sp := await _boss_attack("spread")
+	await _until(func(): return sp.phase == BossAttack.Phase.IDLE, 4.0)
+	await _wait(0.8)
+	_say("Hit the orc: hurt clip, then death")
+	_boss.passive = true
+	_player.global_position = _boss.global_position + Vector2(-50, 0)
+	await _wait(0.5)
+	await _swings(2, 0.6)
+	_boss.health.hp = 1.0
+	await _swings(1, 0.6)
+	await _wait(1.5)
 	get_tree().quit()
 
 ## Run bounce old vs smooth (4x, 4x, 1x): FPS=60 tools/demo/record.sh run_bounce_smooth --scenario=runbounce --seed=21

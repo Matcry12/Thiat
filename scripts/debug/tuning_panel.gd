@@ -172,6 +172,10 @@ func _ready() -> void:
 		{"name": "WeaponVisual", "object": _player.get_node("WeaponVisual")},
 		{"name": "Visual", "object": _player.visual},
 		{"name": "RunDust", "object": _player.get_node("Visual/RunDust")},
+	]
+	if _player.visual.get("rig") != null:
+		_targets.append({"name": "BodyRig", "object": _player.visual.rig})   # per-character body / weapon / hand fit (decision 0028)
+	_targets += [
 		{"name": "Dodge", "object": _dodge},
 		{"name": "Guard", "object": _guard},
 		{"name": "GuardVisual", "object": _guard_visual},

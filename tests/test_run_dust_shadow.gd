@@ -20,6 +20,10 @@ func _init():
 	player.set_physics_process(false)
 	var vis: SpriteActorVisual = player.get_node("Visual")
 	var body := vis.get_node("Body") as AnimatedSprite2D
+	# This test covers the OLD drawn-art path (plain idle/run + code bounce). The player ships the 3D body sheets now;
+	# swapping the SpriteFrames resource back is all it takes (tests/test_player_3d_body.gd covers the new set).
+	vis.rig = load("res://data/body_rigs/drawn_art.tres")   # the old character is one resource swap (rig = frames + body position + weapon fit)
+	vis.set_move_state("idle")
 	var sh := vis.get_node("Shadow") as Sprite2D
 	var dust = vis.get_node("RunDust")
 	var rest_scale := sh.scale

@@ -32,6 +32,10 @@ func _init():
 	await process_frame
 	var player = arena.get_node("Player")
 	player.set_physics_process(false)          # headless mouse sits at (0,0)
+	# These numbers pin the sword MODEL at scale 1 (the hand-tuned original). A character's BodyRig only shrinks the picture
+	# (hitbox world transform is unchanged, see tests/test_body_rig.gd), so measure with the unscaled rig.
+	player.get_node("Visual").rig = load("res://data/body_rigs/drawn_art.tres")
+	await process_frame
 	var wv = arena.get_node("Player/WeaponVisual")
 	var blade = arena.get_node("Player/WeaponVisual/SwingPivot/SwordModel/Art")
 	var hb_shape = arena.get_node("Player/WeaponVisual/SwingPivot/SwordModel/Hitbox/CollisionShape2D")

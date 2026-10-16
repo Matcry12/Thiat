@@ -18,6 +18,8 @@ enum Mode { IDLE, ACTION, STAGGER, DEAD }
 enum Aggro { IDLE, ENGAGED, RETURNING }
 
 @export var move_speed := 110.0
+## Speed (px/s) above which the visual shows the walk / run clip.
+@export var run_anim_speed := 8.0
 ## How often an idle/chasing boss asks its brain (seconds).
 @export var decision_interval := 0.25
 ## Phase 2 starts at this fraction of max hp.
@@ -67,6 +69,7 @@ func _ready() -> void:
 	for c in $Attacks.get_children():
 		if c is BossAttack:
 			_attacks[(c as BossAttack).get_action_name()] = c
+			(c as BossAttack).phase_changed.connect(visual.set_attack_phase)
 	_zone = get_node_or_null(fight_zone_path) as Area2D
 	if _brain == null:   # a brain handed in before _ready wins
 		_brain = get_node_or_null(brain_path) as Brain
@@ -108,6 +111,17 @@ func attack_names() -> Array:
 
 func get_attack(action: String) -> BossAttack:
 	return _attacks.get(action)
+
+## Tells the visual what the body is doing (walking, facing). It decides how that looks; nothing here draws.
+func _process(_delta: float) -> void:
+	if mode == Mode.DEAD:
+		return
+	visual.set_move_state("run" if velocity.length() > run_anim_speed else "idle")
+	var look := velocity if aggro == Aggro.RETURNING and velocity != Vector2.ZERO else ((_target.global_position - global_position) if _target else Vector2.ZERO)
+	if _current and _current.facing_dir() != Vector2.ZERO:
+		look = _current.facing_dir()     # a charge keeps its locked lane direction
+	if look != Vector2.ZERO:
+		visual.set_facing(look.normalized())
 
 func _physics_process(delta: float) -> void:
 	if mode == Mode.DEAD:
@@ -350,6 +364,7 @@ func status_text() -> String:
 		cds.append("%s %.1f" % [n, (_attacks[n] as BossAttack).cooldown_left])
 	lines.append("cooldowns: " + "  ".join(cds))
 	lines.append("aggro: %s  outside: %.1f/%.1fs  home: (%d, %d)" % [Aggro.keys()[aggro].to_lower(), outside_time, leash_delay, roundi(home.x), roundi(home.y)])
+	lines.append(visual.status_text())
 	lines.append("brain: %s -> '%s'" % [_brain.get_script().get_global_name() if _brain else "none", last_decision])
 	if mode == Mode.STAGGER:
 		lines.append("staggered: %.2fs left" % _stagger_left)

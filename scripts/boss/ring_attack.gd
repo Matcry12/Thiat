@@ -42,11 +42,13 @@ func _active_tick(_delta: float) -> bool:
 				_telegraph2.modulate.a = 1.0   # the second warning is now live
 				_stage = 1
 				_t = 0.0
+				phase_changed.emit(get_action_name(), int(Phase.TELEGRAPH), second_telegraph_time)   # the body winds up again
 		1:
 			if _t >= second_telegraph_time:
 				_hitbox2.start_swing()
 				_stage = 2
 				_t = 0.0
+				phase_changed.emit(get_action_name(), int(Phase.ACTIVE), active_time)   # ... and strikes again
 		2:
 			if _t >= active_time:
 				_hitbox2.end_swing()

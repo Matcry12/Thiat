@@ -13,6 +13,10 @@ class_name BossAttack
 
 enum Phase { IDLE, TELEGRAPH, ACTIVE, RECOVERY }
 
+## Every phase change, with that phase's length from the data (0 for IDLE = attack over). The boss forwards it to its
+## visual, which fills the window with an animation: art follows these numbers, never the other way round.
+signal phase_changed(action: String, phase: int, duration: float)
+
 ## Empty = the node's name in lower case ("Slam" -> "slam").
 @export var action_name := ""
 @export var min_phase := 1
@@ -102,6 +106,14 @@ func _on_cancel() -> void:
 func _active_tick(_delta: float) -> bool:
 	return _t >= active_time
 
+## Length of a phase as the visual should plan it. An attack whose ACTIVE time is really a distance (the charge) says so here.
+func _window_time(p: Phase) -> float:
+	return telegraph_time if p == Phase.TELEGRAPH else (active_time if p == Phase.ACTIVE else recovery_time)
+
+## Direction the body must face while this attack runs, or ZERO = follow the player. A charge is locked to its lane.
+func facing_dir() -> Vector2:
+	return Vector2.ZERO
+
 func _cooldown_after() -> float:
 	return cooldown
 
@@ -122,7 +134,9 @@ func _enter(p: Phase) -> void:
 		Phase.TELEGRAPH: _on_telegraph()
 		Phase.ACTIVE: _on_active()
 		Phase.RECOVERY: _on_recovery()
+	phase_changed.emit(get_action_name(), int(p), _window_time(p))
 
 func _finish() -> void:
 	phase = Phase.IDLE
+	phase_changed.emit(get_action_name(), 0, 0.0)
 	cooldown_left = _cooldown_after()

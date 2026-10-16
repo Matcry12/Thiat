@@ -34,6 +34,15 @@ class_name HandsVisual
 @export var draw_time := 0.12
 
 var _model: Node2D
+var _visual_scale := 1.0
+
+## Applied by SpriteActorVisual from the character's BodyRig.
+func apply_rig(r: BodyRig) -> void:
+	hand_radius = r.hand_radius
+	rest_offset_main = r.hand_rest_main
+	rest_offset_off = r.hand_rest_off
+	_visual_scale = r.visual_scale
+	queue_redraw()
 var _aim := 0.0
 var _drawing := false
 var _pull := 0.0     ## 0..1 eased draw amount (code-owned)
@@ -75,7 +84,7 @@ func hand_positions() -> Array[Vector2]:
 		off.global_position if off else rest_off,
 	]
 	if off and _pull > 0.0:
-		out[1] -= _model.global_transform.x.normalized() * draw_pull * _pull
+		out[1] -= _model.global_transform.x.normalized() * draw_pull * _visual_scale * _pull
 	return out
 
 func _process(delta: float) -> void:

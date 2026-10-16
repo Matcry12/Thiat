@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="BodyRig" format=3]
+
+[ext_resource type="Script" path="res://scripts/visual/body_rig.gd" id="1"]
+[ext_resource type="SpriteFrames" path="res://assets/characters/player/player_frames.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+display_name = "old drawn art"
+sprite_frames = ExtResource("2")

@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://bdm85dlwvqabq" path="res://scripts/visual/weapon_visual.gd" id="7"]
 [ext_resource type="Texture2D" path="res://assets/characters/player_character_template.png" id="8"]
 [ext_resource type="SpriteFrames" path="res://assets/characters/player/player_frames.tres" id="8b"]
+[ext_resource type="Resource" path="res://data/body_rigs/tiny_soldier.tres" id="rig"]
 [ext_resource type="Texture2D" uid="uid://c850m4ii26ok3" path="res://assets/placeholder/shadow.png" id="9"]
 [ext_resource type="Script" uid="uid://cfhocpi452k6r" path="res://scripts/components/health.gd" id="11"]
 [ext_resource type="Script" uid="uid://cu3cx00235xph" path="res://scripts/components/dodge.gd" id="12"]
@@ -42,6 +43,7 @@ shape = SubResource("BodyShape")
 
 [node name="Visual" type="Node2D" parent="." unique_id=123694702]
 script = ExtResource("2")
+rig = ExtResource("rig")
 body_texture = ExtResource("8")
 shadow_texture = ExtResource("9")
 
@@ -49,8 +51,6 @@ shadow_texture = ExtResource("9")
 position = Vector2(0, -19)
 scale = Vector2(2, 2)
 sprite_frames = ExtResource("8b")
-animation = &"idle"
-autoplay = "idle"
 
 [node name="Shadow" type="Sprite2D" parent="Visual" unique_id=882274028]
 z_index = -1

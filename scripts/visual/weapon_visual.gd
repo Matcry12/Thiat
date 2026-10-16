@@ -60,6 +60,43 @@ var weapon: WeaponData: set = _set_weapon
 @onready var _swing_pivot: Node2D = get_node_or_null("SwingPivot")
 
 var _model: Node2D
+## The character's rig (set by SpriteActorVisual): weapon/hand visual scale. Null = the old big body (scale 1).
+var rig: BodyRig
+
+## Applies a BodyRig: rescales the weapon ART (never the hitbox / muzzle), and tells SwingFx the crescent scale.
+func apply_rig(r: BodyRig) -> void:
+	rig = r
+	_apply_model_scale()      # NOT the pivot position: WeaponVisual is the gameplay anchor of the hitbox / muzzle, it never moves per character
+	var fx := get_node_or_null("SwingFx")
+	if fx and fx.has_method("set_slash_scale"):
+		fx.set_slash_scale(rig.slash_scale if rig else 1.0)
+	if _guarding:
+		_pivot_pos = _guard_offset()
+
+func visual_scale() -> float:
+	return rig.visual_scale if rig else 1.0
+
+## Scales the model's picture and hand markers about the grip (model origin). Everything that is GAMEPLAY (an Area2D hitbox, a Muzzle,
+## any other Marker2D) gets the inverse scale, so its WORLD transform is exactly what it was at scale 1.
+func _apply_model_scale() -> void:
+	if _model == null:
+		return
+	var s := visual_scale()
+	_model.scale = Vector2.ONE * s
+	for c in _model.get_children():
+		var n := c as Node2D
+		if n == null:
+			continue
+		if not n.has_meta("rig_base"):
+			n.set_meta("rig_base", [n.position, n.scale])
+		var keep_world := n is Area2D or n.name == &"Muzzle" or (n is Marker2D and n.name != &"HandMain" and n.name != &"HandOff")
+		var base: Array = n.get_meta("rig_base")
+		if keep_world:
+			n.position = base[0] / s
+			n.scale = base[1] / s
+		else:
+			n.position = base[0]
+			n.scale = base[1]
 
 var aim_angle := 0.0
 
@@ -128,6 +165,7 @@ func _rebuild_model() -> void:
 		_model = weapon.model.instantiate()
 		_model.modulate = weapon.model_tint   # copper tools reuse a model, tinted (decision 0031)
 		_swing_pivot.add_child(_model)
+		_apply_model_scale()      # before model_changed: the hitbox / muzzle are already back at their real world transform
 	model_changed.emit(_model)
 
 func _rest_angle() -> float:
@@ -149,7 +187,7 @@ func _apply_all() -> void:
 ## rotation): drag WeaponVisual to move the hand, or the model's Art to move
 ## the grip — never SwingPivot, or the game will move it back.
 func _guard_offset() -> Vector2:
-	return Vector2(weapon.guard_forward, weapon.guard_side) if weapon else Vector2.ZERO
+	return Vector2(weapon.guard_forward, weapon.guard_side) * visual_scale() if weapon else Vector2.ZERO
 
 func _set_preview_guard(v: bool) -> void:
 	preview_guard_pose = v
