@@ -1,0 +1,52 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/station.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/components/hurtbox.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/world/craft_station.gd" id="3"]
+[ext_resource type="Texture2D" path="res://assets/stations/furnace.png" id="4"]
+[ext_resource type="Script" path="res://scripts/world/furnace.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/world/furnace_cue.gd" id="6"]
+
+[sub_resource type="RectangleShape2D" id="Body"]
+resource_local_to_scene = true
+size = Vector2(44, 30)
+
+[sub_resource type="RectangleShape2D" id="Hurt"]
+resource_local_to_scene = true
+size = Vector2(60, 46)
+
+[node name="Furnace" type="StaticBody2D"]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1")
+art = ExtResource("4")
+art_region = Rect2(1, 87, 30, 41)
+color = Color(0.7, 0.35, 0.25, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Body")
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 32
+collision_mask = 0
+script = ExtResource("2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+shape = SubResource("Hurt")
+
+[node name="CraftStation" type="Node" parent="."]
+script = ExtResource("3")
+station_id = &"furnace"
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Art" type="Sprite2D" parent="Visual"]
+
+[node name="Placeholder" type="ColorRect" parent="Visual"]
+mouse_filter = 2
+
+[node name="ProgressCue" type="Node2D" parent="Visual"]
+script = ExtResource("6")
+
+[node name="Furnace" type="Node" parent="."]
+script = ExtResource("5")

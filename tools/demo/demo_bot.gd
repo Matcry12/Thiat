@@ -60,7 +60,7 @@ func _ready() -> void:
 
 	# The storyboards use screen coordinates: run them on the screen-sized arena with the old layout.
 	# The showcase scenarios use the real big map instead.
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory", "w4_crafting"]:
 		_arena = load("res://scenes/arena.tscn").instantiate()
 		(_arena.get_node("ArenaMap") as ArenaMap).map_seed = _seed
 	else:
@@ -114,7 +114,7 @@ var _cap_gen := 0
 func _build_captions() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory", "w4_crafting"]:
 		# Small, bottom-centre, semi-transparent; each caption fades out by itself.
 		_cap_panel = PanelContainer.new()
 		_cap_panel.anchor_left = 0.5
@@ -269,6 +269,7 @@ func _run() -> void:
 		"island": await _run_island()
 		"gather": await _run_gather()
 		"w3_inventory": await _run_w3_inventory()
+		"w4_crafting": await _run_w4_crafting()
 		_: await _run_guard()
 
 func _run_guard() -> void:
@@ -1525,3 +1526,231 @@ func _run_w3_inventory() -> void:
 	await _tap("slot_2")
 	await _wait(2.5)
 	get_tree().quit()
+
+# ---------------------------------------------------------------------------
+# W4 crafting: punch a tree -> workbench -> stone pickaxe -> copper -> furnace -> smelt -> anvil -> copper sword.
+# The grind (many trees / rocks) is skipped with a caption: materials are topped up off-camera.
+func _slot_of(id: StringName) -> int:
+	var inv: Inventory = _player.get_node("Inventory")
+	for i in Inventory.HOTBAR:
+		if inv.slot_item(i) != null and inv.slot_item(i).id == id:
+			return i
+	return -1
+
+## Puts the (scripted) mouse over a recipe icon: the tooltip shows its name and the ingredient icons.
+func _hover_recipe(id: StringName) -> void:
+	var hud: HUD = _arena.get_node("HUD")
+	var win: CraftWindow = hud.craft_window()
+	for i in win.shown_recipes().size():
+		if win.shown_recipes()[i].result.id == id:
+			hud.tooltip().mouse_override = win.recipe_slots()[i].get_global_rect().get_center()
+			await _wait(0.8)
+			return
+	print("[demo] !! recipe not shown: ", id)
+
+func _unhover() -> void:
+	(_arena.get_node("HUD") as HUD).tooltip().mouse_override = Vector2(-1, -1)
+
+## Clicks the recipe icon. `straight` = shift click (into the inventory); otherwise the item lands on the cursor.
+func _click_recipe(id: StringName, straight := true) -> void:
+	var win: CraftWindow = _arena.get_node("HUD").craft_window()
+	for i in win.shown_recipes().size():
+		if win.shown_recipes()[i].result.id == id:
+			win.recipe_slots()[i].slot_clicked.emit(i, MOUSE_BUTTON_LEFT, straight)
+			await _wait(0.8)
+			return
+	print("[demo] !! recipe not shown: ", id)
+
+## Puts the stack on the cursor into hotbar-copy slot `i` (a click on the slot).
+func _put_in_hotbar(i: int) -> void:
+	var win: CraftWindow = _arena.get_node("HUD").craft_window()
+	win.hotbar().slots()[i].slot_clicked.emit(i, MOUSE_BUTTON_LEFT, false)
+	await _wait(0.6)
+
+## 0 = Crafting tab, 1 = Furnace tab (they only show when both are possible).
+func _open_tab(idx: int) -> void:
+	var win: CraftWindow = _arena.get_node("HUD").craft_window()
+	win.tab_slots()[idx].slot_clicked.emit(idx, MOUSE_BUTTON_LEFT, false)
+	await _wait(0.5)
+
+## Turns until the ghost is on a free spot, so the demo never aims a station into a tree.
+func _aim_free_spot() -> void:
+	var placer: Placer = _player.get_node("Placer")
+	for k in 16:
+		_player.aim_override = Vector2.RIGHT.rotated(TAU * k / 16.0)
+		await get_tree().physics_frame
+		await get_tree().physics_frame
+		if placer.last_refusal == "":
+			return
+	print("[demo] !! no free spot found")
+
+func _place_selected(id: StringName) -> void:
+	await _tap("slot_%d" % (_slot_of(id) + 1))
+	await _wait(0.3)
+	await _aim_free_spot()
+	await _wait(1.2)   # the ghost is visible
+	await _tap("attack")
+	await _wait(0.8)
+
+func _shot(file: String) -> void:
+	if DisplayServer.get_name() == "headless":   # a dry run draws nothing
+		return
+	await RenderingServer.frame_post_draw
+	get_viewport().get_texture().get_image().save_png("res://docs/demo/" + file)
+
+func _run_w4_crafting() -> void:
+	_arena.get_node("Boss").passive = true
+	_overlay(false)
+	var m: ArenaMap = _arena.get_node("ArenaMap")
+	var inv: Inventory = _player.get_node("Inventory")
+	var hud: HUD = _arena.get_node("HUD")
+	var wood: ItemData = load("res://data/items/wood.tres")
+	var stone: ItemData = load("res://data/items/stone.tres")
+	var ore: ItemData = load("res://data/items/copper_ore.tres")
+	_aim_at = null
+	_player.aim_override = Vector2.RIGHT
+	var tree := _nearest_node(&"tree", m.home_point())
+	_player.global_position = tree.global_position + Vector2(-44, 0)
+	_player.velocity = Vector2.ZERO
+	await _wait(1.0)
+	_say("Start: a wooden sword and nothing else", "everything else is crafted")
+	await _wait(2.0)
+	_say("Press 5 (bare hands), punch a tree", "about 6 punches")
+	await _tap("slot_5")
+	await _punch_until_broken(tree)
+	await _wait(1.5)
+	_say("(skipping the grind: wood and stone added)", "")
+	inv.add(wood, 20)
+	inv.add(stone, 20)
+	await _wait(1.8)
+	_say("Tab: the window. Hover an icon", "its ingredients show in the tooltip")
+	await _tap("bag")
+	await _wait(1.0)
+	await _hover_recipe(&"workbench")
+	await _shot("w4_crafting_panel_hand.png")
+	await _wait(1.2)
+	_say("Click the workbench icon: it lands on the cursor", "10 wood are taken now; click a slot to put it down")
+	_unhover()
+	await _click_recipe(&"workbench", false)   # the workbench is on the cursor...
+	var wbag: BagPanel = _arena.get_node("HUD").bag()
+	wbag.mouse_override = Vector2(640, 380)   # a recording has no pointer: put it over the bag
+	await _wait(0.4)
+	await _shot("w4_crafting_cursor.png")
+	wbag.mouse_override = Vector2(-1, -1)
+	await _put_in_hotbar(1)                    # ...click a slot to put it down
+	await _wait(1.5)
+	await _tap("bag")
+	await _wait(0.5)
+	_say("Select the workbench and click", "a ghost shows where it goes")
+	await _place_selected(&"workbench")
+	_say("Stand near it: Tab again", "the workbench recipes appear")
+	await _tap("bag")
+	await _wait(1.2)
+	await _wait(0.6)
+	await _shot("w4_crafting_panel_workbench.png")   # no tooltip: the plain window at a workbench
+	await _hover_recipe(&"stone_pickaxe")
+	await _shot("w4_crafting_tooltip.png")           # the same window, the pointer over a recipe
+	_unhover()
+	await _wait(1.0)
+	_say("Stone pickaxe: 4 wood + 6 stone", "dimmed rows = you lack something")
+	await _click_recipe(&"stone_pickaxe")
+	await _wait(1.5)
+	await _click_recipe(&"furnace")
+	await _wait(1.5)
+	await _tap("bag")
+	await _wait(0.5)
+	var cu := _nearest_node(&"copper_rock", _player.global_position)
+	_player.global_position = cu.global_position + Vector2(-34, 0)
+	_player.velocity = Vector2.ZERO
+	await _wait(0.8)
+	_say("Pickaxe in hand: mine copper", "")
+	await _tap("slot_%d" % (_slot_of(&"stone_pickaxe") + 1))
+	await _wait(0.4)
+	await _punch_until_broken(cu, 20)
+	await _wait(1.5)
+	inv.add(ore, 12 - inv.count(&"copper_ore"))
+	_say("(skipping the grind: more ore added)", "")
+	await _wait(1.5)
+	_say("Back to the workbench", "stations only work when you stand near them")
+	var bench: Station = get_tree().get_first_node_in_group("station")
+	_player.global_position = bench.global_position + Vector2(-60, 30)
+	_player.velocity = Vector2.ZERO
+	await _wait(1.5)
+	_say("Place the furnace", "same way: select, ghost, click")
+	await _place_selected(&"furnace")
+	_say("Tab: the Furnace tab shows", "shift click ore into it")
+	await _tap("bag")
+	await _wait(1.0)
+	await _open_tab(1)
+	var f: Furnace = get_tree().get_first_node_in_group("furnace")
+	var ore_slot := -1
+	for i in Inventory.SIZE:
+		if inv.slot_item(i) != null and inv.slot_item(i).id == &"copper_ore":
+			ore_slot = i
+	f.shift_in_from_slot(inv, ore_slot)
+	await _wait(1.0)
+	_say("It smelts one bar every 3 s", "even if you walk away; a bar above it shows progress")
+	await _wait(4.0)
+	await _shot("w4_crafting_furnace.png")
+	var tp: CanvasLayer = _arena.get_node("TuningPanel")
+	tp.visible = true   # F3 on top of bag + list + furnace box: the status text must not cover the icons
+	await _wait(0.8)
+	await _shot("w4_crafting_f3.png")
+	tp.visible = false
+	await _open_tab(0)
+	f.finish_all()
+	_say("(F3 'Finish smelting' skips the wait)", "")
+	await _wait(1.5)
+	f.shift_output(inv)
+	await _wait(0.8)
+	_say("Anvil: 5 copper bars at the workbench", "")
+	await _click_recipe(&"anvil")
+	await _hover_recipe(&"copper_sword")   # no anvil near yet: dim, and the tooltip shows the anvil in red
+	await _shot("w4_crafting_tooltip_station.png")
+	_unhover()
+	await _wait(1.2)
+	await _tap("bag")
+	await _wait(0.4)
+	await _place_selected(&"anvil")
+	for st: Station in get_tree().get_nodes_in_group("station"):   # stand at the anvil: its recipes are listed first
+		if st.craft_station().station_id == &"anvil":
+			_player.global_position = st.global_position + Vector2(-50, 24)
+			_player.velocity = Vector2.ZERO
+	await _wait(0.4)
+	_say("Tab: copper sword at the anvil", "6 copper bars + 3 wood")
+	await _tap("bag")
+	await _wait(1.0)
+	await _open_tab(0)
+	await _shot("w4_crafting_panel_anvil.png")
+	await _click_recipe(&"copper_sword")
+	await _wait(1.8)
+	await _tap("bag")
+	await _wait(0.5)
+	_say("Press the new slot: the copper sword", "stronger than the wooden one")
+	await _tap("slot_%d" % (_slot_of(&"copper_sword") + 1))
+	_player.aim_override = Vector2.RIGHT
+	await _wait(2.0)
+	await _tap("attack")
+	await _wait(1.5)
+	_say("Pickaxe hit on a station picks it up", "")
+	var wb: Station
+	for st: Station in get_tree().get_nodes_in_group("station"):
+		if st.craft_station().station_id == &"anvil":
+			wb = st
+	await _tap("slot_%d" % (_slot_of(&"stone_pickaxe") + 1))
+	var others := Vector2.ZERO   # stand on the side of the anvil away from the others: one swing takes the nearest one
+	var n_others := 0
+	for st: Station in get_tree().get_nodes_in_group("station"):
+		if st != wb:
+			others += st.global_position
+			n_others += 1
+	var away := (wb.global_position - others / maxi(n_others, 1)).normalized()
+	_player.global_position = wb.global_position + away * 55.0
+	_player.velocity = Vector2.ZERO
+	await _wait(0.5)
+	_player.aim_override = wb.global_position - _player.global_position
+	await _tap("attack")
+	await _wait(2.0)
+	print("[demo] end: copper_sword %d, anvil back in the bag %d, stations left %d" % [inv.count(&"copper_sword"), inv.count(&"anvil"), get_tree().get_nodes_in_group("station").size()])
+	get_tree().quit()
+

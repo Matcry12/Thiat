@@ -132,3 +132,37 @@ The slot itself is the scene `scenes/ui/item_slot.tscn`. Its child nodes are nam
 in the editor. All of it is also live-tunable in F3 (`InventorySkin` section).
 
 The HUD has no text words. The health bar is `HealthBar` (`fill_texture` and `frame_style` slots as before) and shows its number only in the hover tooltip. Where the blocks sit: `margin_x`, `margin_y` on the `HUD` node (F3 section `HUD`).
+
+## Stations (workbench, furnace, anvil) and the crafting panel
+
+**Station art.** Each station is a scene in `scenes/stations/` (`workbench.tscn`, `furnace.tscn`, `anvil.tscn`). Click the root node and look in the Inspector:
+
+| What | Field on the station root | Notes |
+|---|---|---|
+| The picture | `art` (a whole PNG) + `art_region` (the rectangle inside it) + `pixel_scale` | Today: copies of the Pixel Crawler sheets in `assets/stations/`. Change `art_region` to pick another look on the sheet, or point `art` at your own PNG and set `art_region` to its full size |
+| Placeholder | `color` | Shown as a plain box while `art` is empty |
+| Size on the ground | the scene's `CollisionShape2D` (and the `Hurtbox/CollisionShape2D` a little bigger) | One owner: the placing check and the ghost box read the body shape. The picture is never the body: resize the shapes, not the art |
+| Craft distance | `CraftStation` child: `craft_radius` | F1 draws it as a magenta circle |
+| Inventory icon | `data/items/workbench.tres` (and `furnace`, `anvil`): `icon` | Today a slice of the same sheet |
+| Furnace progress bar (in the world) | `Visual/ProgressCue` on `furnace.tscn`: `bar_size`, `bar_offset`, `bg_color`, `fill_color`, `glow_color` | A small bar above the furnace and a warm glow on the picture while it smelts. Replace the node with a sprite or particles and nothing else changes |
+
+The anvil picture is a small drawn placeholder (`assets/stations/anvil.png`, 32 x 20): none of the Pixel Crawler anvil sheets shows a plain anvil. Replace the file (or `art` / `art_region`) when you have one.
+
+The ghost colours are on the player's `Placer` node: `ok_color`, `bad_color`, `outline_ok`, `outline_bad`, `outline_width`.
+
+The art sits with its feet on the bottom edge of the footprint, centred. If your picture is taller, nothing else needs to change.
+
+**Crafting window skin** (same file as the bag: `data/ui/inventory_skin.tres`, group "Crafting window"). `Tab` / `I` opens one centred window: a grid of recipe icons on top, bag and a hotbar copy below.
+
+| What | Field | Notes |
+|---|---|---|
+| Whole window background | `window_texture`, `window_patch_margin`, `window_pad`, `window_gap` | Nine-patch. Empty = flat `window_color` / `window_border` |
+| Crafting / furnace area frame | `section_texture`, `section_patch_margin`, `section_pad`, `craft_area_height` | Empty = flat `section_color` / `section_border` |
+| Recipe icons | `craft_slot_size`, `craft_slot_gap`, `craft_grid_columns`, `craft_grid_rows` | The icons are the same `ItemSlot` scene as the hotbar, so the slot frame art shows here too |
+| Lit / dim / flash | `craft_lit_color`, `craft_dim_color` (45% alpha), `craft_lit_backdrop` (light square), `craft_dim_backdrop` (dark square), `craft_flash_color`, `craft_flash_time` | Lit and dim never depend on the art's own colours: a lit icon sits on a light square, a dim one on a dark square and is faded. Flash = clicked while dim |
+| Held stack (cursor, bag and crafting) | `cursor_offset`, `cursor_scale`, `cursor_shadow_size`, `cursor_shadow_color`, `cursor_shadow_offset` | Drawn offset from the pointer, a bit bigger, with a soft shadow: it reads as lifted |
+| Ingredient icons in the hover | `tooltip_icon_size`, `craft_short_color`, `craft_enough_color` | The need count is white, or red when you are short |
+| Furnace tab | `furnace_slot_size`, `furnace_arrow_width`, `furnace_arrow_height`, `furnace_arrow_color`, `furnace_fill_color` | Input slot, a drawn progress arrow that fills, output slot |
+| Tabs and station marker | `tab_size`, `craft_tab_icon` (hammer), `hand_icon` (hand), `tab_color`, `hand_color`, `furnace_tab_glow_color`, `furnace_tab_pulse_speed` | Placeholder PNGs `hand.png`, `hammer.png` in `assets/ui/placeholder/`. The marker only shows when there are no tabs. The Furnace tab pulses while the furnace works. The furnace tab and the marker show the station's item `icon` (found through the recipes) |
+
+New copper tools use the stone tool models, tinted: `model_tint` on the weapon file in `data/weapons/` (white = as drawn). When you have real copper art, point `model` at it and set `model_tint` back to white.

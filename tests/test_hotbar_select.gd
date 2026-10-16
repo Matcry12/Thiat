@@ -38,6 +38,7 @@ func _init() -> void:
 	boss.passive = true
 	await process_frame
 	var player = arena.get_node("Player")
+	player.get_node("Inventory").give_dev_kit()   # W4: the start kit is only a wooden sword (decision 0031)
 	var lo: Loadout = player.get_node("Loadout")
 	var inv: Inventory = player.get_node("Inventory")
 	var wh: WeaponHolder = player.get_node("WeaponHolder")

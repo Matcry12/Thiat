@@ -1,0 +1,44 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/station.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/components/hurtbox.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/world/craft_station.gd" id="3"]
+[ext_resource type="Texture2D" path="res://assets/stations/workbench.png" id="4"]
+
+[sub_resource type="RectangleShape2D" id="Body"]
+resource_local_to_scene = true
+size = Vector2(56, 28)
+
+[sub_resource type="RectangleShape2D" id="Hurt"]
+resource_local_to_scene = true
+size = Vector2(72, 44)
+
+[node name="Workbench" type="StaticBody2D"]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1")
+art = ExtResource("4")
+art_region = Rect2(0, 84, 32, 28)
+color = Color(0.6, 0.42, 0.25, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Body")
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 32
+collision_mask = 0
+script = ExtResource("2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+shape = SubResource("Hurt")
+
+[node name="CraftStation" type="Node" parent="."]
+script = ExtResource("3")
+station_id = &"workbench"
+
+[node name="Visual" type="Node2D" parent="."]
+
+[node name="Art" type="Sprite2D" parent="Visual"]
+
+[node name="Placeholder" type="ColorRect" parent="Visual"]
+mouse_filter = 2

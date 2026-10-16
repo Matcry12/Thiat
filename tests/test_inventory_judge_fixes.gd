@@ -27,6 +27,7 @@ func _init() -> void:
 	await process_frame
 	boss.aggro = Boss.Aggro.IDLE
 	var player = arena.get_node("Player")
+	player.get_node("Inventory").give_dev_kit()   # W4: the start kit is only a wooden sword (decision 0031)
 	player.set_physics_process(false)
 	var inv: Inventory = player.get_node("Inventory")
 	var lo: Loadout = player.get_node("Loadout")

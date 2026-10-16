@@ -287,3 +287,174 @@ extends Resource
 @export var dodge_color := Color(0.35, 0.6, 0.9)
 @export var skill_color := Color(0.95, 0.8, 0.3)
 @export var guard_color := Color(0.65, 0.68, 0.75)
+
+@export_group("Crafting window (W4, decision 0031)")
+@export var window_texture: Texture2D:
+	set(v):
+		window_texture = v
+		emit_changed()   ## the centred crafting window: nine-patch; empty = flat placeholder
+@export var section_texture: Texture2D:
+	set(v):
+		section_texture = v
+		emit_changed()   ## frame of the crafting / furnace area inside the window: nine-patch; empty = flat
+@export var craft_tab_icon: Texture2D:
+	set(v):
+		craft_tab_icon = v
+		emit_changed()   ## the Crafting tab (empty = a coloured square)
+@export var hand_icon: Texture2D:
+	set(v):
+		hand_icon = v
+		emit_changed()   ## station marker when you craft by hand (empty = a coloured square)
+@export var window_patch_margin := 8:
+	set(v):
+		window_patch_margin = v
+		emit_changed()
+@export var window_pad := 10:
+	set(v):
+		window_pad = v
+		emit_changed()   ## inner margin of the window, px
+@export var window_gap := 8:
+	set(v):
+		window_gap = v
+		emit_changed()   ## between the window parts, px
+@export var section_patch_margin := 6:
+	set(v):
+		section_patch_margin = v
+		emit_changed()
+@export var section_pad := 6:
+	set(v):
+		section_pad = v
+		emit_changed()   ## inner margin of the crafting / furnace area, px
+@export var craft_area_height := 112:
+	set(v):
+		craft_area_height = v
+		emit_changed()   ## height of the crafting area (the same for Crafting and Furnace), px
+@export var craft_slot_size := 44:
+	set(v):
+		craft_slot_size = v
+		emit_changed()   ## recipe icons and ingredient slots, px
+@export var furnace_slot_size := 56:
+	set(v):
+		furnace_slot_size = v
+		emit_changed()   ## the big result slot, px
+@export var craft_slot_gap := 4:
+	set(v):
+		craft_slot_gap = v
+		emit_changed()   ## between icons in the recipe grid and the ingredient grid, px
+@export var craft_grid_columns := 9:
+	set(v):
+		craft_grid_columns = v
+		emit_changed()   ## result icons per row in the recipe grid
+@export var craft_grid_rows := 2:
+	set(v):
+		craft_grid_rows = v
+		emit_changed()   ## rows shown before the recipe grid scrolls
+@export var furnace_arrow_width := 60:
+	set(v):
+		furnace_arrow_width = v
+		emit_changed()   ## px
+@export var furnace_arrow_height := 22:
+	set(v):
+		furnace_arrow_height = v
+		emit_changed()   ## px, the drawn triangle
+@export var tab_size := 36:
+	set(v):
+		tab_size = v
+		emit_changed()   ## the tab / station-marker squares, px
+@export var window_color := Color(0.07, 0.09, 0.14, 0.96):
+	set(v):
+		window_color = v
+		emit_changed()
+@export var window_border := Color(0.35, 0.4, 0.55):
+	set(v):
+		window_border = v
+		emit_changed()
+@export var section_color := Color(0.12, 0.14, 0.2, 0.8):
+	set(v):
+		section_color = v
+		emit_changed()
+@export var section_border := Color(0.3, 0.34, 0.48):
+	set(v):
+		section_border = v
+		emit_changed()
+@export var craft_dim_color := Color(1, 1, 1, 0.45):
+	set(v):
+		craft_dim_color = v
+		emit_changed()   ## recipe icon / result slot tint when you lack the items
+@export var craft_lit_color := Color(1, 1, 1, 1):
+	set(v):
+		craft_lit_color = v
+		emit_changed()   ## recipe icon tint when you can craft it
+@export var furnace_arrow_color := Color(0.9, 0.9, 0.9, 0.9):
+	set(v):
+		furnace_arrow_color = v
+		emit_changed()
+@export var furnace_fill_color := Color(1.0, 0.62, 0.2):
+	set(v):
+		furnace_fill_color = v
+		emit_changed()   ## the progress arrow fill
+@export var craft_short_color := Color(1.0, 0.35, 0.3):
+	set(v):
+		craft_short_color = v
+		emit_changed()   ## ingredient count when you have too few
+@export var craft_enough_color := Color(1, 1, 1):
+	set(v):
+		craft_enough_color = v
+		emit_changed()   ## ingredient count when you have enough
+@export var tab_color := Color(0.55, 0.6, 0.75):
+	set(v):
+		tab_color = v
+		emit_changed()   ## Crafting tab square while there is no icon
+@export var hand_color := Color(0.8, 0.7, 0.55):
+	set(v):
+		hand_color = v
+		emit_changed()   ## station marker square while there is no icon
+@export var furnace_tab_glow_color := Color(1.5, 1.1, 0.7):
+	set(v):
+		furnace_tab_glow_color = v
+		emit_changed()   ## the Furnace tab pulses to this while the furnace smelts or has output ready (>1 brightens)
+@export var furnace_tab_pulse_speed := 5.0:
+	set(v):
+		furnace_tab_pulse_speed = v
+		emit_changed()
+@export var craft_flash_color := Color(1.0, 0.3, 0.3):
+	set(v):
+		craft_flash_color = v
+		emit_changed()   ## a dimmed recipe icon flashes this when you click it
+@export var craft_flash_time := 0.25:
+	set(v):
+		craft_flash_time = v
+		emit_changed()
+@export var tooltip_icon_size := 28:
+	set(v):
+		tooltip_icon_size = v
+		emit_changed()   ## ingredient icons in a recipe's hover tooltip
+@export var craft_lit_backdrop := Color(0.72, 0.78, 0.9, 0.95):
+	set(v):
+		craft_lit_backdrop = v
+		emit_changed()   ## behind a craftable icon: a light square, so dark art (the anvil) still reads as lit
+@export var craft_dim_backdrop := Color(0.04, 0.05, 0.08, 0.95):
+	set(v):
+		craft_dim_backdrop = v
+		emit_changed()   ## behind a dimmed icon: a dark square (the whole slot is also tinted by craft_dim_color)
+@export_group("Held stack (the cursor)")
+@export var cursor_offset := Vector2(8, 8):
+	set(v):
+		cursor_offset = v
+		emit_changed()   ## the held stack is drawn this far from the pointer, px
+@export var cursor_scale := 1.1:
+	set(v):
+		cursor_scale = v
+		emit_changed()
+@export var cursor_shadow_size := 6:
+	set(v):
+		cursor_shadow_size = v
+		emit_changed()
+@export var cursor_shadow_color := Color(0, 0, 0, 0.5):
+	set(v):
+		cursor_shadow_color = v
+		emit_changed()
+@export var cursor_shadow_offset := Vector2(3, 4):
+	set(v):
+		cursor_shadow_offset = v
+		emit_changed()

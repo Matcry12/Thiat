@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="RecipeData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/recipe_data.gd" id="r"]
+[ext_resource type="Script" path="res://scripts/items/ingredient_data.gd" id="g"]
+[ext_resource type="Resource" path="res://data/items/furnace.tres" id="i_furnace"]
+[ext_resource type="Resource" path="res://data/items/stone.tres" id="i_stone"]
+[ext_resource type="Resource" path="res://data/items/wood.tres" id="i_wood"]
+
+[sub_resource type="Resource" id="G0"]
+script = ExtResource("g")
+item = ExtResource("i_stone")
+count = 10
+
+[sub_resource type="Resource" id="G1"]
+script = ExtResource("g")
+item = ExtResource("i_wood")
+count = 4
+
+[resource]
+script = ExtResource("r")
+order = 13
+result = ExtResource("i_furnace")
+ingredients = Array[ExtResource("g")]([SubResource("G0"), SubResource("G1")])
+station = &"workbench"

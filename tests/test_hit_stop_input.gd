@@ -67,7 +67,7 @@ func _init():
 	var left_before: float = guard._timer
 	fx.stop.request(12)
 	while fx.stop.is_active():
-		await process_frame
+		await physics_frame     # count exactly the physics ticks lost; process_frame can run extra ticks on a slow headless frame
 	var lost: float = left_before - guard._timer
 	check("parry window lost %.3fs to a 12-frame freeze (<0.02)" % lost, lost < 0.02 and guard.state == Guard.State.PARRY)
 	var hp: float = health.hp + health.shield

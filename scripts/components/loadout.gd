@@ -43,6 +43,11 @@ func _ready() -> void:
 	if _inventory:
 		_inventory.changed.connect(sync)   # the start kit arrives with Inventory._ready, after this
 
+## Treats the next sync as the first one: armed with the first weapon (F3 "Give W3 kit", tests).
+func rearm() -> void:
+	_synced = false
+	sync()
+
 ## Hotbar slot of weapons[i] (-1 if none).
 func weapon_slot(i: int) -> int:
 	return _weapon_slots[i] if i >= 0 and i < _weapon_slots.size() else -1

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/ui/placeholder/wooden_sword.png" id="icon"]
+[ext_resource type="Resource" path="res://data/weapons/wooden_sword.tres" id="w"]
+
+[resource]
+script = ExtResource("1")
+id = &"wooden_sword"
+display_name = "Wooden Sword"
+icon = ExtResource("icon")
+color = Color(0.7, 0.5, 0.3, 1)
+category = "weapon"
+max_stack = 1
+weapon = ExtResource("w")

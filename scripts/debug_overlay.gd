@@ -178,6 +178,18 @@ func _on_draw() -> void:
 		if hcs and hcs.shape:
 			_draw_shape(hcs.shape, hcs.global_transform, Color(0.3, 1.0, 0.4, 0.6), 1.0)
 
+	# Stations (decision 0031): craft radius (magenta; thicker when the player is inside), body and the pickup hurtbox.
+	for cst: CraftStation in get_tree().get_nodes_in_group("craft_station"):
+		var inside := _player != null and cst.reaches(_player.global_position)
+		_draw_ground_circle(cst.world_pos(), cst.craft_radius, Color(1.0, 0.4, 0.9, 0.9 if inside else 0.5), 2.0 if inside else 1.0)
+	for st: Station in get_tree().get_nodes_in_group("station"):
+		var scs := st.get_node_or_null("CollisionShape2D") as CollisionShape2D
+		if scs and scs.shape:
+			_draw_shape(scs.shape, scs.global_transform, Color(1.0, 0.8, 0.2), 2.0)
+		var shcs := st.get_node_or_null("Hurtbox/CollisionShape2D") as CollisionShape2D
+		if shcs and shcs.shape:
+			_draw_shape(shcs.shape, shcs.global_transform, Color(0.3, 1.0, 0.4, 0.6), 1.0)
+
 	# Gathering: the magnet (pulls drops in) and pickup (banks them) circles around the player.
 	var col := get_tree().get_first_node_in_group("collector") as Collector
 	if col and _player:

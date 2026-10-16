@@ -28,8 +28,8 @@ func _init() -> void:
 	arena.get_node("Boss").passive = true
 	await process_frame
 	var hud: HUD = arena.get_node("HUD")
-	var hb := hud.hotbar()
 	var bag := hud.bag()
+	var hb := hud.craft_window().hotbar()   # the bag opens inside the window: its hotbar copy is the one on screen
 	var inv: Inventory = arena.get_node("Player/Inventory")
 	bag.toggle()
 	for i in 3:

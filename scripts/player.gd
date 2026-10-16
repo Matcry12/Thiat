@@ -21,6 +21,7 @@ extends CharacterBody2D
 @onready var guard_visual: GuardVisual = $GuardVisual
 @onready var loadout: Loadout = $Loadout
 @onready var skill_slot: SkillSlot = $SkillSlot
+@onready var placer: Placer = $Placer
 
 var aim_direction := Vector2.RIGHT
 ## Automation seam, NOT gameplay: when non-zero, aim comes from here instead of
@@ -118,7 +119,11 @@ func _physics_process(delta: float) -> void:
 
 	if Input.is_action_just_pressed("attack") and guard.can_attack() and not loadout.is_casting() \
 			and not skill_slot.is_active() and not mouse_over_ui():
-		weapon_holder.try_attack()
+		# A station in the selected slot: the click puts it down instead of swinging (decision 0031).
+		if placer.is_holding():
+			placer.try_place()
+		else:
+			weapon_holder.try_attack()
 
 	# E skill. Refused while guarding, dashing, casting a swap, mid-swing; the
 	# slot itself refuses a second skill or one on cooldown.

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/stations/furnace.png" id="atlas"]
+[ext_resource type="PackedScene" path="res://scenes/stations/furnace.tscn" id="p"]
+
+[sub_resource type="AtlasTexture" id="Icon"]
+atlas = ExtResource("atlas")
+region = Rect2(1, 87, 30, 41)
+
+[resource]
+script = ExtResource("1")
+id = &"furnace"
+display_name = "Furnace"
+icon = SubResource("Icon")
+color = Color(0.7, 0.35, 0.25, 1)
+category = "placeable"
+max_stack = 10
+placeable = ExtResource("p")

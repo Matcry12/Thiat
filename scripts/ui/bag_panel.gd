@@ -21,7 +21,10 @@ var _bg_placeholder: Panel
 var _margin: MarginContainer
 var _grid: GridContainer
 var _cells: Array[ItemSlot] = []
+## Automation seam (demo, tests): where the pointer is. (-1,-1) = the real mouse. Not gameplay.
+var mouse_override := Vector2(-1, -1)
 var _cursor: ItemSlot
+var _shadow: Panel
 var _hint: TextureRect   # lock icon: the bag cannot open now (skin lock_texture)
 var _hint_tint: ColorRect
 var _hint_left := 0.0
@@ -79,9 +82,14 @@ func _ready() -> void:
 	_cursor = SLOT_SCENE.instantiate()   # the stack on the mouse
 	_cursor.top_level = true
 	_cursor.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_cursor.modulate.a = 0.85
 	_cursor.visible = false
 	add_child(_cursor)
+	_shadow = Panel.new()   # a soft drop shadow behind the held stack (looks lifted, not placed)
+	_shadow.name = "HeldShadow"
+	_shadow.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_shadow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_cursor.add_child(_shadow)
+	_cursor.move_child(_shadow, 0)
 	_hint = TextureRect.new()
 	_hint.name = "LockHint"
 	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -175,4 +183,11 @@ func _process(delta: float) -> void:
 		_cursor.set_item(_inv.held_item, _inv.held_count)
 		_cursor.refresh()
 		_cursor.size = Vector2(sk.slot_size, sk.slot_size)
-		_cursor.position = get_viewport().get_mouse_position() - _cursor.size * 0.5
+		_cursor.scale = Vector2.ONE * sk.cursor_scale
+		_cursor.position = (mouse_override if mouse_override.x >= 0.0 else get_viewport().get_mouse_position()) + sk.cursor_offset
+		var sb := StyleBoxFlat.new()
+		sb.bg_color = Color(0, 0, 0, 0)
+		sb.shadow_color = sk.cursor_shadow_color
+		sb.shadow_size = sk.cursor_shadow_size
+		sb.shadow_offset = sk.cursor_shadow_offset
+		_shadow.add_theme_stylebox_override("panel", sb)

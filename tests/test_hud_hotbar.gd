@@ -15,6 +15,7 @@ func _init():
 	arena.get_node("Boss").passive = true
 	await process_frame
 	var player = arena.get_node("Player")
+	player.get_node("Inventory").give_dev_kit()   # W4: the start kit is only a wooden sword (decision 0031)
 	player.set_physics_process(false)
 	var hud: HUD = arena.get_node("HUD")
 	var hp: Health = player.get_node("Health")

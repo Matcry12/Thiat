@@ -10,7 +10,7 @@ signal changed
 const HOTBAR := 9
 const SIZE := 36
 
-@export var start_items: Array[ItemData] = []   ## starting kit (crafting arrives in W4), placed in order
+@export var start_items: Array[ItemData] = []   ## starting kit, placed in order (v1: a wooden sword; the rest is crafted, decision 0031)
 @export var max_hotbar_weapons := 2
 ## Bag moves are refused while a Boss is ENGAGED (decision 0003: "bag is locked in combat").
 @export var lock_in_boss_fight := true
@@ -104,7 +104,8 @@ func room_for(it: ItemData) -> int:
 	return 9999 - _insert(it, 9999, _order(it), false)
 
 func _order(it: ItemData) -> Array:
-	var r := range(0, SIZE) if it.weapon != null else range(HOTBAR, SIZE) + range(0, HOTBAR)
+	# Tools, weapons and placeable stations try the hotbar first (you use them); materials the bag first.
+	var r := range(0, SIZE) if (it.weapon != null or it.placeable != null) else range(HOTBAR, SIZE) + range(0, HOTBAR)
 	return r
 
 func _insert(it: ItemData, amount: int, slots: Array, commit := true) -> int:
@@ -131,6 +132,71 @@ func _insert(it: ItemData, amount: int, slots: Array, commit := true) -> int:
 				_item[s] = it
 				_count[s] = put
 	return left
+
+## Takes `n` of item `id` from the slots (bag first, so a hotbar stack is the last to shrink). False and
+## nothing taken if there is not enough.
+func take(id: StringName, n: int) -> bool:
+	if count(id) < n:
+		return false
+	var left := n
+	for s in range(HOTBAR, SIZE) + range(0, HOTBAR):
+		if left <= 0:
+			break
+		if _item[s] != null and _item[s].id == id:
+			var t := mini(_count[s], left)
+			_put(s, _item[s], _count[s] - t)
+			left -= t
+	changed.emit()
+	return true
+
+## Takes up to `n` out of slot `i`; returns how many left.
+func remove_from_slot(i: int, n: int) -> int:
+	if i < 0 or i >= SIZE or _item[i] == null:
+		return 0
+	var t := mini(n, _count[i])
+	_put(i, _item[i], _count[i] - t)
+	changed.emit()
+	return t
+
+## Adds `n` of `it`; what does not fit drops on the ground at the player, so a crafted item is never lost.
+## Returns what could neither be stored nor dropped (0 unless there is no world to drop into).
+func give_or_drop(it: ItemData, n: int) -> int:
+	var left := add(it, n)
+	if left > 0 and _drop_on_ground(it, left):
+		left = 0
+	return left
+
+## Puts a stack on the cursor (only when it is empty): the furnace hands over what you take out of it.
+func hold(it: ItemData, n: int) -> bool:
+	if held_item != null or it == null or n <= 0:
+		return false
+	_known[it.id] = it
+	held_item = it
+	held_count = n
+	_held_from = -1
+	changed.emit()
+	return true
+
+## Sets how much is left on the cursor after something took some (0 = cursor empty).
+func set_held_count(n: int) -> void:
+	if n <= 0:
+		_drop_held()
+	else:
+		held_count = n
+	changed.emit()
+
+## Dev / test kit (F3 "Give W3 kit"): replaces every slot with sword, bow, axe, pickaxe in slots 1-4 and
+## re-arms the first weapon, like the old start kit (decision 0031).
+func give_dev_kit() -> void:
+	for i in SIZE:
+		_item[i] = null
+		_count[i] = 0
+	_drop_held()
+	for id in ["sword", "bow", "stone_axe", "stone_pickaxe"]:
+		add(load("res://data/items/%s.tres" % id), 1)
+	var lo = get_parent().get_node_or_null("Loadout") if get_parent() else null
+	if lo != null and lo.has_method("rearm"):
+		lo.rearm()
 
 ## Removes every material stack. Tools and weapons stay (F3 "Clear items").
 func clear() -> void:

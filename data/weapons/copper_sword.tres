@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/sword_model.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/skills/lunge_slash.tscn" id="3"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Copper Sword"
+damage = 40.0
+model_tint = Color(1.0, 0.72, 0.5, 1)
+model = ExtResource("2")
+rest_angle_degrees = -20.0
+arc_degrees = 120.0
+guard_forward = 6.0
+guard_side = 15.0
+skill = ExtResource("3")
+step_distance = 8.0

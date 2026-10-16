@@ -9,6 +9,16 @@ extends Control
 signal slot_clicked(index: int, button: int, shift: bool)
 
 var index := -1
+## Square size when it should not follow `skin.slot_size` (the small crafting icons). 0 = follow the skin.
+var size_override := 0
+## Replaces the plain count ("6/10" for an ingredient); empty = the count as usual.
+var count_text := ""
+## Colour of the count text; alpha 0 = the skin's count_color.
+var count_tint := Color(0, 0, 0, 0)
+## A different frame picture for this slot (the big result slot); null = the skin's slot_texture.
+var frame_override: Texture2D
+## A square behind the picture (alpha 0 = none): the crafting grid uses it so lit / dim never depends on the art's colours.
+var backdrop := Color(0, 0, 0, 0)
 ## The look. Assigning it (cheap if unchanged) applies it once; later edits arrive through `changed`.
 var skin: InventorySkin:
 	set(v):
@@ -93,15 +103,16 @@ func _on_gui_input(ev: InputEvent) -> void:
 func apply_skin() -> void:
 	if not is_node_ready() or skin == null:
 		return
-	custom_minimum_size = Vector2(skin.slot_size, skin.slot_size)
-	_nine($Frame, skin.slot_texture, skin.slot_patch_margin, skin.frame_color, skin.frame_border)
+	var sz := size_override if size_override > 0 else skin.slot_size
+	custom_minimum_size = Vector2(sz, sz)
+	_nine($Frame, frame_override if frame_override != null else skin.slot_texture, skin.slot_patch_margin, skin.frame_color, skin.frame_border)
 	_nine($SelectedFrame, skin.slot_selected_texture, skin.selected_patch_margin, Color(0, 0, 0, 0), skin.selected_border)
 	$SelectedFrame.offset_left = -skin.selected_grow
 	$SelectedFrame.offset_top = -skin.selected_grow
 	$SelectedFrame.offset_right = skin.selected_grow
 	$SelectedFrame.offset_bottom = skin.selected_grow
 	var inset := float(skin.icon_inset)
-	for n in [$Icon, $CastFill, $CooldownShade, $Hover]:
+	for n in [$Icon, $CastFill, $CooldownShade, $Hover, $Backdrop]:
 		n.offset_left = inset
 		n.offset_top = inset
 		n.offset_right = -inset
@@ -123,6 +134,8 @@ func refresh() -> void:
 	if not is_node_ready() or skin == null:
 		return
 	$SelectedFrame.visible = selected
+	$Backdrop.visible = backdrop.a > 0.0
+	$Backdrop.color = backdrop
 	$Tint.visible = color_tint.a > 0.0 and _picture == null
 	$Tint.color = color_tint
 	$Icon.texture = _picture
@@ -135,7 +148,8 @@ func refresh() -> void:
 	$CooldownShade.visible = cooldown_frac > 0.0
 	$CooldownShade.anchor_bottom = cooldown_frac
 	$Hover.visible = hovered and mouse_filter != Control.MOUSE_FILTER_IGNORE
-	$Count.text = str(count) if count > 1 else ""
+	$Count.text = count_text if count_text != "" else (str(count) if count > 1 else "")
+	$Count.add_theme_color_override("font_color", count_tint if count_tint.a > 0.0 else skin.count_color)
 	$KeyLabel.text = key_text
 	$LockOverlay.visible = locked
 

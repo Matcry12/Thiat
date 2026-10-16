@@ -8,6 +8,7 @@ func _init():
 	arena.get_node("Boss").passive = true   # quiet arena: these tests are not about the boss
 	await process_frame
 	var player = arena.get_node("Player")
+	player.get_node("Inventory").give_dev_kit()   # W4: the start kit is only a wooden sword (decision 0031)
 	var loadout: Loadout = player.get_node("Loadout")
 	var slot: SkillSlot = player.get_node("SkillSlot")
 	var holder: WeaponHolder = player.get_node("WeaponHolder")

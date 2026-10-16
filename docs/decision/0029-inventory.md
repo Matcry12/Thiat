@@ -15,7 +15,7 @@ W2 had an Inventory that was only a list of counts, and a temporary key `3` to p
   So the swap cost still only ever applies between the two weapons.
 - **The wheel waits** (`Player.wheel_settle`, 0.12 s) before it selects, so scrolling from the sword to the axe does not start a swap cast on the bow on the way.
 - **Tools** are `WeaponData` (`stone_axe.tres`, `stone_pickaxe.tres`) with `tool_kind`. `ResourceNodeData` gets `preferred_tool` and `tool_bonus` (3.0). A matching tool multiplies `gather_damage`. The axe has `tool_power` 0 so it cannot mine copper (needs 1); the pickaxe has 2. Tree: 2 axe hits (6 punches by hand). Both tools reuse the fists model as a placeholder.
-- **Starting kit:** sword 1, bow 2, axe 3, pickaxe 4 (`Inventory.start_items`). Crafting is W4.
+- **Starting kit:** sword 1, bow 2, axe 3, pickaxe 4 (`Inventory.start_items`). Crafting is W4. *(Superseded by [0031](0031-crafting.md): the start kit is a wooden sword only; F3 `Give W3 kit` gives this one.)*
 - **Bag panel** (`BagPanel`, `Tab` or `I`): placeholder squares under the hotbar. Click picks up a stack, click places / merges / swaps, right click picks up half, shift click moves between hotbar and bag. All rules live in `Inventory.click_slot` / `shift_move`, not in the UI. Closing with a stack on the cursor puts it back. The game keeps running; attack input is ignored while the mouse is over the panel or the (then clickable) hotbar.
 - **Locked while a boss is `ENGAGED`** (`Inventory.locked()`, group `boss`). The panel will not open (a short hint shows) and closes by itself if the boss engages while it is open.
 - The old key `3` holster toggle and the `ItemCounter` are removed. The hotbar shows icon (or tinted square) and count.

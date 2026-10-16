@@ -65,6 +65,7 @@ class Result:
 	var border: Array[Dictionary] = []       ## {region, pos (bottom-centre), flip}
 	var water: Dictionary = {}               ## Vector2i cell -> atlas coord on style.water_texture (empty = no water art)
 	var land := PackedByteArray()            ## 1 land, 0 water, per cell
+	var bridge := {}                         ## Vector2i cell -> true for every cell of the carved land bridge (stations may not stand there)
 	var area := PackedByteArray()            ## Area per cell (ignore on water)
 	var cols := 0                            ## grid size land/area were built with (Params may change later)
 	var rows := 0
@@ -245,6 +246,7 @@ static func _carve(res: Result, p: Params, a: Vector2i, b: Vector2i) -> void:
 				var q := c + Vector2i(dx, dy)
 				if q.x >= p.coast_cells and q.y >= p.coast_cells and q.x < p.cols - p.coast_cells and q.y < p.rows - p.coast_cells:
 					res.land[q.y * p.cols + q.x] = 1
+					res.bridge[q] = true
 
 
 static func _assign_areas(res: Result, p: Params, home: Vector2i, zc: Rect2i) -> void:
@@ -536,14 +538,7 @@ static func floor_reachable(p: Params, obstacles: Array[Dictionary], land := Pac
 static func _unreached(p: Params, obstacles: Array[Dictionary], land: PackedByteArray) -> PackedVector2Array:
 	var nx := int(p.size_px().x / FLOW_STEP)
 	var ny := int(p.size_px().y / FLOW_STEP)
-	var free := _walk_free(p, land)
-	for o in obstacles:   # each rock clears only the samples in its own box
-		var reach: float = o["radius"] + p.agent_radius
-		var pos: Vector2 = o["pos"]
-		for y in range(maxi(int((pos.y - reach) / FLOW_STEP), 0), mini(int((pos.y + reach) / FLOW_STEP) + 1, ny)):
-			for x in range(maxi(int((pos.x - reach) / FLOW_STEP), 0), mini(int((pos.x + reach) / FLOW_STEP) + 1, nx)):
-				if Vector2((x + 0.5) * FLOW_STEP, (y + 0.5) * FLOW_STEP).distance_to(pos) <= reach:
-					free[y * nx + x] = 0
+	var free := walk_grid(p, obstacles, land)
 	var start := Vector2i(clampi(int(p.player_spawn.x / FLOW_STEP), 0, nx - 1), clampi(int(p.player_spawn.y / FLOW_STEP), 0, ny - 1))
 	if free[start.y * nx + start.x] == 0:
 		return PackedVector2Array([Vector2.INF])
@@ -553,6 +548,41 @@ static func _unreached(p: Params, obstacles: Array[Dictionary], land: PackedByte
 		if free[i] == 1 and seen[i] == 0:
 			out.append(Vector2((i % nx + 0.5) * FLOW_STEP, (i / nx + 0.5) * FLOW_STEP))
 	return out
+
+
+## The walk grid with every rock cleared out of it: 1 where a walker can stand.
+static func walk_grid(p: Params, obstacles: Array[Dictionary], land: PackedByteArray) -> PackedByteArray:
+	var nx := int(p.size_px().x / FLOW_STEP)
+	var ny := int(p.size_px().y / FLOW_STEP)
+	var free := _walk_free(p, land)
+	for o in obstacles:   # each rock clears only the samples in its own box
+		var reach: float = o["radius"] + p.agent_radius
+		var pos: Vector2 = o["pos"]
+		for y in range(maxi(int((pos.y - reach) / FLOW_STEP), 0), mini(int((pos.y + reach) / FLOW_STEP) + 1, ny)):
+			for x in range(maxi(int((pos.x - reach) / FLOW_STEP), 0), mini(int((pos.x + reach) / FLOW_STEP) + 1, nx)):
+				if Vector2((x + 0.5) * FLOW_STEP, (y + 0.5) * FLOW_STEP).distance_to(pos) <= reach:
+					free[y * nx + x] = 0
+	return free
+
+
+## Can a walker still get from the player's spawn to `goal` (px) on `free` once the rects in `blockers`
+## (solid boxes, px) are added? Reuses the same flood as floor_reachable. `free` is not changed.
+## One flood; call it with no blockers first to know whether there is a path to protect at all.
+static func goal_reachable_with(p: Params, free: PackedByteArray, blockers: Array[Rect2], goal: Vector2) -> bool:
+	var nx := int(p.size_px().x / FLOW_STEP)
+	var ny := int(p.size_px().y / FLOW_STEP)
+	var start := Vector2i(clampi(int(p.player_spawn.x / FLOW_STEP), 0, nx - 1), clampi(int(p.player_spawn.y / FLOW_STEP), 0, ny - 1))
+	var g := Vector2i(clampi(int(goal.x / FLOW_STEP), 0, nx - 1), clampi(int(goal.y / FLOW_STEP), 0, ny - 1))
+	var f := free.duplicate()
+	for r in blockers:
+		var b := r.grow(p.agent_radius)
+		for y in range(maxi(int(b.position.y / FLOW_STEP), 0), mini(int(b.end.y / FLOW_STEP) + 1, ny)):
+			for x in range(maxi(int(b.position.x / FLOW_STEP), 0), mini(int(b.end.x / FLOW_STEP) + 1, nx)):
+				if b.has_point(Vector2((x + 0.5) * FLOW_STEP, (y + 0.5) * FLOW_STEP)):
+					f[y * nx + x] = 0
+	if f[start.y * nx + start.x] == 0:
+		return false
+	return _walk_flood(f, nx, ny, start)[g.y * nx + g.x] == 1
 
 
 ## Many nodes can close a pocket between them and the coast. Drop the nodes around any walkable spot

@@ -53,7 +53,7 @@ at its altar and beat it. Beating it wins the game. One run: **20–30 minutes**
 |---|---|---|
 | 0 start | — | wooden sword (start), hands |
 | 1 | **Workbench** (wood) | wooden axe, stone pickaxe, wooden bow, arrows, furnace |
-| 2 | **Furnace** (stone + wood) | copper ore → copper bar (instant, Terraria-style) |
+| 2 | **Furnace** (stone + wood) | copper ore → copper bar (**timed**, 3 s each, runs by itself: [0031](../decision/0031-crafting.md)) |
 | 2 | **Anvil** (copper bars) | copper sword, copper axe, copper pickaxe |
 | — | Workbench | healing potion (gel) — or a later alchemy station |
 | 3 | Anvil | summon item (copper + gel + rare item); 1–2 boss weapons from the boss drop |
@@ -93,7 +93,7 @@ Title (Play / Continue / Settings / Quit), pause on `Esc` (Resume / Settings / S
 ## 10. Not in v1
 
 Armor and accessories, boss 2, building / placing blocks, hunger, day/night, farming, NPCs, minimap,
-Minecraft-style timed smelting. (Armor + boss 2 = v2.)
+fuel for the furnace. (Armor + boss 2 = v2.) Smelting itself is timed: see [0031](../decision/0031-crafting.md).
 
 ## 11. Build order — slices
 
@@ -133,3 +133,4 @@ above. Until art exists, each slice ships with a placeholder that has the **same
 | W1 big island | Sonnet 5.5 (all 6 tasks) | Opus judge: 0 critical, 1 important (5 of 40 seeds had small land pockets the walk check could not reach), 9 minor. All fixed except the walk time (user call) and max-size rebuild (1776 ms at 300x200, under budget). Fixes re-checked clean. User playtest: pending | Rebuild takes about 600 ms after the fixes (budget 2000). Walk home to boss: 4956 px at 260 px/s = about 19 s straight, about 25 s with the bends. The spec hoped for 1-2 min, so the island is too small or the player too fast. Decide after the playtest. Demo: `docs/demo/w1_island.mp4`. |
 | W2 trees and rocks | Sonnet 5.5 (all 6 tasks) | Opus judge: 0 critical, 3 important, all fixed: (1) arrows and boss bolts flew through every tree and rock, (2) all nodes shared one collision circle, (3) pressing 3 twice cancelled swing recovery for free. Re-review found that the fix made 2 shooting tests flaky: 38 tests loaded a random island. Root fix: `run_tests.sh` sets `BOSSFIGHT_TEST_SEED=11` (this was also the old "1 failing" flake). User playtest: pending | Fists punch trees (about 6 hits), rocks and copper (clink, needs a tool). Forest on seed 11: 188 trees, 161 rocks, 36 copper; build 693-840 ms. Tree art Model_01/Size_02, 96x124 px on screen, stump 6x5. Copper is a placeholder circle. The punch deals 1 to the armored dummy (armor floor). `test_island_gen` takes about 30 s. Demo: `docs/demo/w2_gather.mp4`. Decision: [0027](../decision/0027-gathering.md). |
 | W3 inventory | Sonnet 5.5 (all tasks, one agent) | Opus judge: 1 critical (closing the bag after a swap could delete an item), 3 important (3rd weapon into the hotbar via shift-click while holding; free weapon swap after stowing the held weapon; slot code rewrote the layout every frame = two owners). All fixed with regression tests, re-review clean (67/67). User playtest: pending | 36 slots (9 hotbar + 27 bag), max stack 64, keys 1-9 + wheel, tools switch instantly, weapon <-> weapon keeps the 0003 swap. Axe: tree in 2 hits (6 punches by hand); pickaxe mines copper, axe clinks on it. Bag panel with click / half / shift, locked while the boss is engaged. Key `3` holster and the item counter are gone. Demo: `docs/demo/w3_inventory.mp4`. Decision: [0029](../decision/0029-inventory.md). |
+| W4 crafting | Sonnet 5.5 (all tasks, one agent) | Opus judge, 3 rounds: round 1 found 1 always-failing test, 5 important (panel covered the player, arrow read backwards, anvil looked like a glass table, two owners for the station size, stations could wall off the bridge) + minors; round 2 found tall art hiding stations, natural necks unprotected, a double-rebuild dupe, hidden copper recipes; round 3 pass (74/74). Path flood moved to click only (48 ms). User playtest: pending | Recipes as `.tres`, instant crafting list next to the bag, placed stations (ghost, refusals, pickaxe pickup), timed furnace (3 s per bar, runs while you are away), start kit = wooden sword, copper gear. Demo: `docs/demo/w4_crafting.mp4`. Decision: [0031](../decision/0031-crafting.md). |

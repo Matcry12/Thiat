@@ -7,9 +7,14 @@
 
 [ext_resource type="Texture2D" path="res://assets/ui/placeholder/lock.png" id="5"]
 
+[ext_resource type="Texture2D" path="res://assets/ui/placeholder/hand.png" id="6"]
+[ext_resource type="Texture2D" path="res://assets/ui/placeholder/hammer.png" id="7"]
+
 [resource]
 script = ExtResource("1")
 dodge_icon = ExtResource("2")
 skill_icon = ExtResource("3")
 guard_icon = ExtResource("4")
 lock_texture = ExtResource("5")
+hand_icon = ExtResource("6")
+craft_tab_icon = ExtResource("7")

@@ -126,6 +126,7 @@ func _rebuild_model() -> void:
 		_model = null
 	if _swing_pivot and weapon and weapon.model:
 		_model = weapon.model.instantiate()
+		_model.modulate = weapon.model_tint   # copper tools reuse a model, tinted (decision 0031)
 		_swing_pivot.add_child(_model)
 	model_changed.emit(_model)
 

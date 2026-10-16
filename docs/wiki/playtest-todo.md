@@ -3,7 +3,36 @@
 Things built but **not yet played by you**. Tick them off (or write what felt wrong) when you play.
 Newest slice at the top. Run the game, press `F3` for the test buttons.
 
-## W3 — inventory and tools (building now)
+## W4 - crafting (building now)
+
+You start with a wooden sword only. Press `F3` and use `Give W3 kit` if you want the old kit back, or `Give materials (20 each)` to skip the grind.
+
+- [ ] Punch trees, then press `Tab`. One window opens in the middle: icons on top, your bag and hotbar below.
+- [ ] With 1 wood a dim workbench icon shows ("you are on the way"). With 10 wood it lights up. With nothing, no icon. Is that clear?
+- [ ] Hover an icon: the name and the ingredients (icons + numbers) show. A red number = you lack it. Enough to know what to gather?
+- [ ] Click a lit icon: the item sticks to the mouse and the materials are gone. Click a bag or hotbar slot to put it down. Does it feel like moving a bag stack?
+- [ ] Click the same icon again while holding: the stack grows. Click a dim icon: it flashes red and does nothing.
+- [ ] Close the window while holding an item: it must go back into the bag (or drop at your feet), never vanish.
+- [ ] Shift click a lit icon: the item goes straight into the bag.
+- [ ] The window covers the screen centre (and you). OK, or should it sit higher?
+- [ ] Craft the workbench (10 wood). Select it in the hotbar: a ghost follows you. White = free, red = not allowed. Click to place it.
+- [ ] Try to place it on water, on a tree, on another station, near the boss. It should say no (red) every time.
+- [ ] Stand near the workbench and open the window: stone pickaxe, stone axe, bow and furnace appear (the anvil only when you hold copper bars). Walk away: they go. The nearest station's recipes come first.
+- [ ] The small icon at the top-left of the window shows which station you are at (hand, workbench, anvil).
+- [ ] Is the distance to a station right? (`craft_radius` on the station scene. Press `F1` to see the pink circle.)
+- [ ] Hit a station with the **pickaxe**: you get it back. A punch or an axe must not.
+- [ ] Mine copper, place a furnace, open the window near it: a Furnace tab (and a Crafting tab) show. On the furnace tab shift click copper ore in a bag slot. The arrow fills; a bar above the furnace fills in the world too.
+- [ ] One bar takes 3 seconds. Too slow, too fast? (`F3` -> `Smelt copper_bar` -> `smelt_time`)
+- [ ] Walk away while it smelts. Come back: the bars are waiting. Shift click the output to take them.
+- [ ] Craft an anvil (5 copper bars, at the workbench). Place it. At the anvil: copper sword, axe, pickaxe.
+- [ ] Is the copper sword clearly stronger than the wooden one? Is the tint (brown vs orange) readable?
+- [ ] Are the amounts fair? Workbench 10 wood. Stone pickaxe 4 wood + 6 stone. Furnace 10 stone + 4 wood. Anvil 5 bars. Copper sword 6 bars + 3 wood. (`F3` -> `Recipe ...` sections)
+- [ ] Walk to the boss until it wakes: the window closes and locks.
+- [ ] Crafting with a full bag: the item should drop at your feet.
+- [ ] Use `F3` buttons `Place workbench here`, `Place furnace here`, `Place anvil here`, `Finish smelting`.
+- [ ] The three station pictures come from the Pixel Crawler sheets. Do they look right next to the trees?
+
+## W3 — inventory and tools
 
 - [ ] HUD: hotbar top-left, health bottom-left, dodge / skill / guard icons above the health bar. No words. OK?
 - [ ] Hover a slot, an ability icon or the health bar: a small name (or "73 / 100") shows. It must not show while you carry a stack.

@@ -214,6 +214,10 @@ var _spawns := PackedVector2Array()
 var _player_spawn := Vector2.ZERO
 var _zone := Rect2()
 var _ready_done := false
+var last_walk_check_ms := 0.0   ## cost of the last blocks_boss_path flood, for F3 / the report
+var _walk_for: MapGen.Result
+var _walk_grid := PackedByteArray()
+var _walk_base_ok := false
 var _rebuild_queued := false
 var _want_new_seed := false
 var _want_relayout := false
@@ -305,6 +309,7 @@ func rebuild(new_seed: bool, relayout := false) -> void:
 		_place_actors()
 		if _camera:
 			_camera.reset_smoothing()
+	_clear_stations()
 	_apply_size()
 	if new_seed:
 		current_seed = map_seed if map_seed != 0 else _test_seed()
@@ -318,6 +323,15 @@ func rebuild(new_seed: bool, relayout := false) -> void:
 		node_count += 1 if o["node"] >= 0 else 0
 	_build()
 	build_ms = maxi(Time.get_ticks_msec() - t0, 1)
+
+
+## A rebuilt island may have water where a station stood: every placed station goes back to the player
+## (item + furnace contents; the inventory, else dropped at the player). Nothing is lost.
+func _clear_stations() -> void:
+	var player := get_node_or_null(player_path)
+	var inv := player.get_node_or_null("Inventory") as Inventory if player else null
+	for st: Station in get_tree().get_nodes_in_group("station"):
+		st.pick_up(inv)
 
 
 ## tools/run_tests.sh sets BOSSFIGHT_TEST_SEED so tests get the same island every run.
@@ -402,6 +416,48 @@ func area_at(pos: Vector2) -> int:
 		return -1
 	var i := c.y * result.cols + c.x
 	return -1 if result.land[i] == 0 else result.area[i]
+
+
+## True in the boss's land (area BOSS) or inside the fight zone: no placing stations there.
+func in_boss_area(pos: Vector2) -> bool:
+	return _zone.has_point(pos) or area_at(pos) == MapGen.Area.BOSS
+
+
+## True on a cell of the land bridge carved to reach the boss (only when the island needed one).
+func in_corridor(pos: Vector2) -> bool:
+	return result != null and result.bridge.has(Vector2i((pos / cell_px()).floor()))
+
+
+## True if `rect` touches any bridge cell (a rect can straddle a bridge without a corner inside it).
+func in_corridor_rect(rect: Rect2) -> bool:
+	if result == null or result.bridge.is_empty():
+		return false
+	var c0 := Vector2i((rect.position / cell_px()).floor())
+	var c1 := Vector2i((rect.end / cell_px()).floor())
+	for y in range(c0.y, c1.y + 1):
+		for x in range(c0.x, c1.x + 1):
+			if result.bridge.has(Vector2i(x, y)):
+				return true
+	return false
+
+
+## Would solid boxes at `rects` (px) cut the walk from home to the boss zone? Reuses MapGen's walk grid and
+## flood. The base grid is built once per island (cached); one check is one flood (`last_walk_check_ms`).
+## False when there was no walk to protect to begin with.
+func blocks_boss_path(rects: Array[Rect2]) -> bool:
+	if result == null:
+		return false
+	var p := make_params()
+	if _walk_for != result:
+		_walk_for = result
+		_walk_grid = MapGen.walk_grid(p, result.obstacles, result.land)
+		_walk_base_ok = MapGen.goal_reachable_with(p, _walk_grid, [] as Array[Rect2], _zone.get_center())
+	if not _walk_base_ok:
+		return false
+	var t0 := Time.get_ticks_usec()
+	var ok := MapGen.goal_reachable_with(p, _walk_grid, rects, _zone.get_center())
+	last_walk_check_ms = (Time.get_ticks_usec() - t0) / 1000.0
+	return not ok
 
 
 func home_point() -> Vector2:

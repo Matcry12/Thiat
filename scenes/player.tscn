@@ -23,10 +23,9 @@
 [ext_resource type="Script" path="res://scripts/components/inventory.gd" id="inv_s"]
 [ext_resource type="Script" path="res://scripts/components/collector.gd" id="col_s"]
 [ext_resource type="Script" path="res://scripts/items/item_data.gd" id="item_s"]
-[ext_resource type="Resource" path="res://data/items/sword.tres" id="it_sword"]
-[ext_resource type="Resource" path="res://data/items/bow.tres" id="it_bow"]
-[ext_resource type="Resource" path="res://data/items/stone_axe.tres" id="it_axe"]
-[ext_resource type="Resource" path="res://data/items/stone_pickaxe.tres" id="it_pick"]
+[ext_resource type="Resource" path="res://data/items/wooden_sword.tres" id="it_sword"]
+[ext_resource type="Script" path="res://scripts/components/crafter.gd" id="crafter_s"]
+[ext_resource type="Script" path="res://scripts/components/placer.gd" id="placer_s"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -127,7 +126,13 @@ weapon_holder_path = NodePath("../WeaponHolder")
 
 [node name="Inventory" type="Node" parent="."]
 script = ExtResource("inv_s")
-start_items = Array[ExtResource("item_s")]([ExtResource("it_sword"), ExtResource("it_bow"), ExtResource("it_axe"), ExtResource("it_pick")])
+start_items = Array[ExtResource("item_s")]([ExtResource("it_sword")])
+
+[node name="Crafter" type="Node" parent="."]
+script = ExtResource("crafter_s")
+
+[node name="Placer" type="Node" parent="."]
+script = ExtResource("placer_s")
 
 [node name="Collector" type="Node" parent="."]
 script = ExtResource("col_s")

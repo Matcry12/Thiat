@@ -23,6 +23,8 @@ var _loadout: Loadout
 var _health_bar: HealthBar
 var _hotbar: Hotbar
 var _bag: BagPanel
+var _win: CraftWindow
+var _crafter: Crafter
 var _abilities: AbilityBar
 var _tooltip: HudTooltip
 var _top_left: VBoxContainer
@@ -50,6 +52,9 @@ func hotbar() -> Hotbar:
 func bag() -> BagPanel:
 	return _bag
 
+func craft_window() -> CraftWindow:
+	return _win
+
 func abilities() -> AbilityBar:
 	return _abilities
 
@@ -68,6 +73,15 @@ func f3_insets() -> Vector2:
 
 func _process(_delta: float) -> void:
 	_layer.layer = ui_layer
+	if _hotbar and _bag:
+		_hotbar.visible = not _bag.is_open()
+	if _win:   # the centred window slides left rather than sit under the F3 tuning panel
+		var dx := 0.0
+		if _tuning and _tuning.visible and _tuning.has_method("right_panel_width") and _win.is_open():
+			var vw := get_viewport().get_visible_rect().size.x
+			var natural_right := _win.frame_rect().end.x - _win.shift()
+			dx = minf(vw - _tuning.right_panel_width() - f3_gap - natural_right, 0.0)
+		_win.set_shift(dx)
 	_top_left.offset_left = margin_x
 	_top_left.offset_top = margin_y
 	_top_left.add_theme_constant_override("separation", block_gap)
@@ -119,15 +133,44 @@ func _build_ui(player: Node) -> void:
 		_hotbar.skin = skin
 		_top_left.add_child(_hotbar)
 		_hotbar.bind(_loadout, inv)
-		_bag = BagPanel.new()
+		# Tab / I opens ONE centred window: crafting area on top, bag + a hotbar copy below (decision 0031).
+		# The HUD hotbar at the top-left hides while it is open (it would show the same nine slots twice).
+		_crafter = player.get_node_or_null("Crafter") as Crafter
+		_win = CraftWindow.new()
+		_win.skin = skin
+		_layer.add_child(_win)
+		_win.bind(inv, _loadout, _crafter)
+		_layer.move_child(_tooltip, -1)   # the hover name must draw ABOVE the window (later siblings draw on top)
+		_bag = _win.bag()
 		_bag.skin = skin
-		_top_left.add_child(_bag)
-		_bag.bind(inv, _hotbar)
+		_win.hotbar().skin = skin
+		_win.craft_requested.connect(func(r: RecipeData, straight: bool):   # the Crafter decides
+			if straight:
+				_crafter.craft(r)           # shift click: straight into the inventory
+			else:
+				_crafter.craft_to_cursor(r))   # click: onto the cursor, then put it in a slot
+		_win.rebuilt.connect(func():   # recipe icons are rebuilt when the stations in range change
+			for s in _win.recipe_slots():
+				_tooltip.watch(s, func(): return _win.recipe_tip(s), func(): return _win.recipe_ingredients(s)))
+		_win.furnace_input_clicked.connect(func(shift: bool):
+			var f := _win.current_furnace()
+			if f and shift:
+				f.shift_input(inv)
+			elif f:
+				f.click_input(inv))
+		_win.furnace_output_clicked.connect(func(shift: bool):
+			var f := _win.current_furnace()
+			if f and shift:
+				f.shift_output(inv)
+			elif f:
+				f.click_output(inv))
 		# The UI only asks; the inventory decides.
 		_bag.slot_clicked.connect(func(i: int, button: int, shift: bool):
 			if button == MOUSE_BUTTON_LEFT:
 				if shift:
-					inv.shift_move(i)
+					var f := _win.current_furnace() if _win.furnace_visible() else null
+					if f == null or not f.shift_in_from_slot(inv, i):   # ore goes into the open furnace
+						inv.shift_move(i)
 				else:
 					inv.click_slot(i)
 			elif button == MOUSE_BUTTON_RIGHT:
@@ -135,7 +178,11 @@ func _build_ui(player: Node) -> void:
 		_bag.closed.connect(inv.return_held)
 		for s in _hotbar.slots():   # no name pops up mid-fight (boss engaged, bag closed)
 			_tooltip.watch(s, func(): return "" if inv.locked() and not _bag.is_open() else s.tip_text())
+		for s in _win.hotbar().slots():
+			_tooltip.watch(s, s.tip_text)
 		for s in _bag.cells():
+			_tooltip.watch(s, s.tip_text)
+		for s in [_win.marker(), _win.furnace_slots()[0], _win.furnace_slots()[1]] + _win.tab_slots():
 			_tooltip.watch(s, s.tip_text)
 	_abilities = AbilityBar.new()
 	_abilities.skin = skin

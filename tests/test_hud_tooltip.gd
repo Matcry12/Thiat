@@ -23,6 +23,7 @@ func _init() -> void:
 	var hud: HUD = arena.get_node("HUD")
 	var tip := hud.tooltip()
 	var inv: Inventory = arena.get_node("Player/Inventory")
+	inv.give_dev_kit()   # W4: the start kit is only a wooden sword (decision 0031)
 	var hp: Health = arena.get_node("Player/Health")
 	hp.immortal = true
 
@@ -76,6 +77,7 @@ func _init() -> void:
 	await process_frame
 	_check(inv.held_item != null and not tip.visible, "stack on the cursor: no tooltip")
 	inv.click_slot(Inventory.HOTBAR)
+	await process_frame
 	await process_frame
 	_check(tip.visible, "stack put down: it shows again")
 

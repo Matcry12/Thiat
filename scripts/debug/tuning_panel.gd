@@ -119,6 +119,10 @@ var _map: ArenaMap
 var _hit_fx: HitFx
 var _collector: Collector
 var _inventory: Inventory
+var _crafter: Crafter
+## The F3 status text needs at least this much free height (px) between the HUD blocks, else it hides.
+@export var status_min_height := 80.0
+var _placer: Placer
 var _bag: BagPanel
 
 var _targets: Array = []          # [{"name": String, "object": Object}]
@@ -227,6 +231,18 @@ func _ready() -> void:
 				_targets.append({"name": "Item " + String(it.id), "object": it})
 			elif it.category == "tool":
 				_targets.append({"name": "Tool " + String(it.id), "object": it.weapon})
+
+	# Crafting (W4, decision 0031): the Crafter / Placer numbers, one section per recipe and per smelt recipe.
+	_crafter = _player.get_node_or_null("Crafter") as Crafter
+	_placer = _player.get_node_or_null("Placer") as Placer
+	if _crafter:
+		_targets.append({"name": "Crafter", "object": _crafter})
+		for r in _crafter.recipes:
+			_targets.append({"name": "Recipe " + String(r.result.id), "object": r})
+	if _placer:
+		_targets.append({"name": "Placer", "object": _placer})
+	for r in RecipeBook.load_dir("res://data/smelting"):
+		_targets.append({"name": "Smelt " + String((r as SmeltRecipeData).output.id), "object": r})
 
 	# Hit feel: the master switches, the three effect nodes, and one section per hit type (its .tres numbers).
 	if _hit_fx:
@@ -362,6 +378,9 @@ func _update_status_text() -> void:
 		"[Inventory]",
 		_inventory_status_text(),
 		"",
+		"[Crafting]",
+		_crafting_status_text(),
+		"",
 		"[Skills (E)]",
 		_skill_status_text(),
 	])
@@ -417,6 +436,37 @@ func _inventory_status_text() -> String:
 		w.item_name() if w else "-", " (swap casting)" if _loadout.is_casting() else "",
 		_inventory.used_slots(), Inventory.SIZE, _inventory.hotbar_weapon_count(), _inventory.max_hotbar_weapons,
 		bag, held]
+
+
+func _crafting_status_text() -> String:
+	if _crafter == null:
+		return "n/a"
+	var ids := []
+	for sid in _crafter.station_ids_in_range():
+		ids.append(String(sid))
+	var lines: Array[String] = []
+	lines.append("stations in range: %s  recipes shown: %d" % [", ".join(ids) if not ids.is_empty() else "none", _crafter.visible_recipes().size()])
+	if _placer:
+		var held := _placer.held_item()
+		lines.append("placing: %s  spot: %s  last: %s" % [held.display_name if held else "-", ("ok" if _placer.last_refusal == "" else "refused (%s)" % _placer.last_refusal) if held else "-", _placer.last_placed if _placer.last_placed != "" else "-"])
+		lines.append("path flood (on click only): %.1f ms" % _placer.last_neck_ms)
+	var furnaces := get_tree().get_nodes_in_group("furnace")
+	if furnaces.is_empty():
+		lines.append("furnaces: none placed")
+	for f: Furnace in furnaces:
+		lines.append("furnace %d: %s" % [furnaces.find(f) + 1, f.status_text()])
+	lines.append("last craft: %s" % (_crafter.last_craft if _crafter.last_craft != "" else "-"))
+	return "\n".join(lines)
+
+
+func _place_here(id: String) -> void:
+	if _placer:
+		_placer.place_free(load("res://data/items/%s.tres" % id))
+
+
+func _finish_smelting() -> void:
+	for f: Furnace in get_tree().get_nodes_in_group("furnace"):
+		f.finish_all()
 
 
 func _give(id: String, amount := 1) -> void:
@@ -626,6 +676,17 @@ func _build_ui() -> void:
 		_add_button(inv_row, "Give pickaxe", func(): _give("stone_pickaxe"))
 		_add_button(inv_row, "Give sword", func(): _give("sword"))
 		_add_button(inv_row, "Fill bag", _fill_bag)
+		_add_button(inv_row, "Give W3 kit", func(): _inventory.give_dev_kit())
+	if _crafter:
+		var craft_row := HBoxContainer.new()
+		tuning_vbox.add_child(craft_row)
+		_add_button(craft_row, "Give materials (20 each)", func(): _give_items(20))
+		_add_button(craft_row, "Finish smelting", _finish_smelting)
+		var place_row := HBoxContainer.new()
+		tuning_vbox.add_child(place_row)
+		_add_button(place_row, "Place workbench here", func(): _place_here("workbench"))
+		_add_button(place_row, "Place furnace here", func(): _place_here("furnace"))
+		_add_button(place_row, "Place anvil here", func(): _place_here("anvil"))
 	var kb_row := HBoxContainer.new()
 	tuning_vbox.add_child(kb_row)
 	_add_button(kb_row, "Knockback on/off", _toggle_knockback)
@@ -853,7 +914,12 @@ func _clear_of_hud() -> void:
 	var ins := hud.f3_insets()
 	var vh := get_viewport().get_visible_rect().size.y
 	_status_panel.position.y = ins.x
-	_status_scroll.custom_minimum_size.y = maxf(vh - ins.x - ins.y - 12.0, 40.0)
+	var room := vh - ins.x - ins.y - 12.0
+	# Bag + recipe list + furnace box open can leave no room at all: hide the text rather than cover the icons.
+	var win := hud.craft_window().frame_rect() if hud.craft_window() else Rect2()
+	var covered := win.has_area() and _status_panel.position.x + _status_panel.size.x > win.position.x - 8.0   # the centred window
+	_status_panel.visible = room >= status_min_height and not covered
+	_status_scroll.custom_minimum_size.y = maxf(room, status_min_height)
 
 
 func right_panel_width() -> float:
