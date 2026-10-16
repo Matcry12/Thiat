@@ -187,6 +187,186 @@ const REF_CELLS := 36 * 21
 		area_wobble = v
 		_changed()
 
+## Island LOOKS (decision 0033). None of these change where anything can walk, stand or be placed.
+## Smoothing: majority passes that remove 1-cell spikes, holes and checkerboards from the ground before tiling.
+@export var smooth_passes := 2:
+	set(v):
+		smooth_passes = v
+		_changed_ground()
+## Share of border cells that swap sides before smoothing (0 = borders stay cell-straight), and the smallest ground patch
+## that is kept (smaller ones are absorbed).
+@export var border_jitter := 0.35:
+	set(v):
+		border_jitter = v
+		_changed_ground()
+@export var min_island_cells := 14:
+	set(v):
+		min_island_cells = v
+		_changed_ground()
+## Dirt strip along the coast, in cells (0 = grass / cobble right to the water).
+@export var beach_cells := 1:
+	set(v):
+		beach_cells = v
+		_changed_ground()
+## Dirt paths from home towards the boss, plus branches to the rocky ground. Look only: no speed bonus, blocks nothing.
+@export var path_on := true:
+	set(v):
+		path_on = v
+		_changed_ground()
+@export var path_width := 3:
+	set(v):
+		path_width = v
+		_changed_ground()
+@export var path_branches := 3:
+	set(v):
+		path_branches = v
+		_changed_ground()
+## 0 = the straightest path, higher = it wanders more around trees and bends.
+@export var path_wobble := 0.6:
+	set(v):
+		path_wobble = v
+		_changed_ground()
+## Dirt clearing around the campfire, radius in cells.
+@export var camp_radius := 2:
+	set(v):
+		camp_radius = v
+		_changed_ground()
+## Organic dirt patches in the forest, per 100 forest cells, and the biggest radius in cells.
+@export var dirt_patches := 0.25:
+	set(v):
+		dirt_patches = v
+		_changed_ground()
+@export var dirt_patch_size := 2.5:
+	set(v):
+		dirt_patch_size = v
+		_changed_ground()
+## Ground colour per area: brightness, and warm (+ redder, - bluer). Live: only the tint map is redone.
+@export var forest_bright := 1.0:
+	set(v):
+		forest_bright = v
+		_retint()
+@export var forest_warm := 0.0:
+	set(v):
+		forest_warm = v
+		_retint()
+@export var rocky_bright := 0.95:
+	set(v):
+		rocky_bright = v
+		_retint()
+@export var rocky_warm := 0.06:
+	set(v):
+		rocky_warm = v
+		_retint()
+@export var boss_bright := 0.7:
+	set(v):
+		boss_bright = v
+		_sync_boss_ground()
+@export var boss_warm := 0.22:
+	set(v):
+		boss_warm = v
+		_sync_boss_ground()
+## Colour strength per area: 1 = the picture's own colours, 0 = grey.
+@export var forest_sat := 1.0:
+	set(v):
+		forest_sat = v
+		_retint()
+@export var rocky_sat := 0.95:
+	set(v):
+		rocky_sat = v
+		_retint()
+@export var boss_sat := 0.3:
+	set(v):
+		boss_sat = v
+		_sync_boss_ground()
+## Light / dark patches on the ground: strength, and size (noise frequency per cell, lower = bigger).
+@export var shade_variation := 0.1:
+	set(v):
+		shade_variation = v
+		_retint()
+@export var shade_scale := 0.05:
+	set(v):
+		shade_scale = v
+		_retint()
+## Master ground colour (every ground, both styles; the PNGs stay as they are): brightness and colour strength.
+## Lower = characters, nodes and stations stand out more (0.8 / 0.85 was tried; the user prefers 1 / 1, the pack's own colours). Live.
+@export var ground_brightness := 1.0:
+	set(v):
+		ground_brightness = v
+		_apply_terrain_look()
+@export var ground_saturation := 1.0:
+	set(v):
+		ground_saturation = v
+		_apply_terrain_look()
+## Shore foam and water shimmer. Live (no rebuild).
+@export var foam_alpha := 0.85:
+	set(v):
+		foam_alpha = v
+		_apply_terrain_look()
+@export var foam_pulse := 0.45:
+	set(v):
+		foam_pulse = v
+		_apply_terrain_look()
+@export var foam_speed := 0.8:
+	set(v):
+		foam_speed = v
+		_apply_terrain_look()
+@export var shimmer_speed := 0.35:
+	set(v):
+		shimmer_speed = v
+		_apply_terrain_look()
+@export var shimmer_strength := 0.18:
+	set(v):
+		shimmer_strength = v
+		_apply_terrain_look()
+## Size of the glints: higher = smaller and denser.
+@export var shimmer_scale := 0.09:
+	set(v):
+		shimmer_scale = v
+		_apply_terrain_look()
+## Share of the water that can glint at a time (0..1).
+@export var shimmer_amount := 0.3:
+	set(v):
+		shimmer_amount = v
+		_apply_terrain_look()
+@export var wave_strength := 0.05:
+	set(v):
+		wave_strength = v
+		_apply_terrain_look()
+## The slow light drift on the water: size of the patches (lower = bigger) and speed.
+@export var drift_scale := 0.03:
+	set(v):
+		drift_scale = v
+		_apply_terrain_look()
+@export var drift_speed := 0.05:
+	set(v):
+		drift_speed = v
+		_apply_terrain_look()
+## Glint and foam colours (red, green, blue 0..1).
+@export var shimmer_r := 0.85:
+	set(v):
+		shimmer_r = v
+		_apply_terrain_look()
+@export var shimmer_g := 0.95:
+	set(v):
+		shimmer_g = v
+		_apply_terrain_look()
+@export var shimmer_b := 1.0:
+	set(v):
+		shimmer_b = v
+		_apply_terrain_look()
+@export var foam_r := 0.96:
+	set(v):
+		foam_r = v
+		_apply_terrain_look()
+@export var foam_g := 0.99:
+	set(v):
+		foam_g = v
+		_apply_terrain_look()
+@export var foam_b := 1.0:
+	set(v):
+		foam_b = v
+		_apply_terrain_look()
+
 @export var player_path: NodePath
 @export var home_path: NodePath = ^"../HomePoint"
 ## The campfire sits this far from the player start.
@@ -206,6 +386,7 @@ const REF_CELLS := 36 * 21
 
 var current_seed := 0
 var build_ms := 0   ## last rebuild, in ms
+var bake_ms := 0   ## of which the island ground picture
 var node_count := 0   ## resource nodes in the current result, cached at build time
 var land_pct := 0   ## share of land cells in the current result, cached at build time
 var result: MapGen.Result
@@ -221,12 +402,15 @@ var _walk_base_ok := false
 var _rebuild_queued := false
 var _want_new_seed := false
 var _want_relayout := false
+var _want_full := false     ## something besides a look setting changed: the whole map rebuilds
+var _want_ground := false   ## only look settings changed: re-bake the ground, keep trees, rocks and stations
 var _walls: Node2D
 var _camera: Camera2D
 var _water: TileMapLayer
 var _water_body: StaticBody2D
 var _dirt: TileMapLayer
 var _grass: TileMapLayer
+var _terrain: TerrainVisual
 var _deco: Node2D
 var _obstacles: Node2D
 var _border: Node2D
@@ -244,6 +428,9 @@ func _ready() -> void:
 	_obstacles = $Obstacles
 	for layer in [_water, _dirt, _grass]:
 		layer.scale = Vector2.ONE * style.pixel_scale
+	_terrain = TerrainVisual.new()
+	$Ground.add_child(_terrain)
+	$Ground.move_child(_terrain, _grass.get_index() + 1)
 	_water_body = StaticBody2D.new()
 	_water_body.name = "Water"
 	_water_body.collision_mask = 0
@@ -270,10 +457,10 @@ func status_text() -> String:
 		return "n/a"
 	var player := get_node_or_null(player_path) as Node2D
 	var ai := area_at(player.global_position) if player else -1
-	return "seed: %d  size: %dx%d cells (%dx%d px)\ndirt patches: %d  rocks: %d  deco: %d  bushes: %d\narea %s  land %d%%  nodes %d  build %d ms" % [
+	return "seed: %d  size: %dx%d cells (%dx%d px)\ndirt patches: %d  rocks: %d  deco: %d  bushes: %d\narea %s  land %d%%  nodes %d  dirt cells %d\nbuild %d ms (ground picture %d ms)" % [
 		current_seed, map_cols, map_rows, map_size().x, map_size().y,
 		result.patches.size(), result.obstacles.size(), result.deco.size(), result.border.size(),
-		["forest", "rocky", "boss"][ai] if ai >= 0 else "water", land_pct, node_count, build_ms]
+		["forest", "rocky", "boss"][ai] if ai >= 0 else "water", land_pct, node_count, result.dirt_cells.size(), build_ms, bake_ms]
 
 
 ## F3 Save asks this instead of reading the export: map_seed 0 means "random", but a saved file
@@ -345,6 +532,7 @@ func _fresh_seed() -> int:
 
 ## Setters call this. Several changes in one frame (Load in the F3 panel) rebuild once.
 func _changed(new_seed := false, relayout := false) -> void:
+	_want_full = true
 	_want_new_seed = _want_new_seed or new_seed
 	_want_relayout = _want_relayout or relayout
 	if not _ready_done or _rebuild_queued:
@@ -353,15 +541,42 @@ func _changed(new_seed := false, relayout := false) -> void:
 	_rebuild_deferred.call_deferred()
 
 
+## Look-only settings (paths, camp, patches, smoothing, beach): re-bake just the ground. Chopped trees stay chopped and
+## placed stations stay where they are.
+func _changed_ground() -> void:
+	_want_ground = true
+	if not _ready_done or _rebuild_queued:
+		return
+	_rebuild_queued = true
+	_rebuild_deferred.call_deferred()
+
+
+func rebuild_ground() -> void:
+	if not _ready_done or result == null or result.ground.is_empty():
+		rebuild(false)
+		return
+	var t0 := Time.get_ticks_msec()
+	MapGen.rebuild_ground(result, style, make_params())
+	_build_deco()
+	_build_island_ground()
+	build_ms = maxi(Time.get_ticks_msec() - t0, 1)
+
+
 func _rebuild_deferred() -> void:
 	if not _rebuild_queued:
 		return
 	_rebuild_queued = false
 	var new_seed := _want_new_seed
 	var relayout := _want_relayout
+	var ground_only := _want_ground and not _want_full and not new_seed and not relayout
 	_want_new_seed = false
 	_want_relayout = false
-	rebuild(new_seed, relayout)
+	_want_full = false
+	_want_ground = false
+	if ground_only:
+		rebuild_ground()
+	else:
+		rebuild(new_seed, relayout)
 
 
 ## Runs a queued rebuild now (the caller needs the new map in this same frame).
@@ -401,6 +616,17 @@ func make_params() -> MapGen.Params:
 	p.forest_end = forest_end
 	p.rocky_end = rocky_end
 	p.area_wobble = area_wobble
+	p.smooth_passes = smooth_passes
+	p.border_jitter = border_jitter
+	p.min_island_cells = min_island_cells
+	p.beach_cells = beach_cells
+	p.path_on = path_on
+	p.path_width = path_width
+	p.path_branches = path_branches
+	p.path_wobble = path_wobble
+	p.camp_radius = camp_radius
+	p.dirt_patches = dirt_patches
+	p.dirt_patch_size = dirt_patch_size
 	p.zone = _zone
 	p.spawns = _spawns
 	p.player_spawn = _player_spawn
@@ -606,26 +832,30 @@ func _apply_camera() -> void:
 # ------------------------------------------------------------------- build ---
 
 func _build() -> void:
-	_build_water()
-	var ts := _make_tileset()
-	_dirt.tile_set = ts
-	_grass.tile_set = ts
+	_build_water_body()
 	_dirt.clear()
 	_grass.clear()
-	for cell in result.dirt:
-		_dirt.set_cell(cell, 0, result.dirt[cell])
-	for cell in result.grass:
-		_grass.set_cell(cell, 0, result.grass[cell])
+	_water.clear()
+	bake_ms = 0
+	if not result.ground.is_empty():
+		_build_island_ground()
+	else:
+		_terrain.hide_island()
+		_build_water_tiles()
+		var ts := _make_tileset()
+		_dirt.tile_set = ts
+		_grass.tile_set = ts
+		for cell in result.dirt:
+			_dirt.set_cell(cell, 0, result.dirt[cell])
+		for cell in result.grass:
+			_grass.set_cell(cell, 0, result.grass[cell])
 
-	for container in [_deco, _obstacles, _border]:
+	_build_deco()
+	for container in [_obstacles]:
 		for c in container.get_children():
 			container.remove_child(c)
 			c.queue_free()
 	var s := float(style.pixel_scale)
-	for d in result.border:
-		_add_sprite(_border, style.border, d["region"], d["pos"], s, d["flip"])
-	for d in result.deco:
-		_add_sprite(_deco, style.deco[d["set"]], d["region"], d["pos"], s, false)
 	for o in result.obstacles:
 		if o["node"] >= 0:
 			var rn: ResourceNode = RESOURCE_NODE.instantiate()
@@ -657,12 +887,79 @@ func _build() -> void:
 		_add_sprite(body, style.obstacles, o["region"], Vector2(0, o["radius"]), s, false)
 
 
-func _build_water() -> void:
-	_water.clear()
+func _build_deco() -> void:
+	for container in [_deco, _border]:
+		for c in container.get_children():
+			container.remove_child(c)
+			c.queue_free()
+	var s := float(style.pixel_scale)
+	for d in result.border:
+		_add_sprite(_border, style.border, d["region"], d["pos"], s, d["flip"])
+	for d in result.deco:
+		_add_sprite(_deco, style.deco[d["set"]], d["region"], d["pos"], s, false)
+
+
+## The island ground: one baked picture + water shader + foam (see GroundBaker, TerrainVisual).
+func _build_island_ground() -> void:
+	var t0 := Time.get_ticks_msec()
+	for d in style.grounds:   # an edited GroundData (F3 / editor) clears the piece cache and re-bakes the ground
+		if d != null and not d.changed.is_connected(_on_ground_resource_changed):
+			d.changed.connect(_on_ground_resource_changed)
+	_sync_boss_ground()
+	var images := GroundBaker.bake(result, style, _tint_look())
+	_terrain.show_island(images, GroundBaker.water_image(style, 4, result.seed), float(style.pixel_scale))
+	_apply_terrain_look()
+	bake_ms = Time.get_ticks_msec() - t0
+
+
+## The ground colour numbers for GroundBaker: a tint per Area and the patch settings.
+func _tint_look() -> Dictionary:
+	var tints: Array[Color] = []
+	for a in [[forest_bright, forest_warm], [rocky_bright, rocky_warm], [1.0, 0.0]]:   # boss: in its pixels, see _sync_boss_ground
+		tints.append(Color(a[0] * (1.0 + a[1]), a[0], a[0] * (1.0 - a[1])))
+	return {"tint": tints, "sat": [forest_sat, rocky_sat, 1.0], "shade_variation": shade_variation, "shade_scale": shade_scale}
+
+
+## Tint sliders: redo only the one-pixel-per-cell tint map, not the ground picture.
+func _retint() -> void:
+	if not _ready_done or result == null or result.ground.is_empty() or _terrain == null:
+		return
+	_terrain.set_tint(GroundBaker.tint_image(result, _tint_look()), GroundBaker.shade_image(result, _tint_look()))
+
+
+func _apply_terrain_look() -> void:
+	if _terrain == null:
+		return
+	_terrain.set_look({"shimmer_speed": shimmer_speed, "shimmer_strength": shimmer_strength, "shimmer_scale": shimmer_scale,
+		"shimmer_amount": shimmer_amount, "wave_strength": wave_strength, "ground_brightness": ground_brightness, "ground_saturation": ground_saturation, "drift_scale": drift_scale, "drift_speed": drift_speed,
+		"shimmer_color": Color(shimmer_r, shimmer_g, shimmer_b), "foam_color": Color(foam_r, foam_g, foam_b), "foam_alpha": foam_alpha, "foam_pulse": foam_pulse, "foam_speed": foam_speed})
+
+
+## The boss grass carries its own colour in its pixels (GroundData bright / warm / sat), so edge pieces drawn over the
+## cobble match the fill. The area tint of the boss area stays neutral.
+func _sync_boss_ground() -> void:
+	if style == null or style.grounds.size() <= MapGen.Ground.BOSS or style.grounds[MapGen.Ground.BOSS] == null:
+		return
+	var g := style.grounds[MapGen.Ground.BOSS]
+	if g.bright != boss_bright or g.warm != boss_warm or g.sat != boss_sat:
+		g.bright = boss_bright   # each set emits `changed` -> clear the cache, re-bake the ground (queued, once)
+		g.warm = boss_warm
+		g.sat = boss_sat
+
+
+func _on_ground_resource_changed() -> void:
+	GroundBaker.clear_cache()
+	_changed_ground()
+
+
+func _build_water_tiles() -> void:
 	if style.water_texture and not result.water.is_empty():
 		_water.tile_set = _make_tileset(style.water_texture, result.water.values())
 		for cell in result.water:
 			_water.set_cell(cell, 0, result.water[cell])
+
+
+func _build_water_body() -> void:
 	for c in _water_body.get_children():
 		_water_body.remove_child(c)
 		c.queue_free()

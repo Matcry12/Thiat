@@ -42,3 +42,20 @@ dark grass (1..3, 11) = boss area; `Water_tiles` (1..3, 12) = water.
 - **Dungeon:** teal `floor` + dungeon `wall` + `pillars` as cover + moss/blood `deco`.
 - **Outdoor:** cobble or dirt `floor` with grass `edge` + grey `cliff` border + `Rocks.png` (in
   `Environment/Props/Static/`) as cover.
+
+
+## Island ground (decision 0033)
+
+Borders use ONE straight edge window per ground (`GroundData.edge_window`, 16x16 px, ground on top, border at row 8); the 16
+dual-grid pieces are built from it (see `ground_baker.gd`). Windows (px on the sheet):
+
+| Ground | Sheet | Fills (tile coords) | Edge window |
+|---|---|---|---|
+| grass / boss grass | `Floors_Tiles.png` | (1..3,10) | (32,4) = ring tile above the hole, middle |
+| cobble | `Floors_Tiles.png` | (6..8,10) | (112,4) |
+| dirt | `Floors_Tiles.png` | (11..13,10) | (192,6) |
+| SV grass | `assets/map/sv_autotiles.png` | (0,0),(4,0) | (32,48) = bottom edge of the grass blob, green pixels = ground |
+| SV dirt | same | (1,0),(1,1),(3,1),(1,2), green tufts scrubbed | same window, recoloured with the dirt fills |
+| SV water | same | (8,0) | none (water is the shader layer) |
+
+Not in either pack: dead/dark ground (the boss area is tinted grass), inner-corner or blob frames (built by alpha AND / OR).

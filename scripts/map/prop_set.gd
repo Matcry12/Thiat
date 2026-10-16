@@ -12,3 +12,5 @@ extends Resource
 @export var on_dirt := false
 ## Deco only: how often this set is picked, relative to the other sets.
 @export var weight := 1.0
+## Deco only: pick weight per island area (forest, rocky, boss), multiplied with `weight`. 0 = never there.
+@export var area_weights := Vector3.ONE

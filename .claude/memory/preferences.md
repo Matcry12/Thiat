@@ -53,3 +53,7 @@ shield will become its own off-hand weapon. It is acceptable because in this cod
 eased rotation number per weapon (`WeaponData.guard_angle_degrees`), not animation frames. So: a
 weapon-held pose that is a single number is fine; anything needing per-weapon FRAMES still defaults
 to a shared effect.
+
+## Judges judge the LOOK too (2026-10-08)
+For art/visual work, give the Opus judge the rendered PNGs and video frames and ask strictly "does it read well
+at game size?", not only code. User: "tell opus to judge harder" after a blocky body read as a cube.

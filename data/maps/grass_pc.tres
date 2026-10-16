@@ -1,0 +1,111 @@
+[gd_resource type="Resource" script_class="MapStyle" format=3]
+
+[ext_resource type="Script" path="res://scripts/map/map_style.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/map/prop_set.gd" id="2"]
+[ext_resource type="Texture2D" path="res://assets/map/Floors_Tiles.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/map/Vegetation.png" id="4"]
+[ext_resource type="Texture2D" path="res://assets/map/Rocks.png" id="5"]
+[ext_resource type="Texture2D" path="res://assets/map/Water_tiles.png" id="6"]
+[ext_resource type="Script" path="res://scripts/world/resource_node_data.gd" id="23"]
+[ext_resource type="Script" path="res://scripts/map/ground_data.gd" id="30"]
+[ext_resource type="Resource" path="res://data/maps/ground_dirt.tres" id="31"]
+[ext_resource type="Resource" path="res://data/maps/ground_cobble.tres" id="32"]
+[ext_resource type="Resource" path="res://data/maps/ground_grass.tres" id="33"]
+[ext_resource type="Resource" path="res://data/maps/ground_boss.tres" id="34"]
+[ext_resource type="Resource" path="res://data/resource_nodes/tree.tres" id="20"]
+[ext_resource type="Resource" path="res://data/resource_nodes/rock.tres" id="21"]
+[ext_resource type="Resource" path="res://data/resource_nodes/copper_rock.tres" id="22"]
+
+[sub_resource type="Resource" id="Border"]
+script = ExtResource("2")
+texture = ExtResource("4")
+regions = Array[Rect2]([Rect2(2, 5, 29, 27), Rect2(3, 32, 42, 32), Rect2(3, 65, 42, 31), Rect2(2, 99, 43, 43)])
+
+[sub_resource type="Resource" id="Tufts"]
+script = ExtResource("2")
+texture = ExtResource("4")
+regions = Array[Rect2]([Rect2(64, 144, 16, 16), Rect2(36, 149, 10, 9), Rect2(6, 150, 5, 8), Rect2(21, 150, 8, 6), Rect2(51, 150, 9, 6), Rect2(21, 164, 7, 10), Rect2(67, 164, 11, 8), Rect2(5, 165, 7, 9), Rect2(36, 166, 9, 6), Rect2(97, 177, 14, 15), Rect2(82, 183, 12, 9)])
+weight = 3.0
+area_weights = Vector3(1, 0.15, 0)
+
+[sub_resource type="Resource" id="Plants"]
+script = ExtResource("2")
+texture = ExtResource("4")
+regions = Array[Rect2]([Rect2(80, 147, 31, 25), Rect2(112, 166, 32, 26), Rect2(145, 166, 15, 26), Rect2(164, 176, 9, 16)])
+weight = 0.7
+area_weights = Vector3(1, 0.1, 0)
+
+[sub_resource type="Resource" id="Flowers"]
+script = ExtResource("2")
+texture = ExtResource("4")
+regions = Array[Rect2]([Rect2(53, 373, 7, 6), Rect2(69, 373, 6, 6), Rect2(86, 373, 5, 5), Rect2(100, 373, 8, 7), Rect2(117, 373, 7, 6), Rect2(133, 374, 6, 5), Rect2(149, 374, 6, 6), Rect2(165, 374, 5, 5), Rect2(53, 389, 7, 6), Rect2(69, 389, 6, 6), Rect2(86, 389, 5, 5), Rect2(100, 389, 8, 7), Rect2(117, 389, 7, 6), Rect2(133, 390, 6, 5), Rect2(149, 390, 6, 6), Rect2(165, 390, 5, 5), Rect2(53, 405, 7, 6), Rect2(69, 405, 6, 6), Rect2(86, 405, 5, 5), Rect2(100, 405, 8, 7), Rect2(117, 405, 7, 6), Rect2(133, 406, 6, 5), Rect2(149, 406, 6, 6), Rect2(165, 406, 5, 5), Rect2(53, 421, 7, 6), Rect2(69, 421, 6, 6), Rect2(86, 421, 5, 5), Rect2(100, 421, 8, 7), Rect2(117, 421, 7, 6), Rect2(133, 422, 6, 5), Rect2(149, 422, 6, 6), Rect2(165, 422, 5, 5)])
+weight = 2.0
+area_weights = Vector3(1, 0, 0)
+
+[sub_resource type="Resource" id="Mushrooms"]
+script = ExtResource("2")
+texture = ExtResource("4")
+regions = Array[Rect2]([Rect2(49, 338, 14, 14), Rect2(36, 340, 8, 9), Rect2(21, 341, 5, 7)])
+weight = 0.5
+area_weights = Vector3(1, 0.2, 0)
+
+[sub_resource type="Resource" id="Pebbles"]
+script = ExtResource("2")
+texture = ExtResource("5")
+regions = Array[Rect2]([Rect2(35, 53, 10, 7), Rect2(48, 51, 15, 10), Rect2(69, 54, 7, 6), Rect2(85, 54, 8, 6), Rect2(131, 53, 10, 7), Rect2(144, 51, 15, 10), Rect2(165, 54, 7, 6), Rect2(181, 54, 8, 6), Rect2(68, 69, 8, 7), Rect2(52, 70, 7, 5), Rect2(37, 71, 6, 4), Rect2(81, 68, 11, 9), Rect2(148, 70, 7, 5), Rect2(164, 69, 8, 7), Rect2(177, 68, 11, 9), Rect2(36, 85, 8, 6), Rect2(53, 86, 7, 6), Rect2(69, 86, 8, 6), Rect2(132, 85, 8, 6), Rect2(149, 86, 7, 6), Rect2(165, 86, 8, 6)])
+on_dirt = true
+weight = 2.5
+area_weights = Vector3(0.5, 2.5, 1.5)
+
+[sub_resource type="Resource" id="DryTufts"]
+script = ExtResource("2")
+texture = ExtResource("4")
+regions = Array[Rect2]([Rect2(64, 240, 16, 16), Rect2(36, 245, 10, 9), Rect2(6, 246, 5, 8), Rect2(21, 246, 8, 6), Rect2(51, 246, 9, 6), Rect2(21, 260, 7, 10), Rect2(67, 260, 11, 8), Rect2(5, 261, 7, 9), Rect2(36, 262, 9, 6)])
+weight = 3.0
+area_weights = Vector3(0, 1.4, 1.2)
+
+[sub_resource type="Resource" id="DryPlants"]
+script = ExtResource("2")
+texture = ExtResource("4")
+regions = Array[Rect2]([Rect2(80, 243, 31, 25), Rect2(112, 262, 32, 26), Rect2(145, 262, 15, 26), Rect2(164, 272, 9, 16)])
+weight = 0.7
+area_weights = Vector3(0, 0.7, 1)
+
+[sub_resource type="Resource" id="Twigs"]
+script = ExtResource("2")
+texture = ExtResource("4")
+regions = Array[Rect2]([Rect2(260, 0, 9, 16), Rect2(276, 0, 11, 14), Rect2(243, 2, 9, 11), Rect2(293, 3, 9, 11), Rect2(308, 4, 8, 10), Rect2(290, 19, 13, 9), Rect2(306, 20, 11, 8), Rect2(323, 20, 11, 10)])
+on_dirt = true
+weight = 1.5
+area_weights = Vector3(0.15, 1, 0.8)
+
+[sub_resource type="Resource" id="DeadBushes"]
+script = ExtResource("2")
+texture = ExtResource("4")
+regions = Array[Rect2]([Rect2(197, 65, 34, 31), Rect2(196, 98, 39, 46)])
+weight = 0.25
+area_weights = Vector3(0, 0.6, 1.5)
+
+[sub_resource type="Resource" id="Rocks"]
+script = ExtResource("2")
+texture = ExtResource("5")
+regions = Array[Rect2]([Rect2(2, 19, 28, 43), Rect2(35, 19, 26, 27), Rect2(98, 19, 28, 43), Rect2(131, 19, 26, 27), Rect2(80, 17, 16, 14), Rect2(176, 17, 16, 14)])
+radii = PackedFloat32Array(22, 20, 22, 20, 12, 12)
+
+[resource]
+script = ExtResource("1")
+tileset_texture = ExtResource("3")
+dirt_fills = Array[Vector2i]([Vector2i(11, 10), Vector2i(12, 10), Vector2i(13, 10)])
+grass_fills = Array[Vector2i]([Vector2i(1, 10), Vector2i(2, 10), Vector2i(3, 10)])
+grass_dark_fills = Array[Vector2i]([Vector2i(1, 11), Vector2i(2, 11), Vector2i(3, 11)])
+rocky_fills = Array[Vector2i]([Vector2i(6, 10), Vector2i(7, 10), Vector2i(8, 10)])
+boss_fills = Array[Vector2i]([Vector2i(1, 11), Vector2i(2, 11), Vector2i(3, 11)])
+water_texture = ExtResource("6")
+water_fills = Array[Vector2i]([Vector2i(1, 12), Vector2i(2, 12), Vector2i(3, 12)])
+water_color = Color(0.18, 0.42, 0.62, 1)
+grounds = Array[ExtResource("30")]([null, ExtResource("31"), ExtResource("32"), ExtResource("33"), ExtResource("34")])
+edge_tiles = {"nw": Vector2i(1, 1), "ne": Vector2i(3, 1), "sw": Vector2i(1, 3), "se": Vector2i(3, 3), "n_l": Vector2i(1, 0), "n_m": Vector2i(2, 0), "n_r": Vector2i(3, 0), "s_l": Vector2i(1, 4), "s_m": Vector2i(2, 4), "s_r": Vector2i(3, 4), "w_t": Vector2i(0, 1), "w_m": Vector2i(0, 2), "w_b": Vector2i(0, 3), "e_t": Vector2i(4, 1), "e_m": Vector2i(4, 2), "e_b": Vector2i(4, 3)}
+border = SubResource("Border")
+deco = Array[ExtResource("2")]([SubResource("Tufts"), SubResource("Plants"), SubResource("Flowers"), SubResource("Mushrooms"), SubResource("Pebbles"), SubResource("DryTufts"), SubResource("DryPlants"), SubResource("Twigs"), SubResource("DeadBushes")])
+obstacles = SubResource("Rocks")
+resource_nodes = Array[ExtResource("23")]([ExtResource("20"), ExtResource("21"), ExtResource("22")])

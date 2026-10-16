@@ -23,3 +23,5 @@
   never `commit -a`. Stage files by name, and `git diff` every .tscn before it goes in.
 - 2026-10-01: unzipped a third-party pack inside res:// with read-only dirs → Godot spammed "Cannot open .import" errors. Raw packs get a `.gdignore`; copy the sheets we use elsewhere.
 - 2026-10-04: cleaned (recoloured + re-outlined) the user's drawing without asking → never alter user art beyond what was asked; ask first, keep an untouched copy in assets/characters/source/.
+- Before telling the user an art piece is "missing", try to BUILD it from pieces we have (e.g. inner grass corner = alpha-AND of two straight edge tiles). Said "needs new tiles" for road turns; the user pushed back and composing worked.
+- 2026-10-16: Map v2 baked dirt/grass edges with wrongly mapped autotile pieces (notches, grass holes, edges facing the wrong way) and shipped screenshots without checking them on a known shape → before any tiling goes on the map, render a labelled piece sheet + test shapes (square, plus, diagonal, 1-cell hole, thin strip) and check each one at 4x.

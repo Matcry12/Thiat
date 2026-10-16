@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="GroundData" format=3]
+
+[ext_resource type="Script" path="res://scripts/map/ground_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/map/sv_autotiles.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"sv_grass"
+layer = 3
+texture = ExtResource("2")
+fills = Array[Vector2i]([Vector2i(0, 0), Vector2i(4, 0)])
+edge_window = Rect2i(32, 48, 16, 16)
+edge_key = 1

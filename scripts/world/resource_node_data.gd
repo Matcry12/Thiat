@@ -28,6 +28,14 @@ extends Resource
 @export var texture: Texture2D
 ## Look variants (rects on `texture`).
 @export var regions: Array[Rect2] = []
+## More looks. Placement never picks these (it keeps using `regions`, so a seed gives the same trees);
+## the island areas below do. Look index = position in regions + extra_regions.
+@export var extra_regions: Array[Rect2] = []
+## Which looks each island area may show (indices as above). Empty = whatever placement picked.
+## Forest: green trees. Rocky: autumn and dead ones. Boss: dead ones.
+@export var looks_forest: PackedInt32Array = PackedInt32Array()
+@export var looks_rocky: PackedInt32Array = PackedInt32Array()
+@export var looks_boss: PackedInt32Array = PackedInt32Array()
 ## What stays after it breaks (a stump). Empty = nothing stays.
 @export var remains_region := Rect2()
 @export var pixel_scale := 2
@@ -40,3 +48,16 @@ extends Resource
 @export var hit_type: StringName = &"chop"
 @export var clink_type: StringName = &"clink"
 @export var break_type: StringName = &"node_break"
+
+
+func all_regions() -> Array[Rect2]:
+	var out := regions.duplicate()
+	out.append_array(extra_regions)
+	return out
+
+
+## Look index for a node in island `area` (0 forest, 1 rocky, 2 boss); `pick` is any stable int (a hash).
+## -1 = this area has no list: keep what placement picked.
+func look_for(area: int, pick: int) -> int:
+	var list: PackedInt32Array = [looks_forest, looks_rocky, looks_boss][clampi(area, 0, 2)]
+	return -1 if list.is_empty() else list[pick % list.size()]

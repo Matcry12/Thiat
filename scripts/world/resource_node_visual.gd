@@ -16,7 +16,8 @@ func show_variant(d: ResourceNodeData, v: int) -> void:
 		body.texture = null
 		queue_redraw()
 		return
-	_set_region(body, d.regions[v % d.regions.size()])
+	var all := d.all_regions()
+	_set_region(body, all[v % all.size()])
 
 func show_remains(d: ResourceNodeData) -> void:
 	_set_region(get_node("Body"), d.remains_region)

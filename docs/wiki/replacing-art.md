@@ -179,3 +179,15 @@ Both are stand-ins ([0032](../decision/0032-temp-tiny-rpg-art.md)). Licence: no 
 | Back to the old look | Player: pick `blocky.tres` as the rig. Boss: clear `body_frames` | Placeholder circle returns |
 
 New character with a side view only: make a SpriteFrames with `idle_side` / `run_side` / `hit_side` and a BodyRig that points at it. The frames are 100x100 cells here: put the feet on the shadow with `body_position`, not by editing the art.
+
+
+## Island ground, water and trees (data only)
+
+| What | Where |
+|---|---|
+| Which pack: whole map look | `ArenaMap.style` -> `data/maps/grass.tres` (Serene Village forest) or `grass_pc.tres` (Pixel Crawler only) |
+| A ground (fills, edge frame, layer) | `data/maps/ground_*.tres` (`GroundData`); list order in `MapStyle.grounds`: dirt, cobble, grass, boss grass |
+| Water tile | `MapStyle.water_texture` + `water_fills`; shimmer / foam numbers in F3 Map |
+| Trees per area | `data/resource_nodes/tree*.tres`: `looks_forest / looks_rocky / looks_boss` (indices into `regions + extra_regions`) |
+| Deco per area | `PropSet.area_weights` (forest, rocky, boss) in the style |
+Credits for third-party art: [credits.md](credits.md).

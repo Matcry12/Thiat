@@ -214,6 +214,10 @@ func _ready() -> void:
 
 	if _map:
 		_targets.append({"name": "Map", "object": _map})
+		if _map.style:
+			for gd in _map.style.grounds:   # the island grounds (edge outline, corner cut ...): changing one re-bakes the ground
+				if gd:
+					_targets.append({"name": "Ground " + String(gd.id), "object": gd})
 
 	# Gathering (W2): the collector, the three node kinds (density applies on the next New map), the fists.
 	_collector = _player.get_node_or_null("Collector") as Collector

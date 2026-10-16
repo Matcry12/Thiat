@@ -15,6 +15,9 @@ const RING := 2
 const FLOW_STEP := 16.0   ## cell size of the walkability grid, in px
 const WATER := 3          ## fourth cell kind: no ground tile, water shows
 enum Area { FOREST, ROCKY, BOSS }
+## Island ground kinds (decision 0033); the index into MapStyle.grounds. WATER has no tiles.
+enum Ground { WATER, DIRT, COBBLE, GRASS, BOSS }
+const AREA_GROUND := [Ground.GRASS, Ground.COBBLE, Ground.BOSS]   ## Area -> its ground
 
 
 class Params:
@@ -49,6 +52,18 @@ class Params:
 	var forest_end := 0.45            ## area by distance home -> boss (0 = home, 1 = boss)
 	var rocky_end := 0.8
 	var area_wobble := 0.12           ## noise on the area borders, so they are not circles
+	# Looks only (decision 0033): nothing below changes where anything can walk, stand or be placed.
+	var border_jitter := 0.35         ## share of border cells that swap to the neighbour's ground before smoothing: breaks ruler-straight borders
+	var min_island_cells := 14        ## ground patches smaller than this are absorbed by their surroundings (visual ground only)
+	var smooth_passes := 2            ## majority passes that remove 1-cell spikes / holes / checkerboards before tiling
+	var beach_cells := 1              ## dirt strip along the coast, in cells (0 = grass / cobble to the water)
+	var path_on := true
+	var path_width := 3               ## main path, cells (branches are one less, never under 2)
+	var path_branches := 3
+	var path_wobble := 0.6            ## how much the path wanders around trees and bends (0 = straightest)
+	var camp_radius := 2              ## dirt clearing around the campfire, cells
+	var dirt_patches := 0.25          ## organic dirt patches per 100 forest cells
+	var dirt_patch_size := 2.5        ## biggest patch radius, cells
 
 	func size_px() -> Vector2:
 		return world
@@ -67,6 +82,10 @@ class Result:
 	var land := PackedByteArray()            ## 1 land, 0 water, per cell
 	var bridge := {}                         ## Vector2i cell -> true for every cell of the carved land bridge (stations may not stand there)
 	var area := PackedByteArray()            ## Area per cell (ignore on water)
+	var ground := PackedByteArray()          ## Ground per cell (island look, smoothed; WATER on water). Empty = the style has no island grounds
+	var dirt_stamps := PackedVector3Array()  ## round dirt stamps (world x, y, radius px): patches, camp, paths. Look only
+	var dirt_cells := {}                     ## Vector2i cell -> true under a stamp (deco keeps off them)
+	var cell := 32.0                         ## cell size the stamps were made with
 	var cols := 0                            ## grid size land/area were built with (Params may change later)
 	var rows := 0
 	var obstacle_grid := {}                  ## Vector2i bucket -> Array of obstacle dicts (spacing lookups)
@@ -86,6 +105,8 @@ static func generate(style: MapStyle, p: Params, rng_seed: int) -> Result:
 		_place_nodes(res, style, p, rng)   # on the island every rock is a resource node
 	else:
 		_place_obstacles(res, style, p, rng)
+	if p.island_on and not style.grounds.is_empty():
+		_build_ground(res, style, p)
 	_place_deco(res, style, p, rng, _noise(rng_seed + 2, p.noise_frequency))
 	if not p.island_on:
 		_place_border(res, style, p, rng)   # on the island the water is the edge
@@ -430,6 +451,23 @@ static func _place_nodes(res: Result, style: MapStyle, p: Params, rng: RandomNum
 					_add_obstacle(res, {"region": v, "pos": pos, "radius": kind.radius, "node": ki})
 					made += 1
 	_repair_reach(res, p)
+	_assign_looks(res, style, p)
+
+
+## Which picture each node shows, by the area it stands in (forest: green trees, rocky: autumn / dead, boss: dead).
+## Runs AFTER placement and draws no random numbers, so a seed still gives the same nodes in the same places.
+static func _assign_looks(res: Result, style: MapStyle, p: Params) -> void:
+	for i in res.obstacles.size():
+		var o := res.obstacles[i]
+		if o["node"] < 0:
+			continue
+		var c := Vector2i(o["pos"] / p.cell)
+		var ci := cell_index(p, c)
+		if ci < 0:
+			continue
+		var look := (style.resource_nodes[o["node"]] as ResourceNodeData).look_for(res.area[ci], c.x * 7 + c.y * 13 + i)
+		if look >= 0:
+			o["region"] = look
 
 
 static func _add_obstacle(res: Result, o: Dictionary) -> void:
@@ -614,10 +652,10 @@ static func _repair_reach(res: Result, p: Params) -> void:
 
 static func _place_deco(res: Result, style: MapStyle, p: Params, rng: RandomNumberGenerator, noise: FastNoiseLite) -> void:
 	var sets := style.deco
-	var total_w := 0.0
+	var any := false
 	for s in sets:
-		total_w += s.weight if not s.regions.is_empty() else 0.0
-	if total_w <= 0.0:
+		any = any or not s.regions.is_empty()
+	if not any:
 		return
 	var size := p.size_px()
 	var target := int(p.deco_density * p.cols * p.rows)
@@ -627,19 +665,32 @@ static func _place_deco(res: Result, style: MapStyle, p: Params, rng: RandomNumb
 		if res.deco.size() >= target:
 			break
 		var pos := Vector2(rng.randf_range(p.cell * 1.5, size.x - p.cell * 1.5), rng.randf_range(p.cell * 1.5, size.y - p.cell))
-		var pick := rng.randf() * total_w
+		var pick_r := rng.randf()
+		var cell := Vector2i(pos / p.cell)
+		var ci := cell.y * p.cols + cell.x
+		if res.land[ci] == 0:
+			continue
+		# which set: by weight, and by the island area (flowers only in the forest, dry stuff in rocky / boss ...)
+		var area: int = res.area[ci]
+		var total_w := 0.0
+		for s in sets:
+			total_w += _deco_weight(s, area)
+		if total_w <= 0.0:
+			continue
+		var pick := pick_r * total_w
 		var si := 0
 		for i in sets.size():
-			var w: float = sets[i].weight if not sets[i].regions.is_empty() else 0.0
+			var w := _deco_weight(sets[i], area)
 			if pick < w:
 				si = i
 				break
 			pick -= w
 		var set: PropSet = sets[si]
-		var cell := Vector2i(pos / p.cell)
-		if res.land[cell.y * p.cols + cell.x] == 0:
-			continue
-		if res.kind[cell.y * p.cols + cell.x] != FILL and not set.on_dirt:
+		if not res.ground.is_empty():
+			var gd := res.ground[ci]
+			if (gd == Ground.DIRT or gd == Ground.COBBLE or res.dirt_cells.has(cell)) and not set.on_dirt:
+				continue                  # plants only on grass
+		elif res.kind[ci] != FILL and not set.on_dirt:
 			continue                      # plants only on full grass
 		if rng.randf() > _n01(noise, pos.x / p.cell, pos.y / p.cell):
 			continue                      # likelier where the noise is high
@@ -658,6 +709,12 @@ static func _place_deco(res: Result, style: MapStyle, p: Params, rng: RandomNumb
 		if ok:
 			res.deco.append({"set": si, "region": rng.randi() % set.regions.size(), "pos": pos})
 			grid.get_or_add(b, []).append(pos)
+
+
+static func _deco_weight(set: PropSet, area: int) -> float:
+	if set.regions.is_empty():
+		return 0.0
+	return set.weight * [set.area_weights.x, set.area_weights.y, set.area_weights.z][area]
 
 
 # ------------------------------------------------------------------- border ---
@@ -688,3 +745,324 @@ static func _place_border(res: Result, style: MapStyle, p: Params, rng: RandomNu
 			res.border.append({"region": idx, "pos": pos, "flip": rng.randf() < 0.5})
 			t += along * rng.randf_range(0.5, 0.75) / dens
 	res.border.sort_custom(func(a, b): return a["pos"].y < b["pos"].y)
+
+
+# ------------------------------------------------------------------- ground ---
+## The island's ground (looks only). Area -> ground, smoothed so no 1-cell spikes or holes reach the tiles, plus a
+## beach. Dirt (patches, the camp, paths) is NOT in the ground array: it is a list of round stamps in pixels
+## (`res.dirt_stamps`) that GroundBaker paints smoothly over the tiles, so a path at 45 degrees has no stair teeth.
+## All from its own random stream (seed + 101): the gameplay stream is untouched, so seeds keep their trees, rocks and deco.
+static func _build_ground(res: Result, style: MapStyle, p: Params) -> void:
+	var n := p.cols * p.rows
+	var rng := RandomNumberGenerator.new()
+	rng.seed = res.seed + 101
+	var noise := _noise(res.seed + 5, 0.13)
+	var g := PackedByteArray()
+	g.resize(n)
+	for i in n:
+		if res.land[i] == 1:
+			g[i] = AREA_GROUND[res.area[i]]
+	_jitter_borders(g, p, res.seed + 9)   # twice, so a border wanders by up to two cells
+	_jitter_borders(g, p, res.seed + 10)
+	_smooth_ground(g, p.cols, p.rows, p.smooth_passes)
+	_drop_small(g, p)
+	var dist := _water_dist(res, p, p.camp_radius + p.beach_cells + 3)
+	res.cell = p.cell
+	res.dirt_stamps = PackedVector3Array()
+	res.dirt_cells = {}
+	_dirt_patches(res, p, g, dist, rng)
+	var camp: Vector2 = p.spawns[3] if p.spawns.size() > 3 else p.player_spawn
+	var camp_cell := Vector2i(camp / p.cell)
+	# the clearing shrinks where home is near the coast (never into the beach), but it is never dropped
+	var camp_r := clampf(float(dist[camp_cell.y * p.cols + camp_cell.x]) - p.beach_cells - 1.2, 1.2, p.camp_radius + 0.5)
+	_add_blob(res, p, camp, camp_r * p.cell, rng)
+	if p.path_on:
+		_carve_paths(res, p, g, dist, rng, noise)
+	var wobble := _noise(res.seed + 6, 0.21)
+	for i in n:   # the beach is `beach_cells` wide, plus a ragged extra cell where the noise says so
+		if g[i] != Ground.WATER and (dist[i] <= p.beach_cells or (dist[i] == p.beach_cells + 1 and p.beach_cells > 0 and _n01(wobble, i % p.cols, i / p.cols) > 0.62)):
+			g[i] = Ground.DIRT
+	_smooth_ground(g, p.cols, p.rows, 1)
+	res.ground = g
+
+
+## Ground only, again, after a look setting changed: nodes, rocks and the walk grid are not touched. Deco that now
+## stands on dirt or cobble (and is not a pebble-like set) is dropped.
+static func rebuild_ground(res: Result, style: MapStyle, p: Params) -> void:
+	_build_ground(res, style, p)
+	var kept: Array[Dictionary] = []
+	for d in res.deco:
+		var set: PropSet = style.deco[d["set"]]
+		var c := Vector2i(d["pos"] / p.cell)
+		var gd := res.ground[c.y * p.cols + c.x]
+		if not set.on_dirt and (gd == Ground.DIRT or gd == Ground.COBBLE or res.dirt_cells.has(c)):
+			continue
+		kept.append(d)
+	res.deco = kept
+
+
+## Border cells (land cells touching a different land ground) swap to that neighbour's ground with chance `border_jitter`,
+## so a border is not one cell column for a long run. Smoothing runs after and removes what is too thin.
+static func _jitter_borders(g: PackedByteArray, p: Params, jitter_seed: int) -> void:
+	if p.border_jitter <= 0.0:
+		return
+	var src := g.duplicate()
+	for y in range(1, p.rows - 1):
+		for x in range(1, p.cols - 1):
+			var i := y * p.cols + x
+			var c := src[i]
+			if c == 0:
+				continue
+			for o in [-p.cols, p.cols, -1, 1]:
+				var v := src[i + o]
+				if v != 0 and v != c:
+					if float(_hash_int(x, y, jitter_seed) % 100) / 100.0 < p.border_jitter:
+						g[i] = v
+					break
+
+
+static func _hash_int(x: int, y: int, s: int) -> int:
+	return ((x * 73856093) ^ (y * 19349663) ^ (s * 83492791)) & 0x7fffffff
+
+
+## Connected patches of one ground (4-neighbour) smaller than `min_island_cells` take the ground most of their
+## border cells have. Water is never touched.
+static func _drop_small(g: PackedByteArray, p: Params) -> void:
+	if p.min_island_cells <= 1:
+		return
+	var seen := PackedByteArray()
+	seen.resize(g.size())
+	for start in g.size():
+		if g[start] == 0 or seen[start] == 1:
+			continue
+		var kind := g[start]
+		var cells := PackedInt32Array([start])
+		seen[start] = 1
+		var k := 0
+		var votes := {}
+		while k < cells.size():
+			var i := cells[k]
+			k += 1
+			var x := i % p.cols
+			var y := i / p.cols
+			for o in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+				var q: Vector2i = Vector2i(x, y) + o
+				if q.x < 0 or q.y < 0 or q.x >= p.cols or q.y >= p.rows:
+					continue
+				var j := q.y * p.cols + q.x
+				if g[j] == kind:
+					if seen[j] == 0:
+						seen[j] = 1
+						cells.append(j)
+				elif g[j] != 0:
+					votes[g[j]] = votes.get(g[j], 0) + 1
+		if cells.size() < p.min_island_cells and not votes.is_empty():
+			var best := 0
+			var n := -1
+			for v in votes:
+				if votes[v] > n:
+					n = votes[v]
+					best = v
+			for i in cells:
+				g[i] = best
+
+
+## Majority passes: a land cell turns into its neighbours' ground when it is a 1-wide strip (same ground on
+## both opposite sides), a spike (3 of 4 neighbours agree) or one half of a checkerboard. Water never votes.
+## Cells on the map edge are left alone.
+static func _smooth_ground(g: PackedByteArray, cols: int, rows: int, passes: int) -> void:
+	for _pass in passes:
+		var src := g.duplicate()
+		for y in range(1, rows - 1):
+			var row := y * cols
+			for x in range(1, cols - 1):
+				var i := row + x
+				var c := src[i]
+				if c == 0:
+					continue
+				var n := src[i - cols]
+				var s := src[i + cols]
+				var w := src[i - 1]
+				var e := src[i + 1]
+				if n == s and n != c and n != 0:
+					g[i] = n
+				elif w == e and w != c and w != 0:
+					g[i] = w
+				else:
+					for v in [n, s, w, e]:
+						if v != c and v != 0 and int(n == v) + int(s == v) + int(w == v) + int(e == v) >= 3:
+							g[i] = v
+							break
+					if g[i] == c:
+						# checkerboard: two touching sides agree and the diagonal between them is our own ground.
+						# Reads the live array (not src): two cells of one checkerboard must not both flip at once.
+						n = g[i - cols]
+						s = g[i + cols]
+						w = g[i - 1]
+						e = g[i + 1]
+						if e == s and e != c and e != 0 and g[i + cols + 1] == c:
+							g[i] = e
+						elif e == n and e != c and e != 0 and g[i - cols + 1] == c:
+							g[i] = e
+						elif w == s and w != c and w != 0 and g[i + cols - 1] == c:
+							g[i] = w
+						elif w == n and w != c and w != 0 and g[i - cols - 1] == c:
+							g[i] = w
+
+
+## Cells to the nearest water (8-neighbour steps): water 0, a coast cell 1 ... `cap`; further land = cap + 1.
+static func _water_dist(res: Result, p: Params, cap: int) -> PackedByteArray:
+	var n := p.cols * p.rows
+	var d := PackedByteArray()
+	d.resize(n)
+	d.fill(cap + 1)
+	var frontier := PackedInt32Array()
+	for i in n:
+		if res.land[i] == 0:
+			d[i] = 0
+			frontier.append(i)
+	for step in cap:
+		var next := PackedInt32Array()
+		for i in frontier:
+			var x := i % p.cols
+			var y := i / p.cols
+			if x < 1 or y < 1 or x >= p.cols - 1 or y >= p.rows - 1:
+				continue
+			for o in [-p.cols - 1, -p.cols, -p.cols + 1, -1, 1, p.cols - 1, p.cols, p.cols + 1]:
+				if d[i + o] > step + 1:
+					d[i + o] = step + 1
+					next.append(i + o)
+		frontier = next
+	return d
+
+
+## A round dirt stamp (world px) and the cells it covers (deco keeps off them).
+static func _add_stamp(res: Result, p: Params, center: Vector2, r: float) -> void:
+	res.dirt_stamps.append(Vector3(center.x, center.y, r))
+	var c0 := Vector2i(((center - Vector2(r, r)) / p.cell).floor())
+	var c1 := Vector2i(((center + Vector2(r, r)) / p.cell).floor())
+	for y in range(c0.y, c1.y + 1):
+		for x in range(c0.x, c1.x + 1):
+			if (Vector2(x + 0.5, y + 0.5) * p.cell).distance_to(center) < r + p.cell * 0.4:
+				res.dirt_cells[Vector2i(x, y)] = true
+
+
+## An organic blob: one big disc plus three smaller ones around it.
+static func _add_blob(res: Result, p: Params, center: Vector2, r: float, rng: RandomNumberGenerator) -> void:
+	_add_stamp(res, p, center, r)
+	var a0 := rng.randf() * TAU
+	for k in 3:
+		_add_stamp(res, p, center + Vector2.from_angle(a0 + k * TAU / 3.0 + rng.randf_range(-0.4, 0.4)) * r * 0.75, r * rng.randf_range(0.5, 0.7))
+
+
+## A few small, ragged dirt patches in the forest, away from the coast.
+static func _dirt_patches(res: Result, p: Params, g: PackedByteArray, dist: PackedByteArray, rng: RandomNumberGenerator) -> void:
+	var spots := PackedInt32Array()
+	for i in g.size():
+		if g[i] == Ground.GRASS and dist[i] > p.beach_cells + 3:
+			spots.append(i)
+	if spots.is_empty():
+		return
+	for _k in roundi(p.dirt_patches * spots.size() / 100.0):
+		var i := spots[rng.randi() % spots.size()]
+		var c := (Vector2(i % p.cols, i / p.cols) + Vector2(0.5, 0.5)) * p.cell
+		_add_blob(res, p, c, rng.randf_range(0.8, maxf(p.dirt_patch_size * 0.7, 0.9)) * p.cell, rng)
+
+
+## Home -> boss path over the walkable land, and a few branches towards the rocky ground. A* on the cell grid
+## (AStarGrid2D, C++): water and the beach are solid, trees and rocks are expensive, noise makes it wander. The cell
+## path is smoothed (Chaikin) and turned into stamps spaced along it, only where the ground is forest grass (a path ends
+## where the rocky ground begins). The walk grid is not read or changed.
+static func _carve_paths(res: Result, p: Params, g: PackedByteArray, dist: PackedByteArray, rng: RandomNumberGenerator, noise: FastNoiseLite) -> void:
+	var astar := AStarGrid2D.new()
+	astar.region = Rect2i(0, 0, p.cols, p.rows)
+	astar.cell_size = Vector2.ONE
+	astar.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES
+	astar.default_compute_heuristic = AStarGrid2D.HEURISTIC_OCTILE
+	astar.default_estimate_heuristic = AStarGrid2D.HEURISTIC_OCTILE
+	astar.update()
+	astar.fill_solid_region(astar.region, true)
+	var keep := p.beach_cells + 2
+	for i in g.size():
+		if g[i] != Ground.WATER and dist[i] > keep:
+			var c := Vector2i(i % p.cols, i / p.cols)
+			astar.set_point_solid(c, false)
+			astar.set_point_weight_scale(c, 1.0 + p.path_wobble * 3.0 * _n01(noise, c.x, c.y))
+	for o in res.obstacles:   # go round trees and rocks
+		var oc := Vector2i(o["pos"] / p.cell)
+		for dy in range(-1, 2):
+			for dx in range(-1, 2):
+				var q := oc + Vector2i(dx, dy)
+				if astar.is_in_boundsv(q):
+					astar.set_point_weight_scale(q, 8.0)
+	var start := Vector2i(p.player_spawn / p.cell)
+	var goal := Vector2i(p.zone.get_center() / p.cell)
+	for e in [start, goal]:
+		astar.set_point_solid(e, false)
+	var main := astar.get_id_path(start, goal)
+	var forest: Array[Vector2i] = []
+	for c in main:
+		if g[c.y * p.cols + c.x] == Ground.GRASS:
+			forest.append(c)
+	_stamp_path(res, p, g, main, maxi(p.path_width, 2))
+	# branches: from points along the forest part of the main path to rocky cells that touch the forest
+	var borders: Array[Vector2i] = []
+	for y in range(1, p.rows - 1):
+		for x in range(1, p.cols - 1):
+			var i := y * p.cols + x
+			if g[i] == Ground.COBBLE and (g[i - 1] == Ground.GRASS or g[i + 1] == Ground.GRASS or g[i - p.cols] == Ground.GRASS or g[i + p.cols] == Ground.GRASS) and dist[i] > keep:
+				borders.append(Vector2i(x, y))
+	if forest.is_empty() or borders.is_empty():
+		return
+	for b in p.path_branches:
+		var origin := forest[int(forest.size() * lerpf(0.15, 0.85, float(b + 1) / (p.path_branches + 1)))]
+		var far: Array[Vector2i] = []
+		for c in borders:
+			if absi(c.y - origin.y) > 10:
+				far.append(c)
+		if far.is_empty():
+			continue
+		var target := far[rng.randi() % far.size()]
+		astar.set_point_solid(target, false)
+		_stamp_path(res, p, g, astar.get_id_path(origin, target), maxi(p.path_width - 1, 2))
+
+
+## Smooths a cell path (Chaikin, 3 rounds) and drops round stamps of diameter `width` cells along it, spaced a third
+## of the radius apart, on forest grass only.
+static func _stamp_path(res: Result, p: Params, g: PackedByteArray, cells: Array[Vector2i], width: int) -> void:
+	if cells.size() < 2:
+		return
+	var pts := PackedVector2Array()
+	for c in cells:
+		pts.append((Vector2(c) + Vector2(0.5, 0.5)) * p.cell)
+	for _round in 3:
+		var nxt := PackedVector2Array([pts[0]])
+		for k in pts.size() - 1:
+			nxt.append(pts[k].lerp(pts[k + 1], 0.25))
+			nxt.append(pts[k].lerp(pts[k + 1], 0.75))
+		nxt.append(pts[pts.size() - 1])
+		pts = nxt
+	var r := width * p.cell * 0.5
+	var step := r / 3.0
+	var carry := 0.0
+	var taper_len := 5.0 * p.cell     # past the forest the path fades out over this far onto the cobble
+	var walked := -1.0                # < 0: not in the forest yet
+	for k in pts.size() - 1:
+		var seg := pts[k + 1] - pts[k]
+		var seg_len := seg.length()
+		var t := carry
+		while t < seg_len:
+			var at := pts[k] + seg * (t / maxf(seg_len, 0.001))
+			var c := Vector2i(at / p.cell)
+			if c.x >= 1 and c.y >= 1 and c.x < p.cols - 1 and c.y < p.rows - 1:
+				var gd := g[c.y * p.cols + c.x]
+				if gd == Ground.GRASS:
+					walked = 0.0
+					_add_stamp(res, p, at, r)
+				elif gd == Ground.COBBLE and walked >= 0.0 and walked < taper_len:
+					var f := walked / taper_len   # narrow plus dither: a worn trail that thins out
+					if float(_hash_int(int(at.x), int(at.y), res.seed) % 100) / 100.0 >= f * 0.7:
+						_add_stamp(res, p, at, r * lerpf(1.0, 0.3, f))
+					walked += step
+			t += step
+		carry = t - seg_len

@@ -26,6 +26,12 @@ extends Resource
 ## Shows where there is no water art (the Background colour behind everything).
 @export var water_color := Color(0.18, 0.42, 0.62, 1)
 
+## Island ground (decision 0033), indexed by MapGen.Ground: [water (null), dirt, cobble, grass, boss grass].
+## Each is a GroundData (fills + edge frame). Empty = the island falls back to the old two-layer ground.
+@export var grounds: Array[GroundData] = []
+## Water art for the shader layer: tiles of `water_texture` (water_fills) lay under the shimmer.
+## Foam on the shore and the shimmer are numbers on ArenaMap (F3 Map).
+
 ## Edge pieces of look-variant A. Keys:
 ##   hole corners  nw ne sw se
 ##   ring on the grass around the hole  n_l n_m n_r  s_l s_m s_r  w_t w_m w_b  e_t e_m e_b

@@ -65,3 +65,4 @@ Reference docs in `docs/reference/godot/` were researched against 4.3/4.4 — if
   before a 1.5s physics timer has expired → a flaky test (hit test_unparryable_breaks_guard 1 in ~4).
   Poll `physics_frame` until the condition holds, with a timeout.
 - Tests loading arena.tscn get a random island (map_seed 0); trees/rocks stop arrows. tools/run_tests.sh sets BOSSFIGHT_TEST_SEED=11 (ArenaMap reads it only when map_seed == 0); export it for single runs.
+- A node that ticks itself (Furnace `_physics_process` -> `advance(delta)`) keeps running while a test awaits frames: under CPU load 15 frames moved a hand-set 0.5 to 0.58-0.65 (test_crafting_window flaked). When a test sets a time-driven value and then awaits, `set_physics_process(false)` on that node first. To reproduce load-only flakes, run the test next to N busy loops (`sh -c "while :; do :; done"` x nproc).
