@@ -7,7 +7,7 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-URL = "http://127.0.0.1:8765/tools/ui_mock/index.html"
+URL = "http://127.0.0.1:8765/tools/ui_mock/index.html" + (sys.argv[2] if len(sys.argv) > 2 else "")  # e.g. "?icons=../art_tests/items/icons"
 # (file name, JS run before the shot): hover / state set so each shot shows the interactive look too
 SHOTS = [
     ("title", "go('title'); hover='play'; draw();"),

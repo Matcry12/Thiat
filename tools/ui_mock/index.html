@@ -490,7 +490,9 @@ function go(s){state.screen=s;hover=null;state.tip=null;document.querySelectorAl
 document.querySelectorAll('header button').forEach(b=>b.onclick=()=>go(b.dataset.s));
 const names=['wooden_sword','axe','wood','stone','copper_ore','dodge','skill','guard','hand','hammer','pickaxe','bow','copper_bar','copper_pickaxe','copper_axe','sword'];
 let left=names.length+1;const done=()=>{if(--left<=0)draw();};
-names.forEach(n=>{const im=new Image();im.onload=done;im.onerror=done;im.src=`../../assets/ui/placeholder/${n}.png`;ICONS[n]=im;});
+// ?icons=<dir> tries that folder first (art tests), then the placeholder icons
+const ICON_DIR=new URLSearchParams(location.search).get('icons');
+names.forEach(n=>{const im=new Image(),ph=`../../assets/ui/placeholder/${n}.png`;im.onload=done;im.onerror=()=>{if(ICON_DIR&&im.src.indexOf(ph.slice(5))<0)im.src=ph;else done();};im.src=ICON_DIR?`${ICON_DIR}/${n}.png`:ph;ICONS[n]=im;});
 bg.onload=done;bg.onerror=done;
 draw();
 </script>
