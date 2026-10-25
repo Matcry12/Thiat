@@ -8,25 +8,25 @@ func _init():
 	await process_frame
 	var panel = arena.get_node("TuningPanel")
 
-	var count: int = panel._controls.size()
+	var count: int = panel.settings.size()
 	print("discovered properties: ", count)
 	var ok: bool = count > 8
 
 	# Apply through the panel's own path (the same one Save/Load/sliders use),
 	# not by poking the target object directly.
-	var any_key: String = panel._controls.keys()[0]
-	var entry: Dictionary = panel._controls[any_key]
+	var any_key := "Player.speed"   # (a quiet one: the first key is a map size)
+	var entry: Dictionary = panel.settings[any_key]
 	var target: Object = entry["obj"]
-	var prop: String = entry["prop"]
+	var prop: String = entry["name"]
 	var before = target.get(prop)
 	var new_value
-	if entry["is_bool"]:
+	if entry["type"] == TYPE_BOOL:
 		new_value = not bool(before)
-	elif entry["is_int"]:
+	elif entry["type"] == TYPE_INT:
 		new_value = int(before) + 1
 	else:
 		new_value = float(before) + 1.0
-	panel._apply_value(any_key, new_value)
+	panel.apply_value(any_key, new_value)
 	var after = target.get(prop)
 	var changed: bool = after != before
 	print("%s: %s -> %s (changed=%s)" % [any_key, before, after, changed])
@@ -52,9 +52,16 @@ func _init():
 		ok = ok and bgroups.get(g, 0) > 0
 	for n in ["tree_tries", "tree1_model", "tree1_season", "tree1_weight", "max_stage", "age_rule", "rock_per_block", "bush_per_block", "flower_per_block", "tuft_p", "reed_per_shore", "stump_per_block", "ground_alt"]:
 		ok = ok and bnames.has(n)
-	ok = ok and panel._range_for("tree3_season", 0.0) == Vector2(0.0, 6.0) and panel._range_for("tree3_model", 0.0) == Vector2(0.0, 3.0)
-	ok = ok and panel._is_heavy(bd, "tree_tries") and panel._is_heavy(bd, "ground_alt") and panel._is_heavy(bd, "ground_alt_share") and panel._is_heavy(bd, "ground_alt_period") and not panel._is_heavy(bd, "tint_bright")
-	ok = ok and not panel._is_heavy(panel._map, "ground_brightness") and panel._is_heavy(panel._map, "tree_fade_lo")
+	# a slider only exists with a KNOWN range: none for a plain number, one from @export_range (the tree table ranges are @export_range too)
+	var sr = panel.settings["Biome taiga.tree3_season"].get("range")
+	var mr = panel.settings["Biome taiga.tree3_model"].get("range")
+	ok = ok and sr != null and sr.x == 0.0 and sr.y == 6.0 and mr != null and mr.y == 3.0
+	ok = ok and panel._known_range({"type": TYPE_FLOAT, "name": "no_such_prop", "hint": 0, "hint_string": ""}) == null
+	var hinted = panel._known_range({"type": TYPE_FLOAT, "name": "no_such_prop", "hint": PROPERTY_HINT_RANGE, "hint_string": "0.2,3.0,0.01"})
+	ok = ok and hinted == Vector3(0.2, 3.0, 0.01) and panel.settings["Map.map_cols"]["range"].y == 1024.0
+	# heavy = the owner's debug_heavy(prop)
+	ok = ok and panel.settings["Biome taiga.tree_tries"]["heavy"] and panel.settings["Biome taiga.ground_alt"]["heavy"] and not panel.settings["Biome taiga.tint_bright"]["heavy"]
+	ok = ok and not panel.settings["Map.ground_brightness"]["heavy"] and panel.settings["Map.tree_fade_lo"]["heavy"]
 	var wm = panel._world_map
 	wm.toggle()
 	var img_w: int = wm._tex.texture.get_width()
@@ -64,22 +71,25 @@ func _init():
 	print("World map: visible=%s image width %d, drawn %d -> %d" % [wm.visible, img_w, d0, wm.drawn_count])
 	ok = ok and wm_ok
 
-	# F3 button rows wrap (HFlowContainer): every button sits inside the window at 1280x720 and 1920x1080
+	# F3 button rows wrap (HFlowContainer): on the Actions tab every button sits inside the window width at 1280x720 and 1920x1080;
+	# the dock's fixed buttons (tabs, footer) also sit inside the height. (The Actions list scrolls vertically on purpose.)
 	var e := InputEventKey.new()
 	e.keycode = KEY_F3
 	e.physical_keycode = KEY_F3
 	e.pressed = true
 	Input.parse_input_event(e)
+	panel.dock.show_tab("Actions")
 	for sz in [Vector2i(1280, 720), Vector2i(1920, 1080)]:
 		root.size = sz
 		for _f in 5:
 			await process_frame
 		var btns: Array = []
-		_buttons(panel, btns)
+		_buttons(panel.dock, btns)
 		var off := 0
 		for b in btns:
 			var r: Rect2 = b.get_global_rect()
-			if b.is_visible_in_tree() and (r.position.x < 0 or r.end.x > sz.x + 1 or r.position.y < 0 or r.end.y > sz.y + 1):
+			var in_list: bool = panel.dock._scroll.is_ancestor_of(b)
+			if b.is_visible_in_tree() and (r.position.x < 0 or r.end.x > sz.x + 1 or (not in_list and (r.position.y < 0 or r.end.y > sz.y + 1))):
 				off += 1
 				print("OFFSCREEN ", b.text, " ", r)
 		print("buttons %d, off-screen %d at %s" % [btns.size(), off, sz])
@@ -91,8 +101,6 @@ func _init():
 
 func _buttons(n: Node, out: Array) -> void:
 	for c in n.get_children():
-		if c is ScrollContainer:
-			continue   # the tuning list scrolls on purpose
 		if c is Button:
 			out.append(c)
 		_buttons(c, out)

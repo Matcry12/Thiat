@@ -66,6 +66,7 @@ var _forced := ""
 func _ready() -> void:
 	home = global_position
 	add_to_group("boss")   # Inventory locks the bag while this one is engaged
+	add_to_group("debug")
 	for c in $Attacks.get_children():
 		if c is BossAttack:
 			_attacks[(c as BossAttack).get_action_name()] = c
@@ -383,3 +384,29 @@ func status_text() -> String:
 	if mode == Mode.STAGGER:
 		lines.append("staggered: %.2fs left" % _stagger_left)
 	return "\n".join(lines)
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Boss"
+
+func debug_category() -> String:
+	return "Boss"
+
+func debug_children() -> Array:
+	var out: Array = [
+		{"name": "Boss Health", "object": health},
+		{"name": "Boss Brain", "object": get_brain()},
+		{"name": "Boss Visual", "object": visual},
+	]
+	for n in attack_names():
+		out.append({"name": "Boss " + String(n).capitalize(), "object": get_attack(n)})
+	return out.filter(func(c): return c["object"] != null)
+
+func debug_actions() -> Array:
+	var acts: Array = [{"label": "Phase 2", "run": force_phase_2}]
+	for n in attack_names():
+		acts.append({"label": "-> " + String(n), "run": func(): force_next(n)})
+	acts.append({"label": "Boss passive", "toggle": func(): return passive, "run": func(): passive = not passive})
+	acts.append({"label": "Heal boss", "run": func(): health.hp = health.max_hp})
+	return acts

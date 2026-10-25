@@ -106,16 +106,32 @@ func _init():
 	_check("aim left: hands on mirrored markers", _on_markers(hands, sword))
 	_check("aim left: markers really mirrored (grip left of the body)", sword.get_node("HandMain").global_position.x < player.global_position.x)
 
-	# No model: rest offsets (aim right, then left = side mirrored).
+	# No model: relaxed pose (front hand ahead, back hand behind; mirrored when aiming left).
 	hands.bind_model(null)
+	hands.set_facing_left(false)   # the player may already have set the body facing
 	hands.set_aim_angle(0.0)
-	await _frames(2)
+	await _frames(12)
 	var p := hands.hand_positions()
-	_check("no model: main at rest offset", p[0].distance_to(hands.to_global(hands.rest_offset_main)) < 1.0)
-	_check("no model: off at rest offset", p[1].distance_to(hands.to_global(hands.rest_offset_off)) < 1.0)
+	_check("no model: front hand at idle_front", p[0].distance_to(hands.to_global(hands.idle_front)) < 1.0)
+	_check("no model: back hand at idle_back", p[1].distance_to(hands.to_global(hands.idle_back)) < 1.0)
 	hands.set_aim_angle(PI)
+	hands.set_facing_left(true)
+	await _frames(12)
 	p = hands.hand_positions()
-	_check("no model, aim left: hands in front of the body on the left", p[0].x < hands.global_position.x and p[1].x < hands.global_position.x)
+	_check("no model, aim left: relaxed pose mirrored", signf(p[0].x - hands.global_position.x) == -signf(hands.idle_front.x) and signf(p[1].x - hands.global_position.x) == -signf(hands.idle_back.x))
+
+	# Body facing wins over aim cos: aim right but body remembered facing left -> hands mirrored.
+	hands.set_aim_angle(0.0)
+	hands.set_facing_left(true)
+	await _frames(12)
+	p = hands.hand_positions()
+	_check("facing left (body) beats aim right: relaxed pose mirrored", signf(p[0].x - hands.global_position.x) == -signf(hands.idle_front.x) and signf(p[1].x - hands.global_position.x) == -signf(hands.idle_back.x))
+	# Guarding counts as busy: hands leave the relaxed pose.
+	hands.set_guarding(true)
+	await _frames(12)
+	_check("guarding: hands leave relaxed pose", hands.status_text().contains("pose: markers"))
+	hands.set_guarding(false)
+	hands.set_facing_left(false)
 
 	# Holster toggle (Loadout.toggle_hands; the keys now use select()): instant, free, always back to the same weapon.
 	var lo: Loadout = loadout

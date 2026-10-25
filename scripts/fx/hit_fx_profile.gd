@@ -8,42 +8,42 @@ class_name HitFxProfile
 @export var hit_type: StringName = &""
 @export_group("Hit-stop")
 ## Whole-game freeze. 0 = none. Never used for player_hit (the player is not frozen by getting hit).
-@export var stop_frames := 3
+@export_range(0, 12) var stop_frames := 3
 ## Kill only: after the freeze, run slower for slowmo_time seconds. 1.0 = off.
-@export var slowmo_scale := 1.0
-@export var slowmo_time := 0.0
+@export_range(0.05, 1.0, 0.005, "or_greater", "or_less") var slowmo_scale := 1.0
+@export_range(0.0, 3.0, 0.02, "or_greater", "or_less") var slowmo_time := 0.0
 @export_group("Flash")
-@export var flash_time := 0.08
+@export_range(0.0, 0.5, 0.002, "or_greater", "or_less") var flash_time := 0.08
 @export var flash_color := Color.WHITE
 ## 0 = the one who was hit, 1 = the one who hit (a parry flashes the attacker).
 @export_range(0, 1) var flash_who := 0
 @export_group("Shake")
 ## Trauma added to the camera (0..1; shake size grows with its square).
-@export var shake := 0.2
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var shake := 0.2
 @export_group("Sound")
 @export var sound: AudioStream
-@export var volume_db := 0.0
+@export_range(-30.0, 12.0, 0.2, "or_greater", "or_less") var volume_db := 0.0
 ## Base pitch; HitSound adds a random +/- on top.
-@export var pitch := 1.0
+@export_range(0.3, 2.0, 0.01, "or_greater", "or_less") var pitch := 1.0
 @export_group("Knockback (gameplay, read by Knockback, not by HitFx)")
 ## Shove in px on the one who was hit, if it has a Knockback component. Bosses have none.
 ## For block: how far the player slides back.
-@export var knockback := 0.0
+@export_range(0.0, 150.0, 1, "or_greater", "or_less") var knockback := 0.0
 @export_group("Recoil (visual only)")
 ## The Visual jolts this many px away from the hit and springs back. Skipped for actors that get real knockback.
-@export var recoil_px := 0.0
-@export var recoil_time := 0.1
+@export_range(0.0, 20.0, 0.1, "or_greater", "or_less") var recoil_px := 0.0
+@export_range(0.02, 0.5, 0.002, "or_greater", "or_less") var recoil_time := 0.1
 ## 0 = the one who was hit, 1 = the one who hit (a parry jolts the attacker).
 @export_range(0, 1) var recoil_who := 0
 @export_group("Sparks")
-@export var spark_count := 0
-@export var spark_speed := 180.0
-@export var spark_life := 0.18
-@export var spark_size := 2.0
+@export_range(0, 30) var spark_count := 0
+@export_range(0.0, 500.0, 2, "or_greater", "or_less") var spark_speed := 180.0
+@export_range(0.02, 1.0, 0.005, "or_greater", "or_less") var spark_life := 0.18
+@export_range(1.0, 6.0, 0.02, "or_greater", "or_less") var spark_size := 2.0
 @export var spark_color := Color(1, 0.95, 0.7)
 @export_group("Number")
 ## Font size in px. 0 = no number.
-@export var number_size := 0
+@export_range(0, 32) var number_size := 0
 @export var number_color := Color.WHITE
 ## Shown instead of the damage amount when not empty (parry: "PARRY").
 @export var number_text := ""

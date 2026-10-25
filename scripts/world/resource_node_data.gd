@@ -19,7 +19,7 @@ extends Resource
 @export var drop_min := 2
 @export var drop_max := 3
 ## Collision circle, screen px.
-@export var radius := 14.0
+@export_range(1.0, 200.0, 1, "or_greater", "or_less") var radius := 14.0
 ## How much bigger the gather Hurtbox circle is than the body, px.
 @export var hurtbox_pad := 6.0
 ## Drop spread when no Collector exists, px.

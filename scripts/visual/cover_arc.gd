@@ -31,7 +31,7 @@ var value := 1.0:
 	set(v):
 		value = clampf(v, 0.0, 1.0)
 		queue_redraw()
-@export var radius := 30.0:
+@export_range(10.0, 200.0, 1, "or_greater", "or_less") var radius := 30.0:
 	set(v):
 		radius = v
 		queue_redraw()

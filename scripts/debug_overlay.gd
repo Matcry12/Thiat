@@ -24,6 +24,7 @@ const HIT_MARK_TIME := 0.25
 @onready var _label: Label = $Label
 
 func _ready() -> void:
+	add_to_group("debug")
 	_draw_layer.draw.connect(_on_draw)
 	(_player.get_node("WeaponHolder") as WeaponHolder).state_changed.connect(_on_weapon_state_changed)
 	var guard: Guard = _player.get_node_or_null("Guard")
@@ -390,3 +391,11 @@ func _draw_shape(shape: Shape2D, xform: Transform2D, color: Color, width: float)
 ## draw order and upright sprites (decision 0009), never through projection.
 func _draw_ground_circle(at: Vector2, radius: float, color: Color, width: float) -> void:
 	_draw_layer.draw_arc(at, radius, 0, TAU, 28, color, width)
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Debug"
+
+func debug_category() -> String:
+	return "Misc"

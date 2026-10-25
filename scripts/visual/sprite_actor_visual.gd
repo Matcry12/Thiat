@@ -369,6 +369,9 @@ func set_move_state(state: String) -> void:
 		body.scale = _rest_scale
 		_last_frame = -1
 
+func is_facing_left() -> bool:
+	return _facing_left
+
 func set_facing(dir: Vector2) -> void:
 	if is_directional():
 		_set_facing_directional(dir)

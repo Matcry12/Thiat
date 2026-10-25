@@ -23,7 +23,7 @@ class_name GuardVisual
 @export var parry_modulate := Color(0.4, 0.9, 1.0, 0.9)
 @export var block_modulate := Color(0.5, 0.7, 0.85, 1.0)
 @export var flash_color := Color(1.0, 1.0, 1.0, 0.9)
-@export var flash_time := 0.25
+@export_range(0.0, 0.5, 0.002, "or_greater", "or_less") var flash_time := 0.25
 @export var break_effect_time := 0.4
 @export var break_shard_count := 10
 @export var break_shard_speed := 90.0

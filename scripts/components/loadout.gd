@@ -41,6 +41,7 @@ var _cast_to := 0
 var _cooldown_left := 0.0
 
 func _ready() -> void:
+	add_to_group("debug")
 	_weapon_holder = get_node_or_null(weapon_holder_path) as WeaponHolder
 	_inventory = get_node_or_null(inventory_path) as Inventory
 	if _inventory:
@@ -225,3 +226,23 @@ func _physics_process(delta: float) -> void:
 			swap_finished.emit(active_weapon())
 	elif _cooldown_left > 0.0:
 		_cooldown_left = maxf(0.0, _cooldown_left - delta)
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Loadout"
+
+func debug_category() -> String:
+	return "Combat"
+
+func status_text() -> String:
+	var active := active_weapon()
+	var active_name := "(none)"
+	if active != null:
+		active_name = active.resource_path.get_file().get_basename() if active.resource_path != "" else "(unsaved)"
+	var swap_state := "ready"
+	if is_casting():
+		swap_state = "casting %.2fs" % cast_left()
+	elif cooldown_left() > 0.0:
+		swap_state = "cooldown %.2fs" % cooldown_left()
+	return "active: %s (%d)%s\nswap: %s" % [active_name, active_index(), " HOLSTERED" if is_holstered() else "", swap_state]

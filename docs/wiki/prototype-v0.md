@@ -372,6 +372,10 @@ characters (Gemini + hand-cleaned); kept the egg placeholder, 32x30, plus 2 hand
    moved, seed not typeable back into F3, characters drawn over tall rocks, z_index owned by code,
    docs) + 1 design exploit (hiding behind a rock from the enraged boss) — all fixed in one round (boss ignores rocks via collision exceptions, not a new layer) · user: pending.
 
+**Tooling slice F3 — debug dock redesign (2026-10-25, user's call, [0044](../decision/0044-f3-debug-contract.md)).**
+   *Can F3 be fast to use and stay clean as features grow?* Web mockup (3 build→review rounds, 6.9→8.1/10), then a dock with search / Tune / Actions / Status, auto-saved overrides, the `debug` group contract.
+   Log F3: built by Sonnet 5.5 agents (3 in parallel) · Opus judge round 1: 7 confirmed (Map section 2.7 s freeze, 90 ms boot hitch, new ranges clamping sapling radii, late-section overrides never applied, Hands/BodyRig double owner, toast only on F3 open, double map build); round 2: 2 new (startup heavy overrides not undoable, release build applying dev tuning) — all fixed · user: pending.
+
 ## 6. Done when
 
 - A fight lasts 60-120s and you lose the first few times.

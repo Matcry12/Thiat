@@ -192,8 +192,7 @@ func _init() -> void:
 	var tp: CanvasLayer = arena.get_node("TuningPanel")
 	tp.visible = true
 	await _frames()
-	var stat: Control = tp._status_panel
-	_check(not stat.visible or not stat.get_global_rect().intersects(win.frame_rect()), "F3 open: the status text hides or clips, never under the window")
+	_check(not tp.card.visible or not tp.card.get_global_rect().intersects(win.frame_rect()), "F3 open: the watch card hides or stays clear of the window")
 	_check(win.frame_rect().end.x <= vp.x - tp.right_panel_width(), "the window slides left to stay clear of the F3 tuning panel (right edge %.0f, panel starts %.0f)" % [win.frame_rect().end.x, vp.x - tp.right_panel_width()])
 	tp.visible = false
 	await _frames()

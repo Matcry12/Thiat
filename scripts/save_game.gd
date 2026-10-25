@@ -82,6 +82,7 @@ func _boss() -> Boss:
 
 func _enter_tree() -> void:
 	add_to_group("save_game")   # before any _ready: the F3 panel looks for it while it builds
+	add_to_group("debug")
 
 func _ready() -> void:
 	_countdown = autosave_interval
@@ -274,3 +275,23 @@ func status_text() -> String:
 	return "file: %s  %s\nlast save: %s  (%s)\nautosave: %s  play time: %d s" % [
 		path, "%d bytes" % size if size > 0 else "none", when, last_result,
 		"in %.0f s" % left if left >= 0.0 else "off", int(play_time)]
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Save"
+
+func debug_category() -> String:
+	return "Run"
+
+func debug_actions() -> Array:
+	return [
+		{"label": "Save now", "run": save},
+		{"label": "Load save", "run": func():   # same path as title Continue: the arena rebuilds the island, then applies the save
+			var d := SaveGame.read_save()
+			if d.is_empty():
+				return
+			SaveGame.begin_load(d)
+			get_tree().reload_current_scene()},
+		{"label": "Delete save", "danger": true, "run": SaveGame.delete_save},
+	]

@@ -43,6 +43,7 @@ var _move_dir := Vector2.ZERO
 
 func _ready() -> void:
 	add_to_group("player")   # trees fade when the player stands behind them
+	add_to_group("debug")
 	# Loadout is the ONE owner of "current weapon" (decision: three owners —
 	# WeaponHolder.weapon, WeaponVisual.weapon, Loadout.weapons[0] — could
 	# desync). Both are plain vars now; set them from Loadout here and again
@@ -66,6 +67,7 @@ func _ready() -> void:
 	guard.tank_changed.connect(func(_c: float, _m: float): guard_visual.set_tank_fill(guard.tank_fraction()))
 	# Block pose: the sword rises while guarding (decision 0015).
 	guard.state_changed.connect(func(st: String): weapon_visual.set_guarding(st == "parry" or st == "block"))
+	guard.state_changed.connect(func(st: String): hands.set_guarding(st == "parry" or st == "block"))
 	guard.parried.connect(func(_source: Node): guard_visual.on_parry_success())
 	guard.broke.connect(guard_visual.on_break)
 	loadout.swap_finished.connect(_on_swap_finished)
@@ -81,6 +83,7 @@ func _on_died() -> void:
 	skill_slot.cancel()
 	velocity = Vector2.ZERO
 	visual.set_move_state("idle")
+	hands.set_move_state("idle")
 
 ## Wakes up after a death (Respawner): full hp, inputs back. The caller moves the body.
 func respawn() -> void:
@@ -109,12 +112,16 @@ func _physics_process(delta: float) -> void:
 	if new_move_state != _move_state:
 		_move_state = new_move_state
 		visual.set_move_state(_move_state)
+		hands.set_move_state(_move_state)
 
-	aim_direction = aim_override.normalized() if aim_override != Vector2.ZERO \
-		else (get_global_mouse_position() - global_position).normalized()
+	if aim_override != Vector2.ZERO:
+		aim_direction = aim_override.normalized()
+	elif not _dock_hovered():   # the pointer on the F3 dock is not aiming: keep the last aim
+		aim_direction = (get_global_mouse_position() - global_position).normalized()
 	if aim_direction == Vector2.ZERO:
 		aim_direction = Vector2.RIGHT
 	visual.set_facing(aim_direction)
+	hands.set_facing_left(visual.is_facing_left())
 	# 2.5D: the body stays upright, only the aim indicator/weapon turn (decision 0009).
 	visual.set_aim_angle(aim_direction.angle())
 	weapon_visual.set_aim_angle(aim_direction.angle())
@@ -185,8 +192,8 @@ func _physics_process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	# Wheel moves a cursor over the hotbar; the slot is only selected after `wheel_settle` seconds of
 	# calm, so scrolling past the bow does not start a swap cast on the way to the axe.
-	if dead or not event is InputEventMouseButton or not event.pressed:
-		return
+	if dead or not event is InputEventMouseButton or not event.pressed or _dock_hovered():
+		return   # (over the F3 dock the wheel scrolls its list, never the hotbar)
 	var step := -1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else (1 if event.button_index == MOUSE_BUTTON_WHEEL_DOWN else 0)
 	if step == 0:
 		return
@@ -200,13 +207,21 @@ func pending_slot() -> int:
 
 ## True while the bag panel is open and the mouse is over it (or over the hotbar it makes clickable).
 func mouse_over_ui() -> bool:
+	if _dock_hovered():
+		return true
 	var bag := get_tree().get_first_node_in_group("bag_panel")
 	return bag != null and bag.is_open() and get_viewport().gui_get_hovered_control() != null
+
+## The pointer is on the F3 dock (it never attacks, aims or scrolls the hotbar).
+func _dock_hovered() -> bool:
+	var dock := get_tree().get_first_node_in_group("f3_dock")
+	return dock != null and dock.pointer_over()
 
 func _on_weapon_state_changed(state: String) -> void:
 	visual.set_weapon_state(state)
 	weapon_visual.on_weapon_state(state)
 	swing_fx.on_weapon_state(state)
+	hands.set_weapon_state(state)
 	# A bow's wind-up is its draw: the off hand pulls back (the piercing charge does the same via the skill).
 	if weapon_holder.weapon and weapon_holder.weapon.behavior == "projectile":
 		hands.set_drawing(state == "windup")
@@ -216,3 +231,64 @@ func _on_swap_finished(w: WeaponData) -> void:
 	weapon_holder.weapon = w
 	swing_fx.set_weapon(w)
 	weapon_visual.set_weapon(w)   # emits model_changed -> weapon_holder.bind_model
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Player"
+
+func debug_category() -> String:
+	return "Character"
+
+func debug_children() -> Array:
+	var out: Array = [
+		{"name": "WeaponVisual", "object": weapon_visual, "cat": "Combat"},
+		{"name": "Visual", "object": visual},
+		{"name": "RunDust", "object": get_node_or_null("Visual/RunDust")},
+		{"name": "Swimmer", "object": swimmer},
+		{"name": "WaterFx", "object": get_node_or_null("Visual/WaterFx")},
+		{"name": "BodyRig", "object": visual.get("rig")},   # per-character body / weapon / hand fit (decision 0028)
+		{"name": "GuardVisual", "object": guard_visual, "cat": "Combat"},
+		{"name": "SwingFx", "object": swing_fx, "cat": "Combat"},
+		{"name": "CoverArc", "object": guard_visual.get_node_or_null("CoverArc"), "cat": "Combat"},
+		{"name": "Player Health", "object": health, "cat": "Combat"},
+	]
+	# One section per weapon in the loadout (named from its file) and per weapon skill: a third weapon needs no change anywhere.
+	for w in loadout.weapons:
+		if w:
+			out.append({"name": w.debug_name(), "object": w, "cat": "Combat"})
+			out.append({"name": w.debug_name() + " Skill", "object": skill_slot.skill_for(w), "cat": "Combat"})
+	out.append({"name": "Fists", "object": loadout.unarmed, "cat": "Combat"})
+	out.append({"name": "Knockback " + name, "object": get_node_or_null("Knockback"), "cat": "Combat"})
+	return out.filter(func(c): return c["object"] != null)
+
+func debug_actions() -> Array:
+	var acts: Array = [
+		{"label": "Heal player", "run": func():
+			health.hp = health.max_hp
+			health.shield = health.shield_max},
+		{"label": "Hurt player 20", "run": func(): health.take_damage(20.0, null, false)},
+	]
+	if visual.get("rig") != null:
+		acts.append({"label": "Save rig", "run": _debug_save_rig})
+	return acts
+
+func status_text() -> String:
+	var lines: Array[String] = []
+	lines.append("pos: (%d, %d)" % [roundi(global_position.x), roundi(global_position.y)])
+	lines.append("vel: %.0f  state: %s  facing: %s" % [velocity.length(), "run" if velocity.length() > 1.0 else "idle", "left" if aim_direction.x < 0.0 else "right"])
+	lines.append("aim: %.0f deg" % rad_to_deg(aim_direction.angle()))
+	lines.append("hp: %.0f/%.0f  shield: %.0f/%.0f" % [health.hp, health.max_hp, health.shield, health.shield_max])
+	if visual.has_method("status_text"):
+		lines.append(visual.status_text())
+	var water := ("%s  %s" % [swimmer.status_text() if swimmer else "", get_node("Visual/WaterFx").status_text() if has_node("Visual/WaterFx") else ""]).strip_edges()
+	if water != "":
+		lines.append(water)
+	return "\n".join(lines)
+
+## F3 "Save rig": writes the live BodyRig (hand pose, sway, sizes...) back into its own .tres, so an F3 tune stays in the game.
+func _debug_save_rig() -> void:
+	var r: BodyRig = visual.rig
+	var err := ResourceSaver.save(r, r.resource_path)
+	r.save_note = "saved %s" % Time.get_time_string_from_system() if err == OK else "SAVE FAILED (%s)" % error_string(err)
+	print("tuning: rig %s -> %s" % [r.save_note, r.resource_path])

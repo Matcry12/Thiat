@@ -3,9 +3,9 @@ extends CharacterBody2D
 ## then slides back to its spawn spot once left alone, so a combo never turns into chasing it.
 
 ## Seconds without a hit before it starts sliding home.
-@export var home_return_delay := 1.0
+@export_range(0.0, 5.0, 0.02, "or_greater", "or_less") var home_return_delay := 1.0
 ## Speed of the slide home, px/s.
-@export var home_return_speed := 120.0
+@export_range(10.0, 600.0, 2, "or_greater", "or_less") var home_return_speed := 120.0
 
 @onready var visual: Node2D = $Visual
 @onready var health: Health = $Health
@@ -16,7 +16,9 @@ var _idle := 0.0
 var _stuck := false   # a wall or rock is in the way: wait for the next hit instead of pushing against it
 
 func _ready() -> void:
+	add_to_group("debug")
 	home = global_position
+	set_meta("spot", global_position)   # "Dummy to spot" (F3) goes back here; ArenaMap moves it when it re-fits the dummy
 	health.damaged.connect(_on_damaged)
 	health.hit_taken.connect(_on_hit_taken)
 
@@ -47,3 +49,26 @@ func stagger(duration: float) -> void:
 
 func _on_damaged(amount: float) -> void:
 	print("dummy took %.1f damage (hp=%.1f)" % [amount, health.hp])   # the flash comes from HitFx
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Dummy"
+
+func debug_category() -> String:
+	return "Combat"
+
+func debug_children() -> Array:
+	return [
+		{"name": "Dummy Health", "object": health},
+		{"name": "Knockback " + name, "object": get_node_or_null("Knockback")},
+	]
+
+func debug_actions() -> Array:
+	return [
+		{"label": "Heal dummy", "run": func(): health.hp = health.max_hp},
+		{"label": "Dummy to spot", "run": func():   # the spot the arena map gave it (ArenaMap keeps the "spot" meta up to date)
+			if has_meta("spot"):
+				global_position = get_meta("spot")
+				home = get_meta("spot")},
+	]

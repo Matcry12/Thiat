@@ -15,6 +15,7 @@ var _screen: MenuScreen
 
 func _ready() -> void:
 	add_to_group("pause_menu")
+	add_to_group("debug")
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 100
 	GameSettings.ensure_loaded()
@@ -82,3 +83,11 @@ func quit_to_title() -> void:
 
 func status_text() -> String:
 	return "paused: %s  page: %s\n%s" % ["YES" if is_paused() else "no", "settings" if _screen.on_settings_page() else ("menu" if _screen.visible else "-"), GameSettings.status_text(get_tree())]
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Frame"
+
+func debug_category() -> String:
+	return "Run"

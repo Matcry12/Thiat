@@ -118,8 +118,6 @@ func _init():
 	tp.visible = true
 	await process_frame
 	await process_frame
-	var sp: Control = tp._status_panel
-	check("F3 status panel starts below the hotbar", sp.get_global_rect().position.y >= hbr.end.y)
-	check("F3 status panel ends above the bottom-left block", sp.get_global_rect().end.y <= hud.abilities().get_global_rect().position.y)
+	check("F3 watch card sits right of the hotbar, above the bottom-left block", not tp.card.get_global_rect().intersects(hbr) and tp.card.get_global_rect().end.y <= hud.abilities().get_global_rect().position.y)
 	check("block is above the F3 layer", hud._layer.layer > tp.layer)
 	quit(0 if _ok else 1)

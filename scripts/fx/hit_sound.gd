@@ -3,9 +3,9 @@ class_name HitSound
 ## Plays hit sounds with a little random pitch so repeats do not sound machine-gunned. The sounds themselves
 ## come from the HitFxProfile (data/hit_fx/*.tres -> assets/audio/*.wav): swap a file and nothing else changes.
 
-@export var volume_db := 0.0
+@export_range(-30.0, 12.0, 0.2, "or_greater", "or_less") var volume_db := 0.0
 ## +/- fraction of pitch picked at random per play (0.08 = +/-8%).
-@export var pitch_variation := 0.08
+@export_range(0.0, 0.3, 0.002, "or_greater", "or_less") var pitch_variation := 0.08
 @export var voices := 8
 
 var play_count := 0

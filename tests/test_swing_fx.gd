@@ -9,7 +9,7 @@ func _init():
 	var arena = load("res://scenes/arena.tscn").instantiate()
 	root.add_child(arena)
 	arena.get_node("Boss").passive = true
-	await process_frame
+	for i in 3: await process_frame
 	var player = arena.get_node("Player")
 	player.set_physics_process(false)          # headless mouse sits at (0,0)
 	_holder = player.get_node("WeaponHolder")

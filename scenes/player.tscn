@@ -44,6 +44,9 @@ script = ExtResource("1")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2036448946]
 shape = SubResource("BodyShape")
 
+[node name="BackHand" type="Node2D" parent="."]
+position = Vector2(0, -9)
+
 [node name="Visual" type="Node2D" parent="." unique_id=123694702]
 script = ExtResource("2")
 rig = ExtResource("rig")
@@ -83,7 +86,7 @@ script = ExtResource("21")
 position = Vector2(0, -9)
 script = ExtResource("22")
 fill_color = Color(0.91, 0.584, 0.561, 1)
-outline_color = Color(0.227, 0.063, 0.125, 1)
+outline_color = Color(0, 0, 0, 1)
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=186865809]
 collision_layer = 2

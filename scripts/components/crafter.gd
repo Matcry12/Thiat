@@ -15,6 +15,7 @@ var _station_items := {}   # station_id -> the placeable ItemData (icon for the 
 var last_craft := ""      ## for F3
 
 func _ready() -> void:
+	add_to_group("debug")
 	add_to_group("crafter")
 	reload()
 
@@ -188,3 +189,46 @@ func craft(r: RecipeData) -> bool:
 	last_craft = "%s x%d" % [r.result.display_name, r.result_count]
 	crafted.emit(r)
 	return true
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Crafter"
+
+func debug_category() -> String:
+	return "Items & Crafting"
+
+func debug_children() -> Array:
+	var out: Array = []
+	for r in recipes:
+		out.append({"name": "Recipe " + String(r.result.id), "object": r})
+	for r in RecipeBook.load_dir("res://data/smelting"):
+		out.append({"name": "Smelt " + String((r as SmeltRecipeData).output.id), "object": r})
+	return out
+
+func debug_actions() -> Array:
+	return [
+		{"label": "Give materials (20 each)", "run": func(): inventory().give_materials(20)},
+		{"label": "Finish smelting", "run": func():
+			for f: Furnace in get_tree().get_nodes_in_group("furnace"):
+				f.finish_all()},
+	]
+
+func status_text() -> String:
+	var placer := get_parent().get_node_or_null("Placer") as Placer
+	var ids := []
+	for sid in station_ids_in_range():
+		ids.append(String(sid))
+	var lines: Array[String] = []
+	lines.append("stations in range: %s  recipes shown: %d" % [", ".join(ids) if not ids.is_empty() else "none", visible_recipes().size()])
+	if placer:
+		var held := placer.held_item()
+		lines.append("placing: %s  spot: %s  last: %s" % [held.display_name if held else "-", ("ok" if placer.last_refusal == "" else "refused (%s)" % placer.last_refusal) if held else "-", placer.last_placed if placer.last_placed != "" else "-"])
+		lines.append("path flood (on click only): %.1f ms" % placer.last_neck_ms)
+	var furnaces := get_tree().get_nodes_in_group("furnace")
+	if furnaces.is_empty():
+		lines.append("furnaces: none placed")
+	for f: Furnace in furnaces:
+		lines.append("furnace %d: %s" % [furnaces.find(f) + 1, f.status_text()])
+	lines.append("last craft: %s" % (last_craft if last_craft != "" else "-"))
+	return "\n".join(lines)

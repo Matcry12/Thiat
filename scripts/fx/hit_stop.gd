@@ -7,9 +7,9 @@ class_name HitStop
 ## sets it through toggle_slowmo()), and stop / kill slow-mo are applied on top of it and removed again after.
 
 ## Multiplies every stop. 0 = hit-stop off.
-@export var hitstop_scale := 1.0
+@export_range(0.0, 2.0, 0.01, "or_greater", "or_less") var hitstop_scale := 1.0
 ## Longest stop allowed, in frames, however many hits stack.
-@export var max_frames := 12
+@export_range(0, 30) var max_frames := 12
 ## time_scale during the stop. Not exactly 0: delta would be 0 and some code divides by it.
 @export_range(0.0001, 0.2) var stop_time_scale := 0.001
 @export var fps := 60.0

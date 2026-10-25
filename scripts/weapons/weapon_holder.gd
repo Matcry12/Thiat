@@ -123,3 +123,25 @@ func _set_phase(new_phase: Phase) -> void:
 ## Read-only, for the F1 overlay (draws a ranged weapon's reach from here).
 func get_muzzle() -> Marker2D:
 	return _muzzle
+
+func _ready() -> void:
+	add_to_group("debug")
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Weapon"
+
+func debug_category() -> String:
+	return "Combat"
+
+func status_text() -> String:
+	var wname := "(none)"
+	var dur := 0.0
+	if weapon != null:
+		wname = weapon.resource_path.get_file().get_basename() if weapon.resource_path != "" else "(unsaved)"
+		match phase:
+			Phase.WINDUP: dur = weapon.windup
+			Phase.ACTIVE: dur = weapon.active
+			Phase.RECOVERY: dur = weapon.recovery
+	return "%s\nphase: %s  left: %.2fs" % [wname, Phase.keys()[phase].to_lower(), maxf(0.0, dur - _phase_time)]

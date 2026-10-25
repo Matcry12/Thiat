@@ -26,11 +26,11 @@ signal hit_fx(hit_type: StringName)
 @export var numbers_on := true
 ## Recoil shape: share of the jolt spent going out (the rest is the spring back), and the ease strength of the return.
 @export_range(0.01, 0.99) var recoil_out_fraction := 0.25
-@export var recoil_ease := 2.0
+@export_range(0.5, 5.0, 0.02, "or_greater", "or_less") var recoil_ease := 2.0
 ## Spark point radius for a victim whose hurtbox is not a circle, px.
-@export var fallback_hit_radius := 12.0
+@export_range(0.0, 40.0, 0.2, "or_greater", "or_less") var fallback_hit_radius := 12.0
 ## Damage shown by the F3 test buttons.
-@export var test_amount := 25.0
+@export_range(1.0, 200.0, 1, "or_greater", "or_less") var test_amount := 25.0
 
 var stop := HitStop.new()
 var sound := HitSound.new()
@@ -52,6 +52,7 @@ var _dummy: Node
 
 func _ready() -> void:
 	add_to_group("hit_fx")
+	add_to_group("debug")
 	for n in [stop, sound, shake, sparks, numbers]:
 		add_child(n)
 	sparks.name = "HitSparks"
@@ -185,3 +186,34 @@ func status_text() -> String:
 		shake.trauma, shake.offset.x, shake.offset.y, stop.frames_left(), "  (on)" if stop.is_active() else "",
 		last_hit, sound.play_count, sparks.live_count(), sparks.pool_size(), numbers.live_count(), numbers.pool_size(),
 		numbers.merged_total, layer_counts["recoil"], layer_counts]
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "HitFx"
+
+func debug_category() -> String:
+	return "FX & Hit"
+
+func debug_children() -> Array:
+	var out: Array = [
+		{"name": "HitStop", "object": stop}, {"name": "CameraShake", "object": shake}, {"name": "HitSound", "object": sound},
+		{"name": "HitSparks", "object": sparks}, {"name": "DamageNumbers", "object": numbers},
+	]
+	for prof in profile_list():   # one section per hit type (its .tres numbers)
+		out.append({"name": "Hit " + String(prof.hit_type), "object": prof})
+	return out
+
+func debug_actions() -> Array:
+	var acts: Array = []
+	for t in [["Test sword hit", &"sword"], ["Test parry", &"parry"], ["Test player hit", &"player_hit"], ["Test kill FX", &"kill"],
+			["Test boss hit", &"boss_sword"], ["Test lunge", &"lunge"], ["Test charged arrow", &"charged_arrow"]]:
+		acts.append({"label": t[0], "run": test_hit.bind(t[1])})
+	# Knockback is gameplay (movement), not an effect: this switch is separate from the Hit FX ones.
+	acts.append({"label": "Knockback on/off", "toggle": func(): return get_tree().get_nodes_in_group("knockback").all(func(k): return k.enabled),
+		"run": func():
+			var kbs := get_tree().get_nodes_in_group("knockback")
+			var on := not kbs.all(func(k): return k.enabled)
+			for kb in kbs:
+				kb.enabled = on})
+	return acts

@@ -28,6 +28,15 @@ class_name BodyRig
 @export var hand_rest_main := Vector2(6, 15): set = _set_hand_rest_main
 @export var hand_rest_off := Vector2(6, -15): set = _set_hand_rest_off
 
+@export_group("Relaxed hands (bare hands idle + walk)")
+## Screen space relative to the Hands pivot: x = toward facing (mirrored when facing left), y = down.
+@export var hand_idle_front := Vector2(-16, -1): set = _set_hand_idle_front
+@export var hand_idle_back := Vector2(15, 1): set = _set_hand_idle_back
+## Walk swing: opposite hands move +-x, lift y; speed in rad/s.
+@export var hand_sway_x := 5.0: set = _set_hand_sway_x
+@export var hand_sway_y := 2.0: set = _set_hand_sway_y
+@export var hand_sway_speed := 14.0: set = _set_hand_sway_speed
+
 @export_group("Run cycle frames (directional / side-only sets)")
 ## Frames of the run animation where a foot lands (RunDust puff) and where the body is highest (shadow shrinks).
 ## Empty = use the values on the SpriteActorVisual (made for the 6-frame blocky run; a longer cycle needs its own).
@@ -68,5 +77,24 @@ func _set_hand_rest_off(v: Vector2) -> void:
 	hand_rest_off = v
 	emit_changed()
 
+func _set_hand_idle_front(v: Vector2) -> void:
+	hand_idle_front = v
+	emit_changed()
+func _set_hand_idle_back(v: Vector2) -> void:
+	hand_idle_back = v
+	emit_changed()
+func _set_hand_sway_x(v: float) -> void:
+	hand_sway_x = v
+	emit_changed()
+func _set_hand_sway_y(v: float) -> void:
+	hand_sway_y = v
+	emit_changed()
+func _set_hand_sway_speed(v: float) -> void:
+	hand_sway_speed = v
+	emit_changed()
+
+## Last F3 `Save rig` result (not saved into the file).
+var save_note := ""
+
 func status_text() -> String:
-	return "rig %s: visual_scale %.2f  slash %.2f  hand r %.1f  shadow %.2f" % [display_name, visual_scale, slash_scale, hand_radius, shadow_scale]
+	return "rig %s: visual_scale %.2f  slash %.2f  hand r %.1f  shadow %.2f%s" % [display_name, visual_scale, slash_scale, hand_radius, shadow_scale, ("  [" + save_note + "]") if save_note else ""]

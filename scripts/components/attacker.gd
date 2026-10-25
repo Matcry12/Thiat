@@ -32,6 +32,7 @@ var _phase_time := 0.0
 var _stagger_duration := 0.0
 
 func _ready() -> void:
+	add_to_group("debug")
 	_origin = get_parent() as Node2D
 	_target = get_node_or_null(target_path) as Node2D
 	_hitbox = get_node_or_null(hitbox_path) as Hitbox
@@ -107,3 +108,14 @@ func _set_phase(new_phase: Phase) -> void:
 			if _hitbox:
 				_hitbox.end_swing()
 	state_changed.emit(Phase.keys()[phase].to_lower())
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Attacker"
+
+func debug_category() -> String:
+	return "Combat"
+
+func status_text() -> String:
+	return "state: %s" % Phase.keys()[phase].to_lower()

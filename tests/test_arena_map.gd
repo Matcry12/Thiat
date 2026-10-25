@@ -32,10 +32,10 @@ func _init() -> void:
 
 	var panel = arena.get_node("TuningPanel")
 	for key in ["Map.map_seed", "Map.patch_count", "Map.patch_noise_threshold", "Map.deco_density", "Map.deco_min_spacing", "Map.obstacle_count", "Map.obstacle_min_spacing", "Map.spawn_clear_radius", "Map.border_density", "Map.dark_grass_chance", "Map.noise_frequency", "Map.patch_min_size", "Map.patch_max_size", "Map.map_cols", "Map.map_rows", "Map.zone_width", "Map.zone_height", "Map.camera_smoothing_speed"]:
-		ok = ok and _t(panel._controls.has(key), "F3 lists " + key)
+		ok = ok and _t(panel.settings.has(key), "F3 lists " + key)
 
 	# a slider keeps the seed and rebuilds
-	panel._apply_value("Map.patch_count", 2)
+	panel.apply_value("Map.patch_count", 2)
 	await process_frame
 	await process_frame
 	ok = ok and _t(m.current_seed == seed_a and m.result.patches.size() <= 8, "slider: same seed, fewer patches (patch_count is per screen: 2 x 3.8 = 8 max)")

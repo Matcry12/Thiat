@@ -24,11 +24,11 @@ signal rebuilt
 
 @export_group("Layout")
 ## Map size in cells (1 cell = tile_size * pixel_scale px = 32). 72 x 40 = 2304 x 1280 px = 2x the screen.
-@export var map_cols := 512:
+@export_range(12, 1024) var map_cols := 512:
 	set(v):
 		map_cols = v
 		_changed(false, true)
-@export var map_rows := 512:
+@export_range(12, 1024) var map_rows := 512:
 	set(v):
 		map_rows = v
 		_changed(false, true)
@@ -41,11 +41,11 @@ signal rebuilt
 	set(v):
 		zone_height = v
 		_changed(false, true)
-@export var zone_x := 0.86:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var zone_x := 0.86:
 	set(v):
 		zone_x = v
 		_changed(false, true)
-@export var zone_y := 0.5:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var zone_y := 0.5:
 	set(v):
 		zone_y = v
 		_changed(false, true)
@@ -55,20 +55,20 @@ signal rebuilt
 		boss_offset_x = v
 		_changed(false, true)
 ## The player starts here (fraction of the map): far left, outside the zone.
-@export var player_spawn_x := 0.12:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var player_spawn_x := 0.12:
 	set(v):
 		player_spawn_x = v
 		_changed(false, true)
-@export var player_spawn_y := 0.5:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var player_spawn_y := 0.5:
 	set(v):
 		player_spawn_y = v
 		_changed(false, true)
 ## The training dummy stands this far from the player's spawn.
-@export var dummy_offset_x := 290.0:
+@export_range(-600.0, 600.0, 5, "or_greater", "or_less") var dummy_offset_x := 290.0:
 	set(v):
 		dummy_offset_x = v
 		_changed(false, true)
-@export var dummy_offset_y := -190.0:
+@export_range(-600.0, 600.0, 5, "or_greater", "or_less") var dummy_offset_y := -190.0:
 	set(v):
 		dummy_offset_y = v
 		_changed(false, true)
@@ -95,18 +95,18 @@ signal rebuilt
 @export_group("Chunks")
 ## Maps with more cells than this skip the old tile dictionaries and dirt patches (MapGen.Params.legacy_tiles): the island ground
 ## picture does not need them and they cost ~0.8 s at 512x512. 40000 keeps them for 200x120.
-@export var legacy_tiles_max_cells := 40000:
+@export_range(0, 100000) var legacy_tiles_max_cells := 40000:
 	set(v):
 		legacy_tiles_max_cells = v
 		_changed()
 ## Chunks (0038 step 2): the world is data; trees, rocks, props and the ground picture exist only near the player, in squares of this
 ## many cells. Changing it rebuilds the chunks, not the map.
-@export var chunk_cells := 32:
+@export_range(4, 128) var chunk_cells := 32:
 	set(v):
 		chunk_cells = clampi(v, 4, 256)
 		_chunks_changed()
 ## Chunks within this many chunks of the player (Chebyshev) are loaded: 2 = a 5 x 5 block, enough to cover the screen with margin.
-@export var load_radius := 2:
+@export_range(0, 6) var load_radius := 2:
 	set(v):
 		load_radius = maxi(v, 0)
 		_chunks_changed(false)
@@ -117,18 +117,18 @@ signal rebuilt
 		ysort_min_px = maxi(v, 0)
 		_chunks_changed(false)
 ## A loaded chunk is freed only when it is further than load_radius + this (so walking along a border does not load and free the same chunk).
-@export var unload_margin := 1:
+@export_range(0, 4) var unload_margin := 1:
 	set(v):
 		unload_margin = maxi(v, 0)
 		_chunks_changed(false)
 ## At most this many chunks are built per frame (nearest first). Spawn, teleport and a new map build the 3 x 3 around the player at once.
-@export var chunks_per_frame := 1:
+@export_range(1, 8) var chunks_per_frame := 1:
 	set(v):
 		chunks_per_frame = maxi(v, 1)
 @export_group("Flat map")
 @export var style: MapStyle
 ## 0 = a new random seed every run.
-@export var map_seed := 0:
+@export_range(0, 9999) var map_seed := 0:
 	set(v):
 		map_seed = v
 		_changed(true)
@@ -145,11 +145,11 @@ signal rebuilt
 		patch_max_size = v
 		_changed()
 ## Patch centres are only accepted where the noise is above this (0..1), so patches cluster.
-@export var noise_frequency := 0.1:
+@export_range(0.01, 0.5, 0.002, "or_greater", "or_less") var noise_frequency := 0.1:
 	set(v):
 		noise_frequency = v
 		_changed()
-@export var patch_noise_threshold := 0.5:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var patch_noise_threshold := 0.5:
 	set(v):
 		patch_noise_threshold = v
 		_changed()
@@ -174,12 +174,12 @@ signal rebuilt
 	set(v):
 		spawn_clear_radius = v
 		_changed()
-@export var border_density := 0.9:
+@export_range(0.1, 2.0, 0.01, "or_greater", "or_less") var border_density := 0.9:
 	set(v):
 		border_density = v
 		_changed()
 ## Share of the grass that is the darker kind (smooth noise, so it forms meadows).
-@export var dark_grass_chance := 0.0:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var dark_grass_chance := 0.0:
 	set(v):
 		dark_grass_chance = v
 		_changed()
@@ -206,12 +206,12 @@ signal rebuilt
 		cont_octaves = v
 		_changed()
 ## How strongly the noise (vs the round blob) shapes the coast.
-@export var cont_gain := 1.6:
+@export_range(0.0, 4.0, 0.02, "or_greater", "or_less") var cont_gain := 1.6:
 	set(v):
 		cont_gain = v
 		_changed()
 ## 0 = all noise, 1 = a round island.
-@export var cont_radial := 0.55:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var cont_radial := 0.55:
 	set(v):
 		cont_radial = v
 		_changed()
@@ -219,7 +219,7 @@ signal rebuilt
 	set(v):
 		cont_edge_cells = v
 		_changed()
-@export var land_share := 0.42:
+@export_range(0.05, 0.9, 0.005, "or_greater", "or_less") var land_share := 0.42:
 	set(v):
 		land_share = v
 		_changed()
@@ -228,7 +228,7 @@ signal rebuilt
 	set(v):
 		neck_cells = v
 		_changed()
-@export var neck_boost := 0.5:
+@export_range(0.0, 1.5, 0.01, "or_greater", "or_less") var neck_boost := 0.5:
 	set(v):
 		neck_boost = v
 		_changed()
@@ -260,12 +260,12 @@ signal rebuilt
 		river_octaves = v
 		_changed()
 ## Half width of a river in cells, far from the sea ...
-@export var river_w_inland := 1.5:
+@export_range(0.0, 4.0, 0.02, "or_greater", "or_less") var river_w_inland := 1.5:
 	set(v):
 		river_w_inland = v
 		_changed()
 ## ... and at the sea.
-@export var river_w_sea := 2.5:
+@export_range(0.0, 6.0, 0.02, "or_greater", "or_less") var river_w_sea := 2.5:
 	set(v):
 		river_w_sea = v
 		_changed()
@@ -274,7 +274,7 @@ signal rebuilt
 	set(v):
 		river_grow_dist = v
 		_changed()
-@export var river_rough_max := 0.88:
+@export_range(0.0, 1.3, 0.005, "or_greater", "or_less") var river_rough_max := 0.88:
 	set(v):
 		river_rough_max = v
 		_changed()
@@ -287,7 +287,7 @@ signal rebuilt
 	set(v):
 		river_inland_min = v
 		_changed()
-@export var lake_humid_min := 0.35:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var lake_humid_min := 0.35:
 	set(v):
 		lake_humid_min = v
 		_changed()
@@ -295,7 +295,7 @@ signal rebuilt
 	set(v):
 		lake_inland_min = v
 		_changed()
-@export var lake_rough_max := 0.85:
+@export_range(0.0, 1.3, 0.005, "or_greater", "or_less") var lake_rough_max := 0.85:
 	set(v):
 		lake_rough_max = v
 		_changed()
@@ -355,12 +355,12 @@ signal rebuilt
 		lake_pond_r_max = v
 		_changed()
 ## Share of ponds next to a river.
-@export var lake_pond_on_river := 0.3:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var lake_pond_on_river := 0.3:
 	set(v):
 		lake_pond_on_river = v
 		_changed()
 ## Ponds only where the wetness noise rank (0..1 over the land) is above this.
-@export var lake_pond_wet_min := 0.62:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var lake_pond_wet_min := 0.62:
 	set(v):
 		lake_pond_wet_min = v
 		_changed()
@@ -403,16 +403,16 @@ signal rebuilt
 		lake_gap = v
 		_changed()
 ## Land shore around a river / lake (BiomeData.shore_ground): 1 ring, 2 rings, 1.5 = a ragged second ring.
-@export var shore_cells := 1.5:
+@export_range(0.0, 3.0, 0.02, "or_greater", "or_less") var shore_cells := 1.5:
 	set(v):
 		shore_cells = v
 		_changed()
 ## The ocean shallows along the coast are between these many cells wide.
-@export var shallow_min := 1.0:
+@export_range(0.0, 4.0, 0.02, "or_greater", "or_less") var shallow_min := 1.0:
 	set(v):
 		shallow_min = v
 		_changed()
-@export var shallow_max := 2.4:
+@export_range(0.0, 5.0, 0.02, "or_greater", "or_less") var shallow_max := 2.4:
 	set(v):
 		shallow_max = v
 		_changed()
@@ -439,7 +439,7 @@ signal rebuilt
 	set(v):
 		climate_warp_amp = v
 		_changed()
-@export var climate_octaves: int = 4:
+@export_range(1, 8) var climate_octaves: int = 4:
 	set(v):
 		climate_octaves = v
 		_changed()
@@ -472,7 +472,7 @@ signal rebuilt
 	set(v):
 		biome_smooth_half = v
 		_changed()
-@export var boss_land_cells: int = 12:
+@export_range(0, 40) var boss_land_cells: int = 12:
 	set(v):
 		boss_land_cells = v
 		_changed()
@@ -496,7 +496,7 @@ signal rebuilt
 	set(v):
 		beach_max = v
 		_changed()
-@export var cold_beach_t: float = 0.3:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var cold_beach_t: float = 0.3:
 	set(v):
 		cold_beach_t = v
 		_changed()
@@ -508,15 +508,15 @@ signal rebuilt
 	set(v):
 		home_calm_fade = v
 		_changed()
-@export var calm_temp: float = 0.55:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var calm_temp: float = 0.55:
 	set(v):
 		calm_temp = v
 		_changed()
-@export var calm_humid: float = 0.42:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var calm_humid: float = 0.42:
 	set(v):
 		calm_humid = v
 		_changed()
-@export var calm_rough: float = 0.25:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var calm_rough: float = 0.25:
 	set(v):
 		calm_rough = v
 		_changed()
@@ -545,15 +545,15 @@ signal rebuilt
 	set(v):
 		veg_on = v
 		_changed()
-@export var tree_fade_lo: float = 0.35:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var tree_fade_lo: float = 0.35:
 	set(v):
 		tree_fade_lo = v
 		_changed()
-@export var tree_fade_hi: float = 0.55:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var tree_fade_hi: float = 0.55:
 	set(v):
 		tree_fade_hi = v
 		_changed()
-@export var veg_density_period: float = 18.0:
+@export_range(4.0, 80.0, 0.5, "or_greater", "or_less") var veg_density_period: float = 18.0:
 	set(v):
 		veg_density_period = v
 		_changed()
@@ -561,7 +561,7 @@ signal rebuilt
 	set(v):
 		copper_near_home_cells = v
 		_changed()
-@export var rock_group_radius: float = 2.2:
+@export_range(0.5, 6.0, 0.02, "or_greater", "or_less") var rock_group_radius: float = 2.2:
 	set(v):
 		rock_group_radius = v
 		_changed()
@@ -708,7 +708,7 @@ signal rebuilt
 	set(v):
 		biome_map_on = v
 		_apply_biome_map()
-@export var biome_map_alpha := 0.55:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var biome_map_alpha := 0.55:
 	set(v):
 		biome_map_alpha = v
 		_apply_biome_map()
@@ -733,7 +733,7 @@ signal rebuilt
 		ground_saturation = v
 		_apply_terrain_look()
 ## Shallow water (rivers, lakes, the coast shallows) is drawn lighter than the deep ocean: how much (0 = same), and its colour. Live.
-@export var shallow_tint_amount := 0.28:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var shallow_tint_amount := 0.28:
 	set(v):
 		shallow_tint_amount = v
 		_apply_terrain_look()
@@ -789,7 +789,7 @@ signal rebuilt
 	set(v):
 		drift_scale = v
 		_apply_terrain_look()
-@export var drift_speed := 0.05:
+@export_range(0.0, 100.0, 0.5, "or_greater", "or_less") var drift_speed := 0.05:
 	set(v):
 		drift_speed = v
 		_apply_terrain_look()
@@ -838,6 +838,7 @@ signal rebuilt
 @export var background_path: NodePath
 
 var current_seed := 0
+var build_count := 0   ## how many full builds this map did (F3 tests: saved edits must not cause a second one at start)
 var build_ms := 0   ## last rebuild, in ms
 var gen_ms := 0   ## of which MapGen.generate (the world data)
 var bake_ms := 0   ## of which the first chunks (ground pictures, nodes, props around the player)
@@ -880,6 +881,7 @@ var _streamer: ChunkStreamer
 
 func _ready() -> void:
 	add_to_group("arena_map")
+	add_to_group("debug")
 	_default_exports = _export_values()
 	for k in pending_settings:   # a saved island: same exports as when it was saved (before the first build)
 		if _default_exports.has(k):
@@ -1070,6 +1072,7 @@ func generate_seed(s: int) -> void:
 func rebuild(new_seed: bool, relayout := false) -> void:
 	if not _ready_done:
 		return
+	build_count += 1
 	var t0 := Time.get_ticks_msec()
 	if relayout:
 		_place_actors()
@@ -1960,3 +1963,39 @@ func add_prop_sprite(parent: Node, set: PropSet, region: int, pos: Vector2, s: f
 	sp.scale = Vector2(s, s)
 	sp.position = pos - Vector2(r.size.x * 0.5, r.size.y) * s
 	parent.add_child(sp)
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Map"
+
+func debug_category() -> String:
+	return "World"
+
+func debug_children() -> Array:
+	var out: Array = []
+	if style:
+		for gd in style.grounds:   # the island grounds (edge outline, corner cut ...): changing one re-bakes the ground
+			if gd:
+				out.append({"name": "Ground " + String(gd.id), "object": gd})
+		for bd in style.biomes:   # climate point, ground, trees, rocks, deco, tint of every biome (0038)
+			out.append({"name": "Biome " + bd.label, "object": bd})
+	for k in ["tree", "rock", "copper_rock", "tree_oak_sapling", "tree_oak_young", "tree_oak_small", "tree_oak_mature", "tree_oak_old", "tree_fir_sapling", "tree_fir_young", "tree_fir_small", "tree_fir_mature", "tree_fir_old"]:
+		out.append({"name": "Node " + k.replace("_rock", ""), "object": load("res://data/resource_nodes/%s.tres" % k), "cat": "Items & Crafting"})
+	return out
+
+func debug_actions() -> Array:
+	return [
+		{"label": "New map", "run": new_map},
+		{"label": "Go home", "run": func(): teleport_player("home")},
+		{"label": "Go to boss", "run": func(): teleport_player("boss")},
+		{"label": "Biome map", "toggle": func(): return biome_map_on, "run": func(): biome_map_on = not biome_map_on},
+		{"label": "Generate", "arg": "int", "run": func(v): generate_seed(clampi(int(v), 1, 9999))},   # seed 1-9999
+	]
+
+## A slider that rebuilds the world (applied when the drag ENDS): every ArenaMap number that is not a look. The look / camera ones are cheap and follow the drag.
+func debug_heavy(prop: String) -> bool:
+	for pre in ["ground_", "foam_", "shimmer_", "shallow_tint", "wave_", "drift_", "shade_", "biome_map_", "camera_", "path_", "camp_", "dirt_patch", "tint_", "load_radius", "unload_margin", "chunks_per_frame"]:
+		if prop.begins_with(pre):
+			return false
+	return true

@@ -86,8 +86,7 @@ func _init() -> void:
 	await _frames(4)
 	r = bar.get_global_rect()
 	_check(r.end.x <= vw - tp.right_panel_width() and not r.intersects(bl), "F3 open: clear of the tuning panel and the bottom-left block")
-	var sp: Control = tp._status_panel
-	_check(not r.intersects(sp.get_global_rect()), "F3 open: clear of the status panel")
+	_check(not r.intersects(tp.card.get_global_rect()), "F3 open: clear of the watch card")
 	tp.visible = false
 
 	# sleep again

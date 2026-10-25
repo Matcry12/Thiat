@@ -36,6 +36,7 @@ var _boss_bar: BossBar
 var _skin: InventorySkin
 
 func _ready() -> void:
+	add_to_group("debug")
 	var player: Node = get_node(player_path)
 	_health = player.get_node("Health")
 	_loadout = player.get_node_or_null("Loadout")
@@ -205,3 +206,18 @@ func _build_boss_bar() -> void:
 	_boss_bar.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 	_layer.add_child(_boss_bar)
 	_boss_bar.bind(_boss)
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "HUD"
+
+func debug_category() -> String:
+	return "HUD"
+
+func debug_children() -> Array:
+	var out: Array = [{"name": "HealthBar", "object": health_bar()}, {"name": "Hotbar", "object": hotbar()}]
+	if bag():
+		out.append({"name": "BagPanel", "object": bag()})
+		out.append({"name": "InventorySkin", "object": bag().get_skin()})
+	return out.filter(func(c): return c["object"] != null)

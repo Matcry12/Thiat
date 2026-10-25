@@ -36,6 +36,7 @@ var _timer := 0.0            # state-transition countdown (PARRY/RECOVER/BROKEN)
 var _regen_timer := 0.0      # time since the tank last drained
 
 func _ready() -> void:
+	add_to_group("debug")
 	_weapon_holder = get_node_or_null(weapon_holder_path) as WeaponHolder
 	_body = get_node_or_null(body_path) as Node2D
 	tank = tank_max
@@ -184,3 +185,14 @@ func _process_regen(delta: float) -> void:
 	tank = minf(tank_max, tank + tank_regen_rate * delta)
 	if tank != before:
 		tank_changed.emit(tank, tank_max)
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Guard"
+
+func debug_category() -> String:
+	return "Combat"
+
+func status_text() -> String:
+	return "state: %s\ntank: %.0f/%.0f" % [State.keys()[state].to_lower(), tank, tank_max]

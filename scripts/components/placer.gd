@@ -20,7 +20,7 @@ signal placed(station: Station)
 @export var outline_ok := Color(0.4, 1.0, 0.4, 1.0)      ## the 1 px box around the footprint
 @export var outline_bad := Color(1.0, 0.2, 0.2, 1.0)
 @export var outline_width := 1.0
-@export var flash_time := 0.4   ## s the ghost stays red after a click refused by the path check
+@export_range(0.0, 0.5, 0.002, "or_greater", "or_less") var flash_time := 0.4   ## s the ghost stays red after a click refused by the path check
 
 var last_refusal := ""    ## "" / water / node / station / boss / player / off (for F3)
 var last_placed := ""
@@ -212,3 +212,21 @@ func _physics_process(delta: float) -> void:
 
 func ghost() -> Station:
 	return _ghost
+
+func _ready() -> void:
+	add_to_group("debug")
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Placer"
+
+func debug_category() -> String:
+	return "Items & Crafting"
+
+func debug_actions() -> Array:
+	return [
+		{"label": "Place workbench here", "run": func(): place_free(load("res://data/items/workbench.tres"))},
+		{"label": "Place furnace here", "run": func(): place_free(load("res://data/items/furnace.tres"))},
+		{"label": "Place anvil here", "run": func(): place_free(load("res://data/items/anvil.tres"))},
+	]

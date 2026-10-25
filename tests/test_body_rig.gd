@@ -51,6 +51,9 @@ func _init():
 	check("blocky rig loads and shrinks the weapon picture", vis.rig == blocky and blocky.visual_scale < 1.0)
 	check("WeaponVisual (gameplay pivot) is NOT moved by the rig", wv.position == Vector2(0, -9) and hands.position == Vector2(0, -9))
 	check("hand radius from the rig", is_equal_approx(hands.hand_radius, blocky.hand_radius) and hands.rest_offset_main == blocky.hand_rest_main)
+	blocky.hand_idle_back = Vector2(-9, -1)
+	check("relaxed hand pose edit reaches Hands", hands.idle_back == Vector2(-9, -1))
+	blocky.hand_idle_back = Vector2(8, 0)
 	check("slash scale from the rig", is_equal_approx(fx._slash_scale, blocky.slash_scale))
 
 	var weapons: Array = []

@@ -22,89 +22,89 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 	set(v):
 		points_used = v
 		emit_changed()
-@export var a_temp := 0.5:
+@export_range(0.0, 1.5, 0.01, "or_greater", "or_less") var a_temp := 0.5:
 	set(v):
 		a_temp = v
 		emit_changed()
-@export var a_humid := 0.5:
+@export_range(0.0, 1.5, 0.01, "or_greater", "or_less") var a_humid := 0.5:
 	set(v):
 		a_humid = v
 		emit_changed()
-@export var a_rough := 0.5:
+@export_range(0.0, 1.5, 0.01, "or_greater", "or_less") var a_rough := 0.5:
 	set(v):
 		a_rough = v
 		emit_changed()
-@export var b_temp := 0.5:
+@export_range(0.0, 1.5, 0.01, "or_greater", "or_less") var b_temp := 0.5:
 	set(v):
 		b_temp = v
 		emit_changed()
-@export var b_humid := 0.5:
+@export_range(0.0, 1.5, 0.01, "or_greater", "or_less") var b_humid := 0.5:
 	set(v):
 		b_humid = v
 		emit_changed()
-@export var b_rough := 0.5:
+@export_range(0.0, 1.5, 0.01, "or_greater", "or_less") var b_rough := 0.5:
 	set(v):
 		b_rough = v
 		emit_changed()
-@export var c_temp := 0.5:
+@export_range(0.0, 1.5, 0.01, "or_greater", "or_less") var c_temp := 0.5:
 	set(v):
 		c_temp = v
 		emit_changed()
-@export var c_humid := 0.5:
+@export_range(0.0, 1.5, 0.01, "or_greater", "or_less") var c_humid := 0.5:
 	set(v):
 		c_humid = v
 		emit_changed()
-@export var c_rough := 0.5:
+@export_range(0.0, 1.5, 0.01, "or_greater", "or_less") var c_rough := 0.5:
 	set(v):
 		c_rough = v
 		emit_changed()
 ## Neighbours may never differ by 2+ (snow next to autumn). -1 = exempt (rocky, beaches).
-@export var temp_class := 2:
+@export_range(-1, 3) var temp_class := 2:
 	set(v):
 		temp_class = v
 		emit_changed()
 ## MapGen.Ground index: 2 cobble, 3 grass, 5 sand, 6 snow.
-@export var ground := 3:
+@export_range(0, 6) var ground := 3:
 	set(v):
 		ground = v
 		emit_changed()
 ## MapGen.Ground of the 1-2 land cells around a river or lake (0038 step 3): 1 dirt, 5 sand. Beaches and the boss land keep their own.
-@export var shore_ground := 1:
+@export_range(1, 6) var shore_ground := 1:
 	set(v):
 		shore_ground = v
 		emit_changed()
 ## Wet-lowland pull (0038 step 3): a land cell within this many cells of a river / lake (a ragged edge) takes THIS biome when the climate
 ## also fits (humidity above, roughness below, temperature between; all 0..1). 0 = off. Swamp uses it; any biome may.
-@export var fresh_pull_cells := 0.0:
+@export_range(0.0, 40.0, 0.2, "or_greater", "or_less") var fresh_pull_cells := 0.0:
 	set(v):
 		fresh_pull_cells = v
 		emit_changed()
-@export var fresh_humid_min := 0.45:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var fresh_humid_min := 0.45:
 	set(v):
 		fresh_humid_min = v
 		emit_changed()
-@export var fresh_rough_max := 0.6:
+@export_range(0.0, 1.3, 0.005, "or_greater", "or_less") var fresh_rough_max := 0.6:
 	set(v):
 		fresh_rough_max = v
 		emit_changed()
-@export var fresh_temp_min := 0.4:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var fresh_temp_min := 0.4:
 	set(v):
 		fresh_temp_min = v
 		emit_changed()
-@export var fresh_temp_max := 0.88:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var fresh_temp_max := 0.88:
 	set(v):
 		fresh_temp_max = v
 		emit_changed()
 ## Ground colour on top of the ground's own picture: brightness, warm (+ redder, - bluer), colour strength (0..2, 1 = unchanged). Live.
-@export var tint_bright := 1.0:
+@export_range(0.0, 2.0, 0.01, "or_greater", "or_less") var tint_bright := 1.0:
 	set(v):
 		tint_bright = v
 		look_changed.emit()
-@export var tint_warm := 0.0:
+@export_range(-0.5, 0.5, 0.005, "or_greater", "or_less") var tint_warm := 0.0:
 	set(v):
 		tint_warm = v
 		look_changed.emit()
-@export var tint_sat := 1.0:
+@export_range(0.0, 2.0, 0.01, "or_greater", "or_less") var tint_sat := 1.0:
 	set(v):
 		tint_sat = v
 		look_changed.emit()
@@ -117,7 +117,7 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 
 @export_group("Trees")
 ## 0 neutral, 1 open (Plains: the f value fades its trees OUT toward Forest), 2 wooded (Forest-like: f fades its trees IN, and f is the Plains | wooded blend). Also tells the climate map which table points are Plains and which are tree biomes.
-@export var forest_role := 0:
+@export_range(0, 2) var forest_role := 0:
 	set(v):
 		forest_role = v
 		emit_changed()
@@ -132,16 +132,16 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 		tree_tries = v
 		emit_changed()
 ## A tree keeps this many cells free of other trunks around it (lone trees). 0 = only the trunk cell and its 4 neighbours.
-@export var tree_ring := 0:
+@export_range(0, 6) var tree_ring := 0:
 	set(v):
 		tree_ring = v
 		emit_changed()
 ## Local density d runs between these two values with a smooth noise (period `veg_density_period`). d picks the tree age and fades tries.
-@export var dens_lo := 0.0:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var dens_lo := 0.0:
 	set(v):
 		dens_lo = v
 		emit_changed()
-@export var dens_hi := 1.0:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var dens_hi := 1.0:
 	set(v):
 		dens_hi = v
 		emit_changed()
@@ -151,7 +151,7 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 		fade_by_density = v
 		emit_changed()
 ## 0 = forest rule (old core, young edge, by d and the Map age numbers), 1 = fixed weights below.
-@export var age_rule := 0:
+@export_range(0, 1) var age_rule := 0:
 	set(v):
 		age_rule = v
 		emit_changed()
@@ -177,12 +177,12 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 		age_w_old = v
 		emit_changed()
 ## Oldest age allowed: 0 sapling, 1 young, 2 small, 3 mature, 4 old. A rolled age above it becomes this one.
-@export var max_stage := 4:
+@export_range(0, 4) var max_stage := 4:
 	set(v):
 		max_stage = v
 		emit_changed()
 ## A try of this model (1 oak, 2 fir, 3 pine) seeds a group of group_min..group_max trees within `fir_group_radius` cells. 0 = none.
-@export var group_model := 0:
+@export_range(0, 3) var group_model := 0:
 	set(v):
 		group_model = v
 		emit_changed()
@@ -195,11 +195,11 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 		group_max = v
 		emit_changed()
 ## Tree table, up to 6 rows: model (1 oak, 2 fir, 3 pine; 0 = unused), season (0 green, 1 yellow, 2 orange, 3 red, 4 teal, 5 dead, 6 snow), weight.
-@export var tree1_model := 0:
+@export_range(0, 3) var tree1_model := 0:
 	set(v):
 		tree1_model = v
 		emit_changed()
-@export var tree1_season := 0:
+@export_range(0, 6) var tree1_season := 0:
 	set(v):
 		tree1_season = v
 		emit_changed()
@@ -207,11 +207,11 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 	set(v):
 		tree1_weight = v
 		emit_changed()
-@export var tree2_model := 0:
+@export_range(0, 3) var tree2_model := 0:
 	set(v):
 		tree2_model = v
 		emit_changed()
-@export var tree2_season := 0:
+@export_range(0, 6) var tree2_season := 0:
 	set(v):
 		tree2_season = v
 		emit_changed()
@@ -219,11 +219,11 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 	set(v):
 		tree2_weight = v
 		emit_changed()
-@export var tree3_model := 0:
+@export_range(0, 3) var tree3_model := 0:
 	set(v):
 		tree3_model = v
 		emit_changed()
-@export var tree3_season := 0:
+@export_range(0, 6) var tree3_season := 0:
 	set(v):
 		tree3_season = v
 		emit_changed()
@@ -231,11 +231,11 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 	set(v):
 		tree3_weight = v
 		emit_changed()
-@export var tree4_model := 0:
+@export_range(0, 3) var tree4_model := 0:
 	set(v):
 		tree4_model = v
 		emit_changed()
-@export var tree4_season := 0:
+@export_range(0, 6) var tree4_season := 0:
 	set(v):
 		tree4_season = v
 		emit_changed()
@@ -243,11 +243,11 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 	set(v):
 		tree4_weight = v
 		emit_changed()
-@export var tree5_model := 0:
+@export_range(0, 3) var tree5_model := 0:
 	set(v):
 		tree5_model = v
 		emit_changed()
-@export var tree5_season := 0:
+@export_range(0, 6) var tree5_season := 0:
 	set(v):
 		tree5_season = v
 		emit_changed()
@@ -255,11 +255,11 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 	set(v):
 		tree5_weight = v
 		emit_changed()
-@export var tree6_model := 0:
+@export_range(0, 3) var tree6_model := 0:
 	set(v):
 		tree6_model = v
 		emit_changed()
-@export var tree6_season := 0:
+@export_range(0, 6) var tree6_season := 0:
 	set(v):
 		tree6_season = v
 		emit_changed()
@@ -309,7 +309,7 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 		rock_spread = v
 		emit_changed()
 ## Share of groups in brown stone (the rest grey).
-@export var rock_brown_share := 0.0:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var rock_brown_share := 0.0:
 	set(v):
 		rock_brown_share = v
 		emit_changed()
@@ -339,16 +339,16 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 		bush_spread = v
 		emit_changed()
 ## Chance a single bush gets a second one beside it.
-@export var bush_pair := 0.0:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var bush_pair := 0.0:
 	set(v):
 		bush_pair = v
 		emit_changed()
 ## Only where the local density d is between these (forest edge: .45 to .7). 0 and 1 = everywhere.
-@export var bush_d_lo := 0.0:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var bush_d_lo := 0.0:
 	set(v):
 		bush_d_lo = v
 		emit_changed()
-@export var bush_d_hi := 1.0:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var bush_d_hi := 1.0:
 	set(v):
 		bush_d_hi = v
 		emit_changed()
@@ -395,7 +395,7 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 		flower_in_clear = v
 		emit_changed()
 ## Chance a patch gets 2-3 foxgloves at its rim.
-@export var flower_fox := 0.0:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var flower_fox := 0.0:
 	set(v):
 		flower_fox = v
 		emit_changed()
@@ -449,7 +449,7 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 		mush_group_max = v
 		emit_changed()
 ## Chance per land cell of a grass tuft / fern (x2 within 2 cells of a trunk or 1 of a rock).
-@export var tuft_p := 0.0:
+@export_range(0.0, 0.5, 0.002, "or_greater", "or_less") var tuft_p := 0.0:
 	set(v):
 		tuft_p = v
 		emit_changed()
@@ -486,7 +486,7 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 		stump_per_block = v
 		emit_changed()
 ## Chance per shore cell (land next to a river / lake) of a reed patch.
-@export var reed_per_shore := 0.0:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var reed_per_shore := 0.0:
 	set(v):
 		reed_per_shore = v
 		emit_changed()
@@ -509,17 +509,17 @@ const MODELS := [&"", &"oak", &"fir", &"pine"]   ## treeN_model -> name in the n
 
 @export_group("Ground mix")
 ## Second ground mixed in by noise (MapGen.Ground index, 0 = none): rocky = stone with dirt.
-@export var ground_alt := 0:
+@export_range(0, 6) var ground_alt := 0:
 	set(v):
 		ground_alt = v
 		emit_changed()
 ## Share of the first ground (the rest is the second).
-@export var ground_alt_share := 0.55:
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var ground_alt_share := 0.55:
 	set(v):
 		ground_alt_share = v
 		emit_changed()
 ## Cells per clump of the mix.
-@export var ground_alt_period := 6.0:
+@export_range(1.0, 30.0, 0.1, "or_greater", "or_less") var ground_alt_period := 6.0:
 	set(v):
 		ground_alt_period = v
 		emit_changed()
@@ -545,3 +545,9 @@ func tree_rows() -> Array[Vector3]:
 		if m > 0 and w > 0.0:
 			out.append(Vector3(m, get("tree%d_season" % (i + 1)), w))
 	return out
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+## Every number except the tint rebuilds the map (ground_alt* starts with "ground_" but changes the map; only tint_* is a look).
+func debug_heavy(prop: String) -> bool:
+	return not prop.begins_with("tint_")

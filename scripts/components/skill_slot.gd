@@ -22,6 +22,7 @@ var _current: Skill
 var _current_weapon: WeaponData
 
 func _ready() -> void:
+	add_to_group("debug")
 	_weapon_holder = get_node_or_null(weapon_holder_path) as WeaponHolder
 	_user = get_parent() as Node2D
 
@@ -78,3 +79,32 @@ func _physics_process(delta: float) -> void:
 		_cooldowns[w] = maxf(0.0, _cooldowns[w] - delta)
 	if _current:
 		_current.aim_direction = aim_direction
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "SkillSlot"
+
+func debug_category() -> String:
+	return "Combat"
+
+func debug_actions() -> Array:
+	return [{"label": "Reset skill cd", "run": reset_cooldowns}]
+
+func status_text() -> String:
+	var loadout := get_parent().get_node_or_null("Loadout") as Loadout
+	if loadout == null:
+		return "n/a"
+	var lines: Array[String] = []
+	for w in loadout.weapons:
+		if w == null:
+			continue
+		var s := skill_for(w)
+		var state := "no skill"
+		if s:
+			var cd := cooldown_left(w)
+			state = "ready" if cd <= 0.0 else "cooldown %.2fs" % cd
+			if s.is_active():
+				state = "ACTIVE, " + state
+		lines.append("%s: %s" % [w.debug_name(), state])
+	return "\n".join(lines)

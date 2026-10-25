@@ -3,6 +3,7 @@
 [ext_resource type="PackedScene" uid="uid://brkn6l6tyxfd0" path="res://scenes/player.tscn" id="1"]
 [ext_resource type="PackedScene" uid="uid://b2crj03ik0dka" path="res://scenes/dummy.tscn" id="2"]
 [ext_resource type="Script" uid="uid://bv2w05208846v" path="res://scripts/debug_overlay.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/arena.gd" id="arena_s"]
 [ext_resource type="Script" uid="uid://d1skviyhs5c7r" path="res://scripts/debug/tuning_panel.gd" id="4"]
 [ext_resource type="Script" uid="uid://bjng3ujrudrq1" path="res://scripts/hud.gd" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/boss.tscn" id="6"]
@@ -33,6 +34,7 @@
 size = Vector2(880, 460)
 
 [node name="Arena" type="Node2D" unique_id=964213648]
+script = ExtResource("arena_s")
 y_sort_enabled = true
 
 [node name="Background" type="ColorRect" parent="." unique_id=1707197360]

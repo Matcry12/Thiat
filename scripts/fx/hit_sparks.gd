@@ -13,19 +13,19 @@ class Spark:
 	var color := Color.WHITE
 
 ## Pool size. The oldest spark is reused when it is full.
-@export var max_sparks := 160
+@export_range(16, 400) var max_sparks := 160
 ## Most sparks one physics frame may start (a pierce through three targets must not flood the screen).
-@export var max_per_frame := 24
+@export_range(0, 60) var max_per_frame := 24
 ## Fan around the hit direction, degrees (full cone = twice this).
-@export var spread_degrees := 35.0
+@export_range(0.0, 180.0, 1, "or_greater", "or_less") var spread_degrees := 35.0
 ## 0 = all sparks the same speed; 0.4 = each between 60% and 100%.
-@export var speed_jitter := 0.4
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var speed_jitter := 0.4
 ## Each spark lives between this share of `life` and the full life (1 = all equal).
 @export_range(0.0, 1.0) var life_min := 0.7
 ## How fast a spark fades: 1 = fades over its whole life, 2 = over the last half.
-@export var fade_rate := 2.0
+@export_range(0.5, 6.0, 0.02, "or_greater", "or_less") var fade_rate := 2.0
 ## Speed lost per second (higher = they stop sooner).
-@export var drag := 6.0
+@export_range(0.0, 20.0, 0.1, "or_greater", "or_less") var drag := 6.0
 
 var spawned_total := 0
 var _pool: Array[Spark] = []

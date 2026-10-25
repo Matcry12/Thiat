@@ -8,7 +8,7 @@ extends Node
 signal water_changed(in_water: bool)
 
 ## Walk speed multiplier while in shallow water (1 = no slowdown).
-@export var water_speed_scale := 0.55
+@export_range(0.05, 1.5, 0.005, "or_greater", "or_less") var water_speed_scale := 0.55
 
 var in_water := false   ## code-owned: updated by refresh()
 var _map: Node

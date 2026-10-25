@@ -21,7 +21,7 @@ signal respawned
 @export var spray_min := 35.0   ## px from the corpse a drop lands, nearest
 @export var spray_max := 90.0   ## farthest (the Collector magnet reaches 70: walk through the pile)
 @export var pop_height := 28.0  ## px the hop arcs up
-@export var pop_time := 0.45    ## seconds in the air
+@export_range(0.01, 0.5, 0.002, "or_greater", "or_less") var pop_time := 0.45    ## seconds in the air
 @export var drop_scale := 2.0   ## size of a death drop (its icon is tiny); the pickup and magnet radii do not change
 
 var deaths := 0
@@ -29,6 +29,7 @@ var _left := -1.0   # < 0 = alive / not counting
 var _player: CharacterBody2D   # scripts/player.gd (no class_name)
 
 func _ready() -> void:
+	add_to_group("debug")
 	add_to_group("respawner")
 	_player = get_parent() as CharacterBody2D
 	_player.get_node("Health").died.connect(_on_died)
@@ -122,3 +123,11 @@ func status_text() -> String:
 				soonest = p.despawn_left
 	return "deaths: %d  %s\ndrops on ground: %d (%d items)  soonest despawn: %s" % [
 		deaths, "respawn in %.1fs" % _left if is_waiting() else "alive", n, items, "%.0f s" % soonest if soonest >= 0.0 else "-"]
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Respawner"
+
+func debug_category() -> String:
+	return "Character"

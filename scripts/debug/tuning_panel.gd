@@ -1,635 +1,253 @@
 extends CanvasLayer
 class_name TuningPanel
-## F3: Minecraft-F3-style panel. Left = live status readout. Right = live
-## tuning sliders. See docs/wiki/prototype-v0.md §1c.
-##
-## The slider list is NOT hardcoded. `_collect_tunable_properties()` walks
-## `get_property_list()` on each registered target and keeps FLOAT/INT/BOOL
-## properties with PROPERTY_USAGE_SCRIPT_VARIABLE + PROPERTY_USAGE_EDITOR —
-## i.e. every `@export`. Add a new `@export` anywhere on a registered target
-## and it appears here with zero changes to this file.
-##
-## Dev-only: disabled in release exports unless `enabled_in_release` is set.
+## F3 panel. It owns NO list of what is tunable: every node in group "debug" says who it is (debug_name / debug_category),
+## what it contains (debug_children), its buttons (debug_actions), its status (status_text) and which numbers rebuild the world
+## (debug_heavy). The panel rescans on start and every time F3 opens, so a new feature needs zero edits here.
+## What it adds itself: the dock, overrides (F3Overrides), status view + watch card, the world-map picture.
+## Contract: tools/f3_mock/DESIGN.md "Extension contract", tests/test_debug_contract.gd.
 
 const WORLD_MAP_PANEL := preload("res://scripts/debug/world_map_panel.gd")
 
 @export var enabled_in_release := false
+@export var map_path: NodePath   # saved Map / Biome edits are applied through this before the map's first build
 
-@export var player_path: NodePath
-@export var dummy_path: NodePath
-@export var boss_path: NodePath
-@export var debug_overlay_path: NodePath
-@export var map_path: NodePath
-@export var hit_fx_path: NodePath
-
-## Per-property range override, for the few properties where "derive from the
-## current value" (see `_range_for`) gives a bad slider range. Keyed by
-## property name only — NOT a hardcoded list of which properties exist.
-@export var range_overrides: Dictionary = {
-	"arc_degrees": {"min": 10.0, "max": 360.0},
-	"radius": {"min": 10.0, "max": 200.0},
-	"art_angle_degrees": {"min": -180.0, "max": 180.0},
-	"rest_angle_degrees": {"min": -180.0, "max": 180.0},
-	"map_seed": {"min": 0.0, "max": 9999.0},
-	"map_cols": {"min": 12.0, "max": 1024.0},
-	"map_rows": {"min": 12.0, "max": 1024.0},
-	"chunk_cells": {"min": 4.0, "max": 128.0},
-	"load_radius": {"min": 0.0, "max": 6.0},
-	"unload_margin": {"min": 0.0, "max": 4.0},
-	"chunks_per_frame": {"min": 1.0, "max": 8.0},
-	"legacy_tiles_max_cells": {"min": 0.0, "max": 100000.0},
-	"land_share": {"min": 0.05, "max": 0.9},
-	"cont_radial": {"min": 0.0, "max": 1.0},
-	"cont_gain": {"min": 0.0, "max": 4.0},
-	"neck_boost": {"min": 0.0, "max": 1.5},
-	"lake_humid_min": {"min": 0.0, "max": 1.0},
-	"lake_pond_wet_min": {"min": 0.0, "max": 1.0},
-	"lake_pond_on_river": {"min": 0.0, "max": 1.0},
-	"lake_rough_max": {"min": 0.0, "max": 1.3},
-	"river_rough_max": {"min": 0.0, "max": 1.3},
-	"river_w_inland": {"min": 0.0, "max": 4.0},
-	"river_w_sea": {"min": 0.0, "max": 6.0},
-	"shore_cells": {"min": 0.0, "max": 3.0},
-	"shallow_min": {"min": 0.0, "max": 4.0},
-	"shallow_max": {"min": 0.0, "max": 5.0},
-	"shallow_tint_amount": {"min": 0.0, "max": 1.0},
-	"water_speed_scale": {"min": 0.05, "max": 1.5},
-	"fresh_pull_cells": {"min": 0.0, "max": 40.0},
-	"fresh_humid_min": {"min": 0.0, "max": 1.0},
-	"fresh_rough_max": {"min": 0.0, "max": 1.3},
-	"fresh_temp_min": {"min": 0.0, "max": 1.0},
-	"fresh_temp_max": {"min": 0.0, "max": 1.0},
-	"shore_ground": {"min": 1.0, "max": 6.0},
-	"calm_temp": {"min": 0.0, "max": 1.0},
-	"calm_humid": {"min": 0.0, "max": 1.0},
-	"calm_rough": {"min": 0.0, "max": 1.0},
-	"cold_beach_t": {"min": 0.0, "max": 1.0},
-	"climate_octaves": {"min": 1.0, "max": 8.0},
-	"biome_map_alpha": {"min": 0.0, "max": 1.0},
-	"a_temp": {"min": 0.0, "max": 1.5},
-	"a_humid": {"min": 0.0, "max": 1.5},
-	"a_rough": {"min": 0.0, "max": 1.5},
-	"b_temp": {"min": 0.0, "max": 1.5},
-	"b_humid": {"min": 0.0, "max": 1.5},
-	"b_rough": {"min": 0.0, "max": 1.5},
-	"c_temp": {"min": 0.0, "max": 1.5},
-	"c_humid": {"min": 0.0, "max": 1.5},
-	"c_rough": {"min": 0.0, "max": 1.5},
-	"points_used": {"min": 0.0, "max": 3.0},
-	"temp_class": {"min": -1.0, "max": 3.0},
-	"ground": {"min": 0.0, "max": 6.0},
-	"forest_role": {"min": 0.0, "max": 2.0},
-	"age_rule": {"min": 0.0, "max": 1.0},
-	"max_stage": {"min": 0.0, "max": 4.0},
-	"group_model": {"min": 0.0, "max": 3.0},
-	"tree_ring": {"min": 0.0, "max": 6.0},
-	"dens_lo": {"min": 0.0, "max": 1.0},
-	"dens_hi": {"min": 0.0, "max": 1.0},
-	"bush_d_lo": {"min": 0.0, "max": 1.0},
-	"bush_d_hi": {"min": 0.0, "max": 1.0},
-	"bush_pair": {"min": 0.0, "max": 1.0},
-	"rock_brown_share": {"min": 0.0, "max": 1.0},
-	"flower_fox": {"min": 0.0, "max": 1.0},
-	"reed_per_shore": {"min": 0.0, "max": 1.0},
-	"tuft_p": {"min": 0.0, "max": 0.5},
-	"ground_alt": {"min": 0.0, "max": 6.0},
-	"ground_alt_share": {"min": 0.0, "max": 1.0},
-	"ground_alt_period": {"min": 1.0, "max": 30.0},
-	"tree_fade_lo": {"min": 0.0, "max": 1.0},
-	"tree_fade_hi": {"min": 0.0, "max": 1.0},
-	"veg_density_period": {"min": 4.0, "max": 80.0},
-	"rock_group_radius": {"min": 0.5, "max": 6.0},
-	"tint_bright": {"min": 0.0, "max": 2.0},
-	"tint_sat": {"min": 0.0, "max": 2.0},
-	"tint_warm": {"min": -0.5, "max": 0.5},
-	"boss_land_cells": {"min": 0.0, "max": 40.0},
-	"zone_x": {"min": 0.0, "max": 1.0},
-	"zone_y": {"min": 0.0, "max": 1.0},
-	"player_spawn_x": {"min": 0.0, "max": 1.0},
-	"player_spawn_y": {"min": 0.0, "max": 1.0},
-	"dummy_offset_x": {"min": -600.0, "max": 600.0},
-	"dummy_offset_y": {"min": -600.0, "max": 600.0},
-	"patch_noise_threshold": {"min": 0.0, "max": 1.0},
-	"dark_grass_chance": {"min": 0.0, "max": 1.0},
-	"noise_frequency": {"min": 0.01, "max": 0.5},
-	"border_density": {"min": 0.1, "max": 2.0},
-	"shake_strength": {"min": 0.0, "max": 2.0},
-	"hitstop_scale": {"min": 0.0, "max": 2.0},
-	"max_frames": {"min": 0.0, "max": 30.0},
-	"stop_frames": {"min": 0.0, "max": 12.0},
-	"max_offset": {"min": 0.0, "max": 30.0},
-	"decay": {"min": 0.0, "max": 5.0},
-	"noise_speed": {"min": 1.0, "max": 80.0},
-	"pitch_variation": {"min": 0.0, "max": 0.3},
-	"shake": {"min": 0.0, "max": 1.0},
-	"slowmo_scale": {"min": 0.05, "max": 1.0},
-	"slowmo_time": {"min": 0.0, "max": 3.0},
-	"flash_time": {"min": 0.0, "max": 0.5},
-	"volume_db": {"min": -30.0, "max": 12.0},
-	"pitch": {"min": 0.3, "max": 2.0},
-	"stop_time_scale": {"min": 0.0001, "max": 0.2},
-	"knockback": {"min": 0.0, "max": 150.0},
-	"decay_rate": {"min": 1.0, "max": 40.0},
-	"max_pending": {"min": 0.0, "max": 300.0},
-	"knockback_scale": {"min": 0.0, "max": 3.0},
-	"step_distance": {"min": 0.0, "max": 60.0},
-	"recoil_px": {"min": 0.0, "max": 20.0},
-	"recoil_time": {"min": 0.02, "max": 0.5},
-	"spark_count": {"min": 0.0, "max": 30.0},
-	"spark_speed": {"min": 0.0, "max": 500.0},
-	"spark_life": {"min": 0.02, "max": 1.0},
-	"spark_size": {"min": 1.0, "max": 6.0},
-	"number_size": {"min": 0.0, "max": 32.0},
-	"max_sparks": {"min": 16.0, "max": 400.0},
-	"max_per_frame": {"min": 0.0, "max": 60.0},
-	"spread_degrees": {"min": 0.0, "max": 180.0},
-	"speed_jitter": {"min": 0.0, "max": 1.0},
-	"drag": {"min": 0.0, "max": 20.0},
-	"max_numbers": {"min": 4.0, "max": 60.0},
-	"rise_speed": {"min": 0.0, "max": 200.0},
-	"drift_speed": {"min": 0.0, "max": 100.0},
-	"gravity": {"min": 0.0, "max": 600.0},
-	"life": {"min": 0.1, "max": 2.0},
-	"offset_y": {"min": -80.0, "max": 20.0},
-	"scatter_x": {"min": 0.0, "max": 30.0},
-	"merge_time": {"min": 0.0, "max": 1.0},
-	"outline_size": {"min": 0.0, "max": 8.0},
-	"pop_scale": {"min": 1.0, "max": 3.0},
-	"pop_time": {"min": 0.01, "max": 0.5},
-	"home_return_delay": {"min": 0.0, "max": 5.0},
-	"home_return_speed": {"min": 10.0, "max": 600.0},
-	"recoil_ease": {"min": 0.5, "max": 5.0},
-	"fallback_hit_radius": {"min": 0.0, "max": 40.0},
-	"life_min": {"min": 0.0, "max": 1.0},
-	"fade_rate": {"min": 0.5, "max": 6.0},
-	"test_amount": {"min": 1.0, "max": 200.0},
-}
-
-const SAVE_PATH := "user://tuning.json"
+## Tests: another cfg file, and apply saved edits even in a headless run.
+static var test_cfg_path := ""
+static var test_force := false
+## Reflection is the slow part of a scan; the property list of a script never changes, so it is read once per script.
+static var _prop_cache := {}
 
 var _player: CharacterBody2D
-var _dummy: CharacterBody2D
-var _debug_overlay: CanvasLayer
-var _weapon_holder: WeaponHolder
-var _dummy_health: Health
-var _player_health: Health
-var _dodge: Dodge
-var _attacker: Attacker
-var _guard: Guard
-var _guard_visual: GuardVisual
-var _loadout: Loadout
-var _skill_slot: SkillSlot
-var _boss: Boss
 var _map: ArenaMap
-var _hit_fx: HitFx
-var _collector: Collector
-var _respawner: Respawner
-var _inventory: Inventory
-var _crafter: Crafter
-## The F3 status text needs at least this much free height (px) between the HUD blocks, else it hides.
-@export var status_min_height := 80.0
-var _placer: Placer
-var _bag: BagPanel
-
-var _targets: Array = []          # [{"name": String, "object": Object}]
-var _controls: Dictionary = {}    # "Target.prop" -> {obj, prop, control, value_label, is_bool, is_int}
-var _initial_values: Dictionary = {}  # "Target.prop" -> value captured at startup, for Reset
-
-var _status_label: Label
-var _status_panel: Control
-var _status_scroll: ScrollContainer
-var _right_panel: Control
-var _seed_edit: LineEdit
-var _tuning_list: VBoxContainer
 var _world_map: PanelContainer   # WorldMapPanel
 
-var _total_damage := 0.0
-var _last_damage := 0.0
-var _hits := 0
-var _swings := 0
+## Every F3 edit lives here (user://tuning.cfg); a headless run gets its own throw-away file, never applied.
+var overrides: F3Overrides
+var dock: F3Dock
+var status_view: F3StatusView     # Status tab
+var card: F3WatchCard             # pinned status blocks + override count, over the game (click-through)
+var toast: F3Toast
+var footer: F3Footer
+var stale: Dictionary = {}        # last apply_all result: {stale, stale_keys, unknown}
+## Every tunable setting, "Section.prop" -> {key, section, name, type, group, obj, heavy, range?}. The dock reads it; rows are built lazily from it.
+var settings: Dictionary:
+	get:
+		_ensure_scanned()
+		return _settings
+var _settings: Dictionary = {}
+var _sections: Array = []         # [{name, cat, obj, heavy, props: [info]}] in scan order (use sections())
+var _initial_values: Dictionary = {}  # "Section.prop" -> value at first sight, for the reset arrows
+var last_toast := ""
+var _pend_left := 1.0
+var _tally := [0, 0]            # [applied, stale] not yet told in a toast
+var _applied := {}               # override sections already put on their object
+var _scan_sig := ""
+var _scanned := false
+var _toast_layer: CanvasLayer
+var _card_left := 0.0
+var _ready_done := false
+
+
+func _dev_enabled() -> bool:
+	return enabled_in_release or OS.is_debug_build()
+
+
+func _enter_tree() -> void:
+	if not _dev_enabled():
+		return   # an exported game never applies dev tuning
+	# The map builds itself in its own _ready, which comes before ours: saved Map / Biome / Ground edits go in NOW, so the first
+	# build already has them (a second build at every start would cost seconds).
+	overrides = F3Overrides.new(_cfg_path())
+	overrides.force = test_force
+	var map := get_node_or_null(map_path) as ArenaMap
+	if map and overrides.count() > 0:
+		var r := overrides.apply_all(func(sec: String):
+			if sec == "Map":
+				return map
+			if map.style:
+				for bd in map.style.biomes:
+					if sec == "Biome " + bd.label:
+						return bd
+				for gd in map.style.grounds:
+					if gd and sec == "Ground " + String(gd.id):
+						return gd
+			return null)
+		_note_applied(r)
 
 
 func _ready() -> void:
-	if not enabled_in_release and not OS.is_debug_build():
+	if not _dev_enabled():
 		queue_free()
 		return
-
-	_player = get_node(player_path)
-	_dummy = get_node(dummy_path)
-	_debug_overlay = get_node(debug_overlay_path)
-	_weapon_holder = _player.get_node("WeaponHolder")
-	_dummy_health = _dummy.get_node("Health")
-	_player_health = _player.get_node("Health")
-	_dodge = _player.get_node("Dodge")
-	_attacker = _dummy.get_node("Attacker")
-	_guard = _player.get_node("Guard")
-	_guard_visual = _player.get_node("GuardVisual")
-	_loadout = _player.get_node_or_null("Loadout")
-	_skill_slot = _player.get_node_or_null("SkillSlot")
-	_boss = get_node_or_null(boss_path) as Boss
-	_map = get_node_or_null(map_path) as ArenaMap
-	_hit_fx = get_node_or_null(hit_fx_path) as HitFx
-
-	_dummy.set_meta("spot", _dummy.global_position)
-	_weapon_holder.state_changed.connect(_on_weapon_state_changed)
-	_dummy_health.damaged.connect(_on_dummy_damaged)
-
-	_targets = [
-		{"name": "Player", "object": _player},
-		{"name": "WeaponVisual", "object": _player.get_node("WeaponVisual")},
-		{"name": "Visual", "object": _player.visual},
-		{"name": "RunDust", "object": _player.get_node("Visual/RunDust")},
-	]
-	for nm in ["Swimmer", "Visual/WaterFx"]:   # 0038 step 3: water_speed_scale, effect numbers (optional nodes)
-		var wn := _player.get_node_or_null(nm)
-		if wn:
-			_targets.append({"name": nm.get_file(), "object": wn})
-	if _player.visual.get("rig") != null:
-		_targets.append({"name": "BodyRig", "object": _player.visual.rig})   # per-character body / weapon / hand fit (decision 0028)
-	_targets += [
-		{"name": "Dodge", "object": _dodge},
-		{"name": "Guard", "object": _guard},
-		{"name": "GuardVisual", "object": _guard_visual},
-		{"name": "SwingFx", "object": _player.get_node("WeaponVisual/SwingFx")},
-		{"name": "Hands", "object": _player.get_node("Hands")},
-		{"name": "CoverArc", "object": _guard_visual.get_node("CoverArc")},
-		{"name": "Player Health", "object": _player_health},
-		{"name": "Dummy Health", "object": _dummy_health},
-		{"name": "Attacker", "object": _attacker},
-		{"name": "Debug", "object": _debug_overlay},
-		{"name": "Loadout", "object": _loadout},
-	]
-	# One target per weapon in the loadout, named from its own file — not a
-	# hardcoded index/name, so a third weapon needs zero changes here.
-	if _loadout:
-		for w in _loadout.weapons:
-			if w:
-				_targets.append({"name": _weapon_target_name(w), "object": w})
-	# The E skill: the slot, and each weapon's own skill scene (its numbers).
-	if _skill_slot:
-		_targets.append({"name": "SkillSlot", "object": _skill_slot})
-		for w in _loadout.weapons:
-			var s := _skill_slot.skill_for(w)
-			if s:
-				_targets.append({"name": _weapon_target_name(w) + " Skill", "object": s})
-
-	# The boss, its health, its brain and each attack (one section per attack,
-	# found from the boss itself so a new attack needs no change here).
-	if _boss:
-		_targets.append({"name": "Boss", "object": _boss})
-		_targets.append({"name": "Boss Health", "object": _boss.health})
-		_targets.append({"name": "Boss Brain", "object": _boss.get_brain()})
-		_targets.append({"name": "Boss Visual", "object": _boss.visual})
-		for n in _boss.attack_names():
-			_targets.append({"name": "Boss " + String(n).capitalize(), "object": _boss.get_attack(n)})
-
-	if _map:
-		_targets.append({"name": "Map", "object": _map})
-		if _map.style:
-			for gd in _map.style.grounds:   # the island grounds (edge outline, corner cut ...): changing one re-bakes the ground
-				if gd:
-					_targets.append({"name": "Ground " + String(gd.id), "object": gd})
-			for bd in _map.style.biomes:   # climate point, ground, trees, rocks, deco, tint of every biome (0038): everything rebuilds on drag end, tint is live
-				_targets.append({"name": "Biome " + bd.label, "object": bd})
-
-	# Gathering (W2): the collector, the three node kinds (density applies on the next New map), the fists.
-	_collector = _player.get_node_or_null("Collector") as Collector
-	if _collector:
-		_targets.append({"name": "Collector", "object": _collector})
-	for k in ["tree", "rock", "copper_rock", "tree_oak_sapling", "tree_oak_young", "tree_oak_small", "tree_oak_mature", "tree_oak_old", "tree_fir_sapling", "tree_fir_young", "tree_fir_small", "tree_fir_mature", "tree_fir_old"]:
-		_targets.append({"name": "Node " + k.replace("_rock", ""), "object": load("res://data/resource_nodes/%s.tres" % k)})
-	if _loadout and _loadout.unarmed:
-		_targets.append({"name": "Fists", "object": _loadout.unarmed})
-	# Inventory (W3): the rules, each material's max stack, and the two starter tools' numbers.
-	_inventory = _player.get_node_or_null("Inventory") as Inventory
-	if _inventory:
-		_targets.append({"name": "Inventory", "object": _inventory})
-		for f in DirAccess.get_files_at("res://data/items"):
-			var it := load("res://data/items/" + f) as ItemData
-			if it == null:
-				continue
-			if it.category == "material":
-				_targets.append({"name": "Item " + String(it.id), "object": it})
-			elif it.category == "tool":
-				_targets.append({"name": "Tool " + String(it.id), "object": it.weapon})
-
-	_respawner = _player.get_node_or_null("Respawner") as Respawner
-	if _respawner:
-		_targets.append({"name": "Respawner", "object": _respawner})
-
-	# Crafting (W4, decision 0031): the Crafter / Placer numbers, one section per recipe and per smelt recipe.
-	_crafter = _player.get_node_or_null("Crafter") as Crafter
-	_placer = _player.get_node_or_null("Placer") as Placer
-	if _crafter:
-		_targets.append({"name": "Crafter", "object": _crafter})
-		for r in _crafter.recipes:
-			_targets.append({"name": "Recipe " + String(r.result.id), "object": r})
-	if _placer:
-		_targets.append({"name": "Placer", "object": _placer})
-	for r in RecipeBook.load_dir("res://data/smelting"):
-		_targets.append({"name": "Smelt " + String((r as SmeltRecipeData).output.id), "object": r})
-
-	# Hit feel: the master switches, the three effect nodes, and one section per hit type (its .tres numbers).
-	if _hit_fx:
-		_targets.append({"name": "HitFx", "object": _hit_fx})
-		_targets.append({"name": "HitStop", "object": _hit_fx.stop})
-		_targets.append({"name": "CameraShake", "object": _hit_fx.shake})
-		_targets.append({"name": "HitSound", "object": _hit_fx.sound})
-		_targets.append({"name": "HitSparks", "object": _hit_fx.sparks})
-		_targets.append({"name": "DamageNumbers", "object": _hit_fx.numbers})
-		for prof in _hit_fx.profile_list():
-			_targets.append({"name": "Hit " + String(prof.hit_type), "object": prof})
-
-	# HUD top-right (decision 0024).
-	var hud := get_node_or_null("../HUD") as HUD
-	if hud and not hud.is_node_ready():
-		await hud.ready          # tree order of HUD vs this panel does not matter
-	if hud:
-		_targets.append({"name": "HUD", "object": hud})
-		_targets.append({"name": "HealthBar", "object": hud.health_bar()})
-		if hud.hotbar():
-			_targets.append({"name": "Hotbar", "object": hud.hotbar()})
-		_bag = hud.bag()
-		if _bag:
-			_targets.append({"name": "BagPanel", "object": _bag})
-			_targets.append({"name": "InventorySkin", "object": _bag.get_skin()})
-
-	_targets.append({"name": "Dummy", "object": _dummy})
-
-	# Real knockback (gameplay): one section per Knockback component (Dummy, Player, ...). The boss has none.
-	for kb in get_tree().get_nodes_in_group("knockback"):
-		_targets.append({"name": "Knockback " + kb.get_parent().name, "object": kb})
-
+	_player = get_tree().get_first_node_in_group("player") as CharacterBody2D
+	_map = get_tree().get_first_node_in_group("arena_map") as ArenaMap
 	_build_ui()
 	visible = false
+	visibility_changed.connect(func(): if visible and _ready_done: rescan())
+	# Nothing is scanned until F3 opens (or something asks for `settings`) - except when saved edits wait for their objects.
+	# Some nodes overwrite their own @exports a moment after startup (the rig drives the hands), and the arena joins the group last:
+	# so that scan waits 3 frames.
+	if overrides.count() > 0:
+		for _f in 3:
+			await get_tree().process_frame
+		rescan(true)
+	_ready_done = true
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("debug_panel"):
-		visible = not visible
+		cycle()
+
+
+## F3 states: off -> full (dock + card) -> watch (card only, no dock, camera back) -> off.
+func mode() -> String:
+	if not visible:
+		return "off"
+	return "full" if dock == null or dock.visible else "watch"
+
+
+func cycle() -> void:
+	match mode():
+		"off":
+			dock.visible = true
+			visible = true
+		"full":
+			dock.visible = false
+		"watch":
+			visible = false
+			dock.visible = true
 
 
 func _process(_delta: float) -> void:
 	if not visible:
+		_pend_left -= _delta   # F3 closed: saved edits for a section that is not there yet (a bow picked up) go in when it shows up
+		if _pend_left <= 0.0:
+			_pend_left = 1.0
+			if _ready_done and _pending_count() > 0:
+				rescan()
 		return
-	_clear_of_hud()
-	_update_status_text()
+	_place_card()
+	_card_left -= _delta
+	if _card_left <= 0.0:
+		_card_left = 1.0 / maxf(status_view.refresh_rate, 0.1)
+		card.set_blocks(status_view.pinned_blocks())
 
 
-# ---------------------------------------------------------------- status ---
+# ------------------------------------------------------------------ scan ---
 
-func _update_status_text() -> void:
-	var fps := Engine.get_frames_per_second()
-	var frame_ms := 1000.0 / maxf(fps, 1.0)
-
-	var vel: Vector2 = _player.velocity
-	var move_state := "run" if vel.length() > 1.0 else "idle"
-	var facing := "left" if _player.aim_direction.x < 0.0 else "right"
-	var aim_deg := rad_to_deg(_player.aim_direction.angle())
-
-	var weapon: WeaponData = _weapon_holder.weapon
-	var weapon_name := "(none)"
-	if weapon != null:
-		weapon_name = weapon.resource_path.get_file().get_basename() if weapon.resource_path != "" else "(unsaved)"
-	var phase_names := ["idle", "windup", "active", "recovery"]
-	var phase_name: String = phase_names[_weapon_holder.phase]
-	var phase_duration := 0.0
-	if weapon != null:
-		match _weapon_holder.phase:
-			WeaponHolder.Phase.WINDUP: phase_duration = weapon.windup
-			WeaponHolder.Phase.ACTIVE: phase_duration = weapon.active
-			WeaponHolder.Phase.RECOVERY: phase_duration = weapon.recovery
-	# ponytail: reaches into WeaponHolder._phase_time (no getter exists) because
-	# adding one would mean editing combat code, which the brief disallows.
-	var time_left := maxf(0.0, phase_duration - _weapon_holder._phase_time)
-
-	var hurtbox_count := get_tree().get_nodes_in_group("hurtbox").size()
-	var hit_rate := (float(_hits) / _swings * 100.0) if _swings > 0 else 0.0
-
-	_status_label.text = "\n".join([
-		"[Engine]",
-		"fps: %d  frame: %.1f ms  time_scale: %.2f" % [fps, frame_ms, Engine.time_scale],
-		"",
-		"[Player]",
-		"pos: (%d, %d)" % [roundi(_player.global_position.x), roundi(_player.global_position.y)],
-		"vel: %.0f  state: %s  facing: %s" % [vel.length(), move_state, facing],
-		"aim: %.0f deg" % aim_deg,
-		_player.visual.status_text() if _player.visual.has_method("status_text") else "",
-		_water_status_text(),
-		"",
-		"[Weapon]",
-		"%s  phase: %s  left: %.2fs" % [weapon_name, phase_name, time_left],
-		"",
-		"[Combat]",
-		"last dmg: %.1f  total: %.1f" % [_last_damage, _total_damage],
-		"hits: %d  swings: %d  rate: %.0f%%" % [_hits, _swings, hit_rate],
-		"",
-		"[Entities]",
-		"hurtboxes: %d  dummy hp: %.0f" % [hurtbox_count, _dummy_health.hp],
-		_dummy.status_text(),
-		"",
-		"[Hands]",
-		(_player.get_node("Hands") as HandsVisual).status_text(),
-		"",
-		"[Dodge]",
-		"cooldown left: %.2fs  i-frames active: %s" % [_dodge.cooldown_remaining(), _dodge.iframes_active()],
-		"",
-		"[Guard]",
-		"state: %s  tank: %.0f/%.0f" % [Guard.State.keys()[_guard.state].to_lower(), _guard.tank, _guard.tank_max],
-		"",
-		"[Player Health]",
-		"shield: %.0f/%.0f  hp: %.0f/%.0f" % [_player_health.shield, _player_health.shield_max, _player_health.hp, _player_health.max_hp],
-		"",
-		"[Enemy Attack]",
-		"state: %s" % Attacker.Phase.keys()[_attacker.phase].to_lower(),
-		"",
-		"[Boss]",
-		_boss.status_text() if _boss else "n/a",
-		"",
-		"[Map]",
-		_map.status_text() if _map else "n/a",
-		"",
-		"[Hit FX]",
-		_hit_fx.status_text() if _hit_fx else "n/a",
-		"",
-		"[Knockback (gameplay)]",
-		_knockback_status_text(),
-		"",
-		"[Loadout]",
-		_loadout_status_text(),
-		"",
-		"[Gather]",
-		_gather_status_text(),
-		"",
-		"[Inventory]",
-		_inventory_status_text(),
-		"",
-		"[Frame]",
-		_frame_status_text(),
-		"",
-		"[Save]",
-		_save_status_text(),
-		"",
-		"[Death]",
-		_respawner.status_text() if _respawner else "n/a",
-		"",
-		"[Crafting]",
-		_crafting_status_text(),
-		"",
-		"[Skills (E)]",
-		_skill_status_text(),
-	])
-
-func _knockback_status_text() -> String:
-	var lines: Array[String] = []
-	for kb in get_tree().get_nodes_in_group("knockback"):
-		lines.append((kb as Knockback).status_text())
-	lines.append("boss: no Knockback (visual jolt only)")
-	return "\n".join(lines)
-
-
-func _loadout_status_text() -> String:
-	if _loadout == null:
-		return "n/a"
-	var active: WeaponData = _loadout.active_weapon()
-	var active_name := "(none)"
-	if active != null:
-		active_name = active.resource_path.get_file().get_basename() if active.resource_path != "" else "(unsaved)"
-	var swap_state := "ready"
-	if _loadout.is_casting():
-		swap_state = "casting %.2fs" % _loadout.cast_left()
-	elif _loadout.cooldown_left() > 0.0:
-		swap_state = "cooldown %.2fs" % _loadout.cooldown_left()
-	return "active: %s (%d)%s  swap: %s" % [active_name, _loadout.active_index(), " HOLSTERED" if _loadout.is_holstered() else "", swap_state]
-
-
-func _gather_status_text() -> String:
-	if _collector == null or _loadout == null:
-		return "n/a"
-	var w: WeaponData = _loadout.active_weapon()
-	var inv := _collector.inventory()
-	var counts := []
-	for id in inv.items():
-		counts.append("%s %d" % [id, inv.count(id)])
-	return "%s  gather_damage %.1f  tool_power %d\nlast hit: %s\nitems: %s  on ground: %d\n(density changes apply on New map)" % [
-		"HOLSTERED" if _loadout.is_holstered() else "armed",
-		w.gather_damage if w else 0.0, w.tool_power if w else 0,
-		_collector.last_gather if _collector.last_gather != "" else "-",
-		", ".join(counts) if counts else "none",
-		get_tree().get_nodes_in_group("pickup").size()]
-
-
-func _inventory_status_text() -> String:
-	if _inventory == null or _loadout == null:
-		return "n/a"
-	var it := _inventory.slot_item(_loadout.selected_slot)
-	var w := _loadout.active_weapon()
-	var bag := "locked (boss engaged)" if _inventory.locked() else ("open" if _bag and _bag.is_open() else "closed")
-	var held := "%s x%d" % [_inventory.held_item.display_name, _inventory.held_count] if _inventory.held_item else "-"
-	return "slot %d: %s  hands: %s%s\nslots used %d/%d  hotbar weapons %d/%d\nbag: %s  cursor: %s" % [
-		_loadout.selected_slot + 1, it.display_name if it else "(empty)",
-		w.item_name() if w else "-", " (swap casting)" if _loadout.is_casting() else "",
-		_inventory.used_slots(), Inventory.SIZE, _inventory.hotbar_weapon_count(), _inventory.max_hotbar_weapons,
-		bag, held]
-
-
-func _crafting_status_text() -> String:
-	if _crafter == null:
-		return "n/a"
-	var ids := []
-	for sid in _crafter.station_ids_in_range():
-		ids.append(String(sid))
-	var lines: Array[String] = []
-	lines.append("stations in range: %s  recipes shown: %d" % [", ".join(ids) if not ids.is_empty() else "none", _crafter.visible_recipes().size()])
-	if _placer:
-		var held := _placer.held_item()
-		lines.append("placing: %s  spot: %s  last: %s" % [held.display_name if held else "-", ("ok" if _placer.last_refusal == "" else "refused (%s)" % _placer.last_refusal) if held else "-", _placer.last_placed if _placer.last_placed != "" else "-"])
-		lines.append("path flood (on click only): %.1f ms" % _placer.last_neck_ms)
-	var furnaces := get_tree().get_nodes_in_group("furnace")
-	if furnaces.is_empty():
-		lines.append("furnaces: none placed")
-	for f: Furnace in furnaces:
-		lines.append("furnace %d: %s" % [furnaces.find(f) + 1, f.status_text()])
-	lines.append("last craft: %s" % (_crafter.last_craft if _crafter.last_craft != "" else "-"))
-	return "\n".join(lines)
-
-
-func _place_here(id: String) -> void:
-	if _placer:
-		_placer.place_free(load("res://data/items/%s.tres" % id))
-
-
-func _finish_smelting() -> void:
-	for f: Furnace in get_tree().get_nodes_in_group("furnace"):
-		f.finish_all()
-
-
-func _give(id: String, amount := 1) -> void:
-	_inventory.add(load("res://data/items/%s.tres" % id), amount)
-
-
-func _fill_bag() -> void:
-	_give("wood", 99999)   # fills every free slot with wood stacks; leftover is dropped
-
-
-func _break_nearest_node() -> void:
-	var best: ResourceNode
-	for n: ResourceNode in get_tree().get_nodes_in_group("resource_node"):
-		if n.is_broken():
+## Walk the "debug" group (+ debug_children, recursively) and rebuild sections, settings, the Actions tab and the status providers.
+func rescan(fresh := false) -> void:
+	var entries: Array = []
+	for n in get_tree().get_nodes_in_group("debug"):
+		if n.has_method("debug_name"):
+			_walk(n.debug_name(), n, n.debug_category() if n.has_method("debug_category") else "Misc", entries)
+	var sig := _signature(entries)
+	if sig == _scan_sig and _scanned and not fresh:
+		return   # the same nodes, children and buttons as last time: nothing to do (opening F3 costs next to nothing)
+	_scan_sig = sig
+	_scanned = true
+	if fresh:
+		_initial_values.clear()
+	var prev := _settings.duplicate()
+	_sections.clear()
+	_settings.clear()
+	var seen := {}
+	var providers: Array = [{"name": "Engine", "text": func():   # panel-only: not a game node
+		var fps := Engine.get_frames_per_second()
+		return "fps: %d  frame: %.1f ms  time_scale: %.2f" % [fps, 1000.0 / maxf(fps, 1.0), Engine.time_scale]}]
+	var groups: Array = []
+	for e in entries:
+		if seen.has(e["name"]):
 			continue
-		if best == null or n.global_position.distance_to(_player.global_position) < best.global_position.distance_to(_player.global_position):
-			best = n
-	if best:
-		var w := WeaponData.new()
-		w.gather_damage = 999.0
-		w.tool_power = 9
-		w.tool_kind = best.data.preferred_tool
-		best.take_gather_hit(w, _player)
+		seen[e["name"]] = true
+		_index_target(e["name"], e["object"], e["cat"], prev)
+		var o: Object = e["object"]
+		if o.has_method("status_text"):
+			providers.append({"name": e["name"], "text": func(): return str(o.status_text()) if is_instance_valid(o) else "gone"})
+		if o.has_method("debug_actions"):
+			groups.append({"title": e["name"], "actions": o.debug_actions()})
+	if _map:   # panel-only: the world picture
+		var extra := {"label": "World map", "run": func(): _world_map.toggle()}
+		var g = groups.filter(func(x): return x["title"] == _map.debug_name())
+		if g.is_empty():
+			groups.append({"title": "F3", "actions": [extra]})
+		else:
+			g[0]["actions"].append(extra)
+	if dock:
+		dock.set_actions(groups)
+		dock.refresh()
+	if status_view:
+		status_view.set_providers(providers, overrides.get_pinned_status())
+	_apply_pending()
 
 
-func _give_items(amount: int) -> void:
-	for f in DirAccess.get_files_at("res://data/items"):
-		var it := load("res://data/items/" + f) as ItemData if f.ends_with(".tres") else null
-		if it and it.category == "material":
-			_collector.inventory().add(it, amount)
+func _ensure_scanned() -> void:
+	if not _scanned and is_inside_tree():
+		rescan()
 
 
-func _skill_status_text() -> String:
-	if _skill_slot == null or _loadout == null:
-		return "n/a"
-	var lines: Array[String] = []
-	for w in _loadout.weapons:
-		var s := _skill_slot.skill_for(w)
-		var state := "no skill"
-		if s:
-			var cd := _skill_slot.cooldown_left(w)
-			state = "ready" if cd <= 0.0 else "cooldown %.2fs" % cd
-			if s.is_active():
-				state = "ACTIVE, " + state
-		lines.append("%s: %s" % [_weapon_target_name(w), state])
-	return "\n".join(lines)
+func sections() -> Array:
+	_ensure_scanned()
+	return _sections
 
 
-func _on_weapon_state_changed(state: String) -> void:
-	if state == "windup":
-		_swings += 1
+## Same set of nodes + children + buttons = same signature.
+func _signature(entries: Array) -> String:
+	var parts := PackedStringArray()
+	for e in entries:
+		var o: Object = e["object"]
+		var line: String = "%s#%d" % [e["name"], o.get_instance_id()]
+		if o.has_method("debug_actions"):
+			for a in o.debug_actions():
+				line += "|" + String(a["label"])
+		parts.append(line)
+	return ";".join(parts)
+
+func _walk(name_: String, obj: Object, cat: String, out: Array) -> void:
+	out.append({"name": name_, "object": obj, "cat": cat})
+	if obj.has_method("debug_children"):
+		for c in obj.debug_children():
+			if c.get("object") != null:
+				_walk(c["name"], c["object"], c.get("cat", cat), out)
 
 
-func _on_dummy_damaged(amount: float) -> void:
-	_last_damage = amount
-	_total_damage += amount
-	_hits += 1
-
-
-func _weapon_target_name(w: WeaponData) -> String:
-	if w.resource_path == "":
-		return "Weapon"
-	return w.resource_path.get_file().get_basename().capitalize()
+## Lists one target's tunable properties (reflection) into `settings` / `_sections`. No widgets: the dock builds rows lazily.
+func _index_target(target_name: String, obj: Object, cat: String, prev: Dictionary) -> void:
+	var props := _collect_tunable_properties(obj)
+	if props.is_empty():
+		return
+	var sec := {"name": target_name, "cat": cat, "obj": obj, "heavy": false, "props": []}
+	for info in props:
+		var key := "%s.%s" % [target_name, info["name"]]
+		info["key"] = key
+		info["section"] = target_name
+		info["obj"] = obj
+		info["heavy"] = obj.has_method("debug_heavy") and obj.debug_heavy(info["name"])
+		sec["heavy"] = sec["heavy"] or info["heavy"]
+		_settings[key] = info
+		if not (prev.has(key) and prev[key]["obj"] == obj and _initial_values.has(key)):
+			var v = obj.get(info["name"])
+			# an edit already put in (before the map's first build): the startup value is the one it was saved over
+			if overrides and overrides.has_override(target_name, info["name"]) and v == overrides.get_value(target_name, info["name"]):
+				v = overrides.get_base(target_name, info["name"])
+			_initial_values[key] = v
+		sec["props"].append(info)
+	_sections.append(sec)
 
 
 # ------------------------------------------------------------- reflection ---
 
 func _collect_tunable_properties(obj: Object) -> Array:
+	var sc = obj.get_script()
+	if sc != null and _prop_cache.has(sc):
+		return _prop_cache[sc].map(func(i): return i.duplicate())
+	var result := _reflect(obj)
+	if sc != null:
+		_prop_cache[sc] = result.map(func(i): return i.duplicate())
+	return result
+
+
+func _reflect(obj: Object) -> Array:
 	var result: Array = []
 	var group := ""   # @export_group title: the properties after it belong to it, until the next group
 	for prop in obj.get_property_list():
@@ -644,26 +262,52 @@ func _collect_tunable_properties(obj: Object) -> Array:
 			continue
 		if usage & PROPERTY_USAGE_EDITOR == 0:
 			continue
-		if prop["type"] != TYPE_FLOAT and prop["type"] != TYPE_INT and prop["type"] != TYPE_BOOL:
+		var t: int = prop["type"]
+		if t != TYPE_FLOAT and t != TYPE_INT and t != TYPE_BOOL and t != TYPE_VECTOR2 and t != TYPE_COLOR:
 			continue
-		result.append({"name": prop["name"], "type": prop["type"], "group": group})
+		var info := {"name": prop["name"], "type": t, "group": group}
+		var rng = _known_range(prop)
+		if rng != null:
+			info["range"] = rng
+			var hs := String(prop["hint_string"])
+			info["or_greater"] = hs.contains("or_greater")   # the field / scrub may go past the slider end
+			info["or_less"] = hs.contains("or_less")
+		result.append(info)
 	return result
 
 
-func _range_for(prop_name: String, current: float) -> Vector2:
-	if range_overrides.has(prop_name):
-		var o: Dictionary = range_overrides[prop_name]
-		return Vector2(o["min"], o["max"])
-	if prop_name.ends_with("_season"):   # BiomeData tree table: 0 green .. 6 snow
-		return Vector2(0.0, 6.0)
-	if prop_name.ends_with("_model"):    # 0 unused, 1 oak, 2 fir, 3 pine
-		return Vector2(0.0, 3.0)
-	if current > 0.0:
-		return Vector2(0.0, maxf(current * 4.0, 1.0))
-	elif current < 0.0:
-		var a := maxf(absf(current) * 4.0, 1.0)
-		return Vector2(-a, a)
-	return Vector2(0.0, 1.0)
+## A slider exists only when the range is KNOWN: an @export_range hint.
+## Returns Vector3(min, max, step) or null. (Numbers without a range get a number field + scrub, no slider.)
+func _known_range(prop: Dictionary):
+	var t: int = prop["type"]
+	if t != TYPE_FLOAT and t != TYPE_INT:
+		return null
+	var pn: String = prop["name"]
+	var step := 1.0 if t == TYPE_INT else 0.0
+	var lo := 0.0
+	var hi := 0.0
+	var found := false
+	if int(prop["hint"]) == PROPERTY_HINT_RANGE:
+		var parts := String(prop["hint_string"]).split(",")
+		if parts.size() >= 2 and parts[0].is_valid_float() and parts[1].is_valid_float():
+			lo = float(parts[0])
+			hi = float(parts[1])
+			if parts.size() >= 3 and parts[2].is_valid_float() and float(parts[2]) > 0.0:
+				step = float(parts[2])
+			found = true
+	if not found:
+		return null
+	if t == TYPE_FLOAT and step <= 0.0:
+		step = nice_step((hi - lo) / 200.0)
+	return Vector3(lo, hi, step)
+
+
+## A round step near `x`: 1, 2 or 5 times a power of ten (so a slider reads 10, 12, 14 and not 10.95, 11.9).
+static func nice_step(x: float) -> float:
+	x = maxf(x, 0.0001)
+	var e := pow(10.0, floorf(log(x) / log(10.0)))
+	var m := x / e
+	return (1.0 if m < 1.5 else 2.0 if m < 3.5 else 5.0 if m < 7.5 else 10.0) * e
 
 
 # --------------------------------------------------------------------- UI ---
@@ -673,465 +317,249 @@ func _build_ui() -> void:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
+	dock = F3Dock.new()
+	root.add_child(dock)
+	dock.setup(self, _sections)
 
-	var panel_bg := StyleBoxFlat.new()
-	panel_bg.bg_color = Color(0, 0, 0, 0.55)
-	panel_bg.content_margin_left = 8
-	panel_bg.content_margin_right = 8
-	panel_bg.content_margin_top = 6
-	panel_bg.content_margin_bottom = 6
+	status_view = F3StatusView.new()
+	dock.attach_status(status_view)
+	status_view.pinned_changed.connect(func(names: Array):
+		overrides.set_pinned_status(names)
+		card.set_blocks(status_view.pinned_blocks()))
+	card = F3WatchCard.new()
+	root.add_child(card)
+	toast = F3Toast.new()
+	_toast_layer = CanvasLayer.new()   # its own layer: the startup toast must show with F3 closed
+	_toast_layer.layer = 128
+	add_child(_toast_layer)
+	_toast_layer.add_child(toast)
+	footer = F3Footer.new()
+	dock.footer_box().add_child(footer)
+	footer.setup(self)
 
-	# --- status, top-left. Blocks its own small area only, not the screen. ---
-	var status_panel := PanelContainer.new()
-	status_panel.position = Vector2(8, 8)
-	status_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	status_panel.add_theme_stylebox_override("panel", panel_bg)
-	root.add_child(status_panel)
-	_status_panel = status_panel
-
-	_status_scroll = ScrollContainer.new()
-	_status_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
-	_status_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	status_panel.add_child(_status_scroll)
-	_status_label = Label.new()
-	_status_label.add_theme_font_size_override("font_size", 13)
-	_status_scroll.add_child(_status_label)
-
-	# --- tuning, top-right, scrollable ---
-	var tuning_panel := PanelContainer.new()
-	tuning_panel.anchor_left = 1.0
-	tuning_panel.anchor_right = 1.0
-	tuning_panel.anchor_bottom = 1.0
-	tuning_panel.offset_left = -360
-	tuning_panel.offset_right = -8
-	tuning_panel.offset_top = 8
-	tuning_panel.offset_bottom = -8
-	tuning_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	tuning_panel.add_theme_stylebox_override("panel", panel_bg)
-	root.add_child(tuning_panel)
-	_right_panel = tuning_panel
-
-	var tuning_vbox := VBoxContainer.new()
-	tuning_panel.add_child(tuning_vbox)
-
-	if _map:   # F3 "World map": the whole island as a picture, just left of the tuning panel
+	if _map:   # F3 "World map": the whole island as a picture, just left of the dock
 		_world_map = WORLD_MAP_PANEL.new()
 		_world_map.setup(_map, _player)
 		_world_map.anchor_left = 1.0
 		_world_map.anchor_right = 1.0
-		_world_map.offset_right = -368
-		_world_map.offset_left = -368 - _world_map.map_width - 12
+		_world_map.offset_right = -(dock.occupied_width() + 8.0)
+		_world_map.offset_left = _world_map.offset_right - _world_map.map_width - 12
 		_world_map.offset_top = 8
 		_world_map.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 		root.add_child(_world_map)
-
-	var button_row := HFlowContainer.new()
-	tuning_vbox.add_child(button_row)
-	_add_button(button_row, "Save", _on_save_pressed)
-	_add_button(button_row, "Load", _on_load_pressed)
-	_add_button(button_row, "Reset", _on_reset_pressed)
-
-	var action_row := HFlowContainer.new()
-	tuning_vbox.add_child(action_row)
-	_add_button(action_row, "Heal dummy", _on_heal_dummy)
-	_add_button(action_row, "Heal player", _on_heal_player)
-	_add_button(action_row, "Hurt player 20", func(): _player_health.take_damage(20.0, null, false))
-	_add_button(action_row, "Reset stats", _on_reset_stats)
-	_add_button(action_row, "Reset skill cd", func(): _skill_slot.reset_cooldowns())
-	if _map:
-		_add_button(action_row, "New map", func(): _map.new_map())
-		_add_button(action_row, "Go home", func(): _map.teleport_player("home"))
-		_add_button(action_row, "Go to boss", func(): _map.teleport_player("boss"))
-		_add_button(action_row, "Biome map", func(): _map.biome_map_on = not _map.biome_map_on)
-		_add_button(action_row, "World map", func(): _world_map.toggle())
-
-	if _map:
-		var seed_row := HFlowContainer.new()
-		tuning_vbox.add_child(seed_row)
-		var seed_label := Label.new()
-		seed_label.text = "Seed (1-9999)"
-		seed_row.add_child(seed_label)
-		_seed_edit = LineEdit.new()
-		_seed_edit.placeholder_text = "1-9999"
-		_seed_edit.max_length = 4
-		_seed_edit.custom_minimum_size = Vector2(70, 0)
-		_seed_edit.text_changed.connect(_on_seed_text_changed)
-		_seed_edit.text_submitted.connect(func(_t: String): _on_generate_pressed())   # Enter
-		seed_row.add_child(_seed_edit)
-		_add_button(seed_row, "Generate", _on_generate_pressed)
-
-	if _boss:
-		var boss_row := HFlowContainer.new()
-		tuning_vbox.add_child(boss_row)
-		_add_button(boss_row, "Phase 2", func(): _boss.force_phase_2())
-		for n in _boss.attack_names():
-			_add_button(boss_row, "-> " + String(n), func(): _boss.force_next(n))
-		var boss_row2 := HFlowContainer.new()
-		tuning_vbox.add_child(boss_row2)
-		_add_button(boss_row2, "Boss passive", func(): _boss.passive = not _boss.passive)
-		_add_button(boss_row2, "Heal boss", func(): _boss.health.hp = _boss.health.max_hp)
-		_add_button(boss_row2, "Restart", func(): ArenaMap.reload_keeping_seed(get_tree()))
-
-	if _hit_fx:
-		var fx_row := HFlowContainer.new()
-		tuning_vbox.add_child(fx_row)
-		_add_button(fx_row, "Test sword hit", func(): _hit_fx.test_hit(&"sword"))
-		_add_button(fx_row, "Test parry", func(): _hit_fx.test_hit(&"parry"))
-		_add_button(fx_row, "Test player hit", func(): _hit_fx.test_hit(&"player_hit"))
-		_add_button(fx_row, "Test kill FX", func(): _hit_fx.test_hit(&"kill"))
-		var fx_row2 := HFlowContainer.new()
-		tuning_vbox.add_child(fx_row2)
-		_add_button(fx_row2, "Test boss hit", func(): _hit_fx.test_hit(&"boss_sword"))
-		_add_button(fx_row2, "Test lunge", func(): _hit_fx.test_hit(&"lunge"))
-		_add_button(fx_row2, "Test charged arrow", func(): _hit_fx.test_hit(&"charged_arrow"))
-	if _collector:
-		var gather_row := HFlowContainer.new()
-		tuning_vbox.add_child(gather_row)
-		_add_button(gather_row, "Break nearest node", _break_nearest_node)
-		_add_button(gather_row, "Give 10 each", func(): _give_items(10))
-		_add_button(gather_row, "Clear items", func(): _collector.inventory().clear())
-	var save_game := get_tree().get_first_node_in_group("save_game") as SaveGame
-	if save_game:
-		var save_row := HFlowContainer.new()
-		tuning_vbox.add_child(save_row)
-		_add_button(save_row, "Save now", func(): save_game.save())
-		_add_button(save_row, "Load save", _load_save)
-		_add_button(save_row, "Delete save", func(): SaveGame.delete_save())
-	if _respawner:
-		var death_row := HFlowContainer.new()
-		tuning_vbox.add_child(death_row)
-		_add_button(death_row, "Kill player", func(): _respawner.kill())
-		_add_button(death_row, "Go to nearest drop", _go_to_nearest_drop)
-	if _inventory:
-		var inv_row := HFlowContainer.new()
-		tuning_vbox.add_child(inv_row)
-		_add_button(inv_row, "Give axe", func(): _give("stone_axe"))
-		_add_button(inv_row, "Give pickaxe", func(): _give("stone_pickaxe"))
-		_add_button(inv_row, "Give sword", func(): _give("sword"))
-		_add_button(inv_row, "Fill bag", _fill_bag)
-		_add_button(inv_row, "Give W3 kit", func(): _inventory.give_dev_kit())
-	if _crafter:
-		var craft_row := HFlowContainer.new()
-		tuning_vbox.add_child(craft_row)
-		_add_button(craft_row, "Give materials (20 each)", func(): _give_items(20))
-		_add_button(craft_row, "Finish smelting", _finish_smelting)
-		var place_row := HFlowContainer.new()
-		tuning_vbox.add_child(place_row)
-		_add_button(place_row, "Place workbench here", func(): _place_here("workbench"))
-		_add_button(place_row, "Place furnace here", func(): _place_here("furnace"))
-		_add_button(place_row, "Place anvil here", func(): _place_here("anvil"))
-	var kb_row := HFlowContainer.new()
-	tuning_vbox.add_child(kb_row)
-	_add_button(kb_row, "Knockback on/off", _toggle_knockback)
-	_add_button(kb_row, "Dummy to spot", func(): _reset_dummy_spot())
-
-	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(340, 100)
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	tuning_vbox.add_child(scroll)
-
-	_tuning_list = VBoxContainer.new()
-	_tuning_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(_tuning_list)
-
-	for target in _targets:
-		_add_target_section(target["name"], target["object"])
+		dock.extra_ui.append(_world_map)   # a click on the picture is a click on F3, not an attack
 
 
-## Digits only: anything else typed or pasted is dropped.
-func _on_seed_text_changed(t: String) -> void:
-	var clean := ""
-	for ch in t:
-		if ch >= "0" and ch <= "9":
-			clean += ch
-	if clean != t:
-		var caret := _seed_edit.caret_column
-		_seed_edit.text = clean
-		_seed_edit.caret_column = mini(caret, clean.length())
+func initial_value(key: String):
+	return _initial_values[key]
 
 
-## Generate button / Enter: build the map for exactly the typed seed, then give the keys back to the game.
-func _on_generate_pressed() -> void:
-	if _seed_edit.text.is_empty():
+func is_changed(key: String) -> bool:
+	if not settings.has(key):
+		return false
+	var info: Dictionary = settings[key]
+	var a = info["obj"].get(info["name"])
+	var b = _initial_values[key]
+	return not is_equal_approx(a, b) if typeof(a) == TYPE_FLOAT and typeof(b) == TYPE_FLOAT else a != b
+
+
+func changed_count(props: Array) -> int:
+	var n := 0
+	for info in props:
+		if is_changed(info["key"]):
+			n += 1
+	return n
+
+
+# ------------------------------------------------------- apply / overrides ---
+
+func _cfg_path() -> String:
+	if test_cfg_path != "":
+		return test_cfg_path
+	if DisplayServer.get_name() == "headless":   # test runs never touch the real file
+		var p := "user://tuning_headless.cfg"
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(p))
+		return p
+	return "user://tuning.cfg"
+
+
+## Tests and shots: swap in another store.
+func use_overrides(o: F3Overrides) -> void:
+	overrides = o
+	_applied.clear()
+	stale = {}
+	_tally = [0, 0]
+	_scan_sig = ""   # force one scan (it also applies what the new store holds, when its force flag allows)
+	rescan()
+	dock.reload_pins()
+	refresh_footer()
+
+
+func _find_section(name_: String):
+	for sec in _sections:
+		if sec["name"] == name_:
+			return sec["obj"]
+	return null
+
+
+## Saved edits whose object exists now and have not been put back yet (start, and every scan: a weapon picked up later brings its edits).
+func _apply_pending() -> void:
+	if overrides.count() == 0:
 		return
-	var n := clampi(int(_seed_edit.text), 1, 9999)
-	_seed_edit.text = str(n)
-	_seed_edit.release_focus()
-	_map.generate_seed(n)
-	var key := "Map.map_seed"
-	if _controls.has(key):
-		_controls[key]["control"].set_value_no_signal(n)
-		_controls[key]["value_label"].text = _format_value(n)
+	var r := overrides.apply_all(_find_section, _applied)
+	_note_applied(r)
+	stale["unknown"] = r["unknown"]
+	refresh_footer()
+	_flush_toast()
 
 
-func _save_status_text() -> String:
-	var sg := get_tree().get_first_node_in_group("save_game") as SaveGame
-	return sg.status_text() if sg else "n/a"
+func _pending_count() -> int:
+	var n := 0
+	for sp in overrides.keys():
+		if not _applied.has(sp[0]):
+			n += 1
+	return n
 
 
-func _load_save() -> void:
-	var d := SaveGame.read_save()
-	if d.is_empty():
+func _note_applied(r: Dictionary) -> void:
+	for sec in r["sections"]:
+		_applied[sec] = true
+	_tally[0] += r["applied"]
+	_tally[1] += r["stale"].size()
+	stale["stale"] = stale.get("stale", []) + r["stale"]
+	stale["stale_keys"] = stale.get("stale_keys", []) + r["stale_keys"]
+
+
+## "N F3 overrides applied - M stale skipped": at the top of the game even with F3 closed.
+func _flush_toast() -> void:
+	if _tally[0] + _tally[1] > 0 and toast:
+		last_toast = "%d F3 overrides applied - %d stale skipped" % _tally
+		toast.show_toast(last_toast, -1.0, right_panel_width())
+		_tally = [0, 0]
+
+
+## Tests: forget what was applied and do it again.
+func _apply_overrides() -> void:
+	_applied.clear()
+	stale = {}
+	_apply_pending()
+
+
+## Single entry point for every value change from outside the dock (tests, startup).
+## Sets the property and records it as an override (or drops the override when it is back at the startup value).
+func apply_value(key: String, value) -> void:
+	if not settings.has(key):
 		return
-	SaveGame.begin_load(d)
-	get_tree().reload_current_scene()   # same path as Continue: the arena rebuilds the island, then applies the save
-
-
-func _frame_status_text() -> String:
-	var pm := get_tree().get_first_node_in_group("pause_menu") as PauseMenu
-	return pm.status_text() if pm else "n/a"
-
-
-func _go_to_nearest_drop() -> void:
-	var best: Node2D
-	for b in get_tree().get_nodes_in_group("pickup"):
-		if not (b as Pickup).death_drop:
-			continue
-		if best == null or b.global_position.distance_to(_player.global_position) < best.global_position.distance_to(_player.global_position):
-			best = b
-	if best and _map:
-		_map.teleport_player(best.global_position)
-	elif best:
-		_player.global_position = best.global_position
-
-
-func _add_button(parent: Control, text: String, cb: Callable) -> void:
-	var b := Button.new()
-	b.text = text
-	b.pressed.connect(cb)
-	b.add_theme_font_size_override("font_size", 11)   # small buttons: all rows (wrapped) fit in a 720 px window
-	parent.add_child(b)
-
-
-func _add_target_section(target_name: String, obj: Object) -> void:
-	if obj == null:
-		return
-	var props := _collect_tunable_properties(obj)
-	if props.is_empty():
-		return
-
-	var heading := Label.new()
-	heading.text = "-- %s --" % target_name
-	heading.add_theme_font_size_override("font_size", 14)
-	_tuning_list.add_child(heading)
-
-	var group := ""
-	for prop_info in props:
-		if prop_info["group"] != group:   # a sub-heading per @export_group (Island / Climate / Water ...)
-			group = prop_info["group"]
-			if group != "":
-				var gl := Label.new()
-				gl.text = "[ %s ]" % group
-				gl.add_theme_font_size_override("font_size", 13)
-				gl.add_theme_color_override("font_color", Color(0.65, 0.85, 1.0))
-				_tuning_list.add_child(gl)
-		_add_property_row(target_name, obj, prop_info["name"], prop_info["type"])
-
-
-func _add_property_row(target_name: String, obj: Object, prop_name: String, type: int) -> void:
-	var key := "%s.%s" % [target_name, prop_name]
-	var current = obj.get(prop_name)
-	_initial_values[key] = current
-
-	var row := HBoxContainer.new()
-	_tuning_list.add_child(row)
-
-	var name_label := Label.new()
-	name_label.text = prop_name
-	name_label.custom_minimum_size = Vector2(120, 0)
-	row.add_child(name_label)
-
-	if type == TYPE_BOOL:
-		var check := CheckBox.new()
-		check.button_pressed = current
-		check.toggled.connect(func(pressed: bool): _apply_value(key, pressed))
-		row.add_child(check)
-		_controls[key] = {"obj": obj, "prop": prop_name, "control": check, "value_label": name_label, "is_bool": true, "is_int": false}
-	else:
-		var is_int := type == TYPE_INT
-		var range_v := _range_for(prop_name, float(current))
-		var slider := HSlider.new()
-		slider.min_value = range_v.x
-		slider.max_value = range_v.y
-		slider.step = 1.0 if is_int else maxf((range_v.y - range_v.x) / 200.0, 0.001)
-		slider.value = float(current)
-		slider.custom_minimum_size = Vector2(140, 0)
-		slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(slider)
-
-		var value_label := Label.new()
-		value_label.text = _format_value(current)
-		value_label.custom_minimum_size = Vector2(55, 0)
-		row.add_child(value_label)
-
-		# A map setting that rebuilds the whole world (~4 s at 512x512) is applied when the drag ENDS, not on every step; look-only sliders stay live.
-		var heavy := _is_heavy(obj, prop_name)   # a biome's climate / vegetation field rebuilds the world too
-		var dragging := [false]
-		slider.drag_started.connect(func(): dragging[0] = true)
-		slider.drag_ended.connect(func(_changed: bool):
-			dragging[0] = false
-			if heavy:
-				_apply_value(key, slider.value))
-		slider.value_changed.connect(func(v: float):
-			if heavy and dragging[0]:
-				value_label.text = _format_value(v)
-			else:
-				_apply_value(key, v))
-		_controls[key] = {"obj": obj, "prop": prop_name, "control": slider, "value_label": value_label, "is_bool": false, "is_int": is_int}
-
-
-## Map sliders that only change how things look or where the camera is: cheap, so they follow the drag.
-func _water_status_text() -> String:
-	var sw := _player.get_node_or_null("Swimmer")
-	var fx := _player.get_node_or_null("Visual/WaterFx")
-	return ("%s  %s" % [sw.status_text() if sw else "", fx.status_text() if fx else ""]).strip_edges()
-
-
-## A slider that rebuilds the world (applied when the drag ENDS): every ArenaMap number that is not a look, and every BiomeData number except its tint
-## (BiomeData.ground_alt* start with "ground_" but change the map, so the look prefixes must not match them).
-func _is_heavy(obj: Object, prop: String) -> bool:
-	if obj is BiomeData:
-		return not prop.begins_with("tint_")
-	return obj is ArenaMap and not _is_live_map_prop(prop)
-
-
-func _is_live_map_prop(prop: String) -> bool:
-	for pre in ["ground_", "foam_", "shimmer_", "shallow_tint", "wave_", "drift_", "shade_", "biome_map_", "camera_", "path_", "camp_", "dirt_patch", "tint_", "load_radius", "unload_margin", "chunks_per_frame"]:
-		if prop.begins_with(pre):
-			return true
-	return false
-
-
-func _format_value(v) -> String:
-	if typeof(v) == TYPE_BOOL:
-		return "true" if v else "false"
-	elif typeof(v) == TYPE_FLOAT:
-		return "%.2f" % v
-	return str(v)
-
-
-# ---------------------------------------------------------- apply / save ---
-
-## Single entry point for every value change: slider drag, checkbox toggle,
-## Load, and Reset all go through this — so all of them print the change
-## line and keep the widget in sync with the target.
-func _apply_value(key: String, value) -> void:
-	if not _controls.has(key):
-		return
-	var entry: Dictionary = _controls[key]
-	var obj: Object = entry["obj"]
-	var prop: String = entry["prop"]
+	var info: Dictionary = settings[key]
+	var obj: Object = info["obj"]
+	var prop: String = info["name"]
 	var old = obj.get(prop)
-
 	var new_value
-	if entry["is_bool"]:
-		new_value = bool(value)
-		obj.set(prop, new_value)
-		entry["control"].set_pressed_no_signal(new_value)
-	elif entry["is_int"]:
-		new_value = roundi(float(value))
-		obj.set(prop, new_value)
-		entry["control"].set_value_no_signal(new_value)
-	else:
-		new_value = float(value)
-		obj.set(prop, new_value)
-		entry["control"].set_value_no_signal(new_value)
-		entry["value_label"].text = _format_value(new_value)
-
+	match int(info["type"]):
+		TYPE_BOOL: new_value = bool(value)
+		TYPE_INT: new_value = roundi(float(value))
+		TYPE_FLOAT: new_value = float(value)
+		_: new_value = value
+	if overrides:
+		if _initial_values.has(key) and not is_changed_value(key, new_value):
+			overrides.clear(info["section"], prop)
+		else:
+			overrides.set_override(info["section"], obj, prop, new_value)   # (the base is read before the set below)
+	obj.set(prop, new_value)
+	if dock:
+		dock.sync_key(key)
+	refresh_footer()
 	print("%s: %s -> %s" % [key, old, new_value])
 
 
-func _on_save_pressed() -> void:
-	var data := {}
-	for key in _controls.keys():
-		var entry: Dictionary = _controls[key]
-		var o: Object = entry["obj"]
-		data[key] = o.save_value(entry["prop"]) if o.has_method("save_value") else o.get(entry["prop"])
-	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
-	f.store_string(JSON.stringify(data))
-	f.close()
-	print("tuning: saved -> %s" % SAVE_PATH)
-
-
-func _on_load_pressed() -> void:
-	if not FileAccess.file_exists(SAVE_PATH):
-		print("tuning: no save file at %s" % SAVE_PATH)
+## What the dock rows call. A heavy value (it rebuilds the map) shows the banner first, lets one frame draw it, then rebuilds.
+func request_value(key: String, value) -> void:
+	if not (settings.has(key) and settings[key]["heavy"]) or dock == null or not is_inside_tree():
+		apply_value(key, value)
 		return
-	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	var data = JSON.parse_string(f.get_as_text())
-	f.close()
-	if typeof(data) != TYPE_DICTIONARY:
-		print("tuning: save file is corrupt")
-		return
-	for key in data.keys():
-		_apply_value(key, data[key])
-	print("tuning: loaded <- %s" % SAVE_PATH)
+	dock.show_banner("Rebuilding map…")
+	await get_tree().process_frame
+	var t0 := Time.get_ticks_msec()
+	apply_value(key, value)
+	if _map:
+		_map._apply_pending_now()   # run the queued rebuild now so the time is real
+	dock.show_banner("last rebuild %.1f s" % ((Time.get_ticks_msec() - t0) / 1000.0), 3.0)
 
 
-func _on_reset_pressed() -> void:
-	for key in _initial_values.keys():
-		_apply_value(key, _initial_values[key])
-	print("tuning: reset to startup values")
+## The row reset arrow: back to the startup value, and the override goes away.
+func reset_value(key: String) -> void:
+	if settings.has(key):
+		apply_value(key, _initial_values[key])
 
 
-## Knockback switch for every actor that has one (gameplay; independent from the Hit FX switch).
-func _toggle_knockback() -> void:
-	var kbs := get_tree().get_nodes_in_group("knockback")
-	var on := true
-	for kb in kbs:
-		on = on and not kb.enabled
-	for kb in kbs:
-		kb.enabled = on
-		if _controls.has("Knockback %s.enabled" % kb.get_parent().name):
-			_controls["Knockback %s.enabled" % kb.get_parent().name]["control"].set_pressed_no_signal(on)
-	print("tuning: knockback -> %s" % ("on" if on else "off"))
+func is_changed_value(key: String, v) -> bool:
+	var b = _initial_values[key]
+	return not is_equal_approx(v, b) if typeof(v) == TYPE_FLOAT and typeof(b) == TYPE_FLOAT else v != b
 
 
-func _reset_dummy_spot() -> void:
-	if _dummy.has_meta("spot"):
-		_dummy.global_position = _dummy.get_meta("spot")
-		_dummy.home = _dummy.get_meta("spot")
+func refresh_footer() -> void:
+	if footer:
+		footer.refresh()
+	if card:
+		card.set_override_count(overrides.count())
 
 
-func _on_heal_dummy() -> void:
-	_dummy_health.hp = _dummy_health.max_hp
-	print("tuning: dummy healed -> %.0f" % _dummy_health.hp)
+## Footer `Write K to .tres`: the overrides of resource sections go into a fresh copy of each file. Those values are the new startup values.
+func write_to_tres() -> Dictionary:
+	var keys := []   # panel keys that will be written
+	for sec in _sections:
+		if overrides.is_tres_section(sec["name"]):
+			for info in sec["props"]:
+				if overrides.has_override(sec["name"], info["name"]):
+					keys.append(info["key"])
+	var res := overrides.write_all_tres()
+	for k in keys:
+		if not overrides.has_override(settings[k]["section"], settings[k]["name"]):   # written (a failed section keeps its keys)
+			_initial_values[k] = settings[k]["obj"].get(settings[k]["name"])
+	for e in res["errors"]:
+		printerr("F3 write: ", e)
+	if dock:
+		dock.refresh()
+	refresh_footer()
+	if toast:
+		toast.show_toast("Wrote %d to .tres%s" % [res["written"], "" if res["errors"].is_empty() else " - %d errors (see log)" % res["errors"].size()], -1.0, right_panel_width())
+	return res
 
 
-func _on_heal_player() -> void:
-	_player_health.hp = _player_health.max_hp
-	_player_health.shield = _player_health.shield_max
-	print("tuning: player healed -> hp %.0f, shield %.0f" % [_player_health.hp, _player_health.shield])
+## Footer `Clear overrides`: forget them all and put the live values back to the startup ones.
+func clear_overrides() -> void:
+	var back := []
+	for sp in overrides.keys():
+		for k in settings:
+			if settings[k]["section"] == sp[0] and settings[k]["name"] == sp[1]:
+				back.append(k)
+	overrides.clear_all()
+	for k in back:
+		settings[k]["obj"].set(settings[k]["name"], _initial_values[k])
+	stale = {}
+	if dock:
+		dock.refresh()
+	refresh_footer()
 
 
-func _on_reset_stats() -> void:
-	_total_damage = 0.0
-	_last_damage = 0.0
-	_hits = 0
-	_swings = 0
-	print("tuning: stats reset")
+## Footer stale button: forget the overrides that were skipped at start.
+func drop_stale() -> void:
+	for sp in stale.get("stale_keys", []):
+		overrides.clear(sp[0], sp[1])
+	stale = {}
+	refresh_footer()
 
 
-## For the HUD: how wide the right panel is (from the screen edge) and where the status panel ends, in px.
-## The status panel sits on the left, where the HUD now lives: keep it below the top-left block and above
-## the bottom-left one, so nothing overlaps while F3 is open. It clips (scrolls) instead of growing.
-func _clear_of_hud() -> void:
-	var hud := get_node_or_null("../HUD") as HUD
-	if hud == null or _status_scroll == null:
-		return
-	var ins := hud.f3_insets()
-	var vh := get_viewport().get_visible_rect().size.y
-	_status_panel.position.y = ins.x
-	var room := vh - ins.x - ins.y - 12.0
-	# Bag + recipe list + furnace box open can leave no room at all: hide the text rather than cover the icons.
-	var win := hud.craft_window().frame_rect() if hud.craft_window() else Rect2()
-	var covered := win.has_area() and _status_panel.position.x + _status_panel.size.x > win.position.x - 8.0   # the centred window
-	_status_panel.visible = room >= status_min_height and not covered
-	_status_scroll.custom_minimum_size.y = maxf(room, status_min_height)
+## The watch card sits at the top between the hotbar and the dock (or the screen edge when the dock is hidden).
+func _place_card() -> void:
+	card.set_span(get_viewport().get_visible_rect().size.x - right_panel_width())
 
 
+## For the HUD: how wide the dock is (from the screen edge); 0 in watch-only mode, so the game is not shifted or squeezed.
 func right_panel_width() -> float:
-	return -_right_panel.offset_left if _right_panel else 0.0
+	return dock.occupied_width() if dock and dock.visible else 0.0
 
+
+## Right edge of the left-hand F3 UI. The old status wall is gone: nothing sits on the left any more.
 func left_panel_right() -> float:
-	return _status_panel.position.x + _status_panel.size.x if _status_panel else 0.0
+	return 0.0

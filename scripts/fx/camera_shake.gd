@@ -6,13 +6,13 @@ class_name CameraShake
 ## Runs on unscaled time: the shake keeps moving through a hit-stop.
 
 ## Multiplies the shake. 0 = off (the accessibility switch).
-@export var shake_strength := 1.0
+@export_range(0.0, 2.0, 0.01, "or_greater", "or_less") var shake_strength := 1.0
 ## Trauma lost per second.
-@export var decay := 1.6
+@export_range(0.0, 5.0, 0.02, "or_greater", "or_less") var decay := 1.6
 ## Pixels of offset at full trauma and strength 1.
-@export var max_offset := 8.0
+@export_range(0.0, 30.0, 0.1, "or_greater", "or_less") var max_offset := 8.0
 ## How fast the noise moves (cycles per second).
-@export var noise_speed := 30.0
+@export_range(1.0, 80.0, 0.5, "or_greater", "or_less") var noise_speed := 30.0
 ## Camera2D limits are applied BEFORE offset, so at the map edge a shake would show the empty area outside
 ## the map. On = the offset is squeezed so the view never leaves the limits (the shake just goes quiet there).
 @export var keep_inside_limits := true

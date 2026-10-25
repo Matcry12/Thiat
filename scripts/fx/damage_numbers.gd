@@ -14,22 +14,22 @@ class Num:
 	var mergeable := false
 	var size := 10
 
-@export var max_numbers := 24
+@export_range(4, 60) var max_numbers := 24
 ## Starting upward speed, sideways drift and gravity (px/s, px/s^2): together they make the arc.
-@export var rise_speed := 70.0
-@export var drift_speed := 22.0
-@export var gravity := 220.0
-@export var life := 0.7
+@export_range(0.0, 200.0, 1, "or_greater", "or_less") var rise_speed := 70.0
+@export_range(0.0, 100.0, 0.5, "or_greater", "or_less") var drift_speed := 22.0
+@export_range(0.0, 600.0, 2, "or_greater", "or_less") var gravity := 220.0
+@export_range(0.1, 2.0, 0.01, "or_greater", "or_less") var life := 0.7
 ## Number starts this many px above the victim's feet position.
-@export var offset_y := -30.0
+@export_range(-80.0, 20.0, 0.5, "or_greater", "or_less") var offset_y := -30.0
 ## Random sideways start offset, px.
-@export var scatter_x := 6.0
+@export_range(0.0, 30.0, 0.1, "or_greater", "or_less") var scatter_x := 6.0
 ## Hits on the same victim within this many seconds merge into one number. 0 = never merge.
-@export var merge_time := 0.3
-@export var outline_size := 3
+@export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var merge_time := 0.3
+@export_range(0, 8) var outline_size := 3
 ## The pop: starts this much bigger and settles in `pop_time` s.
-@export var pop_scale := 1.5
-@export var pop_time := 0.1
+@export_range(1.0, 3.0, 0.01, "or_greater", "or_less") var pop_scale := 1.5
+@export_range(0.01, 0.5, 0.002, "or_greater", "or_less") var pop_time := 0.1
 ## The last part of `life` (0..1) spent fading out.
 @export_range(0.01, 1.0) var fade_fraction := 0.35
 ## Outline opacity (colour stays black).

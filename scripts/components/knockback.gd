@@ -12,13 +12,13 @@ signal pushed(distance: float)
 
 @export var enabled := true
 ## Multiplies every shove on this actor.
-@export var knockback_scale := 1.0
+@export_range(0.0, 3.0, 0.02, "or_greater", "or_less") var knockback_scale := 1.0
 ## 0 = full shove, 1 = immune.
 @export_range(0.0, 1.0) var resistance := 0.0
 ## How fast the shove runs out, per second. 14 = most of it done in about 0.2 s.
-@export var decay_rate := 14.0
+@export_range(1.0, 40.0, 0.2, "or_greater", "or_less") var decay_rate := 14.0
 ## Shoves stack (fast arrows) but never beyond this many px waiting to be played.
-@export var max_pending := 90.0
+@export_range(0.0, 300.0, 2, "or_greater", "or_less") var max_pending := 90.0
 ## Fixed profile row for this actor (the player: player_hit). Empty = pick the row from the damage tag.
 @export var fixed_type: StringName = &""
 

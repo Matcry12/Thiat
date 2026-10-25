@@ -23,6 +23,7 @@ var last_pickup := ""   # for F3
 var last_gather := ""   # status of the last node hit, for F3
 
 func _ready() -> void:
+	add_to_group("debug")
 	add_to_group("collector")
 
 func inventory() -> Inventory:
@@ -48,3 +49,50 @@ func _physics_process(delta: float) -> void:
 				p.amount = left
 		elif d <= magnet_radius:
 			p.global_position = p.global_position.move_toward(me.global_position, magnet_speed * delta)
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Collector"
+
+func debug_category() -> String:
+	return "Items & Crafting"
+
+func debug_actions() -> Array:
+	return [
+		{"label": "Break nearest node", "run": _debug_break_nearest},
+		{"label": "Give 10 each", "run": func(): inventory().give_materials(10)},
+		{"label": "Clear items", "run": func(): inventory().clear()},
+	]
+
+func status_text() -> String:
+	var loadout := get_parent().get_node_or_null("Loadout") as Loadout
+	var inv := inventory()
+	if loadout == null or inv == null:
+		return "n/a"
+	var w: WeaponData = loadout.active_weapon()
+	var counts := []
+	for id in inv.items():
+		counts.append("%s %d" % [id, inv.count(id)])
+	return "%s  gather_damage %.1f  tool_power %d\nlast hit: %s\nitems: %s  on ground: %d\n(density changes apply on New map)" % [
+		"HOLSTERED" if loadout.is_holstered() else "armed",
+		w.gather_damage if w else 0.0, w.tool_power if w else 0,
+		last_gather if last_gather != "" else "-",
+		", ".join(counts) if counts else "none",
+		get_tree().get_nodes_in_group("pickup").size()]
+
+## F3: breaks the closest unbroken node at once, as if hit by a god tool.
+func _debug_break_nearest() -> void:
+	var me := get_parent() as Node2D
+	var best: ResourceNode
+	for n: ResourceNode in get_tree().get_nodes_in_group("resource_node"):
+		if n.is_broken():
+			continue
+		if best == null or n.global_position.distance_to(me.global_position) < best.global_position.distance_to(me.global_position):
+			best = n
+	if best:
+		var w := WeaponData.new()
+		w.gather_damage = 999.0
+		w.tool_power = 9
+		w.tool_kind = best.data.preferred_tool
+		best.take_gather_hit(w, me)

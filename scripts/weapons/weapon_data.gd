@@ -22,7 +22,7 @@ class_name WeaponData
 @export var model: PackedScene
 ## Idle hold angle, relative to aim (WeaponVisual used to own this; it is a
 ## per-weapon number, not a per-player one — a bow rests pointing at the mouse).
-@export var rest_angle_degrees := -45.0
+@export_range(-180.0, 180.0, 2, "or_greater", "or_less") var rest_angle_degrees := -45.0
 
 ## behavior == "projectile" only.
 @export var projectile_scene: PackedScene
@@ -33,7 +33,7 @@ class_name WeaponData
 ## How far the swing travels, CENTRED ON THE AIM: the blade pulls back to
 ## -arc/2 and sweeps to +arc/2, so mid-swing it points at the cursor.
 ## Reach is not a number here — it is whatever the hitbox shape reaches.
-@export var arc_degrees := 90.0
+@export_range(10.0, 360.0, 2, "or_greater", "or_less") var arc_degrees := 90.0
 ## Snap swings (decision 0020): on the first physics frame of ACTIVE the hit
 ## shape is tried at this many angles across the arc. 12 = about 8 deg apart for 90 deg.
 @export var sweep_samples := 12
@@ -42,7 +42,7 @@ class_name WeaponData
 @export var model_tint := Color.WHITE
 ## Melee only: the swing carries the user this many px forward (aim direction) from windup to the end of active.
 ## Moves the body with move_and_collide, so it stops at walls and bodies. 0 = no step (the bow).
-@export var step_distance := 0.0
+@export_range(0.0, 60.0, 0.2, "or_greater", "or_less") var step_distance := 0.0
 ## False = unparryable (purple telegraph) — cannot be parried or blocked.
 @export var parryable := true
 ## The block pose: where the blade is held while F is down, in degrees relative
@@ -69,3 +69,9 @@ func item_name() -> String:
 	if resource_path != "":
 		return resource_path.get_file().get_basename().replace("_", " ").capitalize()
 	return "Weapon"
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+## F3 section name: the file name, capitalised ("Wooden Sword"); "Weapon" for an unsaved one.
+func debug_name() -> String:
+	return "Weapon" if resource_path == "" else resource_path.get_file().get_basename().capitalize()

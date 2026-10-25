@@ -33,6 +33,7 @@ var _dash_dir := Vector2.RIGHT
 var _dash_travelled := 0.0   ## how far along burst_distance we already are
 
 func _ready() -> void:
+	add_to_group("debug")
 	_body = get_node_or_null(body_path) as Node2D
 	_health = get_node_or_null(health_path) as Health
 	_weapon_holder = get_node_or_null(weapon_holder_path) as WeaponHolder
@@ -105,3 +106,14 @@ func _physics_process(delta: float) -> void:
 		_iframe_remaining = maxf(0.0, _iframe_remaining - delta)
 		if _iframe_remaining <= 0.0 and _health:
 			_health.invulnerable = false
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Dodge"
+
+func debug_category() -> String:
+	return "Combat"
+
+func status_text() -> String:
+	return "cooldown left: %.2fs\ni-frames active: %s" % [cooldown_remaining(), iframes_active()]

@@ -73,7 +73,7 @@ func _init() -> void:
 		clear = clear and o["pos"].distance_to(hp.global_position) > m.spawn_clear_radius
 	_check(clear, "no rock on the campfire")
 	var panel = arena.get_node("TuningPanel")
-	_check(panel.range_overrides.has("map_cols") and panel.range_overrides["map_cols"]["max"] >= 300, "F3 map_cols slider reaches 300")
+	_check(panel.settings["Map.map_cols"].get("range", Vector3.ZERO).y >= 300.0, "F3 map_cols slider reaches 300")
 
 	var times: Array[int] = []
 	for s in [3, 4, 5]:

@@ -30,6 +30,7 @@ func _init() -> void:
 	_count.fill(0)
 
 func _ready() -> void:
+	add_to_group("debug")
 	for it in start_items:
 		add(it, 1)
 
@@ -326,3 +327,54 @@ func _put(i: int, it: ItemData, n: int) -> void:
 	_count[i] = n if n > 0 else 0
 	if it != null:
 		_known[it.id] = it
+
+
+# ---- F3 debug contract (tools/f3_mock/DESIGN.md "Extension contract")
+func debug_name() -> String:
+	return "Inventory"
+
+func debug_category() -> String:
+	return "Items & Crafting"
+
+func debug_children() -> Array:
+	var out: Array = []
+	for f in DirAccess.get_files_at("res://data/items"):
+		var it := load("res://data/items/" + f) as ItemData if f.ends_with(".tres") else null
+		if it == null:
+			continue
+		if it.category == "material":
+			out.append({"name": "Item " + String(it.id), "object": it})
+		elif it.category == "tool":
+			out.append({"name": "Tool " + String(it.id), "object": it.weapon})
+	return out
+
+func debug_actions() -> Array:
+	return [
+		{"label": "Give axe", "run": func(): add(load("res://data/items/stone_axe.tres"), 1)},
+		{"label": "Give pickaxe", "run": func(): add(load("res://data/items/stone_pickaxe.tres"), 1)},
+		{"label": "Give sword", "run": func(): add(load("res://data/items/sword.tres"), 1)},
+		{"label": "Fill bag", "run": func(): add(load("res://data/items/wood.tres"), 99999)},   # every free slot gets wood; the rest is dropped
+		{"label": "Give W3 kit", "run": give_dev_kit},
+	]
+
+func status_text() -> String:
+	var loadout := get_parent().get_node_or_null("Loadout") as Loadout
+	if loadout == null:
+		return "n/a"
+	var it := slot_item(loadout.selected_slot)
+	var w := loadout.active_weapon()
+	var bag_panel := get_tree().get_first_node_in_group("bag_panel") as BagPanel
+	var bag := "locked (boss engaged)" if locked() else ("open" if bag_panel and bag_panel.is_open() else "closed")
+	var held := "%s x%d" % [held_item.display_name, held_count] if held_item else "-"
+	return "slot %d: %s  hands: %s%s\nslots used %d/%d  hotbar weapons %d/%d\nbag: %s  cursor: %s" % [
+		loadout.selected_slot + 1, it.display_name if it else "(empty)",
+		w.item_name() if w else "-", " (swap casting)" if loadout.is_casting() else "",
+		used_slots(), SIZE, hotbar_weapon_count(), max_hotbar_weapons,
+		bag, held]
+
+## F3: puts `amount` of every material into the bag.
+func give_materials(amount: int) -> void:
+	for f in DirAccess.get_files_at("res://data/items"):
+		var it := load("res://data/items/" + f) as ItemData if f.ends_with(".tres") else null
+		if it and it.category == "material":
+			add(it, amount)

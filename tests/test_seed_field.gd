@@ -20,16 +20,20 @@ func _init() -> void:
 	await process_frame
 	var m: ArenaMap = arena.get_node("ArenaMap")
 	var panel = arena.get_node("TuningPanel")
-	var edit: LineEdit = panel._seed_edit
+	panel.visible = true   # F3 open, Actions tab: the seed box lives there
+	panel.dock.show_tab("Actions")
+	for i in 5:
+		await process_frame   # (the startup scan lands after 3 frames)
+	var edit: LineEdit = panel.dock.arg_field("Generate")   # the Map's own `arg` action (debug_actions)
 	var player: CharacterBody2D = arena.get_node("Player")
 	_check(edit != null, "F3 has a seed field")
 
 	edit.text = "1a2b"
-	panel._on_seed_text_changed(edit.text)
+	edit.text_changed.emit(edit.text)
 	_check(edit.text == "12", "non-digits are dropped (%s)" % edit.text)
 
 	edit.text = "4242"
-	panel._on_generate_pressed()
+	panel.dock.run_arg("Generate")
 	await process_frame
 	await process_frame
 	_check(m.current_seed == 4242 and m.map_seed == 4242, "Generate builds seed 4242 (current %d)" % m.current_seed)
@@ -53,15 +57,21 @@ func _init() -> void:
 	_check(m.current_seed == 77, "Enter works like Generate")
 	# same seed again still rebuilds without error, and the range is clamped
 	edit.text = "0"
-	panel._on_generate_pressed()
+	panel.dock.run_arg("Generate")
 	_check(m.current_seed == 1, "0 is clamped to 1")
 	edit.text = "99999"
-	panel._on_generate_pressed()
+	panel.dock.run_arg("Generate")
 	_check(m.current_seed == 9999, "99999 is clamped to 9999")
 	edit.text = ""
-	panel._on_generate_pressed()
+	panel.dock.run_arg("Generate")
 	_check(m.current_seed == 9999, "empty field does nothing")
-	_check(panel._controls["Map.map_seed"]["control"].value == 9999.0, "the seed slider shows it")
+	panel.dock.show_tab("Tune")
+	panel.dock.open_section("Map")   # rows are built lazily: open the section, then the row must show the new seed
+	await process_frame
+	var seed_row: F3PropRow = panel.dock.row_for("Map.map_seed")
+	_check(seed_row != null and seed_row._fields[0].text == "9999" and seed_row._slider.value == 9999.0, "the seed row shows it")
+	panel.dock.show_tab("Actions")
+	await process_frame
 	m.load_all_chunks()   # 0038 step 2: nodes exist per chunk near the player; load them all to compare with the world data
 	await process_frame
 	_check(get_nodes_in_group("map_obstacle").size() == m.result.obstacles.size(), "no stale rocks")
@@ -77,7 +87,7 @@ func _init() -> void:
 		await physics_frame
 	_check(player.global_position == pos0, "focus in the field: the player does not move")
 	edit.text = "5"
-	panel._on_generate_pressed()
+	panel.dock.run_arg("Generate")
 	_check(root.gui_get_focus_owner() == null, "Generate releases focus")
 	for i in 20:
 		await physics_frame

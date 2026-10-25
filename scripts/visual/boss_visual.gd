@@ -11,7 +11,7 @@ class_name BossVisual
 ## share of the clip's frames, so the clip is stretched (or squeezed) to the window = speed_scale = clip length / data
 ## duration. The art never changes an attack's timing, and hitboxes are not touched.
 
-@export var radius := 28.0
+@export_range(10.0, 200.0, 1, "or_greater", "or_less") var radius := 28.0
 @export var base_color := Color(0.45, 0.07, 0.07)
 @export var phase2_color := Color(0.4, 0.0, 0.3)
 ## Walking home after giving up: pale, so it reads as "can't be hurt right now".
