@@ -4,7 +4,7 @@ extends RefCounted
 ## 20 000 tiles (decision 0033). Method: DUAL GRID / marching squares.
 ##   - Display tiles sit on the cell CORNERS: tile (i, j) covers the corner shared by cells (i-1,j-1) (i,j-1) (i-1,j) (i,j),
 ##     so the picture is one tile bigger than the map and is drawn half a tile up and left.
-##   - Ground is in layers (GroundData.layer: dirt 1, cobble 2, grass 3). For a layer, each of the 4 cells is "in" if its
+##   - Ground is in layers (GroundData.layer: dirt 1, sand 2, cobble 3, snow 4, grass 5). For a layer, each of the 4 cells is "in" if its
 ##     ground has layer >= this one. The 4 bits (NW 1, NE 2, SW 4, SE 8) pick one of 16 pieces.
 ##   - The 16 pieces are built from ONE straight edge picture of the pack (GroundData.edge_window), made mirror
 ##     symmetric so its left and right borders match; half planes are rotations of it, one quadrant = AND of two
@@ -229,9 +229,15 @@ static func _cut(img: Image, cx: int, cy: int, cut: int) -> void:
 				img.set_pixel(x, y, Color(0, 0, 0, 0))
 
 
+## Art pixels per tile (cell) of the island grounds.
+static func tile_of(style: MapStyle) -> int:
+	return style.grounds[MapGen.Ground.GRASS].tile_size
+
+
 ## Forget the cached pieces (a style changed).
 static func clear_cache() -> void:
 	_layers.clear()
+	_discs.clear()
 
 
 static func _hash(x: int, y: int, s: int) -> int:
@@ -242,6 +248,18 @@ static func _hash(x: int, y: int, s: int) -> int:
 ## Returns {ground: Image (RGBA8, (cols+1) x (rows+1) tiles: draw it half a tile up and left), foam: Image (L8, same),
 ## tint: Image (RGBA8, cols x rows), shade: Image (RGB8, cols x rows), tile: int}
 static func bake(res: MapGen.Result, style: MapStyle, look: Dictionary) -> Dictionary:
+	var out := bake_region(res, style, 0, 0, res.cols + 1, res.rows + 1)
+	out["tint"] = tint_image(res, look)
+	out["shade"] = shade_image(res, look)
+	return out
+
+
+## One piece of the ground picture (0038 step 2, chunks): the corner tiles i in [ci0, ci0 + tiles_w), j in [cj0, cj0 + tiles_h).
+## The whole map is ci0 = cj0 = 0, tiles (cols + 1, rows + 1). Returns {ground, foam, tile}: pictures of tiles_w * tile x tiles_h * tile
+## pixels. Tile (i, j) is drawn at (i * tile - tile / 2, j * tile - tile / 2) art pixels. A corner looks at the four cells around it,
+## so the piece needs the cells one step out (the ground array outside the map counts as water): neighbours join up pixel for pixel,
+## and a piece baked alone equals the same pixels of the whole picture.
+static func bake_region(res: MapGen.Result, style: MapStyle, ci0: int, cj0: int, tiles_w: int, tiles_h: int) -> Dictionary:
 	var cols := res.cols
 	var rows := res.rows
 	var by_ground: Array[Layer] = []
@@ -259,26 +277,37 @@ static func bake(res: MapGen.Result, style: MapStyle, look: Dictionary) -> Dicti
 		if not by_layer.has(d.layer):
 			by_layer[d.layer] = l
 	var t := by_ground[MapGen.Ground.GRASS].tile
-	var img := Image.create_empty((cols + 1) * t, (rows + 1) * t, false, Image.FORMAT_RGBA8)
-	var foam := Image.create_empty((cols + 1) * t, (rows + 1) * t, false, Image.FORMAT_L8)
+	var img := Image.create_empty(tiles_w * t, tiles_h * t, false, Image.FORMAT_RGBA8)
+	var foam := Image.create_empty(tiles_w * t, tiles_h * t, false, Image.FORMAT_L8)
 	var tile_rect := Rect2i(0, 0, t, t)
-	var L := PackedByteArray()   # layer per cell, one cell of water around the map
-	var G := PackedByteArray()   # ground id per cell, same padding
-	var pw := cols + 2
-	L.resize(pw * (rows + 2))
-	G.resize(pw * (rows + 2))
-	for y in rows:
-		for x in cols:
-			G[(y + 1) * pw + x + 1] = res.ground[y * cols + x]
-			L[(y + 1) * pw + x + 1] = layer_of[res.ground[y * cols + x]]
-	for j in rows + 1:
-		for i in cols + 1:
+	# the cells this piece looks at: x in [ci0 - 1, ci0 + tiles_w - 1], y likewise; water outside the map
+	var L := PackedByteArray()   # layer per cell
+	var G := PackedByteArray()   # ground id per cell, same window
+	var pw := tiles_w + 1
+	L.resize(pw * (tiles_h + 1))
+	G.resize(pw * (tiles_h + 1))
+	for ly in tiles_h + 1:
+		var y := cj0 - 1 + ly
+		if y < 0 or y >= rows:
+			continue
+		for lx in range(maxi(1 - ci0, 0), mini(cols - ci0 + 1, pw)):   # cells x = ci0 - 1 + lx inside [0, cols)
+			var gid := res.ground[y * cols + ci0 - 1 + lx]
+			G[ly * pw + lx] = gid
+			L[ly * pw + lx] = layer_of[gid]
+	for j in tiles_h:
+		for i in tiles_w:
 			var p0 := j * pw + i   # the cell up-left of this corner
+			var l0 := L[p0]
+			var l1 := L[p0 + 1]
+			var l2 := L[p0 + pw]
+			var l3 := L[p0 + pw + 1]
+			if l0 == l1 and l1 == l2 and l2 == l3:   # all four cells on one layer (most corners): one fill tile, no edge pieces
+				if l0 != 0:
+					var fl: Layer = by_ground[G[p0]]
+					var fh := _hash(ci0 + i, cj0 + j, res.seed + l0)
+					img.blit_rect(fl.fills[(fh % (fl.fills.size() / 4)) * 4 + ((fh >> 8) & 3)], tile_rect, Vector2i(i * t, j * t))
+				continue
 			var cells := [p0, p0 + 1, p0 + pw, p0 + pw + 1]   # NW NE SW SE
-			var l0 := L[cells[0]]
-			var l1 := L[cells[1]]
-			var l2 := L[cells[2]]
-			var l3 := L[cells[3]]
 			var mx := maxi(maxi(l0, l1), maxi(l2, l3))
 			if mx == 0:
 				continue
@@ -294,6 +323,8 @@ static func bake(res: MapGen.Result, style: MapStyle, look: Dictionary) -> Dicti
 					start = lay
 					break
 			var dst := Vector2i(i * t, j * t)
+			var gi := ci0 + i   # the corner in the whole map: the fill picks and flips depend on it, not on the piece
+			var gj := cj0 + j
 			for lay in range(start, mx + 1):
 				if not (present >> lay) & 1:
 					continue
@@ -304,37 +335,52 @@ static func bake(res: MapGen.Result, style: MapStyle, look: Dictionary) -> Dicti
 						break
 				var q := int(l0 >= lay) | (int(l1 >= lay) << 1) | (int(l2 >= lay) << 2) | (int(l3 >= lay) << 3)
 				if q == 15:
-					var h := _hash(i, j, res.seed + lay)
+					var h := _hash(gi, gj, res.seed + lay)
 					img.blit_rect(layer.fills[(h % (layer.fills.size() / 4)) * 4 + ((h >> 8) & 3)], tile_rect, dst)
 				else:
 					var pc := piece(layer, q)
 					img.blend_rect(pc["tile"], tile_rect, dst)
 					if lay == lo and mn == 0:
 						foam.blit_rect(pc["foam"], tile_rect, dst)
-	_paint_stamps(img, res, by_ground[MapGen.Ground.DIRT])
-	return {"ground": img, "foam": foam, "tint": tint_image(res, look), "shade": shade_image(res, look), "tile": t}
+	_paint_stamps(img, res, by_ground[MapGen.Ground.DIRT], Vector2i(ci0 * t, cj0 * t))
+	return {"ground": img, "foam": foam, "tile": t}
 
 
 ## Dirt stamps (patches, camp, paths) painted as smooth discs over the tiles. Three passes over ALL stamps so the
 ## outline only shows around the union, never inside it: a wide light rim, a narrow dark rim, then the dirt.
-static func _paint_stamps(img: Image, res: MapGen.Result, layer: Layer) -> void:
+static func _paint_stamps(img: Image, res: MapGen.Result, layer: Layer, origin := Vector2i.ZERO) -> void:
 	if res.dirt_stamps.is_empty() or layer == null or layer.fills.is_empty():
 		return
 	var k := float(layer.tile) / res.cell   # art px per world px
 	var half := layer.tile / 2               # the dual-grid picture starts half a tile up and left
-	var discs := {}
+	var bounds := Rect2i(origin, img.get_size())
+	var mine: Array[Vector3] = []            # only the stamps that reach this picture (a chunk sees a few of them)
+	for st in res.dirt_stamps:
+		var reach := roundi(st.z * k) + 3
+		if bounds.grow(reach).has_point(Vector2i(roundi(st.x * k) + half, roundi(st.y * k) + half)):
+			mine.append(st)
 	for pass_i in 3:
-		for st in res.dirt_stamps:
+		for st in mine:
 			var r := roundi(st.z * k)
 			var grow := 2 - pass_i             # 2, 1, 0 px beyond the dirt
-			var key := r * 10 + pass_i
-			if not discs.has(key):
-				discs[key] = _disc(layer, r + grow, [0.82, 0.62, 1.0][pass_i])
-			var d: Image = discs[key]
-			img.blend_rect(d, Rect2i(0, 0, d.get_width(), d.get_height()), Vector2i(roundi(st.x * k) + half - r - grow, roundi(st.y * k) + half - r - grow))
+			var d := _disc(layer, r + grow, [0.82, 0.62, 1.0][pass_i])
+			img.blend_rect(d, Rect2i(0, 0, d.get_width(), d.get_height()), Vector2i(roundi(st.x * k) + half - r - grow, roundi(st.y * k) + half - r - grow) - origin)
+
+
+## Discs by (ground, radius, shade): a disc is the same wherever it is drawn.
+static var _discs := {}
 
 
 static func _disc(layer: Layer, radius: int, shade: float) -> Image:
+	var key := Vector3i(layer.data.get_instance_id() & 0x7fffffff, radius, int(shade * 1000.0))
+	if _discs.has(key):
+		return _discs[key]
+	var made := _make_disc(layer, radius, shade)
+	_discs[key] = made
+	return made
+
+
+static func _make_disc(layer: Layer, radius: int, shade: float) -> Image:
 	var size := radius * 2 + 1
 	var t := layer.tile
 	var fill := layer.fills[0].get_data()
@@ -414,33 +460,122 @@ static func _foam(tile: Image, t: int) -> Image:
 	return Image.create_from_data(t, t, false, Image.FORMAT_L8, ring)
 
 
-## One pixel per cell, NEAREST filtered: the area tint (x2 encoded, so brighter than 1 fits) and in alpha its saturation.
+## One pixel per cell, NEAREST filtered: the area tint x the biome's own tint (x2 encoded, so brighter than 1 fits) and in alpha its saturation (x2 too: 0..2).
 ## Crisp on purpose: a tint must not smear over the border into the next area.
 static func tint_image(res: MapGen.Result, look: Dictionary) -> Image:
+	return tint_image_region(res, look, 0, 0, res.cols, res.rows)
+
+
+## The same for the cells [cx, cx + w) x [cy, cy + h); a cell outside the map takes its nearest cell (a chunk's maps reach one cell out).
+static func tint_image_region(res: MapGen.Result, look: Dictionary, cx: int, cy: int, w: int, h: int) -> Image:
 	var tints: Array = look["tint"]
 	var sats: Array = look["sat"]
+	var biome_tint: Array[Color] = []   # per biome id: its own tint and saturation, looked up once
+	var biome_sat: Array[float] = []
+	for b in res.biomes:
+		biome_tint.append(b.tint_color())
+		biome_sat.append(b.tint_sat)
+	# per cell (the region plus one cell all round): colour x2 and saturation x2; then a 3 x 3 average, so a biome change (swamp | forest) fades over ~3 cells
+	# instead of one hard step. It reads the global cells, so a chunk picture equals the same pixels of the whole-map picture.
+	var vw := w + 2
+	var vals := PackedFloat32Array()
+	vals.resize(vw * (h + 2) * 4)
+	var o := 0
+	for y in h + 2:
+		var row := clampi(cy + y - 1, 0, res.rows - 1) * res.cols
+		for x in vw:
+			var i := row + clampi(cx + x - 1, 0, res.cols - 1)
+			# the tint follows the SMOOTHED ground (same cells the tiles use), so a stray gameplay-area cell does not show
+			var a: int = res.area[i]
+			match res.ground[i]:
+				MapGen.Ground.GRASS:
+					a = MapGen.Area.FOREST
+				MapGen.Ground.COBBLE:
+					a = MapGen.Area.ROCKY
+				MapGen.Ground.BOSS:
+					a = MapGen.Area.BOSS
+				MapGen.Ground.SAND, MapGen.Ground.SNOW:
+					a = -1   # their own pictures: no area colour, only the biome's own tint
+			var base := Color.WHITE
+			var sat := 1.0
+			if a >= 0:
+				base = tints[a]
+				sat = sats[a]
+			if not res.biomes.is_empty() and a != MapGen.Area.BOSS:   # the biome's own tint (BiomeData), on top
+				var bi: int = res.biome[i]
+				if res.ground[i] == MapGen.Ground.SAND and not res.shore.is_empty() and res.shore[i] == 1:
+					bi = MapGen.Biome.BEACH_SAND   # shore sand around a river / lake looks like the beach sand, not like the biome's tint
+				base *= biome_tint[bi]
+				sat *= biome_sat[bi]
+			vals[o] = base.r
+			vals[o + 1] = base.g
+			vals[o + 2] = base.b
+			vals[o + 3] = sat
+			o += 4
+	var data := PackedByteArray()
+	data.resize(w * h * 4)
+	o = 0
+	for y in h:
+		for x in w:
+			var acc := Vector4.ZERO
+			for dy in 3:
+				for dx in 3:
+					var k := ((y + dy) * vw + x + dx) * 4
+					acc += Vector4(vals[k], vals[k + 1], vals[k + 2], vals[k + 3])
+			acc /= 9.0
+			data[o] = clampi(roundi(acc.x * 127.5), 0, 255)
+			data[o + 1] = clampi(roundi(acc.y * 127.5), 0, 255)
+			data[o + 2] = clampi(roundi(acc.z * 127.5), 0, 255)
+			data[o + 3] = clampi(roundi(acc.w * 127.5), 0, 255)   # saturation x2 encoded like the colour: 0..2
+			o += 4
+	return Image.create_from_data(w, h, false, Image.FORMAT_RGBA8, data)
+
+
+## One pixel per cell: the biome colour (BiomeData.map_color), opaque; water clear. Shown by ArenaMap as the F3 biome map, with its own alpha.
+static func biome_image(res: MapGen.Result) -> Image:
 	var data := PackedByteArray()
 	data.resize(res.cols * res.rows * 4)
 	for i in res.cols * res.rows:
-		# the tint follows the SMOOTHED ground (same cells the tiles use), so a stray gameplay-area cell does not show
-		var a: int = res.area[i]
-		match res.ground[i]:
-			MapGen.Ground.GRASS:
-				a = MapGen.Area.FOREST
-			MapGen.Ground.COBBLE:
-				a = MapGen.Area.ROCKY
-			MapGen.Ground.BOSS:
-				a = MapGen.Area.BOSS
-		var base: Color = tints[a]
-		data[i * 4] = clampi(roundi(base.r * 127.5), 0, 255)
-		data[i * 4 + 1] = clampi(roundi(base.g * 127.5), 0, 255)
-		data[i * 4 + 2] = clampi(roundi(base.b * 127.5), 0, 255)
-		data[i * 4 + 3] = clampi(roundi(float(sats[a]) * 255.0), 0, 255)
+		if res.land[i] == 1:
+			var c: Color = res.biomes[res.biome[i]].map_color
+			data[i * 4] = c.r8
+			data[i * 4 + 1] = c.g8
+			data[i * 4 + 2] = c.b8
+			data[i * 4 + 3] = 255
+	return Image.create_from_data(res.cols, res.rows, false, Image.FORMAT_RGBA8, data)
+
+
+## F3 World map (debug): one pixel per cell, the whole island. Land = BiomeData.map_color, river / lake / coast shallows / deep ocean in blues.
+const MAP_OCEAN := Color(0.11, 0.24, 0.51)
+const MAP_SHALLOW := Color(0.22, 0.45, 0.72)
+const MAP_RIVER := Color(0.29, 0.59, 0.88)
+const MAP_LAKE := Color(0.38, 0.75, 0.93)
+
+static func world_map_image(res: MapGen.Result) -> Image:
+	var data := PackedByteArray()
+	var n := res.cols * res.rows
+	data.resize(n * 4)
+	var has_shallow := not res.shallow.is_empty()
+	for i in n:
+		var c := MAP_OCEAN
+		if res.land[i] == 1:
+			c = res.biomes[res.biome[i]].map_color if not res.biome.is_empty() else Color(0.5, 0.7, 0.4)
+		elif has_shallow and res.shallow[i] == 1:
+			c = MAP_RIVER if res.fresh[i] == 1 else (MAP_LAKE if res.fresh[i] == 2 else MAP_SHALLOW)
+		data[i * 4] = c.r8
+		data[i * 4 + 1] = c.g8
+		data[i * 4 + 2] = c.b8
+		data[i * 4 + 3] = 255
 	return Image.create_from_data(res.cols, res.rows, false, Image.FORMAT_RGBA8, data)
 
 
 ## One pixel per cell, LINEAR filtered: soft light and dark patches (x2 encoded grey).
 static func shade_image(res: MapGen.Result, look: Dictionary) -> Image:
+	return shade_image_region(res, look, 0, 0, res.cols, res.rows)
+
+
+## The same for the cells [cx, cx + w) x [cy, cy + h). The noise is a function of the cell, so a piece matches the whole map's pixels.
+static func shade_image_region(res: MapGen.Result, look: Dictionary, cx: int, cy: int, w: int, h: int) -> Image:
 	var var_amount: float = look["shade_variation"]
 	var noise := FastNoiseLite.new()
 	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
@@ -451,15 +586,18 @@ static func shade_image(res: MapGen.Result, look: Dictionary) -> Image:
 	fine.seed = res.seed + 78
 	fine.frequency = look["shade_scale"] * 3.1
 	var data := PackedByteArray()
-	data.resize(res.cols * res.rows * 3)
-	for y in res.rows:
-		for x in res.cols:
-			var v := clampi(roundi((1.0 + var_amount * (noise.get_noise_2d(x, y) * 0.75 + fine.get_noise_2d(x, y) * 0.45)) * 127.5), 0, 255)
-			var i := (y * res.cols + x) * 3
+	data.resize(w * h * 3)
+	var i := 0
+	for y in h:
+		var gy := clampi(cy + y, 0, res.rows - 1)
+		for x in w:
+			var gx := clampi(cx + x, 0, res.cols - 1)
+			var v := clampi(roundi((1.0 + var_amount * (noise.get_noise_2d(gx, gy) * 0.75 + fine.get_noise_2d(gx, gy) * 0.45)) * 127.5), 0, 255)
 			data[i] = v
 			data[i + 1] = v
 			data[i + 2] = v
-	return Image.create_from_data(res.cols, res.rows, false, Image.FORMAT_RGB8, data)
+			i += 3
+	return Image.create_from_data(w, h, false, Image.FORMAT_RGB8, data)
 
 
 ## A small repeating water picture (tiles x tiles of style.water_fills, mirrored at random) for the water shader.

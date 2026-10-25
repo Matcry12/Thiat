@@ -1,0 +1,2529 @@
+[
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   5,
+   59,
+   6,
+   5
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "seedling",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   4
+  ],
+  "id": "m1_s2_greena_seedling_0"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   5,
+   39,
+   7,
+   9
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "seedling",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   8
+  ],
+  "id": "m1_s2_greena_seedling_1"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   16,
+   32,
+   16,
+   32
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "sapling",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   8,
+   31
+  ],
+  "id": "m1_s2_greena_sapling_2"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   32,
+   2,
+   32,
+   62
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "young",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   15,
+   61
+  ],
+  "id": "m1_s2_greena_young_3"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   69,
+   59,
+   6,
+   5
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "seedling",
+  "season": "yellow",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   4
+  ],
+  "id": "m1_s2_yellowa_seedling_4"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   69,
+   39,
+   7,
+   9
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "seedling",
+  "season": "yellow",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   8
+  ],
+  "id": "m1_s2_yellowa_seedling_5"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   80,
+   32,
+   16,
+   32
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "sapling",
+  "season": "yellow",
+  "variant": "a",
+  "trunk_base": [
+   8,
+   31
+  ],
+  "id": "m1_s2_yellowa_sapling_6"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   96,
+   2,
+   32,
+   62
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "young",
+  "season": "yellow",
+  "variant": "a",
+  "trunk_base": [
+   15,
+   61
+  ],
+  "id": "m1_s2_yellowa_young_7"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   133,
+   59,
+   6,
+   5
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "seedling",
+  "season": "dead",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   4
+  ],
+  "id": "m1_s2_deada_seedling_8"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   144,
+   34,
+   16,
+   30
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "sapling",
+  "season": "dead",
+  "variant": "a",
+  "trunk_base": [
+   8,
+   29
+  ],
+  "id": "m1_s2_deada_sapling_9"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   161,
+   17,
+   26,
+   47
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "young",
+  "season": "dead",
+  "variant": "a",
+  "trunk_base": [
+   14,
+   46
+  ],
+  "id": "m1_s2_deada_young_10"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   197,
+   59,
+   6,
+   5
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "seedling",
+  "season": "snow",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   4
+  ],
+  "id": "m1_s2_snowa_seedling_11"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   208,
+   34,
+   16,
+   30
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "sapling",
+  "season": "snow",
+  "variant": "a",
+  "trunk_base": [
+   8,
+   29
+  ],
+  "id": "m1_s2_snowa_sapling_12"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   225,
+   18,
+   26,
+   46
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "young",
+  "season": "snow",
+  "variant": "a",
+  "trunk_base": [
+   14,
+   45
+  ],
+  "id": "m1_s2_snowa_young_13"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   5,
+   123,
+   6,
+   5
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "seedling",
+  "season": "orange",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   4
+  ],
+  "id": "m1_s2_orangea_seedling_14"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   5,
+   103,
+   7,
+   9
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "seedling",
+  "season": "orange",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   8
+  ],
+  "id": "m1_s2_orangea_seedling_15"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   16,
+   96,
+   16,
+   32
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "sapling",
+  "season": "orange",
+  "variant": "a",
+  "trunk_base": [
+   8,
+   31
+  ],
+  "id": "m1_s2_orangea_sapling_16"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   32,
+   66,
+   32,
+   62
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "young",
+  "season": "orange",
+  "variant": "a",
+  "trunk_base": [
+   15,
+   61
+  ],
+  "id": "m1_s2_orangea_young_17"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   69,
+   123,
+   6,
+   5
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "seedling",
+  "season": "orange",
+  "variant": "b",
+  "trunk_base": [
+   2,
+   4
+  ],
+  "id": "m1_s2_orangeb_seedling_18"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   69,
+   103,
+   7,
+   9
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "seedling",
+  "season": "orange",
+  "variant": "b",
+  "trunk_base": [
+   2,
+   8
+  ],
+  "id": "m1_s2_orangeb_seedling_19"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   80,
+   96,
+   16,
+   32
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "sapling",
+  "season": "orange",
+  "variant": "b",
+  "trunk_base": [
+   8,
+   31
+  ],
+  "id": "m1_s2_orangeb_sapling_20"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   96,
+   66,
+   32,
+   62
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "young",
+  "season": "orange",
+  "variant": "b",
+  "trunk_base": [
+   15,
+   61
+  ],
+  "id": "m1_s2_orangeb_young_21"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   133,
+   123,
+   6,
+   5
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "seedling",
+  "season": "dead",
+  "variant": "b",
+  "trunk_base": [
+   2,
+   4
+  ],
+  "id": "m1_s2_deadb_seedling_22"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   144,
+   98,
+   16,
+   30
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "sapling",
+  "season": "dead",
+  "variant": "b",
+  "trunk_base": [
+   8,
+   29
+  ],
+  "id": "m1_s2_deadb_sapling_23"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   161,
+   82,
+   26,
+   46
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "young",
+  "season": "dead",
+  "variant": "b",
+  "trunk_base": [
+   14,
+   45
+  ],
+  "id": "m1_s2_deadb_young_24"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   197,
+   123,
+   6,
+   5
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "seedling",
+  "season": "snow",
+  "variant": "b",
+  "trunk_base": [
+   2,
+   4
+  ],
+  "id": "m1_s2_snowb_seedling_25"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   208,
+   98,
+   16,
+   30
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "sapling",
+  "season": "snow",
+  "variant": "b",
+  "trunk_base": [
+   8,
+   29
+  ],
+  "id": "m1_s2_snowb_sapling_26"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png",
+  "rect": [
+   225,
+   82,
+   26,
+   46
+  ],
+  "model": 1,
+  "size": 2,
+  "stage": "young",
+  "season": "snow",
+  "variant": "b",
+  "trunk_base": [
+   14,
+   45
+  ],
+  "id": "m1_s2_snowb_young_27"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_03.png",
+  "rect": [
+   0,
+   0,
+   48,
+   96
+  ],
+  "model": 1,
+  "size": 3,
+  "stage": "mature",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   24,
+   95
+  ],
+  "id": "m1_s3_greena_mature_28"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_03.png",
+  "rect": [
+   48,
+   0,
+   48,
+   96
+  ],
+  "model": 1,
+  "size": 3,
+  "stage": "mature",
+  "season": "yellow",
+  "variant": "a",
+  "trunk_base": [
+   24,
+   95
+  ],
+  "id": "m1_s3_yellowa_mature_29"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_03.png",
+  "rect": [
+   96,
+   0,
+   48,
+   96
+  ],
+  "model": 1,
+  "size": 3,
+  "stage": "mature",
+  "season": "dead",
+  "variant": "a",
+  "trunk_base": [
+   24,
+   95
+  ],
+  "id": "m1_s3_deada_mature_30"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_03.png",
+  "rect": [
+   144,
+   0,
+   48,
+   96
+  ],
+  "model": 1,
+  "size": 3,
+  "stage": "mature",
+  "season": "snow",
+  "variant": "a",
+  "trunk_base": [
+   24,
+   95
+  ],
+  "id": "m1_s3_snowa_mature_31"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_03.png",
+  "rect": [
+   0,
+   96,
+   48,
+   96
+  ],
+  "model": 1,
+  "size": 3,
+  "stage": "mature",
+  "season": "orange",
+  "variant": "a",
+  "trunk_base": [
+   24,
+   95
+  ],
+  "id": "m1_s3_orangea_mature_32"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_03.png",
+  "rect": [
+   48,
+   96,
+   48,
+   96
+  ],
+  "model": 1,
+  "size": 3,
+  "stage": "mature",
+  "season": "orange",
+  "variant": "b",
+  "trunk_base": [
+   24,
+   95
+  ],
+  "id": "m1_s3_orangeb_mature_33"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_03.png",
+  "rect": [
+   96,
+   96,
+   48,
+   96
+  ],
+  "model": 1,
+  "size": 3,
+  "stage": "mature",
+  "season": "dead",
+  "variant": "b",
+  "trunk_base": [
+   24,
+   95
+  ],
+  "id": "m1_s3_deadb_mature_34"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_03.png",
+  "rect": [
+   144,
+   96,
+   48,
+   96
+  ],
+  "model": 1,
+  "size": 3,
+  "stage": "mature",
+  "season": "snow",
+  "variant": "b",
+  "trunk_base": [
+   24,
+   95
+  ],
+  "id": "m1_s3_snowb_mature_35"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_03.png",
+  "rect": [
+   193,
+   10,
+   14,
+   22
+  ],
+  "model": 1,
+  "size": 3,
+  "stage": "stump",
+  "season": "brown",
+  "variant": "a",
+  "trunk_base": [
+   7,
+   21
+  ],
+  "id": "m1_s3_browna_stump_36"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_03.png",
+  "rect": [
+   193,
+   42,
+   14,
+   22
+  ],
+  "model": 1,
+  "size": 3,
+  "stage": "stump",
+  "season": "brown",
+  "variant": "b",
+  "trunk_base": [
+   7,
+   21
+  ],
+  "id": "m1_s3_brownb_stump_37"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_03.png",
+  "rect": [
+   193,
+   74,
+   14,
+   22
+  ],
+  "model": 1,
+  "size": 3,
+  "stage": "stump",
+  "season": "snow",
+  "variant": "a",
+  "trunk_base": [
+   7,
+   21
+  ],
+  "id": "m1_s3_snowa_stump_38"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_04.png",
+  "rect": [
+   3,
+   2,
+   73,
+   126
+  ],
+  "model": 1,
+  "size": 4,
+  "stage": "mature",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   34,
+   125
+  ],
+  "id": "m1_s4_greena_mature_39"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_04.png",
+  "rect": [
+   83,
+   2,
+   73,
+   126
+  ],
+  "model": 1,
+  "size": 4,
+  "stage": "mature",
+  "season": "yellow",
+  "variant": "a",
+  "trunk_base": [
+   34,
+   125
+  ],
+  "id": "m1_s4_yellowa_mature_40"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_04.png",
+  "rect": [
+   166,
+   2,
+   69,
+   126
+  ],
+  "model": 1,
+  "size": 4,
+  "stage": "mature",
+  "season": "dead",
+  "variant": "a",
+  "trunk_base": [
+   32,
+   125
+  ],
+  "id": "m1_s4_deada_mature_41"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_04.png",
+  "rect": [
+   246,
+   2,
+   69,
+   126
+  ],
+  "model": 1,
+  "size": 4,
+  "stage": "mature",
+  "season": "snow",
+  "variant": "a",
+  "trunk_base": [
+   32,
+   125
+  ],
+  "id": "m1_s4_snowa_mature_42"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_04.png",
+  "rect": [
+   3,
+   130,
+   73,
+   126
+  ],
+  "model": 1,
+  "size": 4,
+  "stage": "mature",
+  "season": "orange",
+  "variant": "a",
+  "trunk_base": [
+   34,
+   125
+  ],
+  "id": "m1_s4_orangea_mature_43"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_04.png",
+  "rect": [
+   83,
+   130,
+   73,
+   126
+  ],
+  "model": 1,
+  "size": 4,
+  "stage": "mature",
+  "season": "orange",
+  "variant": "b",
+  "trunk_base": [
+   34,
+   125
+  ],
+  "id": "m1_s4_orangeb_mature_44"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_04.png",
+  "rect": [
+   166,
+   130,
+   69,
+   126
+  ],
+  "model": 1,
+  "size": 4,
+  "stage": "mature",
+  "season": "dead",
+  "variant": "b",
+  "trunk_base": [
+   32,
+   125
+  ],
+  "id": "m1_s4_deadb_mature_45"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_04.png",
+  "rect": [
+   246,
+   130,
+   69,
+   126
+  ],
+  "model": 1,
+  "size": 4,
+  "stage": "mature",
+  "season": "snow",
+  "variant": "b",
+  "trunk_base": [
+   32,
+   125
+  ],
+  "id": "m1_s4_snowb_mature_46"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_04.png",
+  "rect": [
+   328,
+   9,
+   28,
+   23
+  ],
+  "model": 1,
+  "size": 4,
+  "stage": "stump",
+  "season": "brown",
+  "variant": "a",
+  "trunk_base": [
+   14,
+   22
+  ],
+  "id": "m1_s4_browna_stump_47"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_04.png",
+  "rect": [
+   328,
+   41,
+   28,
+   23
+  ],
+  "model": 1,
+  "size": 4,
+  "stage": "stump",
+  "season": "brown",
+  "variant": "b",
+  "trunk_base": [
+   14,
+   22
+  ],
+  "id": "m1_s4_brownb_stump_48"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_04.png",
+  "rect": [
+   328,
+   73,
+   28,
+   23
+  ],
+  "model": 1,
+  "size": 4,
+  "stage": "stump",
+  "season": "snow",
+  "variant": "a",
+  "trunk_base": [
+   14,
+   22
+  ],
+  "id": "m1_s4_snowa_stump_49"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_04.png",
+  "rect": [
+   325,
+   105,
+   33,
+   23
+  ],
+  "model": 1,
+  "size": 4,
+  "stage": "stump",
+  "season": "moss",
+  "variant": "a",
+  "trunk_base": [
+   16,
+   22
+  ],
+  "id": "m1_s4_mossa_stump_50"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_05.png",
+  "rect": [
+   1,
+   0,
+   106,
+   160
+  ],
+  "model": 1,
+  "size": 5,
+  "stage": "old",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   50,
+   159
+  ],
+  "id": "m1_s5_greena_old_51"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_05.png",
+  "rect": [
+   113,
+   0,
+   106,
+   160
+  ],
+  "model": 1,
+  "size": 5,
+  "stage": "old",
+  "season": "yellow",
+  "variant": "a",
+  "trunk_base": [
+   50,
+   159
+  ],
+  "id": "m1_s5_yellowa_old_52"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_05.png",
+  "rect": [
+   225,
+   2,
+   100,
+   158
+  ],
+  "model": 1,
+  "size": 5,
+  "stage": "old",
+  "season": "dead",
+  "variant": "a",
+  "trunk_base": [
+   50,
+   157
+  ],
+  "id": "m1_s5_deada_old_53"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_05.png",
+  "rect": [
+   337,
+   2,
+   100,
+   158
+  ],
+  "model": 1,
+  "size": 5,
+  "stage": "old",
+  "season": "snow",
+  "variant": "a",
+  "trunk_base": [
+   50,
+   157
+  ],
+  "id": "m1_s5_snowa_old_54"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_05.png",
+  "rect": [
+   1,
+   160,
+   106,
+   160
+  ],
+  "model": 1,
+  "size": 5,
+  "stage": "old",
+  "season": "orange",
+  "variant": "a",
+  "trunk_base": [
+   50,
+   159
+  ],
+  "id": "m1_s5_orangea_old_55"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_05.png",
+  "rect": [
+   113,
+   160,
+   106,
+   160
+  ],
+  "model": 1,
+  "size": 5,
+  "stage": "old",
+  "season": "orange",
+  "variant": "b",
+  "trunk_base": [
+   50,
+   159
+  ],
+  "id": "m1_s5_orangeb_old_56"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_05.png",
+  "rect": [
+   225,
+   162,
+   100,
+   158
+  ],
+  "model": 1,
+  "size": 5,
+  "stage": "old",
+  "season": "dead",
+  "variant": "b",
+  "trunk_base": [
+   50,
+   157
+  ],
+  "id": "m1_s5_deadb_old_57"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_05.png",
+  "rect": [
+   337,
+   162,
+   100,
+   158
+  ],
+  "model": 1,
+  "size": 5,
+  "stage": "old",
+  "season": "snow",
+  "variant": "b",
+  "trunk_base": [
+   50,
+   157
+  ],
+  "id": "m1_s5_snowb_old_58"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_05.png",
+  "rect": [
+   23,
+   326,
+   61,
+   42
+  ],
+  "model": 1,
+  "size": 5,
+  "stage": "stump",
+  "season": "brown",
+  "variant": "a",
+  "trunk_base": [
+   28,
+   41
+  ],
+  "id": "m1_s5_browna_stump_59"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_05.png",
+  "rect": [
+   135,
+   326,
+   61,
+   42
+  ],
+  "model": 1,
+  "size": 5,
+  "stage": "stump",
+  "season": "brown",
+  "variant": "b",
+  "trunk_base": [
+   28,
+   41
+  ],
+  "id": "m1_s5_brownb_stump_60"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_05.png",
+  "rect": [
+   247,
+   326,
+   61,
+   42
+  ],
+  "model": 1,
+  "size": 5,
+  "stage": "stump",
+  "season": "snow",
+  "variant": "a",
+  "trunk_base": [
+   28,
+   41
+  ],
+  "id": "m1_s5_snowa_stump_61"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_05.png",
+  "rect": [
+   359,
+   326,
+   61,
+   42
+  ],
+  "model": 1,
+  "size": 5,
+  "stage": "stump",
+  "season": "moss",
+  "variant": "a",
+  "trunk_base": [
+   28,
+   41
+  ],
+  "id": "m1_s5_mossa_stump_62"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_02.png",
+  "rect": [
+   53,
+   43,
+   6,
+   5
+  ],
+  "model": 2,
+  "size": 2,
+  "stage": "seedling",
+  "season": "teal",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   4
+  ],
+  "id": "m2_s2_teala_seedling_63"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_02.png",
+  "rect": [
+   52,
+   22,
+   9,
+   10
+  ],
+  "model": 2,
+  "size": 2,
+  "stage": "sapling",
+  "season": "teal",
+  "variant": "a",
+  "trunk_base": [
+   4,
+   9
+  ],
+  "id": "m2_s2_teala_sapling_64"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_02.png",
+  "rect": [
+   3,
+   1,
+   45,
+   47
+  ],
+  "model": 2,
+  "size": 2,
+  "stage": "young",
+  "season": "teal",
+  "variant": "a",
+  "trunk_base": [
+   24,
+   46
+  ],
+  "id": "m2_s2_teala_young_65"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_02.png",
+  "rect": [
+   117,
+   43,
+   6,
+   5
+  ],
+  "model": 2,
+  "size": 2,
+  "stage": "seedling",
+  "season": "teal",
+  "variant": "b",
+  "trunk_base": [
+   2,
+   4
+  ],
+  "id": "m2_s2_tealb_seedling_66"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_02.png",
+  "rect": [
+   116,
+   22,
+   9,
+   10
+  ],
+  "model": 2,
+  "size": 2,
+  "stage": "sapling",
+  "season": "teal",
+  "variant": "b",
+  "trunk_base": [
+   4,
+   9
+  ],
+  "id": "m2_s2_tealb_sapling_67"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_02.png",
+  "rect": [
+   67,
+   1,
+   45,
+   47
+  ],
+  "model": 2,
+  "size": 2,
+  "stage": "young",
+  "season": "teal",
+  "variant": "b",
+  "trunk_base": [
+   24,
+   46
+  ],
+  "id": "m2_s2_tealb_young_68"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_02.png",
+  "rect": [
+   53,
+   91,
+   6,
+   5
+  ],
+  "model": 2,
+  "size": 2,
+  "stage": "seedling",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   4
+  ],
+  "id": "m2_s2_greena_seedling_69"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_02.png",
+  "rect": [
+   52,
+   70,
+   9,
+   10
+  ],
+  "model": 2,
+  "size": 2,
+  "stage": "sapling",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   4,
+   9
+  ],
+  "id": "m2_s2_greena_sapling_70"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_02.png",
+  "rect": [
+   3,
+   49,
+   45,
+   47
+  ],
+  "model": 2,
+  "size": 2,
+  "stage": "young",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   24,
+   46
+  ],
+  "id": "m2_s2_greena_young_71"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_02.png",
+  "rect": [
+   117,
+   91,
+   6,
+   5
+  ],
+  "model": 2,
+  "size": 2,
+  "stage": "seedling",
+  "season": "green",
+  "variant": "b",
+  "trunk_base": [
+   2,
+   4
+  ],
+  "id": "m2_s2_greenb_seedling_72"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_02.png",
+  "rect": [
+   116,
+   70,
+   9,
+   10
+  ],
+  "model": 2,
+  "size": 2,
+  "stage": "sapling",
+  "season": "green",
+  "variant": "b",
+  "trunk_base": [
+   4,
+   9
+  ],
+  "id": "m2_s2_greenb_sapling_73"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_02.png",
+  "rect": [
+   67,
+   49,
+   45,
+   47
+  ],
+  "model": 2,
+  "size": 2,
+  "stage": "young",
+  "season": "green",
+  "variant": "b",
+  "trunk_base": [
+   24,
+   46
+  ],
+  "id": "m2_s2_greenb_young_74"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_03.png",
+  "rect": [
+   4,
+   4,
+   37,
+   76
+  ],
+  "model": 2,
+  "size": 3,
+  "stage": "mature",
+  "season": "teal",
+  "variant": "a",
+  "trunk_base": [
+   20,
+   75
+  ],
+  "id": "m2_s3_teala_mature_75"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_03.png",
+  "rect": [
+   52,
+   4,
+   37,
+   76
+  ],
+  "model": 2,
+  "size": 3,
+  "stage": "mature",
+  "season": "teal",
+  "variant": "b",
+  "trunk_base": [
+   20,
+   75
+  ],
+  "id": "m2_s3_tealb_mature_76"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_03.png",
+  "rect": [
+   4,
+   84,
+   37,
+   76
+  ],
+  "model": 2,
+  "size": 3,
+  "stage": "mature",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   20,
+   75
+  ],
+  "id": "m2_s3_greena_mature_77"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_03.png",
+  "rect": [
+   52,
+   84,
+   37,
+   76
+  ],
+  "model": 2,
+  "size": 3,
+  "stage": "mature",
+  "season": "green",
+  "variant": "b",
+  "trunk_base": [
+   20,
+   75
+  ],
+  "id": "m2_s3_greenb_mature_78"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_03.png",
+  "rect": [
+   99,
+   6,
+   40,
+   74
+  ],
+  "model": 2,
+  "size": 3,
+  "stage": "mature",
+  "season": "dead",
+  "variant": "a",
+  "trunk_base": [
+   20,
+   73
+  ],
+  "id": "m2_s3_deada_mature_79"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_03.png",
+  "rect": [
+   117,
+   135,
+   6,
+   9
+  ],
+  "model": 2,
+  "size": 3,
+  "stage": "stump",
+  "season": "snow",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   8
+  ],
+  "id": "m2_s3_snowa_stump_80"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_03.png",
+  "rect": [
+   117,
+   151,
+   6,
+   9
+  ],
+  "model": 2,
+  "size": 3,
+  "stage": "stump",
+  "season": "brown",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   8
+  ],
+  "id": "m2_s3_browna_stump_81"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_04.png",
+  "rect": [
+   4,
+   9,
+   54,
+   103
+  ],
+  "model": 2,
+  "size": 4,
+  "stage": "mature",
+  "season": "teal",
+  "variant": "a",
+  "trunk_base": [
+   29,
+   102
+  ],
+  "id": "m2_s4_teala_mature_82"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_04.png",
+  "rect": [
+   68,
+   9,
+   54,
+   103
+  ],
+  "model": 2,
+  "size": 4,
+  "stage": "mature",
+  "season": "teal",
+  "variant": "b",
+  "trunk_base": [
+   29,
+   102
+  ],
+  "id": "m2_s4_tealb_mature_83"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_04.png",
+  "rect": [
+   4,
+   121,
+   54,
+   103
+  ],
+  "model": 2,
+  "size": 4,
+  "stage": "mature",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   29,
+   102
+  ],
+  "id": "m2_s4_greena_mature_84"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_04.png",
+  "rect": [
+   68,
+   121,
+   54,
+   103
+  ],
+  "model": 2,
+  "size": 4,
+  "stage": "mature",
+  "season": "green",
+  "variant": "b",
+  "trunk_base": [
+   29,
+   102
+  ],
+  "id": "m2_s4_greenb_mature_85"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_04.png",
+  "rect": [
+   141,
+   17,
+   43,
+   95
+  ],
+  "model": 2,
+  "size": 4,
+  "stage": "mature",
+  "season": "dead",
+  "variant": "a",
+  "trunk_base": [
+   20,
+   94
+  ],
+  "id": "m2_s4_deada_mature_86"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_04.png",
+  "rect": [
+   153,
+   194,
+   15,
+   14
+  ],
+  "model": 2,
+  "size": 4,
+  "stage": "stump",
+  "season": "snow",
+  "variant": "a",
+  "trunk_base": [
+   8,
+   13
+  ],
+  "id": "m2_s4_snowa_stump_87"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_04.png",
+  "rect": [
+   153,
+   210,
+   15,
+   14
+  ],
+  "model": 2,
+  "size": 4,
+  "stage": "stump",
+  "season": "brown",
+  "variant": "a",
+  "trunk_base": [
+   8,
+   13
+  ],
+  "id": "m2_s4_browna_stump_88"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_05.png",
+  "rect": [
+   1,
+   3,
+   92,
+   157
+  ],
+  "model": 2,
+  "size": 5,
+  "stage": "old",
+  "season": "teal",
+  "variant": "a",
+  "trunk_base": [
+   45,
+   156
+  ],
+  "id": "m2_s5_teala_old_89"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_05.png",
+  "rect": [
+   97,
+   3,
+   92,
+   157
+  ],
+  "model": 2,
+  "size": 5,
+  "stage": "old",
+  "season": "teal",
+  "variant": "b",
+  "trunk_base": [
+   45,
+   156
+  ],
+  "id": "m2_s5_tealb_old_90"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_05.png",
+  "rect": [
+   1,
+   163,
+   92,
+   157
+  ],
+  "model": 2,
+  "size": 5,
+  "stage": "old",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   45,
+   156
+  ],
+  "id": "m2_s5_greena_old_91"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_05.png",
+  "rect": [
+   97,
+   163,
+   92,
+   157
+  ],
+  "model": 2,
+  "size": 5,
+  "stage": "old",
+  "season": "green",
+  "variant": "b",
+  "trunk_base": [
+   45,
+   156
+  ],
+  "id": "m2_s5_greenb_old_92"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_05.png",
+  "rect": [
+   197,
+   8,
+   87,
+   152
+  ],
+  "model": 2,
+  "size": 5,
+  "stage": "old",
+  "season": "dead",
+  "variant": "a",
+  "trunk_base": [
+   41,
+   151
+  ],
+  "id": "m2_s5_deada_old_93"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_05.png",
+  "rect": [
+   229,
+   272,
+   19,
+   16
+  ],
+  "model": 2,
+  "size": 5,
+  "stage": "stump",
+  "season": "snow",
+  "variant": "a",
+  "trunk_base": [
+   9,
+   15
+  ],
+  "id": "m2_s5_snowa_stump_94"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_02/Size_05.png",
+  "rect": [
+   229,
+   304,
+   19,
+   16
+  ],
+  "model": 2,
+  "size": 5,
+  "stage": "stump",
+  "season": "brown",
+  "variant": "a",
+  "trunk_base": [
+   9,
+   15
+  ],
+  "id": "m2_s5_browna_stump_95"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   54,
+   76,
+   4,
+   4
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "seedling",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   3
+  ],
+  "id": "m3_s2_greena_seedling_96"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   52,
+   55,
+   9,
+   9
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "seedling",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   4,
+   8
+  ],
+  "id": "m3_s2_greena_seedling_97"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   32,
+   48,
+   16,
+   32
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "sapling",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   7,
+   31
+  ],
+  "id": "m3_s2_greena_sapling_98"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   0,
+   5,
+   30,
+   75
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "young",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   16,
+   74
+  ],
+  "id": "m3_s2_greena_young_99"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   118,
+   76,
+   4,
+   4
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "seedling",
+  "season": "yellow",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   3
+  ],
+  "id": "m3_s2_yellowa_seedling_100"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   116,
+   55,
+   9,
+   9
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "seedling",
+  "season": "yellow",
+  "variant": "a",
+  "trunk_base": [
+   4,
+   8
+  ],
+  "id": "m3_s2_yellowa_seedling_101"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   96,
+   48,
+   16,
+   32
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "sapling",
+  "season": "yellow",
+  "variant": "a",
+  "trunk_base": [
+   7,
+   31
+  ],
+  "id": "m3_s2_yellowa_sapling_102"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   64,
+   5,
+   30,
+   75
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "young",
+  "season": "yellow",
+  "variant": "a",
+  "trunk_base": [
+   16,
+   74
+  ],
+  "id": "m3_s2_yellowa_young_103"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   54,
+   156,
+   4,
+   4
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "seedling",
+  "season": "orange",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   3
+  ],
+  "id": "m3_s2_orangea_seedling_104"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   52,
+   135,
+   9,
+   9
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "seedling",
+  "season": "orange",
+  "variant": "a",
+  "trunk_base": [
+   4,
+   8
+  ],
+  "id": "m3_s2_orangea_seedling_105"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   32,
+   128,
+   16,
+   32
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "sapling",
+  "season": "orange",
+  "variant": "a",
+  "trunk_base": [
+   7,
+   31
+  ],
+  "id": "m3_s2_orangea_sapling_106"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   0,
+   85,
+   30,
+   75
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "young",
+  "season": "orange",
+  "variant": "a",
+  "trunk_base": [
+   16,
+   74
+  ],
+  "id": "m3_s2_orangea_young_107"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   118,
+   156,
+   4,
+   4
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "seedling",
+  "season": "red",
+  "variant": "a",
+  "trunk_base": [
+   2,
+   3
+  ],
+  "id": "m3_s2_reda_seedling_108"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   116,
+   135,
+   9,
+   9
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "seedling",
+  "season": "red",
+  "variant": "a",
+  "trunk_base": [
+   4,
+   8
+  ],
+  "id": "m3_s2_reda_seedling_109"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   96,
+   128,
+   16,
+   32
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "sapling",
+  "season": "red",
+  "variant": "a",
+  "trunk_base": [
+   7,
+   31
+  ],
+  "id": "m3_s2_reda_sapling_110"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_02.png",
+  "rect": [
+   64,
+   85,
+   30,
+   75
+  ],
+  "model": 3,
+  "size": 2,
+  "stage": "young",
+  "season": "red",
+  "variant": "a",
+  "trunk_base": [
+   16,
+   74
+  ],
+  "id": "m3_s2_reda_young_111"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_03.png",
+  "rect": [
+   0,
+   1,
+   63,
+   143
+  ],
+  "model": 3,
+  "size": 3,
+  "stage": "mature",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   30,
+   142
+  ],
+  "id": "m3_s3_greena_mature_112"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_03.png",
+  "rect": [
+   64,
+   1,
+   63,
+   143
+  ],
+  "model": 3,
+  "size": 3,
+  "stage": "mature",
+  "season": "yellow",
+  "variant": "a",
+  "trunk_base": [
+   30,
+   142
+  ],
+  "id": "m3_s3_yellowa_mature_113"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_03.png",
+  "rect": [
+   0,
+   145,
+   63,
+   143
+  ],
+  "model": 3,
+  "size": 3,
+  "stage": "mature",
+  "season": "orange",
+  "variant": "a",
+  "trunk_base": [
+   30,
+   142
+  ],
+  "id": "m3_s3_orangea_mature_114"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_03.png",
+  "rect": [
+   64,
+   145,
+   63,
+   143
+  ],
+  "model": 3,
+  "size": 3,
+  "stage": "mature",
+  "season": "red",
+  "variant": "a",
+  "trunk_base": [
+   30,
+   142
+  ],
+  "id": "m3_s3_reda_mature_115"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_03.png",
+  "rect": [
+   137,
+   7,
+   47,
+   137
+  ],
+  "model": 3,
+  "size": 3,
+  "stage": "mature",
+  "season": "dead",
+  "variant": "a",
+  "trunk_base": [
+   21,
+   136
+  ],
+  "id": "m3_s3_deada_mature_116"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_03.png",
+  "rect": [
+   153,
+   257,
+   13,
+   15
+  ],
+  "model": 3,
+  "size": 3,
+  "stage": "stump",
+  "season": "snow",
+  "variant": "a",
+  "trunk_base": [
+   5,
+   14
+  ],
+  "id": "m3_s3_snowa_stump_117"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_03.png",
+  "rect": [
+   153,
+   273,
+   13,
+   15
+  ],
+  "model": 3,
+  "size": 3,
+  "stage": "stump",
+  "season": "brown",
+  "variant": "a",
+  "trunk_base": [
+   5,
+   14
+  ],
+  "id": "m3_s3_browna_stump_118"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_04.png",
+  "rect": [
+   0,
+   0,
+   96,
+   208
+  ],
+  "model": 3,
+  "size": 4,
+  "stage": "mature",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   46,
+   207
+  ],
+  "id": "m3_s4_greena_mature_119"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_04.png",
+  "rect": [
+   96,
+   0,
+   96,
+   208
+  ],
+  "model": 3,
+  "size": 4,
+  "stage": "mature",
+  "season": "yellow",
+  "variant": "a",
+  "trunk_base": [
+   46,
+   207
+  ],
+  "id": "m3_s4_yellowa_mature_120"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_04.png",
+  "rect": [
+   0,
+   208,
+   96,
+   208
+  ],
+  "model": 3,
+  "size": 4,
+  "stage": "mature",
+  "season": "orange",
+  "variant": "a",
+  "trunk_base": [
+   46,
+   207
+  ],
+  "id": "m3_s4_orangea_mature_121"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_04.png",
+  "rect": [
+   96,
+   208,
+   96,
+   208
+  ],
+  "model": 3,
+  "size": 4,
+  "stage": "mature",
+  "season": "red",
+  "variant": "a",
+  "trunk_base": [
+   46,
+   207
+  ],
+  "id": "m3_s4_reda_mature_122"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_04.png",
+  "rect": [
+   202,
+   14,
+   65,
+   194
+  ],
+  "model": 3,
+  "size": 4,
+  "stage": "mature",
+  "season": "dead",
+  "variant": "a",
+  "trunk_base": [
+   36,
+   193
+  ],
+  "id": "m3_s4_deada_mature_123"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_04.png",
+  "rect": [
+   230,
+   363,
+   17,
+   21
+  ],
+  "model": 3,
+  "size": 4,
+  "stage": "stump",
+  "season": "snow",
+  "variant": "a",
+  "trunk_base": [
+   8,
+   20
+  ],
+  "id": "m3_s4_snowa_stump_124"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_04.png",
+  "rect": [
+   230,
+   395,
+   17,
+   21
+  ],
+  "model": 3,
+  "size": 4,
+  "stage": "stump",
+  "season": "brown",
+  "variant": "a",
+  "trunk_base": [
+   8,
+   20
+  ],
+  "id": "m3_s4_browna_stump_125"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_05.png",
+  "rect": [
+   0,
+   1,
+   128,
+   255
+  ],
+  "model": 3,
+  "size": 5,
+  "stage": "old",
+  "season": "green",
+  "variant": "a",
+  "trunk_base": [
+   61,
+   254
+  ],
+  "id": "m3_s5_greena_old_126"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_05.png",
+  "rect": [
+   128,
+   1,
+   128,
+   255
+  ],
+  "model": 3,
+  "size": 5,
+  "stage": "old",
+  "season": "yellow",
+  "variant": "a",
+  "trunk_base": [
+   61,
+   254
+  ],
+  "id": "m3_s5_yellowa_old_127"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_05.png",
+  "rect": [
+   0,
+   257,
+   128,
+   255
+  ],
+  "model": 3,
+  "size": 5,
+  "stage": "old",
+  "season": "orange",
+  "variant": "a",
+  "trunk_base": [
+   61,
+   254
+  ],
+  "id": "m3_s5_orangea_old_128"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_05.png",
+  "rect": [
+   128,
+   257,
+   128,
+   255
+  ],
+  "model": 3,
+  "size": 5,
+  "stage": "old",
+  "season": "red",
+  "variant": "a",
+  "trunk_base": [
+   61,
+   254
+  ],
+  "id": "m3_s5_reda_old_129"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_05.png",
+  "rect": [
+   271,
+   5,
+   98,
+   251
+  ],
+  "model": 3,
+  "size": 5,
+  "stage": "old",
+  "season": "dead",
+  "variant": "a",
+  "trunk_base": [
+   46,
+   250
+  ],
+  "id": "m3_s5_deada_old_130"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_05.png",
+  "rect": [
+   304,
+   458,
+   27,
+   22
+  ],
+  "model": 3,
+  "size": 5,
+  "stage": "stump",
+  "season": "snow",
+  "variant": "a",
+  "trunk_base": [
+   13,
+   21
+  ],
+  "id": "m3_s5_snowa_stump_131"
+ },
+ {
+  "sheet": "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_03/Size_05.png",
+  "rect": [
+   304,
+   490,
+   27,
+   22
+  ],
+  "model": 3,
+  "size": 5,
+  "stage": "stump",
+  "season": "brown",
+  "variant": "a",
+  "trunk_base": [
+   13,
+   21
+  ],
+  "id": "m3_s5_browna_stump_132"
+ }
+]

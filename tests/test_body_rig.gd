@@ -44,21 +44,14 @@ func _init():
 	var hands: HandsVisual = player.get_node("Hands")
 	var fx: SwingFx = player.get_node("WeaponVisual/SwingFx")
 	var loadout: Loadout = player.get_node("Loadout")
-	# Two copies of the tiny soldier rig: `small` shrinks the weapon / hand pictures, `full` is the unscaled picture.
-	var tiny: BodyRig = load("res://data/body_rigs/tiny_soldier.tres")
-	var rig_small: BodyRig = tiny.duplicate()
-	rig_small.display_name = "small copy"
-	rig_small.visual_scale = 0.7
-	rig_small.slash_scale = 0.7
-	rig_small.shadow_scale = 0.65
-	var rig_full: BodyRig = tiny.duplicate()
-	rig_full.visual_scale = 1.0
+	var blocky: BodyRig = load("res://data/body_rigs/blocky.tres")
+	var soft: BodyRig = load("res://data/body_rigs/soft_body.tres")
 	check("player starts with the tiny soldier rig", vis.rig.display_name.begins_with("tiny soldier"))
-	vis.rig = rig_small
-	check("small rig loads and shrinks the weapon picture", vis.rig == rig_small and rig_small.visual_scale < 1.0)
+	vis.rig = blocky
+	check("blocky rig loads and shrinks the weapon picture", vis.rig == blocky and blocky.visual_scale < 1.0)
 	check("WeaponVisual (gameplay pivot) is NOT moved by the rig", wv.position == Vector2(0, -9) and hands.position == Vector2(0, -9))
-	check("hand radius from the rig", is_equal_approx(hands.hand_radius, rig_small.hand_radius) and hands.rest_offset_main == rig_small.hand_rest_main)
-	check("slash scale from the rig", is_equal_approx(fx._slash_scale, rig_small.slash_scale))
+	check("hand radius from the rig", is_equal_approx(hands.hand_radius, blocky.hand_radius) and hands.rest_offset_main == blocky.hand_rest_main)
+	check("slash scale from the rig", is_equal_approx(fx._slash_scale, blocky.slash_scale))
 
 	var weapons: Array = []
 	for w in loadout.weapons: weapons.append(w)
@@ -66,32 +59,32 @@ func _init():
 	for w in weapons:
 		if w == null or w.model == null:
 			continue
-		vis.rig = rig_small
+		vis.rig = blocky
 		wv.set_weapon(w)
 		var model := wv.get_model()
 		var small := _gameplay_snapshot(model)
 		var art_scale := model.scale.x
 		var hand_main := (model.get_node("HandMain") as Node2D).global_position - wv.global_position
-		vis.rig = rig_full
+		vis.rig = soft
 		var big := _gameplay_snapshot(wv.get_model())
 		var hand_main_big := (wv.get_model().get_node("HandMain") as Node2D).global_position - wv.global_position
-		check("%s: picture scales with visual_scale (%.2f)" % [w.resource_path.get_file(), art_scale], is_equal_approx(art_scale, rig_small.visual_scale) and is_equal_approx(wv.get_model().scale.x, 1.0))
+		check("%s: picture scales with visual_scale (%.2f)" % [w.resource_path.get_file(), art_scale], is_equal_approx(art_scale, blocky.visual_scale) and is_equal_approx(wv.get_model().scale.x, 1.0))
 		check("%s: hitbox / muzzle world transform + shape size UNCHANGED by the scale (%d nodes)" % [w.resource_path.get_file(), small.size()], _same(small, big))
 		check("%s: hands move with the picture (HandMain nearer the pivot)" % w.resource_path.get_file(), hand_main.length() < hand_main_big.length() + 0.001)
-	vis.rig = rig_small
+	vis.rig = blocky
 	wv.set_weapon(loadout.weapons[0])
-	check("guard offset scales with the picture", is_equal_approx(wv.visual_scale(), rig_small.visual_scale))
+	check("guard offset scales with the picture", is_equal_approx(wv.visual_scale(), blocky.visual_scale))
 
 	# live tuning (F3): a rig number changes the picture on the next call, no restart
-	rig_small.visual_scale = 0.5
+	blocky.visual_scale = 0.5
 	check("F3 edit of visual_scale applies live", is_equal_approx(wv.get_model().scale.x, 0.5))
-	rig_small.hand_radius = 4.0
+	blocky.hand_radius = 4.0
 	check("F3 edit of hand_radius applies live", is_equal_approx(hands.hand_radius, 4.0))
-	rig_small.shadow_scale = 0.5
+	blocky.shadow_scale = 0.5
 	var sh := vis.get_node("Shadow") as Sprite2D
 	check("F3 edit of shadow_scale applies live", is_equal_approx(sh.scale.x / (vis._shadow_base_scale.x), 0.5))
-	rig_small.visual_scale = 0.7
-	rig_small.hand_radius = 3.0
-	rig_small.shadow_scale = 0.65
-	check("F3 status line shows the rig", vis.status_text().contains("rig small copy"))
+	blocky.visual_scale = 0.7
+	blocky.hand_radius = 3.0
+	blocky.shadow_scale = 0.65
+	check("F3 status line shows the rig", vis.status_text().contains("rig blocky"))
 	quit(0 if _ok else 1)

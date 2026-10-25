@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://d0awtsvbienb8" path="res://scripts/weapons/weapon_holder.gd" id="5"]
 [ext_resource type="Script" uid="uid://bdm85dlwvqabq" path="res://scripts/visual/weapon_visual.gd" id="7"]
 [ext_resource type="Texture2D" path="res://assets/characters/player_character_template.png" id="8"]
-[ext_resource type="SpriteFrames" path="res://assets/characters/player/player_frames.tres" id="8b"]
+[ext_resource type="SpriteFrames" path="res://assets/characters/player/3d/player_3d_frames.tres" id="8b"]
 [ext_resource type="Resource" path="res://data/body_rigs/tiny_soldier.tres" id="rig"]
 [ext_resource type="Texture2D" uid="uid://c850m4ii26ok3" path="res://assets/placeholder/shadow.png" id="9"]
 [ext_resource type="Script" uid="uid://cfhocpi452k6r" path="res://scripts/components/health.gd" id="11"]
@@ -21,12 +21,15 @@
 [ext_resource type="Script" path="res://scripts/visual/hands_visual.gd" id="22"]
 [ext_resource type="Script" path="res://scripts/components/knockback.gd" id="kb_script"]
 [ext_resource type="Script" path="res://scripts/visual/run_dust.gd" id="dust_script"]
+[ext_resource type="Script" path="res://scripts/visual/water_fx.gd" id="water_fx_script"]
+[ext_resource type="Script" path="res://scripts/components/swimmer.gd" id="swimmer_script"]
 [ext_resource type="Script" path="res://scripts/components/inventory.gd" id="inv_s"]
 [ext_resource type="Script" path="res://scripts/components/collector.gd" id="col_s"]
 [ext_resource type="Script" path="res://scripts/items/item_data.gd" id="item_s"]
 [ext_resource type="Resource" path="res://data/items/wooden_sword.tres" id="it_sword"]
 [ext_resource type="Script" path="res://scripts/components/crafter.gd" id="crafter_s"]
 [ext_resource type="Script" path="res://scripts/components/placer.gd" id="placer_s"]
+[ext_resource type="Script" path="res://scripts/components/respawner.gd" id="respawner_s"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -60,6 +63,9 @@ texture = ExtResource("9")
 [node name="RunDust" type="Node2D" parent="Visual"]
 z_index = -1
 script = ExtResource("dust_script")
+
+[node name="WaterFx" type="Node2D" parent="Visual"]
+script = ExtResource("water_fx_script")
 
 [node name="WeaponVisual" type="Node2D" parent="." unique_id=1080354139]
 position = Vector2(0, -9)
@@ -137,6 +143,12 @@ script = ExtResource("placer_s")
 [node name="Collector" type="Node" parent="."]
 script = ExtResource("col_s")
 
+[node name="Respawner" type="Node" parent="."]
+script = ExtResource("respawner_s")
+
 [node name="Knockback" type="Node" parent="."]
 script = ExtResource("kb_script")
 fixed_type = &"player_hit"
+
+[node name="Swimmer" type="Node" parent="."]
+script = ExtResource("swimmer_script")

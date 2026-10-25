@@ -165,6 +165,11 @@ func _dust_alive() -> int:
 	var d := get_node_or_null("RunDust")
 	return d.alive_count() if d else 0
 
+## Hides the shadow while the actor swims (WaterFx asks; the Visual owns its shadow node).
+func set_shadow_hidden(v: bool) -> void:
+	if shadow:
+		shadow.visible = not v
+
 ## The ONLY writer of Shadow.scale / alpha (never its position: that stays hand-placed). `lift` is world px.
 func _update_shadow(lift: float) -> void:
 	if shadow == null:

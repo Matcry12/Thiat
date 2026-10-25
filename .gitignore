@@ -19,3 +19,4 @@ logs/
 # Model evaluation copies (tools/eval) — throwaway, one per run
 .claude/eval-runs/
 .claude/eval-harness/
+*.blend1

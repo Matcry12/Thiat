@@ -169,6 +169,12 @@ func _on_draw() -> void:
 	if _boss:   # where it waits and walks back to
 		_draw_layer.draw_arc(_boss.home, 10.0, 0.0, TAU, 16, Color(0.55, 0.7, 0.85), 2.0)
 
+	# Map chunks (0038 step 2): a thin border round every loaded chunk. The world beyond them is data only.
+	var arena_map := get_tree().get_first_node_in_group("arena_map") as ArenaMap
+	if arena_map != null and arena_map.streamer() != null:
+		for r in arena_map.streamer().loaded_rects():
+			_draw_layer.draw_rect(r, Color(0.6, 0.75, 1.0, 0.45), false, 1.0)
+
 	# Map rocks: their collision circles (the only part of the map that blocks).
 	for rock in get_tree().get_nodes_in_group("map_obstacle"):
 		var rcs := rock.get_node_or_null("CollisionShape2D") as CollisionShape2D
@@ -195,6 +201,8 @@ func _on_draw() -> void:
 	if col and _player:
 		_draw_ground_circle(_player.global_position, col.magnet_radius, Color(0.3, 0.9, 1.0, 0.7), 1.0)
 		_draw_ground_circle(_player.global_position, col.pickup_radius, Color(0.3, 0.9, 1.0), 2.0)
+		for b in get_tree().get_nodes_in_group("death_bag"):   # W6: where walking over a bag gives it back
+			_draw_ground_circle(b.global_position, col.bag_pickup_radius, Color(1.0, 0.8, 0.2), 2.0)
 
 	# Enemy strike: hitbox red only while STRIKE, telegraph area outlined
 	# while TELEGRAPH (redundant with Telegraph's own border — cheap, and

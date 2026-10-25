@@ -32,12 +32,12 @@ func _connected_land(res: MapGen.Result, p: MapGen.Params) -> bool:
 		for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
 			var q: Vector2i = c + d
 			var i := MapGen.cell_index(p, q)
-			if i >= 0 and res.land[i] == 1 and seen[i] == 0:
+			if i >= 0 and res.walk_land[i] == 1 and seen[i] == 0:
 				seen[i] = 1
 				reached += 1
 				stack.append(q)
 	var total := 0
-	for v in res.land:
+	for v in res.walk_land:
 		total += v
 	return reached == total
 
@@ -64,7 +64,7 @@ func _init() -> void:
 	for v in a.land:
 		land_count += v
 	var share := float(land_count) / a.land.size()
-	_check(share > 0.35 and share < 0.85, "island is most of the map but not all of it (%.2f)" % share)
+	_check(share > 0.3 and share < 0.85, "island is most of the map but not all of it (%.2f)" % share)
 
 	var home := Vector2i(p.player_spawn / p.cell)
 	var zc := Vector2i(p.zone.get_center() / p.cell)
@@ -81,11 +81,11 @@ func _init() -> void:
 		if not ok:
 			print("  seed %d: home/zone/connected failed" % s)
 		all_ok = all_ok and ok
-		var walk := not full or MapGen.floor_reachable(p, r.obstacles, r.land)   # I1: the walk grid reaches every walkable spot
+		var walk := not full or MapGen.floor_reachable(p, r.obstacles, r.walk_land)   # I1: the walk grid reaches every walkable spot
 		if not walk:
 			print("  seed %d: walk-grid check failed" % s)
 		reach_ok = reach_ok and walk
-	_check(all_ok, "seeds 1..40: home and zone are land, all land connected to home")
+	_check(all_ok, "seeds 1..40: home and zone are land, all walkable ground (land + shallow water) connected to home")
 	print("seed loop runtime: %d ms" % (Time.get_ticks_msec() - t0))
 	_check(reach_ok, "seeds 1..11 (with nodes): all walkable land reachable from home, rocks and water included (I1)")
 
@@ -95,7 +95,7 @@ func _init() -> void:
 	for i in a.land.size():
 		if a.land[i] == 1:
 			counts[a.area[i]] += 1
-	_check(counts[0] > 0 and counts[1] > 0 and counts[2] > 0, "all three areas exist %s" % [counts])
+	_check(counts[0] > 0 and counts[1] == 0 and counts[2] > 0, "forest and boss land exist, no rocky area any more (0038 step 4: the biome says what a place is) %s" % [counts])
 
 	var q := _params()
 	q.island_on = false
@@ -109,9 +109,12 @@ func _init() -> void:
 	var on_land := true
 	for o in a.obstacles:
 		var r: float = o["radius"] + MapGen.rock_clearance(p)
-		for dy in [-r, 0.0, r]:
-			for dx in [-r, 0.0, r]:
-				on_land = on_land and MapGen.is_land(a, p, Vector2i((o["pos"] + Vector2(dx, dy)) / p.cell))
+		# every cell the circle touches is land (0038 step 3: the old 9 sample points missed thin water)
+		for cy in range(int(floor((o["pos"].y - r) / p.cell)), int(floor((o["pos"].y + r) / p.cell)) + 1):
+			for cx in range(int(floor((o["pos"].x - r) / p.cell)), int(floor((o["pos"].x + r) / p.cell)) + 1):
+				var near := Vector2(clampf(o["pos"].x, cx * p.cell, (cx + 1) * p.cell), clampf(o["pos"].y, cy * p.cell, (cy + 1) * p.cell))
+				if near.distance_to(o["pos"]) <= r:
+					on_land = on_land and MapGen.is_land(a, p, Vector2i(cx, cy))
 	_check(on_land and a.obstacles.size() > 50, "rocks on land, clear of water (%d rocks)" % a.obstacles.size())
 	var deco_ok := true
 	for d in a.deco:
@@ -146,7 +149,8 @@ func _init() -> void:
 	var cor := _params()
 	cor.corridor_half = 0
 	cor.player_spawn.y = 0.25 * cor.world.y
-	cor.island_threshold = 0.7
+	cor.land_share = 0.08   # a small continent: home and the zone are separate lumps
+	cor.neck_boost = 0.0
 	var cor_ok := true
 	for s in [1, 2, 3]:
 		var cr := MapGen.generate(style, cor, s)

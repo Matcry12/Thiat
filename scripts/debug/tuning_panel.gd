@@ -11,6 +11,8 @@ class_name TuningPanel
 ##
 ## Dev-only: disabled in release exports unless `enabled_in_release` is set.
 
+const WORLD_MAP_PANEL := preload("res://scripts/debug/world_map_panel.gd")
+
 @export var enabled_in_release := false
 
 @export var player_path: NodePath
@@ -29,15 +31,78 @@ class_name TuningPanel
 	"art_angle_degrees": {"min": -180.0, "max": 180.0},
 	"rest_angle_degrees": {"min": -180.0, "max": 180.0},
 	"map_seed": {"min": 0.0, "max": 9999.0},
-	"map_cols": {"min": 12.0, "max": 300.0},
-	"map_rows": {"min": 12.0, "max": 200.0},
-	"forest_end": {"min": 0.0, "max": 1.0},
-	"rocky_end": {"min": 0.0, "max": 1.0},
-	"island_threshold": {"min": 0.0, "max": 1.0},
-	"island_noise": {"min": 0.0, "max": 1.0},
-	"area_wobble": {"min": 0.0, "max": 1.0},
-	"island_falloff": {"min": 0.5, "max": 4.0},
-	"island_noise_frequency": {"min": 0.005, "max": 0.2},
+	"map_cols": {"min": 12.0, "max": 1024.0},
+	"map_rows": {"min": 12.0, "max": 1024.0},
+	"chunk_cells": {"min": 4.0, "max": 128.0},
+	"load_radius": {"min": 0.0, "max": 6.0},
+	"unload_margin": {"min": 0.0, "max": 4.0},
+	"chunks_per_frame": {"min": 1.0, "max": 8.0},
+	"legacy_tiles_max_cells": {"min": 0.0, "max": 100000.0},
+	"land_share": {"min": 0.05, "max": 0.9},
+	"cont_radial": {"min": 0.0, "max": 1.0},
+	"cont_gain": {"min": 0.0, "max": 4.0},
+	"neck_boost": {"min": 0.0, "max": 1.5},
+	"lake_humid_min": {"min": 0.0, "max": 1.0},
+	"lake_pond_wet_min": {"min": 0.0, "max": 1.0},
+	"lake_pond_on_river": {"min": 0.0, "max": 1.0},
+	"lake_rough_max": {"min": 0.0, "max": 1.3},
+	"river_rough_max": {"min": 0.0, "max": 1.3},
+	"river_w_inland": {"min": 0.0, "max": 4.0},
+	"river_w_sea": {"min": 0.0, "max": 6.0},
+	"shore_cells": {"min": 0.0, "max": 3.0},
+	"shallow_min": {"min": 0.0, "max": 4.0},
+	"shallow_max": {"min": 0.0, "max": 5.0},
+	"shallow_tint_amount": {"min": 0.0, "max": 1.0},
+	"water_speed_scale": {"min": 0.05, "max": 1.5},
+	"fresh_pull_cells": {"min": 0.0, "max": 40.0},
+	"fresh_humid_min": {"min": 0.0, "max": 1.0},
+	"fresh_rough_max": {"min": 0.0, "max": 1.3},
+	"fresh_temp_min": {"min": 0.0, "max": 1.0},
+	"fresh_temp_max": {"min": 0.0, "max": 1.0},
+	"shore_ground": {"min": 1.0, "max": 6.0},
+	"calm_temp": {"min": 0.0, "max": 1.0},
+	"calm_humid": {"min": 0.0, "max": 1.0},
+	"calm_rough": {"min": 0.0, "max": 1.0},
+	"cold_beach_t": {"min": 0.0, "max": 1.0},
+	"climate_octaves": {"min": 1.0, "max": 8.0},
+	"biome_map_alpha": {"min": 0.0, "max": 1.0},
+	"a_temp": {"min": 0.0, "max": 1.5},
+	"a_humid": {"min": 0.0, "max": 1.5},
+	"a_rough": {"min": 0.0, "max": 1.5},
+	"b_temp": {"min": 0.0, "max": 1.5},
+	"b_humid": {"min": 0.0, "max": 1.5},
+	"b_rough": {"min": 0.0, "max": 1.5},
+	"c_temp": {"min": 0.0, "max": 1.5},
+	"c_humid": {"min": 0.0, "max": 1.5},
+	"c_rough": {"min": 0.0, "max": 1.5},
+	"points_used": {"min": 0.0, "max": 3.0},
+	"temp_class": {"min": -1.0, "max": 3.0},
+	"ground": {"min": 0.0, "max": 6.0},
+	"forest_role": {"min": 0.0, "max": 2.0},
+	"age_rule": {"min": 0.0, "max": 1.0},
+	"max_stage": {"min": 0.0, "max": 4.0},
+	"group_model": {"min": 0.0, "max": 3.0},
+	"tree_ring": {"min": 0.0, "max": 6.0},
+	"dens_lo": {"min": 0.0, "max": 1.0},
+	"dens_hi": {"min": 0.0, "max": 1.0},
+	"bush_d_lo": {"min": 0.0, "max": 1.0},
+	"bush_d_hi": {"min": 0.0, "max": 1.0},
+	"bush_pair": {"min": 0.0, "max": 1.0},
+	"rock_brown_share": {"min": 0.0, "max": 1.0},
+	"flower_fox": {"min": 0.0, "max": 1.0},
+	"reed_per_shore": {"min": 0.0, "max": 1.0},
+	"tuft_p": {"min": 0.0, "max": 0.5},
+	"ground_alt": {"min": 0.0, "max": 6.0},
+	"ground_alt_share": {"min": 0.0, "max": 1.0},
+	"ground_alt_period": {"min": 1.0, "max": 30.0},
+	"tree_fade_lo": {"min": 0.0, "max": 1.0},
+	"tree_fade_hi": {"min": 0.0, "max": 1.0},
+	"veg_density_period": {"min": 4.0, "max": 80.0},
+	"rock_group_radius": {"min": 0.5, "max": 6.0},
+	"tint_bright": {"min": 0.0, "max": 2.0},
+	"tint_sat": {"min": 0.0, "max": 2.0},
+	"tint_warm": {"min": -0.5, "max": 0.5},
+	"boss_land_cells": {"min": 0.0, "max": 40.0},
 	"zone_x": {"min": 0.0, "max": 1.0},
 	"zone_y": {"min": 0.0, "max": 1.0},
 	"player_spawn_x": {"min": 0.0, "max": 1.0},
@@ -118,6 +183,7 @@ var _boss: Boss
 var _map: ArenaMap
 var _hit_fx: HitFx
 var _collector: Collector
+var _respawner: Respawner
 var _inventory: Inventory
 var _crafter: Crafter
 ## The F3 status text needs at least this much free height (px) between the HUD blocks, else it hides.
@@ -135,6 +201,7 @@ var _status_scroll: ScrollContainer
 var _right_panel: Control
 var _seed_edit: LineEdit
 var _tuning_list: VBoxContainer
+var _world_map: PanelContainer   # WorldMapPanel
 
 var _total_damage := 0.0
 var _last_damage := 0.0
@@ -173,6 +240,10 @@ func _ready() -> void:
 		{"name": "Visual", "object": _player.visual},
 		{"name": "RunDust", "object": _player.get_node("Visual/RunDust")},
 	]
+	for nm in ["Swimmer", "Visual/WaterFx"]:   # 0038 step 3: water_speed_scale, effect numbers (optional nodes)
+		var wn := _player.get_node_or_null(nm)
+		if wn:
+			_targets.append({"name": nm.get_file(), "object": wn})
 	if _player.visual.get("rig") != null:
 		_targets.append({"name": "BodyRig", "object": _player.visual.rig})   # per-character body / weapon / hand fit (decision 0028)
 	_targets += [
@@ -218,12 +289,14 @@ func _ready() -> void:
 			for gd in _map.style.grounds:   # the island grounds (edge outline, corner cut ...): changing one re-bakes the ground
 				if gd:
 					_targets.append({"name": "Ground " + String(gd.id), "object": gd})
+			for bd in _map.style.biomes:   # climate point, ground, trees, rocks, deco, tint of every biome (0038): everything rebuilds on drag end, tint is live
+				_targets.append({"name": "Biome " + bd.label, "object": bd})
 
 	# Gathering (W2): the collector, the three node kinds (density applies on the next New map), the fists.
 	_collector = _player.get_node_or_null("Collector") as Collector
 	if _collector:
 		_targets.append({"name": "Collector", "object": _collector})
-	for k in ["tree", "rock", "copper_rock"]:
+	for k in ["tree", "rock", "copper_rock", "tree_oak_sapling", "tree_oak_young", "tree_oak_small", "tree_oak_mature", "tree_oak_old", "tree_fir_sapling", "tree_fir_young", "tree_fir_small", "tree_fir_mature", "tree_fir_old"]:
 		_targets.append({"name": "Node " + k.replace("_rock", ""), "object": load("res://data/resource_nodes/%s.tres" % k)})
 	if _loadout and _loadout.unarmed:
 		_targets.append({"name": "Fists", "object": _loadout.unarmed})
@@ -239,6 +312,10 @@ func _ready() -> void:
 				_targets.append({"name": "Item " + String(it.id), "object": it})
 			elif it.category == "tool":
 				_targets.append({"name": "Tool " + String(it.id), "object": it.weapon})
+
+	_respawner = _player.get_node_or_null("Respawner") as Respawner
+	if _respawner:
+		_targets.append({"name": "Respawner", "object": _respawner})
 
 	# Crafting (W4, decision 0031): the Crafter / Placer numbers, one section per recipe and per smelt recipe.
 	_crafter = _player.get_node_or_null("Crafter") as Crafter
@@ -338,6 +415,7 @@ func _update_status_text() -> void:
 		"vel: %.0f  state: %s  facing: %s" % [vel.length(), move_state, facing],
 		"aim: %.0f deg" % aim_deg,
 		_player.visual.status_text() if _player.visual.has_method("status_text") else "",
+		_water_status_text(),
 		"",
 		"[Weapon]",
 		"%s  phase: %s  left: %.2fs" % [weapon_name, phase_name, time_left],
@@ -385,6 +463,15 @@ func _update_status_text() -> void:
 		"",
 		"[Inventory]",
 		_inventory_status_text(),
+		"",
+		"[Frame]",
+		_frame_status_text(),
+		"",
+		"[Save]",
+		_save_status_text(),
+		"",
+		"[Death]",
+		_respawner.status_text() if _respawner else "n/a",
 		"",
 		"[Crafting]",
 		_crafting_status_text(),
@@ -496,6 +583,7 @@ func _break_nearest_node() -> void:
 		var w := WeaponData.new()
 		w.gather_damage = 999.0
 		w.tool_power = 9
+		w.tool_kind = best.data.preferred_tool
 		best.take_gather_hit(w, _player)
 
 
@@ -543,15 +631,22 @@ func _weapon_target_name(w: WeaponData) -> String:
 
 func _collect_tunable_properties(obj: Object) -> Array:
 	var result: Array = []
+	var group := ""   # @export_group title: the properties after it belong to it, until the next group
 	for prop in obj.get_property_list():
 		var usage: int = prop["usage"]
+		if usage & PROPERTY_USAGE_CATEGORY != 0:
+			group = ""   # a new class in the chain (the script's own): the engine's "Transform" group does not carry over
+			continue
+		if usage & PROPERTY_USAGE_GROUP != 0:
+			group = prop["name"]
+			continue
 		if usage & PROPERTY_USAGE_SCRIPT_VARIABLE == 0:
 			continue
 		if usage & PROPERTY_USAGE_EDITOR == 0:
 			continue
 		if prop["type"] != TYPE_FLOAT and prop["type"] != TYPE_INT and prop["type"] != TYPE_BOOL:
 			continue
-		result.append({"name": prop["name"], "type": prop["type"]})
+		result.append({"name": prop["name"], "type": prop["type"], "group": group})
 	return result
 
 
@@ -559,6 +654,10 @@ func _range_for(prop_name: String, current: float) -> Vector2:
 	if range_overrides.has(prop_name):
 		var o: Dictionary = range_overrides[prop_name]
 		return Vector2(o["min"], o["max"])
+	if prop_name.ends_with("_season"):   # BiomeData tree table: 0 green .. 6 snow
+		return Vector2(0.0, 6.0)
+	if prop_name.ends_with("_model"):    # 0 unused, 1 oak, 2 fir, 3 pine
+		return Vector2(0.0, 3.0)
 	if current > 0.0:
 		return Vector2(0.0, maxf(current * 4.0, 1.0))
 	elif current < 0.0:
@@ -602,6 +701,7 @@ func _build_ui() -> void:
 	var tuning_panel := PanelContainer.new()
 	tuning_panel.anchor_left = 1.0
 	tuning_panel.anchor_right = 1.0
+	tuning_panel.anchor_bottom = 1.0
 	tuning_panel.offset_left = -360
 	tuning_panel.offset_right = -8
 	tuning_panel.offset_top = 8
@@ -614,13 +714,24 @@ func _build_ui() -> void:
 	var tuning_vbox := VBoxContainer.new()
 	tuning_panel.add_child(tuning_vbox)
 
-	var button_row := HBoxContainer.new()
+	if _map:   # F3 "World map": the whole island as a picture, just left of the tuning panel
+		_world_map = WORLD_MAP_PANEL.new()
+		_world_map.setup(_map, _player)
+		_world_map.anchor_left = 1.0
+		_world_map.anchor_right = 1.0
+		_world_map.offset_right = -368
+		_world_map.offset_left = -368 - _world_map.map_width - 12
+		_world_map.offset_top = 8
+		_world_map.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+		root.add_child(_world_map)
+
+	var button_row := HFlowContainer.new()
 	tuning_vbox.add_child(button_row)
 	_add_button(button_row, "Save", _on_save_pressed)
 	_add_button(button_row, "Load", _on_load_pressed)
 	_add_button(button_row, "Reset", _on_reset_pressed)
 
-	var action_row := HBoxContainer.new()
+	var action_row := HFlowContainer.new()
 	tuning_vbox.add_child(action_row)
 	_add_button(action_row, "Heal dummy", _on_heal_dummy)
 	_add_button(action_row, "Heal player", _on_heal_player)
@@ -631,9 +742,11 @@ func _build_ui() -> void:
 		_add_button(action_row, "New map", func(): _map.new_map())
 		_add_button(action_row, "Go home", func(): _map.teleport_player("home"))
 		_add_button(action_row, "Go to boss", func(): _map.teleport_player("boss"))
+		_add_button(action_row, "Biome map", func(): _map.biome_map_on = not _map.biome_map_on)
+		_add_button(action_row, "World map", func(): _world_map.toggle())
 
 	if _map:
-		var seed_row := HBoxContainer.new()
+		var seed_row := HFlowContainer.new()
 		tuning_vbox.add_child(seed_row)
 		var seed_label := Label.new()
 		seed_label.text = "Seed (1-9999)"
@@ -648,37 +761,49 @@ func _build_ui() -> void:
 		_add_button(seed_row, "Generate", _on_generate_pressed)
 
 	if _boss:
-		var boss_row := HBoxContainer.new()
+		var boss_row := HFlowContainer.new()
 		tuning_vbox.add_child(boss_row)
 		_add_button(boss_row, "Phase 2", func(): _boss.force_phase_2())
 		for n in _boss.attack_names():
 			_add_button(boss_row, "-> " + String(n), func(): _boss.force_next(n))
-		var boss_row2 := HBoxContainer.new()
+		var boss_row2 := HFlowContainer.new()
 		tuning_vbox.add_child(boss_row2)
 		_add_button(boss_row2, "Boss passive", func(): _boss.passive = not _boss.passive)
 		_add_button(boss_row2, "Heal boss", func(): _boss.health.hp = _boss.health.max_hp)
-		_add_button(boss_row2, "Restart", func(): get_tree().reload_current_scene())
+		_add_button(boss_row2, "Restart", func(): ArenaMap.reload_keeping_seed(get_tree()))
 
 	if _hit_fx:
-		var fx_row := HBoxContainer.new()
+		var fx_row := HFlowContainer.new()
 		tuning_vbox.add_child(fx_row)
 		_add_button(fx_row, "Test sword hit", func(): _hit_fx.test_hit(&"sword"))
 		_add_button(fx_row, "Test parry", func(): _hit_fx.test_hit(&"parry"))
 		_add_button(fx_row, "Test player hit", func(): _hit_fx.test_hit(&"player_hit"))
 		_add_button(fx_row, "Test kill FX", func(): _hit_fx.test_hit(&"kill"))
-		var fx_row2 := HBoxContainer.new()
+		var fx_row2 := HFlowContainer.new()
 		tuning_vbox.add_child(fx_row2)
 		_add_button(fx_row2, "Test boss hit", func(): _hit_fx.test_hit(&"boss_sword"))
 		_add_button(fx_row2, "Test lunge", func(): _hit_fx.test_hit(&"lunge"))
 		_add_button(fx_row2, "Test charged arrow", func(): _hit_fx.test_hit(&"charged_arrow"))
 	if _collector:
-		var gather_row := HBoxContainer.new()
+		var gather_row := HFlowContainer.new()
 		tuning_vbox.add_child(gather_row)
 		_add_button(gather_row, "Break nearest node", _break_nearest_node)
 		_add_button(gather_row, "Give 10 each", func(): _give_items(10))
 		_add_button(gather_row, "Clear items", func(): _collector.inventory().clear())
+	var save_game := get_tree().get_first_node_in_group("save_game") as SaveGame
+	if save_game:
+		var save_row := HFlowContainer.new()
+		tuning_vbox.add_child(save_row)
+		_add_button(save_row, "Save now", func(): save_game.save())
+		_add_button(save_row, "Load save", _load_save)
+		_add_button(save_row, "Delete save", func(): SaveGame.delete_save())
+	if _respawner:
+		var death_row := HFlowContainer.new()
+		tuning_vbox.add_child(death_row)
+		_add_button(death_row, "Kill player", func(): _respawner.kill())
+		_add_button(death_row, "Go to nearest bag", _go_to_nearest_bag)
 	if _inventory:
-		var inv_row := HBoxContainer.new()
+		var inv_row := HFlowContainer.new()
 		tuning_vbox.add_child(inv_row)
 		_add_button(inv_row, "Give axe", func(): _give("stone_axe"))
 		_add_button(inv_row, "Give pickaxe", func(): _give("stone_pickaxe"))
@@ -686,22 +811,22 @@ func _build_ui() -> void:
 		_add_button(inv_row, "Fill bag", _fill_bag)
 		_add_button(inv_row, "Give W3 kit", func(): _inventory.give_dev_kit())
 	if _crafter:
-		var craft_row := HBoxContainer.new()
+		var craft_row := HFlowContainer.new()
 		tuning_vbox.add_child(craft_row)
 		_add_button(craft_row, "Give materials (20 each)", func(): _give_items(20))
 		_add_button(craft_row, "Finish smelting", _finish_smelting)
-		var place_row := HBoxContainer.new()
+		var place_row := HFlowContainer.new()
 		tuning_vbox.add_child(place_row)
 		_add_button(place_row, "Place workbench here", func(): _place_here("workbench"))
 		_add_button(place_row, "Place furnace here", func(): _place_here("furnace"))
 		_add_button(place_row, "Place anvil here", func(): _place_here("anvil"))
-	var kb_row := HBoxContainer.new()
+	var kb_row := HFlowContainer.new()
 	tuning_vbox.add_child(kb_row)
 	_add_button(kb_row, "Knockback on/off", _toggle_knockback)
 	_add_button(kb_row, "Dummy to spot", func(): _reset_dummy_spot())
 
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(340, 480)
+	scroll.custom_minimum_size = Vector2(340, 100)
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	tuning_vbox.add_child(scroll)
 
@@ -739,10 +864,40 @@ func _on_generate_pressed() -> void:
 		_controls[key]["value_label"].text = _format_value(n)
 
 
+func _save_status_text() -> String:
+	var sg := get_tree().get_first_node_in_group("save_game") as SaveGame
+	return sg.status_text() if sg else "n/a"
+
+
+func _load_save() -> void:
+	var d := SaveGame.read_save()
+	if d.is_empty():
+		return
+	SaveGame.begin_load(d)
+	get_tree().reload_current_scene()   # same path as Continue: the arena rebuilds the island, then applies the save
+
+
+func _frame_status_text() -> String:
+	var pm := get_tree().get_first_node_in_group("pause_menu") as PauseMenu
+	return pm.status_text() if pm else "n/a"
+
+
+func _go_to_nearest_bag() -> void:
+	var best: Node2D
+	for b in get_tree().get_nodes_in_group("death_bag"):
+		if best == null or b.global_position.distance_to(_player.global_position) < best.global_position.distance_to(_player.global_position):
+			best = b
+	if best and _map:
+		_map.teleport_player(best.global_position)
+	elif best:
+		_player.global_position = best.global_position
+
+
 func _add_button(parent: Control, text: String, cb: Callable) -> void:
 	var b := Button.new()
 	b.text = text
 	b.pressed.connect(cb)
+	b.add_theme_font_size_override("font_size", 11)   # small buttons: all rows (wrapped) fit in a 720 px window
 	parent.add_child(b)
 
 
@@ -758,7 +913,16 @@ func _add_target_section(target_name: String, obj: Object) -> void:
 	heading.add_theme_font_size_override("font_size", 14)
 	_tuning_list.add_child(heading)
 
+	var group := ""
 	for prop_info in props:
+		if prop_info["group"] != group:   # a sub-heading per @export_group (Island / Climate / Water ...)
+			group = prop_info["group"]
+			if group != "":
+				var gl := Label.new()
+				gl.text = "[ %s ]" % group
+				gl.add_theme_font_size_override("font_size", 13)
+				gl.add_theme_color_override("font_color", Color(0.65, 0.85, 1.0))
+				_tuning_list.add_child(gl)
 		_add_property_row(target_name, obj, prop_info["name"], prop_info["type"])
 
 
@@ -798,8 +962,42 @@ func _add_property_row(target_name: String, obj: Object, prop_name: String, type
 		value_label.custom_minimum_size = Vector2(55, 0)
 		row.add_child(value_label)
 
-		slider.value_changed.connect(func(v: float): _apply_value(key, v))
+		# A map setting that rebuilds the whole world (~4 s at 512x512) is applied when the drag ENDS, not on every step; look-only sliders stay live.
+		var heavy := _is_heavy(obj, prop_name)   # a biome's climate / vegetation field rebuilds the world too
+		var dragging := [false]
+		slider.drag_started.connect(func(): dragging[0] = true)
+		slider.drag_ended.connect(func(_changed: bool):
+			dragging[0] = false
+			if heavy:
+				_apply_value(key, slider.value))
+		slider.value_changed.connect(func(v: float):
+			if heavy and dragging[0]:
+				value_label.text = _format_value(v)
+			else:
+				_apply_value(key, v))
 		_controls[key] = {"obj": obj, "prop": prop_name, "control": slider, "value_label": value_label, "is_bool": false, "is_int": is_int}
+
+
+## Map sliders that only change how things look or where the camera is: cheap, so they follow the drag.
+func _water_status_text() -> String:
+	var sw := _player.get_node_or_null("Swimmer")
+	var fx := _player.get_node_or_null("Visual/WaterFx")
+	return ("%s  %s" % [sw.status_text() if sw else "", fx.status_text() if fx else ""]).strip_edges()
+
+
+## A slider that rebuilds the world (applied when the drag ENDS): every ArenaMap number that is not a look, and every BiomeData number except its tint
+## (BiomeData.ground_alt* start with "ground_" but change the map, so the look prefixes must not match them).
+func _is_heavy(obj: Object, prop: String) -> bool:
+	if obj is BiomeData:
+		return not prop.begins_with("tint_")
+	return obj is ArenaMap and not _is_live_map_prop(prop)
+
+
+func _is_live_map_prop(prop: String) -> bool:
+	for pre in ["ground_", "foam_", "shimmer_", "shallow_tint", "wave_", "drift_", "shade_", "biome_map_", "camera_", "path_", "camp_", "dirt_patch", "tint_", "load_radius", "unload_margin", "chunks_per_frame"]:
+		if prop.begins_with(pre):
+			return true
+	return false
 
 
 func _format_value(v) -> String:

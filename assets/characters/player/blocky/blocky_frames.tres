@@ -1,0 +1,150 @@
+[gd_resource type="SpriteFrames" load_steps=20 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/characters/player/blocky/idle.png" id="t_idle"]
+[ext_resource type="Texture2D" path="res://assets/characters/player/blocky/run.png" id="t_run"]
+[ext_resource type="Texture2D" path="res://assets/characters/player/blocky/hit.png" id="t_hit"]
+
+[sub_resource type="AtlasTexture" id="idle_front_0"]
+atlas = ExtResource("t_idle")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="idle_front_1"]
+atlas = ExtResource("t_idle")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="idle_side_0"]
+atlas = ExtResource("t_idle")
+region = Rect2(0, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="idle_side_1"]
+atlas = ExtResource("t_idle")
+region = Rect2(32, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="run_front_0"]
+atlas = ExtResource("t_run")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="run_front_1"]
+atlas = ExtResource("t_run")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="run_front_2"]
+atlas = ExtResource("t_run")
+region = Rect2(64, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="run_front_3"]
+atlas = ExtResource("t_run")
+region = Rect2(96, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="run_side_0"]
+atlas = ExtResource("t_run")
+region = Rect2(0, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="run_side_1"]
+atlas = ExtResource("t_run")
+region = Rect2(32, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="run_side_2"]
+atlas = ExtResource("t_run")
+region = Rect2(64, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="run_side_3"]
+atlas = ExtResource("t_run")
+region = Rect2(96, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="hit_front_0"]
+atlas = ExtResource("t_hit")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="hit_front_1"]
+atlas = ExtResource("t_hit")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="hit_side_0"]
+atlas = ExtResource("t_hit")
+region = Rect2(0, 32, 32, 32)
+
+[sub_resource type="AtlasTexture" id="hit_side_1"]
+atlas = ExtResource("t_hit")
+region = Rect2(32, 32, 32, 32)
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 4.50,
+"texture": SubResource("idle_front_0")
+}, {
+"duration": 4.50,
+"texture": SubResource("idle_front_1")
+}],
+"loop": true,
+"name": &"idle_front",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 4.50,
+"texture": SubResource("idle_side_0")
+}, {
+"duration": 4.50,
+"texture": SubResource("idle_side_1")
+}],
+"loop": true,
+"name": &"idle_side",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.10,
+"texture": SubResource("run_front_0")
+}, {
+"duration": 0.90,
+"texture": SubResource("run_front_1")
+}, {
+"duration": 1.10,
+"texture": SubResource("run_front_2")
+}, {
+"duration": 0.90,
+"texture": SubResource("run_front_3")
+}],
+"loop": true,
+"name": &"run_front",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.10,
+"texture": SubResource("run_side_0")
+}, {
+"duration": 0.90,
+"texture": SubResource("run_side_1")
+}, {
+"duration": 1.10,
+"texture": SubResource("run_side_2")
+}, {
+"duration": 0.90,
+"texture": SubResource("run_side_3")
+}],
+"loop": true,
+"name": &"run_side",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 0.90,
+"texture": SubResource("hit_front_0")
+}, {
+"duration": 1.50,
+"texture": SubResource("hit_front_1")
+}],
+"loop": false,
+"name": &"hit_front",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 0.90,
+"texture": SubResource("hit_side_0")
+}, {
+"duration": 1.50,
+"texture": SubResource("hit_side_1")
+}],
+"loop": false,
+"name": &"hit_side",
+"speed": 10.0
+}]

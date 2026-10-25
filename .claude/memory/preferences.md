@@ -57,3 +57,28 @@ to a shared effect.
 ## Judges judge the LOOK too (2026-10-08)
 For art/visual work, give the Opus judge the rendered PNGs and video frames and ask strictly "does it read well
 at game size?", not only code. User: "tell opus to judge harder" after a blocky body read as a cube.
+
+## UI and look choices (2026-10-09..16, user decided)
+- **No words in the HUD.** Icons + counts only; names, HP number and recipe ingredients show only in the hover tooltip.
+  Tooltips are hidden mid-fight (boss engaged, bag closed).
+- HUD layout: hotbar + bag top-left, health + ability icons bottom-left, boss bar bottom centre and only while the boss is awake.
+- Every UI piece is art-swappable through `data/ui/inventory_skin.tres` (one ItemSlot scene, role-named children, layout owned by the scene).
+- Crafting = simple: grid of result icons (lit = craftable, dim = holds part of it, hidden = holds nothing);
+  click a lit icon -> item on the cursor -> click a slot. NOT a Minecraft grid. Smelting takes time (3 s/bar, no fuel).
+- Ground brightness/saturation 1.0 (user rejected 0.8/0.85). Map style default = Pixel Crawler only; Serene Village is an option.
+- Characters: Tiny RPG Soldier/Orc are TEMPORARY, both at scale 3 (user picked same pixel size over "boss looks bigger").
+
+## How the user likes the work run (2026-10-16)
+- Fast loop: Sonnet builds, a fresh Opus agent judges (code + screenshots), fix, re-judge. The user wants speed; pick sensible
+  defaults instead of asking, say which defaults were taken, and let the user redirect.
+- The user often skips "commit?" questions; ask once per slice, never commit without a clear "commit".
+- Visual/tile work: verify on test shapes before baking the real map (see mistakes.md 2026-10-16).
+- Tests: small change → run only the related tests (seconds). Full `tools/run_tests.sh` (~85 tests, minutes) only before a commit. The user asked why a one-number change took minutes (2026-10-22).
+
+## Map / world (2026-10-23)
+- Map art = Pixel Crawler only (0034). Dirt only where something explains it, never random (0035). Roads off by default.
+- "Look natural like Minecraft": density per biome, not blobs or hard lines; trees of mixed ages; flowers in clumps.
+- Any new look: a $0 preview picture first (`tools/asset_viewer/*.py`), user approves, then build. Show several seeds when asked.
+- Water is swimmable (slower + effect), deep ocean is the edge. 512x512 island now; a bigger Minecraft-like world later.
+- The user wants every map number in F3 (grouped) and the F3 World map to see the whole island after a change.
+- Before big new systems, the user asks for research with citations + a plan + demo pictures.

@@ -9,13 +9,38 @@ func _check(cond: bool, msg: String) -> void:
 		print("FAIL " + msg)
 		_ok = false
 
+func _distinct(a: Array) -> bool:
+	var seen := {}
+	for v in a:
+		if seen.has(v):
+			return false
+		seen[v] = true
+	return true
+
 func _init() -> void:
 	var n_pairs := 0
-	for path in ["res://data/maps/grass_pc.tres", "res://data/maps/grass_sv.tres"]:
+	for path in ["res://data/maps/grass.tres"]:
 		var style: MapStyle = load(path)
+		var ids := {}
+		for g in style.grounds:
+			if g != null:
+				ids[g.id] = g.layer
+		# 0038: sand and snow are real grounds with their own layer (an edge over every ground below them), all layers distinct
+		_check(ids.has(&"sand") and ids.has(&"snow") and style.grounds.size() == MapGen.Ground.SNOW + 1, "%s: sand and snow grounds are in the style" % path)
+		_check(style.grounds[MapGen.Ground.SAND].id == &"sand" and style.grounds[MapGen.Ground.SNOW].id == &"snow", "%s: MapGen.Ground.SAND / SNOW index the right grounds" % path)
+		var layers := []
+		for id in ids:
+			if id != &"boss_grass":
+				layers.append(ids[id])
+		_check(_distinct(layers), "%s: every ground has its own layer (boss grass shares grass's)" % path)
 		for g in style.grounds:
 			if g == null:
 				continue
+			for img in GroundBaker.fill_images(g):   # a fill is a full tile: no see-through pixel (sand / snow too)
+				for y in 16:
+					for x in 16:
+						if img.get_pixel(x, y).a != 1.0:
+							_check(false, "%s %s: fill pixel (%d, %d) is see-through" % [path, g.id, x, y])
 			var tiles := []
 			for q in 16:
 				tiles.append(GroundBaker.config_tile(g, q))

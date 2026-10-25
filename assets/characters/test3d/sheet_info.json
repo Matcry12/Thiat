@@ -1,0 +1,20 @@
+{
+ "cell": 64,
+ "dirs": [
+  "S",
+  "SE",
+  "E",
+  "NE",
+  "N",
+  "NW",
+  "W",
+  "SW"
+ ],
+ "actions": {
+  "idle": 4,
+  "run": 8,
+  "slash": 6
+ },
+ "ppu": 18,
+ "pitch": 55
+}

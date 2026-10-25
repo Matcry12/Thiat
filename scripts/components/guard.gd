@@ -117,6 +117,15 @@ func _drain_tank(amount: float) -> void:
 	_regen_timer = 0.0
 	tank_changed.emit(tank, tank_max)
 
+## Back to a fresh guard: ready, full tank (a respawn clears a broken one).
+func reset() -> void:
+	state = State.READY
+	_timer = 0.0
+	_regen_timer = 0.0
+	tank = tank_max
+	tank_changed.emit(tank, tank_max)
+	state_changed.emit("ready")
+
 func _break_tank() -> void:
 	tank = 0.0
 	_regen_timer = 0.0

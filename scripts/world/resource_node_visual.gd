@@ -17,19 +17,19 @@ func show_variant(d: ResourceNodeData, v: int) -> void:
 		queue_redraw()
 		return
 	var all := d.all_regions()
-	_set_region(body, all[v % all.size()])
+	_set_region(body, all[v % all.size()], _d.anchor_for(v % all.size()))
 
 func show_remains(d: ResourceNodeData) -> void:
-	_set_region(get_node("Body"), d.remains_region)
+	_set_region(get_node("Body"), d.remains_region, Vector2(d.remains_region.size.x * 0.5, d.remains_region.size.y))
 	body_alpha(1.0)
 
-func _set_region(body: Sprite2D, r: Rect2) -> void:
+func _set_region(body: Sprite2D, r: Rect2, foot: Vector2) -> void:
 	body.texture = _d.texture
 	body.region_enabled = true
 	body.region_rect = r
 	body.scale = Vector2.ONE * _d.pixel_scale
-	# Bottom of the picture sits at the circle's bottom (the feet).
-	body.offset = Vector2(0, -r.size.y * 0.5) + Vector2(0, _d.radius / _d.pixel_scale)
+	# The foot point of the picture (bottom centre unless the data has an anchor) sits at the circle's bottom.
+	body.offset = r.size * 0.5 - foot + Vector2(0, _d.radius / _d.pixel_scale)
 
 func body_alpha(a: float) -> void:
 	var m: Color = get_node("Body").modulate

@@ -1,79 +1,148 @@
 class_name TerrainVisual
 extends Node2D
-## The look of the island ground, in one node: the water (a shader), the baked ground picture and the shore foam.
+## The look of the island ground, in one node: the water (a shader), the baked ground pictures and the shore foam.
 ## ArenaMap hands it pictures (GroundBaker) and numbers; nothing else reaches inside. Swap this for a TileMap,
 ## a mesh or a different art style and ArenaMap's combat-facing code does not change (CLAUDE.md section 5).
-## Children are created once; show_island() only replaces textures.
+## The water is one big sprite under the whole island. The ground and the foam come in pieces, one pair per map chunk
+## (0038 step 2): set_chunk() adds one, remove_chunk() frees it, so only the chunks near the player cost memory.
 
 const WATER_SHADER := preload("res://scripts/map/terrain_water.gdshader")
 const GROUND_SHADER := preload("res://scripts/map/terrain_ground.gdshader")
 const FOAM_SHADER := preload("res://scripts/map/terrain_foam.gdshader")
 
 var _water: Sprite2D
-var _ground: Sprite2D
-var _foam: Sprite2D
+var _grounds: Node2D   ## parent of every chunk's ground sprite (drawn above the water)
+var _foams: Node2D     ## parent of every chunk's foam sprite (drawn above the ground)
+var _foam_material: ShaderMaterial   ## one for all foam sprites
+var _look := {}
+var _chunks := {}      ## key -> {ground: Sprite2D, foam: Sprite2D}
 
 
 func _ready() -> void:
 	name = "Terrain"
-	_water = _make_sprite("Water", WATER_SHADER)
-	_ground = _make_sprite("Ground", GROUND_SHADER)
-	_foam = _make_sprite("Foam", FOAM_SHADER)
+	_water = Sprite2D.new()
+	_water.name = "Water"
+	_water.centered = false
+	_water.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	var wm := ShaderMaterial.new()
+	wm.shader = WATER_SHADER
+	_water.material = wm
 	_water.texture_repeat = CanvasItem.TEXTURE_REPEAT_ENABLED
 	_water.region_enabled = true
+	add_child(_water)
+	_grounds = Node2D.new()
+	_grounds.name = "Grounds"
+	add_child(_grounds)
+	_foams = Node2D.new()
+	_foams.name = "Foams"
+	add_child(_foams)
+	_foam_material = ShaderMaterial.new()
+	_foam_material.shader = FOAM_SHADER
 	visible = false
 
 
-func _make_sprite(n: String, shader: Shader) -> Sprite2D:
-	var sp := Sprite2D.new()
-	sp.name = n
-	sp.centered = false
-	sp.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	var m := ShaderMaterial.new()
-	m.shader = shader
-	sp.material = m
-	add_child(sp)
-	return sp
-
-
-## images: GroundBaker.bake() result; water: its repeating water picture; art_scale: screen px per art px.
-func show_island(images: Dictionary, water: Image, art_scale: float) -> void:
-	var g: Image = images["ground"]
+## The water under the whole map. water: its repeating picture; map_art_px: the map's size in art pixels; art_scale: screen px per art px.
+func begin_island(water: Image, map_art_px: Vector2, art_scale: float, shallow: Image = null, tile := 16.0) -> void:
+	clear_chunks()
 	_water.texture = ImageTexture.create_from_image(water)
-	_water.region_rect = Rect2(0, 0, g.get_width(), g.get_height())
-	_ground.texture = ImageTexture.create_from_image(g)
-	_foam.texture = ImageTexture.create_from_image(images["foam"])
-	set_tint(images["tint"], images["shade"])
-	for sp in [_water, _ground, _foam]:
-		sp.scale = Vector2.ONE * art_scale
-	# dual grid: the picture is one tile bigger than the map and starts half a tile up and left
-	var half := float(images["tile"]) * 0.5
-	for sp in [_ground, _foam]:
-		sp.position = -Vector2(half, half) * art_scale
-	var gm := _ground.material as ShaderMaterial
-	gm.set_shader_parameter("tex_size", Vector2(g.get_width(), g.get_height()))
-	gm.set_shader_parameter("half_tile", half)
+	var wm := _water.material as ShaderMaterial
+	if shallow == null:
+		wm.set_shader_parameter("shallow_mask", null)   # no shallows on this map: drop the old map's mask
+	else:   # which cells are shallow water (one pixel per cell, 255 = shallow)
+		wm.set_shader_parameter("shallow_mask", ImageTexture.create_from_image(shallow))
+		wm.set_shader_parameter("map_cells", Vector2(shallow.get_width(), shallow.get_height()))
+		wm.set_shader_parameter("tile", tile)
+	_water.region_rect = Rect2(Vector2.ZERO, map_art_px)
+	_water.scale = Vector2.ONE * art_scale
 	visible = true
 
 
-func set_tint(tint: Image, shade: Image) -> void:
-	var m := _ground.material as ShaderMaterial
+## One chunk's ground and foam. images: GroundBaker.bake_region() result plus tint / shade maps that cover cells
+## [first_cell - 1, first_cell - 1 + tint.size) (one cell more than the picture on every side). first_corner: its first corner tile.
+## Replaces the chunk if it is already there.
+func set_chunk(key: int, first_corner: Vector2i, images: Dictionary, art_scale: float) -> void:
+	remove_chunk(key)
+	var g: Image = images["ground"]
+	var half := float(images["tile"]) * 0.5
+	var tile := float(images["tile"])
+	var pos := (Vector2(first_corner) * tile - Vector2(half, half)) * art_scale
+	var ground := Sprite2D.new()
+	ground.centered = false
+	ground.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	ground.texture = ImageTexture.create_from_image(g)
+	ground.position = pos
+	ground.scale = Vector2.ONE * art_scale
+	var gm := ShaderMaterial.new()
+	gm.shader = GROUND_SHADER
+	gm.set_shader_parameter("tex_size", Vector2(g.get_width(), g.get_height()))
+	gm.set_shader_parameter("half_tile", half)
+	gm.set_shader_parameter("tile", tile)
+	ground.material = gm
+	_grounds.add_child(ground)
+	var foam := Sprite2D.new()
+	foam.centered = false
+	foam.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	foam.texture = ImageTexture.create_from_image(images["foam"])
+	foam.position = pos
+	foam.scale = Vector2.ONE * art_scale
+	foam.material = _foam_material
+	_foams.add_child(foam)
+	_chunks[key] = {"ground": ground, "foam": foam}
+	_apply_ground_look(gm)
+	set_chunk_tint(key, images["tint"], images["shade"])
+
+
+func set_chunk_tint(key: int, tint: Image, shade: Image) -> void:
+	if not _chunks.has(key):
+		return
+	var m := (_chunks[key]["ground"] as Sprite2D).material as ShaderMaterial
 	m.set_shader_parameter("tint_map", ImageTexture.create_from_image(tint))
 	m.set_shader_parameter("shade_map", ImageTexture.create_from_image(shade))
+	m.set_shader_parameter("map_cells", Vector2(tint.get_width(), tint.get_height()))
+	m.set_shader_parameter("map_margin", Vector2.ONE)
+
+
+func remove_chunk(key: int) -> void:
+	if _chunks.has(key):
+		for sp: Sprite2D in [_chunks[key]["ground"], _chunks[key]["foam"]]:
+			sp.get_parent().remove_child(sp)
+			sp.queue_free()
+		_chunks.erase(key)
+
+
+func clear_chunks() -> void:
+	for key in _chunks.keys():
+		remove_chunk(key)
+
+
+func chunk_count() -> int:
+	return _chunks.size()
+
+
+func has_chunk(key: int) -> bool:
+	return _chunks.has(key)
 
 
 func hide_island() -> void:
+	clear_chunks()
 	visible = false
-	for sp in [_water, _ground, _foam]:
-		sp.texture = null
+	_water.texture = null
 
 
 ## Live numbers (no rebuild): {shimmer_speed, shimmer_strength, shimmer_scale, shimmer_amount, wave_strength,
-## foam_alpha, foam_pulse, foam_speed}.
+## foam_alpha, foam_pulse, foam_speed, shallow_lighten, shallow_color}.
 func set_look(look: Dictionary) -> void:
-	for k in ["shimmer_speed", "shimmer_strength", "shimmer_scale", "shimmer_amount", "wave_strength", "drift_scale", "drift_speed", "shimmer_color"]:
+	_look = look
+	for k in ["shimmer_speed", "shimmer_strength", "shimmer_scale", "shimmer_amount", "wave_strength", "drift_scale", "drift_speed", "shimmer_color", "shallow_lighten", "shallow_color"]:
 		(_water.material as ShaderMaterial).set_shader_parameter(k, look[k])
-	for k in ["ground_brightness", "ground_saturation"]:
-		(_ground.material as ShaderMaterial).set_shader_parameter(k, look[k])
 	for k in ["foam_alpha", "foam_pulse", "foam_speed", "foam_color"]:
-		(_foam.material as ShaderMaterial).set_shader_parameter(k, look[k])
+		_foam_material.set_shader_parameter(k, look[k])
+	for key in _chunks:
+		_apply_ground_look(((_chunks[key]["ground"] as Sprite2D).material) as ShaderMaterial)
+
+
+func _apply_ground_look(m: ShaderMaterial) -> void:
+	if _look.is_empty():
+		return
+	for k in ["ground_brightness", "ground_saturation"]:
+		m.set_shader_parameter(k, _look[k])

@@ -305,6 +305,19 @@ func _begin_return() -> void:
 		health.invulnerable = true
 	_set_aggro(Aggro.RETURNING)
 
+## The player died: full heal, phase 1, attack dropped, walk home and idle. A defeated boss stays defeated.
+func reset_fight() -> void:
+	if mode == Mode.DEAD:
+		return
+	var heal := reset_heals
+	reset_heals = true
+	_begin_return()
+	reset_heals = heal
+	outside_time = 0.0
+	_decision_timer = 0.0
+	for a in _attacks.values():
+		(a as BossAttack).cooldown_left = 0.0
+
 func _leave_return() -> void:
 	if aggro == Aggro.RETURNING:
 		health.invulnerable = false
@@ -329,6 +342,7 @@ func _on_died() -> void:
 		return
 	_abort_action()
 	mode = Mode.DEAD
+	aggro = Aggro.IDLE   # a defeated boss is not "engaged": the bag unlocks and saving works again
 	velocity = Vector2.ZERO
 	# Bolts already in the air must not outlive the boss.
 	for p in get_tree().get_nodes_in_group("projectile"):

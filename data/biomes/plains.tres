@@ -1,0 +1,46 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/map/biome_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+label = "plains"
+points_used = 3
+a_temp = 0.55
+a_humid = 0.2
+a_rough = 0.2
+b_temp = 0.8
+b_humid = 0.15
+b_rough = 0.2
+c_temp = 0.55
+c_humid = 0.35
+c_rough = 0.15
+temp_class = 2
+ground = 3
+shore_ground = 5
+tint_bright = 1
+tint_warm = 0
+tint_sat = 1
+forest_role = 1
+tree_tries = 0.5
+tree_ring = 3
+dens_hi = 0.45
+age_rule = 1
+age_w_mature = 0.7
+age_w_old = 0.3
+tree1_model = 1
+tree1_weight = 1
+rock_per_block = 1
+rock_mid_min = 1
+rock_mid_max = 2
+rock_small_min = 3
+rock_small_max = 5
+rock_nodes_per_100 = 0.4
+bush_per_block = 0.5
+bush_pair = 0.5
+flower_per_block = 0.8
+flower_tries = 50
+flower_fox = 0.1
+tuft_p = 0.0625
+tuft_w_green = 1
+map_color = Color(0.6275, 0.8157, 0.3765, 1)

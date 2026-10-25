@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/map/biome_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+label = "forest"
+points_used = 2
+a_temp = 0.52
+a_humid = 0.6
+a_rough = 0.3
+b_temp = 0.55
+b_humid = 0.45
+b_rough = 0.35
+temp_class = 2
+ground = 3
+tint_bright = 1
+tint_warm = 0
+tint_sat = 1
+forest_role = 2
+has_clearings = true
+tree_tries = 14
+dens_lo = 0.5
+fade_by_density = true
+group_model = 2
+tree1_model = 1
+tree1_weight = 0.9
+tree2_model = 2
+tree2_weight = 0.1
+rock_per_block = 0.5
+rock_nodes_per_100 = 0.4
+bush_per_block = 1
+bush_tries = 6
+bush_spread = 4
+bush_d_lo = 0.45
+bush_d_hi = 0.7
+flower_per_block = 0.125
+flower_in_clear = true
+flower_fox = 0.1
+mush_tries = 5
+tuft_p = 0.125
+tuft_w_green = 1
+map_color = Color(0.1569, 0.4549, 0.2039, 1)

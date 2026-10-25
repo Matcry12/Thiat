@@ -16,6 +16,7 @@ func _init() -> void:
 	var m: ArenaMap = arena.get_node("ArenaMap")
 	var ok := true
 
+	m.load_all_chunks()   # 0038 step 2: trees, rocks and props exist per chunk near the player; this test counts every one
 	var seed_a := m.current_seed
 	ok = ok and _t(seed_a != 0, "random seed rolled when map_seed = 0")
 	ok = ok and _t(m.get_node("Ground/Dirt").get_used_cells().size() == 72 * 40, "dirt layer fills the arena (%d)" % m.get_node("Ground/Dirt").get_used_cells().size())
@@ -52,6 +53,7 @@ func _init() -> void:
 	ok = ok and _t(m.current_seed >= 1 and m.current_seed <= 9999, "seeds fit the F3 slider")
 	ok = ok and _t(panel.get_node_or_null(".") != null and m.save_value("map_seed") == m.current_seed, "F3 Save stores the showing seed")
 	ok = ok and _t(m.current_seed != seed_a, "New map rolls a new seed")
+	m.load_all_chunks()
 	ok = ok and _t(get_nodes_in_group("map_obstacle").size() == m.result.obstacles.size(), "old rocks are gone after a rebuild")
 
 	print("PASS" if ok else "FAIL")

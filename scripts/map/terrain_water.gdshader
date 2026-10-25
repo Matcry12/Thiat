@@ -11,6 +11,12 @@ uniform float wave_strength = 0.05;
 uniform float drift_scale = 0.03;
 uniform float drift_speed = 0.05;
 uniform vec4 shimmer_color : source_color = vec4(0.85, 0.95, 1.0, 1.0);
+// Shallow water (rivers, lakes, the coast shallows): a one-pixel-per-cell mask (255 = shallow, LINEAR so the edge is soft) lightens it.
+uniform sampler2D shallow_mask : filter_linear, repeat_disable;
+uniform vec2 map_cells = vec2(1.0);
+uniform float tile = 16.0;                       // art pixels per cell
+uniform float shallow_lighten = 0.28;
+uniform vec4 shallow_color : source_color = vec4(0.55, 0.85, 0.88, 1.0);
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -33,5 +39,7 @@ void fragment() {
 	float drift = (vnoise(px * drift_scale + vec2(TIME * drift_speed, 0.0)) - 0.5) * 2.0;
 	base.rgb *= 1.0 + wave_strength * drift;
 	base.rgb = mix(base.rgb, shimmer_color.rgb, glint * shimmer_strength);
+	float shallow = smoothstep(0.0, 1.0, texture(shallow_mask, px / tile / map_cells).r);
+	base.rgb = mix(base.rgb, mix(base.rgb, shallow_color.rgb, 0.6) * 1.12, shallow * shallow_lighten);
 	COLOR = base;
 }

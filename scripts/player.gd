@@ -7,6 +7,8 @@ extends CharacterBody2D
 @export var speed := 260.0
 ## Seconds of no scrolling before the wheel's hotbar slot is selected.
 @export var wheel_settle := 0.12
+## Holding attack with a tool or bare hands keeps gathering (weapons stay one click per swing, 0036).
+@export var hold_to_gather := true
 
 @onready var visual: ActorVisual = $Visual
 # Sibling of Visual, NOT a child: replacing the Visual node must never
@@ -22,6 +24,7 @@ extends CharacterBody2D
 @onready var loadout: Loadout = $Loadout
 @onready var skill_slot: SkillSlot = $SkillSlot
 @onready var placer: Placer = $Placer
+@onready var swimmer: Swimmer = $Swimmer   # shallow water slows walking (0038 step 3)
 
 var aim_direction := Vector2.RIGHT
 ## Automation seam, NOT gameplay: when non-zero, aim comes from here instead of
@@ -30,9 +33,9 @@ var aim_direction := Vector2.RIGHT
 ## the directional guard/parry look broken when it is not. Nothing in the game
 ## ever writes this, and it is deliberately not an @export so the editor cannot.
 var aim_override := Vector2.ZERO
-## True once Health.died fired: every input is ignored (the EndScreen shows the
-## retry prompt). Code-owned, so not an @export.
+## True from Health.died until Respawner wakes the player: every input is ignored. Code-owned, so not an @export.
 var dead := false
+var _parry_down := false   # the key went down and has not been seen up yet
 var _wheel_slot := -1
 var _wheel_left := 0.0
 var _move_state := "idle"
@@ -74,9 +77,17 @@ func _on_died() -> void:
 	dead = true
 	weapon_holder.cancel()
 	guard.release()
+	dodge.cancel()
 	skill_slot.cancel()
 	velocity = Vector2.ZERO
 	visual.set_move_state("idle")
+
+## Wakes up after a death (Respawner): full hp, inputs back. The caller moves the body.
+func respawn() -> void:
+	dead = false
+	health.revive()
+	guard.reset()
+	velocity = Vector2.ZERO
 
 func _physics_process(delta: float) -> void:
 	if dead:
@@ -89,8 +100,9 @@ func _physics_process(delta: float) -> void:
 	# Dodge drives the body itself while dashing — fighting it over velocity
 	# would double-move the player for a frame.
 	# A body-moving skill (the lunge) drives velocity the same way.
+	swimmer.refresh()   # in shallow water? (only the walk speed reads it)
 	if not dodge.is_dashing() and not skill_slot.moves_body():
-		velocity = input_dir * speed * guard.move_scale() * skill_slot.move_scale()
+		velocity = input_dir * speed * guard.move_scale() * skill_slot.move_scale() * swimmer.speed_scale()
 		move_and_slide()
 
 	var new_move_state := "run" if velocity.length() > 1.0 else "idle"
@@ -117,7 +129,9 @@ func _physics_process(delta: float) -> void:
 		guard.release()
 		return
 
-	if Input.is_action_just_pressed("attack") and guard.can_attack() and not loadout.is_casting() \
+	var attack_in := Input.is_action_just_pressed("attack") \
+			or (hold_to_gather and not dodge.is_dashing() and loadout.is_holstered() and not placer.is_holding() and Input.is_action_pressed("attack"))
+	if attack_in and guard.can_attack() and not loadout.is_casting() \
 			and not skill_slot.is_active() and not mouse_over_ui():
 		# A station in the selected slot: the click puts it down instead of swinging (decision 0031).
 		if placer.is_holding():
@@ -144,10 +158,12 @@ func _physics_process(delta: float) -> void:
 			skill_slot.cancel()
 
 	if Input.is_action_just_pressed("parry"):
+		_parry_down = true
 		if body_free and guard.try_guard():
 			loadout.cancel_swap()
 			skill_slot.cancel()
-	elif Input.is_action_just_released("parry"):
+	elif _parry_down and not Input.is_action_pressed("parry"):   # not just_released: a release during a pause must not leave the guard held
+		_parry_down = false
 		guard.release()
 
 	# Weapon swap is vulnerable, like an attack (decision 0003) — refused

@@ -16,6 +16,9 @@ func _init():
 	var dummy_health: Health = dummy.get_node("Health")
 
 	await _frames(5)   # let one-off startup delta spikes settle (test_guard_pose.gd does the same)
+	for n in get_nodes_in_group("map_obstacle"):   # 0038 step 3 changed the island: no tree may stand in the lines of fire around the dummy
+		if n.global_position.distance_to(dummy.global_position) < 500.0:
+			n.free()
 
 	loadout.swap_cast = 0.05   # shorten so the test does not sit waiting
 	loadout.try_swap(1)

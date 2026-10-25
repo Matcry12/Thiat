@@ -12,6 +12,10 @@ extends Resource
 ## gather_damage multiplier when the held tool_kind matches `preferred_tool`.
 @export var tool_bonus := 3.0
 @export var drop_item: ItemData
+## Seconds without a hit before the node is back to full HP (Minecraft: progress resets). 0 = never.
+@export var reset_delay := 1.5
+## true = broken without `preferred_tool` drops nothing (rocks). Trees drop by hand.
+@export var drop_needs_tool := false
 @export var drop_min := 2
 @export var drop_max := 3
 ## Collision circle, screen px.
@@ -20,9 +24,9 @@ extends Resource
 @export var hurtbox_pad := 6.0
 ## Drop spread when no Collector exists, px.
 @export var drop_scatter := 26.0
-## Nodes per 100 land cells of that area.
+## Nodes per 100 land cells. `density_forest` = anywhere outside the boss land (0038 step 4: only read when the aged trees are off, `trees_on`;
+## rocks and copper are scattered per biome: BiomeData.rock_nodes_per_100 / copper_per_100). `density_boss` = on the boss land.
 @export var density_forest := 0.0
-@export var density_rocky := 0.0
 @export var density_boss := 0.0
 @export_group("Art")
 @export var texture: Texture2D
@@ -31,6 +35,9 @@ extends Resource
 ## More looks. Placement never picks these (it keeps using `regions`, so a seed gives the same trees);
 ## the island areas below do. Look index = position in regions + extra_regions.
 @export var extra_regions: Array[Rect2] = []
+## Where the feet are, in art pixels of each `regions` entry (same order). Empty = bottom centre of the picture.
+## The foot is drawn on the bottom of the collision circle.
+@export var anchors: PackedVector2Array = PackedVector2Array()
 ## Which looks each island area may show (indices as above). Empty = whatever placement picked.
 ## Forest: green trees. Rocky: autumn and dead ones. Boss: dead ones.
 @export var looks_forest: PackedInt32Array = PackedInt32Array()
@@ -48,6 +55,12 @@ extends Resource
 @export var hit_type: StringName = &"chop"
 @export var clink_type: StringName = &"clink"
 @export var break_type: StringName = &"node_break"
+
+
+## Foot point of look `i` in art pixels of its region (bottom centre when no anchor is set).
+func anchor_for(i: int) -> Vector2:
+	var r := all_regions()[i % all_regions().size()]
+	return anchors[i] if i < anchors.size() and i < regions.size() else Vector2(r.size.x * 0.5, r.size.y)
 
 
 func all_regions() -> Array[Rect2]:

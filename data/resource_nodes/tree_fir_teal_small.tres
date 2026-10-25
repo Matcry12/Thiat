@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ResourceNodeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/resource_node_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/items/wood.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/world/trees/fir_s3.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = &"tree_fir_teal_small"
+display_name = "Small tree (Fir, teal)"
+max_hp = 6.0
+preferred_tool = &"axe"
+required_power = 0
+drop_item = ExtResource("2")
+drop_min = 2
+drop_max = 3
+radius = 9.0
+texture = ExtResource("3")
+regions = Array[Rect2]([Rect2(4, 4, 37, 76), Rect2(52, 4, 37, 76)])
+anchors = PackedVector2Array(20, 75, 20, 75)
+remains_region = Rect2(117, 151, 6, 9)
+fade_when_behind = true
+color = Color(0.2, 0.5, 0.5, 1)
+hit_type = &"chop"

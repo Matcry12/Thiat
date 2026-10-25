@@ -33,7 +33,7 @@ func _obstacle_hash(res: MapGen.Result) -> int:
 
 func _init() -> void:
 	var look := {"tint": [Color.WHITE, Color.WHITE, Color.WHITE] as Array[Color], "sat": [1.0, 1.0, 1.0], "shade_variation": 0.0, "shade_scale": 0.05}
-	for path in ["res://data/maps/grass_pc.tres", "res://data/maps/grass_sv.tres"]:
+	for path in ["res://data/maps/grass.tres"]:
 		var style: MapStyle = load(path)
 		for seed_v in [11, 7, 3]:
 			var p := _params()
@@ -50,7 +50,19 @@ func _init() -> void:
 						bad_land += 1
 			_check(bad_water == 0 and bad_land == 0, "%s seed %d: ground picture matches land / water at every cell centre (water showing land %d, land showing water %d)" % [path, seed_v, bad_water, bad_land])
 	var style: MapStyle = load("res://data/maps/grass.tres")
-	var pins := {11: 3202933287, 7: 1418372228}   # taken from the verified baseline (judge: identical over 12 seeds)
+	# saturation above 1 survives the tint map (alpha = sat * 127.5): autumn grass is 1.1 x the area's 1.0 -> 140, not clamped to 255 / 2
+	var pr := _params()
+	var tres := MapGen.generate(style, pr, 11)
+	var timg := GroundBaker.tint_image(tres, look)
+	var alpha := {}
+	for i in tres.land.size():
+		var inside := i % pr.cols > 0 and i % pr.cols < pr.cols - 1 and i / pr.cols > 0 and i / pr.cols < pr.rows - 1   # the tint map is blurred 3 x 3: read only cells whose neighbours are the same
+		for d in [-pr.cols - 1, -pr.cols, -pr.cols + 1, -1, 1, pr.cols - 1, pr.cols, pr.cols + 1]:
+			inside = inside and i + d >= 0 and i + d < tres.land.size() and tres.land[i + d] == 1 and tres.biome[i + d] == tres.biome[i] and tres.ground[i + d] == MapGen.Ground.GRASS and tres.area[i + d] != MapGen.Area.BOSS
+		if inside and tres.land[i] == 1 and tres.area[i] != MapGen.Area.BOSS and tres.ground[i] == MapGen.Ground.GRASS:
+			alpha[tres.biome[i]] = roundi(timg.get_pixel(i % pr.cols, i / pr.cols).a * 255.0)
+	_check(alpha.has(MapGen.Biome.FOREST) and alpha.has(MapGen.Biome.AUTUMN) and absi(alpha[MapGen.Biome.FOREST] - 128) <= 1 and absi(alpha[MapGen.Biome.AUTUMN] - 140) <= 1, "tint saturation 0..2 is stored (forest %s, autumn %s)" % [alpha.get(MapGen.Biome.FOREST), alpha.get(MapGen.Biome.AUTUMN)])
+	var pins := {11: 3498103988, 7: 3880785131}   # re-pinned for 0038 step 4 (per-biome trees, rock groups); earlier pin: 0038 water v2 (big rivers / lakes, ponds); earlier pin: step 3 (continent shape, rivers, lakes, shallows); earlier pin for 0038 step 1
 	for seed_v in pins:
 		var h := _obstacle_hash(MapGen.generate(style, _params(), seed_v))
 		print("obstacle hash seed %d = %d" % [seed_v, h])

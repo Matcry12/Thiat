@@ -1,0 +1,141 @@
+{
+ "cell": 48,
+ "pitch_from_straight_down": 80,
+ "ppu": 15.5,
+ "look_at_height": 0.74,
+ "feet_below_cell_centre_px": 11.3,
+ "rows": [
+  "S",
+  "E"
+ ],
+ "flip_E_row_for_W": true,
+ "note": "BODY ONLY (no arms/weapon). ONE row per view: S front, E = 3/4 front (flip for W); no back view. The head is rendered once per view and stamped at integer offsets (head_offsets_px) so the face never reshapes.",
+ "actions": {
+  "idle": {
+   "frames": 2,
+   "hold_ms": [
+    450,
+    450
+   ]
+  },
+  "run": {
+   "frames": 6,
+   "hold_ms": [
+    90,
+    90,
+    90,
+    90,
+    90,
+    90
+   ]
+  },
+  "hit": {
+   "frames": 2,
+   "hold_ms": [
+    90,
+    150
+   ]
+  }
+ },
+ "head_offsets_px": {
+  "idle": {
+   "S": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ]
+   ],
+   "E": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ]
+   ]
+  },
+  "run": {
+   "S": [
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     -1
+    ],
+    [
+     0,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     0,
+     -1
+    ]
+   ],
+   "E": [
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     -1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     1,
+     1
+    ],
+    [
+     1,
+     -1
+    ]
+   ]
+  },
+  "hit": {
+   "S": [
+    [
+     0,
+     2
+    ],
+    [
+     0,
+     1
+    ]
+   ],
+   "E": [
+    [
+     -2,
+     2
+    ],
+    [
+     -1,
+     1
+    ]
+   ]
+  }
+ },
+ "yaw_of_E_row_deg": 25
+}

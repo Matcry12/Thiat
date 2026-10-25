@@ -9,6 +9,7 @@ extends Node
 @export var pickup_hop_time := 0.35   ## read by Pickup
 @export var pickup_size := 7.0   ## placeholder diamond, read by Pickup
 @export var scatter_radius := 26.0   ## read by ResourceNode for drop spread
+@export var bag_pickup_radius := 24.0   ## walking this close to a DeathBag hands back what fits (W6)
 
 var last_pickup := ""   # for F3
 var last_gather := ""   # status of the last node hit, for F3
@@ -22,8 +23,11 @@ func inventory() -> Inventory:
 func _physics_process(delta: float) -> void:
 	var inv := inventory()
 	var me := get_parent() as Node2D
-	if inv == null or me == null:
+	if inv == null or me == null or me.get("dead"):
 		return
+	for b: DeathBag in get_tree().get_nodes_in_group("death_bag"):
+		if b.global_position.distance_to(me.global_position) <= bag_pickup_radius:
+			b.give_to(inv)
 	for p: Pickup in get_tree().get_nodes_in_group("pickup"):
 		if not p.settled:
 			continue

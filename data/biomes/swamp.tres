@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/map/biome_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+label = "swamp"
+points_used = 2
+a_temp = 0.45
+a_humid = 0.92
+a_rough = 0.15
+b_temp = 0.62
+b_humid = 0.92
+b_rough = 0.12
+temp_class = 2
+ground = 3
+fresh_pull_cells = 10.0
+tint_bright = 0.62
+tint_warm = -0.04
+tint_sat = 0.75
+forest_role = 2
+tree_tries = 4
+dens_lo = 0.4
+dens_hi = 0.9
+tree1_model = 1
+tree1_weight = 0.6
+tree2_model = 1
+tree2_season = 5
+tree2_weight = 0.4
+fox_per_block = 0.5
+mush_tries = 7
+tuft_p = 0.125
+tuft_w_green = 0.5
+fern_w_green = 0.5
+reed_per_shore = 0.05
+reed_tries = 5
+reed_spread = 1.4
+reed_w_green = 0.7
+reed_w_brown = 0.3
+map_color = Color(0.3059, 0.3608, 0.1882, 1)

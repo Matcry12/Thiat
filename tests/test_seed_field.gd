@@ -62,6 +62,8 @@ func _init() -> void:
 	panel._on_generate_pressed()
 	_check(m.current_seed == 9999, "empty field does nothing")
 	_check(panel._controls["Map.map_seed"]["control"].value == 9999.0, "the seed slider shows it")
+	m.load_all_chunks()   # 0038 step 2: nodes exist per chunk near the player; load them all to compare with the world data
+	await process_frame
 	_check(get_nodes_in_group("map_obstacle").size() == m.result.obstacles.size(), "no stale rocks")
 
 	# typing must not move the player; Generate gives the keys back

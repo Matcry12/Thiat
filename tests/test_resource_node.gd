@@ -78,6 +78,45 @@ func _init() -> void:
 		await physics_frame
 	_check(not is_instance_valid(bolt) or bolt.global_position.x < ore.global_position.x, "the node stops a boss bolt")
 
+	# 0036: reset after a pause; rocks drop only to a pickaxe; trees drop by hand.
+	var hand := WeaponData.new()
+	hand.gather_damage = 1.0
+	var pick := WeaponData.new()
+	pick.gather_damage = 1.0
+	pick.tool_kind = &"pickaxe"
+	var reset_tree := _node(arena, "res://data/resource_nodes/tree.tres", spot + Vector2(-300, 0))
+	reset_tree.data = reset_tree.data.duplicate()
+	reset_tree.data.reset_delay = 0.05
+	reset_tree.take_gather_hit(hand, player)
+	reset_tree.take_gather_hit(hand, player)
+	_check(reset_tree.hp == reset_tree.data.max_hp - 2.0, "quick hits add up (hp %.0f)" % reset_tree.hp)
+	for i in 12:
+		await physics_frame   # 0.05 s of game time = 3 ticks; 12 is plenty
+	_check(reset_tree.status_text().contains("%.0f/" % reset_tree.data.max_hp), "status shows full hp after the delay")
+	reset_tree.take_gather_hit(hand, player)
+	_check(reset_tree.hp == reset_tree.data.max_hp - 1.0, "after the delay the node restarts from full hp (hp %.0f)" % reset_tree.hp)
+	var before := get_nodes_in_group("pickup").size()
+	var hand_tree := _node(arena, "res://data/resource_nodes/tree.tres", spot + Vector2(-300, 60))
+	hand_tree.data = hand_tree.data.duplicate()
+	hand_tree.data.max_hp = 1.0
+	hand_tree.hp = 1.0
+	hand_tree.take_gather_hit(hand, player)
+	_check(get_nodes_in_group("pickup").size() > before, "tree broken by hands drops")
+	before = get_nodes_in_group("pickup").size()
+	var hand_rock := _node(arena, "res://data/resource_nodes/rock.tres", spot + Vector2(-300, 120))
+	hand_rock.data = hand_rock.data.duplicate()
+	hand_rock.data.max_hp = 1.0
+	hand_rock.hp = 1.0
+	hand_rock.take_gather_hit(hand, player)
+	_check(hand_rock.is_broken() and get_nodes_in_group("pickup").size() == before, "rock broken by hands drops nothing")
+	_check(hand_rock.status_text().contains("no drop"), "status says no drop")
+	var pick_rock := _node(arena, "res://data/resource_nodes/rock.tres", spot + Vector2(-300, 180))
+	pick_rock.data = pick_rock.data.duplicate()
+	pick_rock.data.max_hp = 1.0
+	pick_rock.hp = 1.0
+	pick_rock.take_gather_hit(pick, player)
+	_check(pick_rock.is_broken() and get_nodes_in_group("pickup").size() > before, "rock broken by pickaxe drops")
+
 	# I2: each node keeps its own radius (shape is per instance).
 	var big_data: ResourceNodeData = load("res://data/resource_nodes/rock.tres").duplicate()
 	big_data.radius = 40.0

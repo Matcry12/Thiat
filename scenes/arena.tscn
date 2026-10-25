@@ -8,6 +8,8 @@
 [ext_resource type="PackedScene" path="res://scenes/boss.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/world/home_point.tscn" id="home_pt"]
 [ext_resource type="Script" path="res://scripts/end_screen.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/pause_menu.gd" id="pause_s"]
+[ext_resource type="Script" path="res://scripts/save_game.gd" id="save_s"]
 [ext_resource type="Script" path="res://scripts/map/arena_map.gd" id="8"]
 [ext_resource type="Resource" path="res://data/maps/grass.tres" id="9"]
 [ext_resource type="Script" path="res://scripts/fx/hit_fx.gd" id="hf_script"]
@@ -123,7 +125,12 @@ debug_overlay_path = NodePath("../DebugOverlay")
 map_path = NodePath("../ArenaMap")
 hit_fx_path = NodePath("../HitFx")
 
+[node name="PauseMenu" type="CanvasLayer" parent="."]
+script = ExtResource("pause_s")
+
 [node name="EndScreen" type="CanvasLayer" parent="."]
 script = ExtResource("7")
-player_path = NodePath("../Player")
 boss_path = NodePath("../Boss")
+
+[node name="SaveGame" type="Node" parent="."]
+script = ExtResource("save_s")

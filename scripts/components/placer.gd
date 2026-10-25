@@ -87,8 +87,12 @@ func check_at(pos: Vector2, footprint: Vector2, art_local := Rect2(), with_neck 
 				return "boss"
 			if m.in_corridor(p):
 				return "corridor"
+		if not m.rect_on_land(rect):   # every cell the box overlaps, not just its corners: a thin river between them counts
+			return "water"
 		if m.in_corridor_rect(rect):
 			return "corridor"
+	if m != null and m.placement_blocked(rect):
+		return "node"   # a tree or rock of the world data, loaded as a node or not
 	for o: Node2D in get_tree().get_nodes_in_group("map_obstacle"):
 		if o is ResourceNode and o.is_broken():
 			continue

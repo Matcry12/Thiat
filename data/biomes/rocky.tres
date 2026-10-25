@@ -1,0 +1,52 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/map/biome_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+label = "rocky"
+points_used = 3
+a_temp = 0.2
+a_humid = 0.5
+a_rough = 1.3
+b_temp = 0.45
+b_humid = 0.5
+b_rough = 1.3
+c_temp = 0.7
+c_humid = 0.3
+c_rough = 1.3
+temp_class = -1
+ground = 2
+tint_bright = 1
+tint_warm = 0
+tint_sat = 1
+tree_tries = 0.5
+dens_lo = 0.4
+age_rule = 1
+age_w_mature = 0.6
+age_w_old = 0.4
+tree1_model = 3
+tree1_season = 5
+tree1_weight = 0.5
+tree2_model = 1
+tree2_season = 5
+tree2_weight = 0.5
+rock_per_block = 2.6
+rock_mid_min = 2
+rock_mid_max = 5
+rock_w_boulder = 0
+rock_w_med = 0.65
+rock_w_big = 0.35
+rock_small_min = 3
+rock_small_max = 6
+rock_spread = 2.6
+rock_brown_share = 0.4
+copper_per_100 = 0.6
+bush_per_block = 0.5
+bush_dead = true
+bush_w_green = 0
+tuft_p = 0.1
+tuft_w_brown = 0.75
+fern_w_brown = 0.25
+ground_alt = 1
+map_color = Color(0.5020, 0.4784, 0.4627, 1)

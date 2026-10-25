@@ -34,6 +34,12 @@ func _ready() -> void:
 	shield = shield_max
 	_guard = get_parent().get_node_or_null("Guard") as Guard
 
+## Back to full hp + shield (the player's respawn).
+func revive() -> void:
+	hp = max_hp
+	shield = shield_max
+	invulnerable = false
+
 func _physics_process(delta: float) -> void:
 	if shield >= shield_max:
 		return

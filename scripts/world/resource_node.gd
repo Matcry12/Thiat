@@ -6,9 +6,12 @@ extends StaticBody2D
 signal broken(node: ResourceNode)
 
 var data: ResourceNodeData
+var placement := -1   ## index into MapGen.Result.obstacles (set by ArenaMap's chunk loader); -1 = placed by hand
 var hp := 0.0
 var variant := 0
 var _hit_fx: Node
+var _since_hit := 0.0   ## game seconds since the last damaging hit (slow-mo / hit-stop / pause stretch it)
+var _last_hit_preferred := true   ## the latest damaging hit used the preferred tool
 
 ## Call before add_child.
 func setup(d: ResourceNodeData, v: int) -> void:
@@ -17,6 +20,7 @@ func setup(d: ResourceNodeData, v: int) -> void:
 	hp = d.max_hp
 
 func _ready() -> void:
+	set_physics_process(false)   # only ticks while damaged
 	add_to_group("map_obstacle")
 	add_to_group("resource_node")
 	collision_mask = 0
@@ -28,6 +32,13 @@ func _ready() -> void:
 func is_broken() -> bool:
 	return hp <= 0.0
 
+## Its chunk came back and this node was gathered before: show it the way it was left (a stump, no collision).
+func restore_broken() -> void:
+	hp = 0.0
+	get_node("CollisionShape2D").disabled = true
+	get_node("Hurtbox").monitorable = false
+	get_node("Visual").show_remains(data)
+
 ## True = it took damage. Hands on a copper rock = clink, false.
 func take_gather_hit(weapon: WeaponData, source: Node2D) -> bool:
 	if is_broken() or weapon == null:
@@ -37,13 +48,28 @@ func take_gather_hit(weapon: WeaponData, source: Node2D) -> bool:
 		_note_hit()
 		_fx(data.clink_type, source, info)
 		return false
-	var bonus := data.tool_bonus if data.preferred_tool != &"" and weapon.tool_kind == data.preferred_tool else 1.0
+	var preferred := data.preferred_tool != &"" and weapon.tool_kind == data.preferred_tool
+	_last_hit_preferred = preferred
+	_since_hit = 0.0
+	var bonus := data.tool_bonus if preferred else 1.0
 	hp = maxf(hp - weapon.gather_damage * bonus, 0.0)
 	_note_hit()
 	_fx(data.hit_type, source, info)
 	if is_broken():
 		_break(source)
+	elif data.reset_delay > 0.0:
+		set_physics_process(true)
 	return true
+
+## No damaging hit for reset_delay game seconds: back to full HP (progress resets).
+func _physics_process(delta: float) -> void:
+	_since_hit += delta
+	if _since_hit > data.reset_delay:
+		hp = data.max_hp
+		set_physics_process(false)
+
+func _no_drop() -> bool:
+	return data.drop_needs_tool and not _last_hit_preferred
 
 func _note_hit() -> void:   # for the F3 [Gather] line
 	var col := get_tree().get_first_node_in_group("collector") as Collector
@@ -66,6 +92,8 @@ func _break(source: Node) -> void:
 		queue_free()
 
 func _drop() -> void:
+	if _no_drop():
+		return
 	var col := get_tree().get_first_node_in_group("collector") as Collector
 	var radius: float = col.scatter_radius if col else data.drop_scatter
 	var m := get_tree().get_first_node_in_group("arena_map") as ArenaMap
@@ -76,4 +104,4 @@ func _drop() -> void:
 		Pickup.spawn(get_parent(), data.drop_item, 1, position, to)
 
 func status_text() -> String:
-	return "%s %.0f/%.0f hp, needs power %d" % [data.display_name, hp, data.max_hp, data.required_power]
+	return "%s %.0f/%.0f hp, needs power %d%s" % [data.display_name, hp, data.max_hp, data.required_power, ", no drop" if is_broken() and _no_drop() else ""]

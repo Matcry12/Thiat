@@ -210,6 +210,29 @@ func clear() -> void:
 		_held_from = -1
 	changed.emit()
 
+# ------------------------------------------------------------------ save / load (W9)
+
+## Every slot as {"id", "n"} (null for an empty one), plus the cursor stack as the last entry of "held".
+func to_array() -> Array:
+	var a := []
+	for i in SIZE:
+		a.append({"id": String(_item[i].id), "n": _count[i]} if _item[i] != null else null)
+	return a
+
+## Replaces every slot. `by_id`: item id (String) -> ItemData. Unknown ids are skipped with a warning.
+func from_array(a: Array, by_id: Dictionary) -> void:
+	_drop_held()
+	for i in SIZE:
+		_item[i] = null
+		_count[i] = 0
+		var e = a[i] if i < a.size() else null
+		if e is Dictionary and by_id.has(str(e.get("id", ""))) and int(e.get("n", 0)) > 0:
+			var it: ItemData = by_id[str(e["id"])]
+			_put(i, it, mini(int(e["n"]), it.stack_limit()))
+		elif e != null:
+			push_warning("save: unknown item '%s' skipped" % str(e))
+	changed.emit()
+
 # ------------------------------------------------------------------ bag clicks
 
 ## Left click on slot `i`: pick up / place / merge / swap. Right click (`half`) picks up half.

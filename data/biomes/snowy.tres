@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/map/biome_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+label = "snowy"
+points_used = 2
+a_temp = 0.05
+a_humid = 0.2
+a_rough = 0.4
+b_temp = 0.05
+b_humid = 0.8
+b_rough = 0.4
+temp_class = 0
+ground = 6
+shore_ground = 6
+tint_bright = 1
+tint_warm = 0
+tint_sat = 1
+forest_role = 2
+tree_tries = 6
+dens_lo = 0.45
+tree1_model = 1
+tree1_season = 6
+tree1_weight = 0.4
+tree2_model = 2
+tree2_season = 4
+tree2_weight = 0.4
+tree3_model = 1
+tree3_season = 5
+tree3_weight = 0.12
+tree4_model = 2
+tree4_season = 5
+tree4_weight = 0.08
+rock_per_block = 0.5
+rock_nodes_per_100 = 0.8
+copper_per_100 = 0.3
+tuft_p = 0.01
+tuft_w_brown = 1
+stump_per_block = 0.4
+map_color = Color(0.9333, 0.9569, 0.9882, 1)

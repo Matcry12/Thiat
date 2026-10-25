@@ -63,6 +63,15 @@ func try_dodge(move_dir: Vector2, aim_dir: Vector2) -> bool:
 	used.emit()
 	return true
 
+## Stops a dash on the spot (the player died mid-dash: the corpse must not slide).
+func cancel() -> void:
+	_dash_remaining = 0.0
+	_iframe_remaining = 0.0
+	if _health:
+		_health.invulnerable = false
+	if _body is CharacterBody2D:
+		(_body as CharacterBody2D).velocity = Vector2.ZERO
+
 ## True while the dash is moving the body. The owner must skip its own movement
 ## for these frames, or the two fight over velocity.
 func is_dashing() -> bool:

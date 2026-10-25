@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="ResourceNodeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/world/resource_node_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/items/wood.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/world/trees/pine_s5.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+id = &"tree_pine_dead_old"
+display_name = "Old tree (Pine, dead)"
+max_hp = 14.0
+preferred_tool = &"axe"
+required_power = 0
+drop_item = ExtResource("2")
+drop_min = 5
+drop_max = 7
+radius = 16.0
+texture = ExtResource("3")
+regions = Array[Rect2]([Rect2(271, 5, 98, 251)])
+anchors = PackedVector2Array(46, 250)
+remains_region = Rect2(304, 490, 27, 22)
+fade_when_behind = true
+color = Color(0.4, 0.33, 0.25, 1)
+hit_type = &"chop"

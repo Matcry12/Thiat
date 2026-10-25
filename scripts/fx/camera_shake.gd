@@ -22,6 +22,14 @@ var offset := Vector2.ZERO   ## what is applied now
 var _t := 0.0
 var _noise := FastNoiseLite.new()
 
+func _ready() -> void:
+	# The player's setting is the starting value; after that THIS node is the one live owner (F3 edits it too).
+	GameSettings.ensure_loaded()
+	shake_strength = GameSettings.shake_strength
+
+func _exit_tree() -> void:
+	GameSettings.shake_strength = shake_strength   # carries an F3 tune over a restart / quit to title
+
 func _init() -> void:
 	_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
 	_noise.frequency = 1.0

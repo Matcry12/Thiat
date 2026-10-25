@@ -29,6 +29,9 @@ Placeholder art is circles/rectangles drawn in code — deliberately, permanentl
 
 **Debug keys:** `F1` hitboxes/timing overlay, `F2` 0.25x slow motion, `F3` live tuning panel.
 
-**Status (2026-09-23):** docs + research complete, git initialised, Godot on PATH.
-Nothing built yet. Next: slice 1 — move, aim, sword arc, one dummy, F1 overlay.
-Question it answers: *does swinging feel good?*
+**Status (2026-10-23):** v0 combat + v1 W1-W4 committed (island, gathering, inventory, crafting).
+Uncommitted, all judged, not playtested: map rework 0034-0038 — Pixel Crawler only, no random dirt, roads off,
+Minecraft gathering (0036), aged oak/fir/pine trees (0037), climate biomes on a 512x512 chunk-streamed island
+with rivers / lakes / swimmable shallows and 7 biome looks (0038 steps 1-4). Step 5 (home, boss site, landmarks)
+waits for a talk with the user. Next per v1 plan: W5 enemies; ideas to review in `docs/wiki/survival-ideas.md`.
+Map work: read `docs/wiki/world-gen-plan.md`, `docs/wiki/vegetation-rules.md`; $0 preview scripts in `tools/asset_viewer/`.

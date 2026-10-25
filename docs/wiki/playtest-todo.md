@@ -3,6 +3,42 @@
 Things built but **not yet played by you**. Tick them off (or write what felt wrong) when you play.
 Newest slice at the top. Run the game, press `F3` for the test buttons.
 
+## W9 - save and load (built, not played)
+
+- [ ] Play a while: chop a tree, place a furnace with ore in it, die once so a bag lies on the ground. Press `Esc`, then `Save & quit`.
+- [ ] On the title, `Continue` is lit. Click it. Is it the same island, the same spot, the same items?
+- [ ] The chopped tree is still a stump. The furnace still has its ore and keeps smelting. The bag is still there.
+- [ ] Is your selected slot right? If it was the bow, does it start with no swap wait?
+- [ ] Press `Play` instead: a new island, a new run. Quit at once: the old save is overwritten. OK for you?
+- [ ] Wait 60 s: `F3` -> `[Save]` shows a new save time. Is 60 s a good time?
+- [ ] Fight the boss and press `Esc` -> `Save & quit`: the button says "Not saved: boss engaged", then you go to the title. Is that clear?
+- [ ] After you kill the boss, save and continue: it should work again.
+- [ ] Close the window with the X: next start, `Continue` has your latest state.
+- [ ] `F3` buttons: `Save now`, `Load save`, `Delete save` (title `Continue` greys out after delete).
+
+## W8 - title, pause, settings (built, not played)
+
+- [ ] The game starts on the title: Play, Continue, Settings, Quit. `Continue` is grey without a save.
+- [ ] `Esc` in the game pauses. Everything stops. `Esc` again resumes.
+- [ ] Open the bag, press `Esc`: the bag closes, no pause. `Esc` again pauses.
+- [ ] Settings: move the volume (do sounds get louder / quieter?), the shake (0 = no shake after a hit), the fullscreen button (clear ON / OFF?).
+- [ ] Close and start the game again: are your settings still there?
+- [ ] Hold the guard (`F`), press `Esc`, let go, resume: the guard must not stay stuck.
+- [ ] `F3` still works in the arena, and `F1`, `F2`. (The F3 panel freezes while paused: OK?)
+- [ ] `Quit to title` from pause: is slow-motion (`F2`) reset?
+
+## W6 - death and respawn (built, not played)
+
+- [ ] Collect some wood and stone, then die (or `F3` -> `Kill player`). No "You died" screen: after 2 s you wake at the campfire with full health.
+- [ ] You keep your weapons and tools. Half of each material (rounded down) is gone. Is half too hard or too soft? (`F3` -> `Respawner` -> `drop_share`)
+- [ ] A brown bag lies where you died, with a gold ring. Is it easy to see? Walk over it: your materials come back.
+- [ ] If your bag is full, the rest stays in the bag. Make some room and walk over it again.
+- [ ] Die twice in two places: two bags. Both work.
+- [ ] Die while the boss fight is on: the boss walks home, heals, and goes back to phase 1.
+- [ ] Die in the middle of a dodge: the body should stop, not slide.
+- [ ] `F3` -> `Go to nearest bag` takes you to the bag. Is the 2 s delay right? (`respawn_delay`)
+- [ ] `R` now only works after you beat the boss.
+
 ## W4 - crafting (building now)
 
 You start with a wooden sword only. Press `F3` and use `Give W3 kit` if you want the old kit back, or `Give materials (20 each)` to skip the grind.

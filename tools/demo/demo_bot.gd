@@ -60,7 +60,7 @@ func _ready() -> void:
 
 	# The storyboards use screen coordinates: run them on the screen-sized arena with the old layout.
 	# The showcase scenarios use the real big map instead.
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory", "w4_crafting", "tinyrpg"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "body3d", "blocky", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory", "w4_crafting", "tinyrpg"]:
 		_arena = load("res://scenes/arena.tscn").instantiate()
 		(_arena.get_node("ArenaMap") as ArenaMap).map_seed = _seed
 	else:
@@ -114,7 +114,7 @@ var _cap_gen := 0
 func _build_captions() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory", "w4_crafting", "tinyrpg"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "body3d", "blocky", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory", "w4_crafting", "tinyrpg"]:
 		# Small, bottom-centre, semi-transparent; each caption fades out by itself.
 		_cap_panel = PanelContainer.new()
 		_cap_panel.anchor_left = 0.5
@@ -263,6 +263,8 @@ func _run() -> void:
 		"hitfeel": await _run_hitfeel()
 		"hitfeel2": await _run_hitfeel2()
 		"charanim": await _run_charanim()
+		"body3d": await _run_body3d()
+		"blocky": await _run_blocky()
 		"runbounce": await _run_runbounce()
 		"rundust": await _run_rundust()
 		"hud": await _run_hud()
@@ -1259,6 +1261,52 @@ func _run_charanim() -> void:
 	await _wait(0.5)
 	get_tree().quit()
 
+##   FPS=60 tools/demo/record.sh player_3d_body --scenario=body3d --seed=21
+## The real arena + real player with the 3D-rendered body: walk in all directions (aim follows), swing, get hit by the boss.
+func _run_body3d() -> void:
+	_boss = _arena.get_node("Boss")
+	_overlay(false)
+	_dummy_off(_dummy)
+	_boss.set_brain(Brain.new())          # attacks only when the bot forces one
+	_dummy.global_position = _player.global_position + Vector2(400, 0)   # out of the way; the player starts on the island
+	var cam: Camera2D = _player.get_node("Camera")
+	cam.zoom = Vector2(3, 3)
+	cam.reset_smoothing()
+	_aim_at = null
+	_player.aim_override = Vector2.DOWN
+	_say("3D body: facing down = front")
+	await _wait(1.2)
+	_say("Walk right, down, left, up (aim follows)")
+	for v in [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP, Vector2.RIGHT, Vector2.DOWN]:
+		_hold_vec(v)
+		_player.aim_override = v
+		await _wait(0.7)
+	_hold_vec(Vector2.ZERO)
+	_say("Sword swings in 2D, body stays 3D")
+	_player.aim_override = Vector2.RIGHT
+	await _swings(2, 0.55)
+	_player.aim_override = Vector2.LEFT
+	await _swings(2, 0.55)
+	_player.aim_override = Vector2.DOWN
+	await _swings(2, 0.55)
+	_say("Run while aiming around")
+	var ang := 0.0
+	while ang < TAU:
+		ang += get_physics_process_delta_time() * TAU / 2.5
+		_hold_vec(Vector2.RIGHT)
+		_player.aim_override = Vector2.RIGHT.rotated(ang)
+		await get_tree().physics_frame
+	_hold_vec(Vector2.ZERO)
+	_say("Taking a hit: hit pose + flash")
+	_aim_at = _boss
+	_player.global_position = _boss.home + Vector2(-80, 0)
+	cam.reset_smoothing()
+	await _wait(0.6)
+	var sl := await _boss_attack("slam")
+	await _until(func(): return sl.phase == BossAttack.Phase.IDLE, 4.0)
+	await _wait(0.8)
+	get_tree().quit()
+
 ##   FPS=30 tools/demo/record.sh tiny_rpg --scenario=tinyrpg --seed=11
 ## Temp Tiny RPG art (decision 0032): soldier walks + swings, the orc boss walks, winds up (clip stretched to the telegraph), hits the soldier, dies.
 func _run_tinyrpg() -> void:
@@ -1305,6 +1353,68 @@ func _run_tinyrpg() -> void:
 	_boss.health.hp = 1.0
 	await _swings(1, 0.6)
 	await _wait(1.5)
+	get_tree().quit()
+
+##   FPS=60 tools/demo/record.sh player_blocky --scenario=blocky --seed=21
+## The real arena + real player with the blocky 18 px body (decision 0028): walk all ways, sword, bow, fists on a tree, take a hit.
+func _run_blocky() -> void:
+	_boss = _arena.get_node("Boss")
+	var m: ArenaMap = _arena.get_node("ArenaMap")
+	_overlay(false)
+	_dummy_off(_dummy)
+	_boss.set_brain(Brain.new())
+	_dummy.global_position = _player.global_position + Vector2(500, 0)
+	var cam: Camera2D = _player.get_node("Camera")
+	cam.zoom = Vector2(3, 3)
+	cam.reset_smoothing()
+	_aim_at = null
+	_player.aim_override = Vector2.DOWN
+	_say("Blocky 18 px body, 2D hands + sword")
+	await _wait(1.0)
+	_say("Walk right, down, left, up (aim follows)")
+	for v in [Vector2.RIGHT, Vector2.DOWN, Vector2.LEFT, Vector2.UP, Vector2.RIGHT, Vector2.DOWN]:
+		_hold_vec(v)
+		_player.aim_override = v
+		await _wait(0.7)
+	_hold_vec(Vector2.ZERO)
+	_say("Sword: smaller picture, same hitbox")
+	for v in [Vector2.RIGHT, Vector2.LEFT, Vector2.DOWN]:
+		_player.aim_override = v
+		await _swings(2, 0.55)
+	_say("Bow")
+	await _tap("slot_2")
+	await _until(func(): return not _loadout.is_casting(), 3.0)
+	_player.aim_override = Vector2.RIGHT
+	await _wait(0.3)
+	await _swings(2, 0.7)
+	_player.aim_override = Vector2.DOWN
+	await _wait(0.2)
+	await _swings(1, 0.7)
+	await _tap("slot_1")
+	await _until(func(): return not _loadout.is_casting(), 3.0)
+	cam.zoom = Vector2(2, 2)
+	var tree := _nearest_node(&"tree", m.home_point())
+	_player.global_position = tree.global_position + Vector2(-44, 0)
+	_player.velocity = Vector2.ZERO
+	cam.reset_smoothing()
+	_aim_at = null
+	_player.aim_override = Vector2.RIGHT
+	await _wait(0.6)
+	_say("Press 5 (empty slot): fists, punch the tree")
+	await _tap("slot_5")
+	await _wait(0.8)
+	await _punch_until_broken(tree)
+	await _tap("slot_1")
+	await _wait(0.6)
+	_say("Taking a hit: hit pose + flash")
+	_aim_at = _boss
+	_player.global_position = _boss.home + Vector2(-80, 0)
+	cam.zoom = Vector2(3, 3)
+	cam.reset_smoothing()
+	await _wait(0.6)
+	var sl := await _boss_attack("slam")
+	await _until(func(): return sl.phase == BossAttack.Phase.IDLE, 4.0)
+	await _wait(0.8)
 	get_tree().quit()
 
 ## Run bounce old vs smooth (4x, 4x, 1x): FPS=60 tools/demo/record.sh run_bounce_smooth --scenario=runbounce --seed=21
@@ -1446,7 +1556,7 @@ func _run_island() -> void:
 	var coast := Vector2i(-1, -1)
 	for y in range(p.rows / 3, p.rows * 2 / 3):
 		for x in range(p.cols - 2, p.cols / 2, -1):
-			if MapGen.is_land(m.result, p, Vector2i(x, y)) and not MapGen.is_land(m.result, p, Vector2i(x + 1, y)):
+			if MapGen.is_walkable(m.result, p, Vector2i(x, y)) and not MapGen.is_walkable(m.result, p, Vector2i(x + 1, y)):
 				coast = Vector2i(x, y)
 				break
 		if coast.x >= 0:
@@ -1464,11 +1574,8 @@ func _run_island() -> void:
 
 ## The W2 loop: bare hands, punch a tree and a rock, copper clinks.
 func _nearest_node(id: StringName, to: Vector2) -> ResourceNode:
-	var best: ResourceNode
-	for n: ResourceNode in get_tree().get_nodes_in_group("resource_node"):
-		if n.data.id == id and not n.is_broken() and (best == null or n.global_position.distance_to(to) < best.global_position.distance_to(to)):
-			best = n
-	return best
+	# 0038 step 2: the nearest one in the WORLD DATA (its chunk may not be loaded yet); ArenaMap loads it
+	return (_arena.get_node("ArenaMap") as ArenaMap).nearest_node(id, to, true)
 
 func _punch_until_broken(n: ResourceNode, max_punches := 14) -> void:
 	for i in max_punches:

@@ -157,6 +157,24 @@ func try_swap(index: int) -> bool:
 	swap_started.emit(index)
 	return true
 
+## Load a save: put the weapon of hotbar slot `slot` straight in the hands, no swap cast, no cooldown.
+## Anything else (tool, material, empty) goes through select(), which is instant anyway.
+func select_instant(slot: int) -> void:
+	var idx := _weapon_slots.find(slot)
+	if idx < 0:
+		select(slot)
+		return
+	_casting = false
+	_cast_left = 0.0
+	_active_index = idx
+	_holstered = false
+	_stowed = null
+	_held_tool = null
+	selected_slot = slot
+	if _weapon_holder:
+		_weapon_holder.cancel()
+	swap_finished.emit(active_weapon())
+
 func is_holstered() -> bool:
 	return _holstered
 

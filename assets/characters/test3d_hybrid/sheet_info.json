@@ -1,0 +1,39 @@
+{
+ "cell": 48,
+ "pitch_from_straight_down": 80,
+ "ppu": 15.5,
+ "look_at_height": 0.74,
+ "feet_below_cell_centre_px": 11.3,
+ "rows": [
+  "S",
+  "E"
+ ],
+ "flip_E_row_for_W": true,
+ "note": "BODY ONLY (no arms/weapon). ONE row per view like the player's flip_h: S front, E = 3/4 front, flip for W, N back. Enough for 2- or 4-direction movement; no diagonals.",
+ "actions": {
+  "idle": {
+   "frames": 2,
+   "hold_ms": [
+    450,
+    450
+   ]
+  },
+  "run": {
+   "frames": 4,
+   "hold_ms": [
+    120,
+    90,
+    120,
+    90
+   ]
+  },
+  "hit": {
+   "frames": 2,
+   "hold_ms": [
+    90,
+    150
+   ]
+  }
+ },
+ "yaw_of_E_row_deg": 25
+}

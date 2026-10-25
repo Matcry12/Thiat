@@ -69,11 +69,7 @@ func _init() -> void:
 	quit()
 
 func _tree_near(p: Vector2) -> Node2D:
-	var best: Node2D
-	for n in root.get_tree().get_nodes_in_group("resource_node"):
-		if n.data.id == &"tree" and (best == null or n.global_position.distance_to(p) < best.global_position.distance_to(p)):
-			best = n
-	return best
+	return (_arena.get_node("ArenaMap") as ArenaMap).nearest_node(&"tree", p, true)   # world data: the tree's chunk may not be loaded yet
 
 func _frames(n: int) -> void:
 	await create_timer(n / 60.0).timeout

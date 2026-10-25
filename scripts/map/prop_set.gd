@@ -14,3 +14,9 @@ extends Resource
 @export var weight := 1.0
 ## Deco only: pick weight per island area (forest, rocky, boss), multiplied with `weight`. 0 = never there.
 @export var area_weights := Vector3.ONE
+## Island biome passes (0038 step 4): the name MapGen finds this set by (veg, rocks, stump_<model>_s<size>), and the sprites of the set by role
+## (bush_green, flower_2, stone_grey ...): group name -> indices into `regions`. MapGen holds no coordinates.
+@export var id: StringName = &""
+@export var groups: Dictionary = {}
+## Deco only: the biome pass already checked the ground it stands on, so a ground change (dirt, sand, snow) does not drop it; only paths and the camp do.
+@export var any_ground := false

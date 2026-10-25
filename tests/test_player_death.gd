@@ -1,7 +1,7 @@
 extends SceneTree
 const StubBrain = preload("res://tests/support/stub_brain.gd")
-# Player hp -> 0: input stops (no move, no attack) and "You died - R to retry"
-# shows; R asks for a retry. Boss death shows "Boss defeated". First ending wins.
+# Player hp -> 0: input stops (no move, no attack) and NO end screen shows (W6: the Respawner
+# handles death, see test_death_respawn.gd). Boss death shows "Boss defeated"; R asks for a retry.
 
 func _init():
 	var arena = load("res://scenes/arena.tscn").instantiate()
@@ -33,8 +33,8 @@ func _init():
 	var frozen: bool = absf(player.global_position.y - y0) < 0.01
 	var no_swing: bool = player.get_node("WeaponHolder").phase == WeaponHolder.Phase.IDLE
 	var was_dead: bool = player.dead
-	var label_ok: bool = end.is_showing() and end.label_text().begins_with("You died")
-	print("dead: flag %s, frozen %s, no swing %s, label '%s'" % [player.dead, frozen, no_swing, end.label_text()])
+	var label_ok: bool = not end.is_showing()
+	print("dead: flag %s, frozen %s, no swing %s, end screen showing %s" % [player.dead, frozen, no_swing, end.is_showing()])
 
 	# R reloads the CURRENT scene. Make this arena the current scene (a headless
 	# test adds it straight under root), press R, and expect a fresh live arena.
@@ -42,6 +42,8 @@ func _init():
 	var old_id: int = arena.get_instance_id()
 	var retried := [false]
 	end.retry_requested.connect(func(): retried[0] = true)
+	arena.get_node("Boss/Health").take_damage(100000.0)   # the end screen (and R) only exist after the boss dies
+	await _frames(2)
 	Input.action_press("restart")
 	await _frames(4)
 	Input.action_release("restart")
@@ -69,6 +71,7 @@ func _init():
 	boss3.set_brain(StubBrain.new())
 	boss3.passive = false
 	var p3 = arena3.get_node("Player")
+	p3.get_node("Respawner").respawn_delay = 999.0   # this part is about a corpse, not a respawn
 	var h3: Health = p3.get_node("Health")
 	p3.set_physics_process(false)
 	var slam3: BossAttack = boss3.get_attack("slam")

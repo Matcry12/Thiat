@@ -1,0 +1,62 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/map/biome_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+label = "autumn"
+points_used = 2
+a_temp = 0.8
+a_humid = 0.6
+a_rough = 0.35
+b_temp = 0.78
+b_humid = 0.85
+b_rough = 0.35
+temp_class = 3
+ground = 3
+shore_ground = 5
+tint_bright = 1.06
+tint_warm = 0.35
+tint_sat = 1.1
+forest_role = 2
+has_clearings = true
+tree_tries = 10
+dens_lo = 0.5
+fade_by_density = true
+tree1_model = 1
+tree1_season = 1
+tree1_weight = 0.22
+tree2_model = 1
+tree2_season = 2
+tree2_weight = 0.28
+tree3_model = 3
+tree3_season = 1
+tree3_weight = 0.15
+tree4_model = 3
+tree4_season = 2
+tree4_weight = 0.2
+tree5_model = 3
+tree5_season = 3
+tree5_weight = 0.15
+rock_per_block = 0.3
+rock_nodes_per_100 = 0.4
+bush_per_block = 1
+bush_tries = 6
+bush_spread = 4
+bush_d_lo = 0.45
+bush_d_hi = 0.8
+bush_w_green = 0
+bush_w_yellow = 1
+bush_w_orange = 1
+bush_w_red = 1
+flower_per_block = 0.3
+flower_tries = 7
+flower_spread = 2
+flower_w_white = 0
+flower_w_blue = 0
+mush_tries = 6
+tuft_p = 0.142857
+tuft_w_yellow = 0.35
+tuft_w_brown = 0.4
+fern_w_brown = 0.25
+map_color = Color(0.8392, 0.4706, 0.1333, 1)

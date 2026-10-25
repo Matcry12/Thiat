@@ -16,7 +16,6 @@ drop_min = 2
 drop_max = 4
 radius = 14.0
 density_forest = 2.5
-density_rocky = 0.3
 density_boss = 0.6
 texture = ExtResource("3")
 regions = Array[Rect2]([Rect2(16, 2, 48, 62), Rect2(80, 2, 48, 62), Rect2(16, 66, 48, 62)])

@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/map/biome_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+label = "taiga"
+points_used = 2
+a_temp = 0.25
+a_humid = 0.3
+a_rough = 0.4
+b_temp = 0.25
+b_humid = 0.7
+b_rough = 0.4
+temp_class = 1
+ground = 3
+tint_bright = 0.85
+tint_warm = -0.18
+tint_sat = 0.9
+forest_role = 2
+has_clearings = true
+tree_tries = 12
+dens_lo = 0.5
+fade_by_density = true
+tree1_model = 2
+tree1_weight = 0.65
+tree2_model = 3
+tree2_weight = 0.35
+rock_per_block = 0.6
+rock_small_max = 4
+rock_nodes_per_100 = 0.5
+bush_per_block = 0.4
+bush_tries = 3
+bush_spread = 3
+flower_per_block = 0.25
+flower_tries = 6
+flower_spread = 2
+flower_w_orange = 0
+flower_w_yellow = 0
+mush_tries = 10
+mush_shade = 2.5
+tuft_p = 0.111111
+tuft_w_green = 0.3
+fern_w_green = 0.7
+map_color = Color(0.1176, 0.3608, 0.3765, 1)

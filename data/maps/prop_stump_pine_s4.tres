@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="PropSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/map/prop_set.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/world/trees/pine_s4.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"stump_pine_s4"
+texture = ExtResource("2")
+regions = Array[Rect2]([Rect2(230, 363, 17, 21)])
+groups = {"snow_stump": PackedInt32Array(0)}
+any_ground = true
