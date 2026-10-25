@@ -1,5 +1,5 @@
 extends SceneTree
-## W9 shots: the same spot before saving and after a Continue-style load (a furnace, a death bag, a felled tree).
+## W9 shots: the same spot before saving and after a Continue-style load (a furnace, a death drop, a felled tree).
 ##   xvfb-run -a godot --rendering-driver opengl3 --resolution 1152x648 --script tools/w9_save_shots.gd -- <out_dir>
 func _frames(n: int) -> void:
 	for _f in n:
@@ -24,7 +24,9 @@ func _init() -> void:
 	st.item = it
 	arena.add_child(st)
 	st.global_position = spot + Vector2(90, -20)
-	DeathBag.spawn(arena, spot + Vector2(-90, 10), {&"wood": {"item": load("res://data/items/wood.tres"), "count": 6}})
+	var drop := Pickup.spawn(arena, load("res://data/items/wood.tres"), 6, spot + Vector2(-90, 10), spot + Vector2(-90, 10))
+	drop.death_drop = true
+	drop.despawn_left = 200.0
 	var best := -1
 	var best_d := 1e9
 	for i in m.result.obstacles.size():

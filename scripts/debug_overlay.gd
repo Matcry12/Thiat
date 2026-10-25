@@ -201,8 +201,6 @@ func _on_draw() -> void:
 	if col and _player:
 		_draw_ground_circle(_player.global_position, col.magnet_radius, Color(0.3, 0.9, 1.0, 0.7), 1.0)
 		_draw_ground_circle(_player.global_position, col.pickup_radius, Color(0.3, 0.9, 1.0), 2.0)
-		for b in get_tree().get_nodes_in_group("death_bag"):   # W6: where walking over a bag gives it back
-			_draw_ground_circle(b.global_position, col.bag_pickup_radius, Color(1.0, 0.8, 0.2), 2.0)
 
 	# Enemy strike: hitbox red only while STRIKE, telegraph area outlined
 	# while TELEGRAPH (redundant with Telegraph's own border — cheap, and

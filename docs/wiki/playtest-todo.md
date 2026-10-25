@@ -27,16 +27,19 @@ Newest slice at the top. Run the game, press `F3` for the test buttons.
 - [ ] `F3` still works in the arena, and `F1`, `F2`. (The F3 panel freezes while paused: OK?)
 - [ ] `Quit to title` from pause: is slow-motion (`F2`) reset?
 
-## W6 - death and respawn (built, not played)
+## W6 - death and respawn (built, not played; death bag replaced by drops, 0042)
 
 - [ ] Collect some wood and stone, then die (or `F3` -> `Kill player`). No "You died" screen: after 2 s you wake at the campfire with full health.
-- [ ] You keep your weapons and tools. Half of each material (rounded down) is gone. Is half too hard or too soft? (`F3` -> `Respawner` -> `drop_share`)
-- [ ] A brown bag lies where you died, with a gold ring. Is it easy to see? Walk over it: your materials come back.
-- [ ] If your bag is full, the rest stays in the bag. Make some room and walk over it again.
-- [ ] Die twice in two places: two bags. Both work.
+- [ ] Everything you carried pops out around where you died, like Minecraft: materials, tools and weapons. Does the spray look good? Is it easy to see? (`F3` -> `Respawner` -> `spray_min`, `spray_max`, `pop_height`)
+- [ ] You are empty after waking up (fists). Walk back to the pile: the items fly to you and everything comes back.
+- [ ] Too hard or too soft? Keep gear: `F3` -> `Respawner` -> `drop_gear` off. Keep half the materials: `drop_share` 0.5.
+- [ ] Leave the pile for 5 minutes: it vanishes. Is 5 minutes right? (`despawn_time`; 0 = never) `F3` `[Death]` shows the time left.
+- [ ] You cannot pick things up while dead. The corpse lies on top of the drops: nothing should vanish into you.
+- [ ] Get a 3rd weapon from a pile: it must go to the bag, not the hotbar.
+- [ ] Save and continue with a pile on the ground: it is still there with its timer.
 - [ ] Die while the boss fight is on: the boss walks home, heals, and goes back to phase 1.
 - [ ] Die in the middle of a dodge: the body should stop, not slide.
-- [ ] `F3` -> `Go to nearest bag` takes you to the bag. Is the 2 s delay right? (`respawn_delay`)
+- [ ] `F3` -> `Go to nearest drop` takes you to the pile. Is the 2 s delay right? (`respawn_delay`)
 - [ ] `R` now only works after you beat the boss.
 
 ## W4 - crafting (building now)

@@ -3,10 +3,10 @@ extends Node
 ## One save slot (W9, decision 0041): user://save.json. Child of the Arena. Collects the run into a Dictionary,
 ## writes it (autosave, Save & quit, window close, F3), and on a Continue applies a loaded one to the fresh arena.
 ## The island itself is NOT stored: only its seed + the map exports that differ from the scene, then what changed
-## on it (gathered nodes by placement index, stations, death bags). Never saves while dead, while the boss is
+## on it (gathered nodes by placement index, stations, loose pickups). Never saves while dead, while the boss is
 ## engaged, or under a test run (BOSSFIGHT_TEST_SEED set) unless `force_io`.
 
-const VERSION := 1
+const VERSION := 2   # 2: loose pickups replace death bags (0042)
 
 static var path := "user://save.json"
 static var force_io := false      ## tests of this class only (they also point `path` at a temp file)
@@ -88,7 +88,7 @@ func _ready() -> void:
 	if not pending.is_empty():
 		var d := pending
 		pending = {}
-		apply.call_deferred(d)   # the arena is still adding its children: stations and bags join it next frame
+		apply.call_deferred(d)   # the arena is still adding its children: stations and pickups join it next frame
 
 func _process(delta: float) -> void:
 	if get_tree().paused:
@@ -160,12 +160,10 @@ func collect() -> Dictionary:
 				"out": String(f.out_item.id) if f.out_item else "", "out_n": f.out_count,
 				"progress": f.progress, "smelted": f.smelted_total}
 		stations.append(e)
-	var bags := []
-	for b: DeathBag in get_tree().get_nodes_in_group("death_bag"):
-		var stacks := []
-		for i in b.items.size():
-			stacks.append({"id": String(b.items[i].id), "n": b.counts[i]})
-		bags.append({"pos": [b.global_position.x, b.global_position.y], "items": stacks})
+	var drops := []
+	for pk: Pickup in get_tree().get_nodes_in_group("pickup"):
+		drops.append({"item": String(pk.item.id), "n": pk.amount, "pos": [pk.global_position.x, pk.global_position.y],
+				"left": pk.despawn_left, "death": pk.death_drop, "scale": pk.scale.x})
 	var held = null
 	if inv.held_item != null:
 		held = {"id": String(inv.held_item.id), "n": inv.held_count}
@@ -181,7 +179,7 @@ func collect() -> Dictionary:
 			"map_settings": m.export_changes(),
 			"broken": m.streamer_broken(),
 			"stations": stations,
-			"bags": bags,
+			"pickups": drops,
 		},
 		"player": {"pos": [p.global_position.x, p.global_position.y], "hp": health.hp, "selected_slot": lo.selected_slot},
 		"inventory": inv.to_array(),
@@ -208,6 +206,8 @@ func apply(d: Dictionary) -> void:
 	m.teleport_player(pos)
 	var health := p.get_node("Health") as Health
 	health.hp = clampf(float(d["player"].get("hp", health.max_hp)), 1.0, health.max_hp)
+	for pk: Pickup in get_tree().get_nodes_in_group("pickup"):
+		pk.free()   # first: the cursor stack below may spill onto the ground and must survive
 	var inv := p.get_node("Inventory") as Inventory
 	inv.from_array(d["inventory"], by_id)
 	var lo := p.get_node("Loadout") as Loadout
@@ -220,12 +220,14 @@ func apply(d: Dictionary) -> void:
 		st.free()   # the arena's own (none on a fresh one); the save is the whole truth
 	for e in w.get("stations", []):
 		_restore_station(e, by_id, p.get_parent())
-	for b in w.get("bags", []):
-		var stacks := {}
-		for s in b.get("items", []):
-			if by_id.has(str(s.get("id", ""))):
-				stacks[str(s["id"])] = {"item": by_id[str(s["id"])], "count": int(s.get("n", 0))}
-		DeathBag.spawn(p.get_parent(), _vec(b.get("pos"), pos), stacks)
+	for e in w.get("pickups", []):
+		if not by_id.has(str(e.get("item", ""))):
+			continue
+		var at := _vec(e.get("pos"), pos)
+		var pk := Pickup.spawn(p.get_parent(), by_id[str(e["item"])], maxi(int(e.get("n", 1)), 1), at, at)
+		pk.despawn_left = float(e.get("left", -1.0))
+		pk.death_drop = bool(e.get("death", false))
+		pk.scale = Vector2.ONE * float(e.get("scale", 1.0))
 	var rs := p.get_node("Respawner") as Respawner
 	rs.deaths = int(d.get("deaths", 0))
 	play_time = float(d.get("play_time", 0.0))

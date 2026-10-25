@@ -23,6 +23,9 @@ signal swap_cancelled
 
 ## Hotbar slot that is selected (what is in the player's hands). Code-owned.
 var selected_slot := 0
+## Set by the Respawner when a death took the weapon out of your hands: the first weapon that comes back is put
+## straight into them (no swap cast, no cooldown).
+var arm_on_next_weapon := false
 
 var _weapon_holder: WeaponHolder
 var _holstered := false
@@ -85,6 +88,10 @@ func sync() -> void:
 			_held_tool = null
 			_stowed = null
 			_active_index = -1
+	if arm_on_next_weapon and not weapons.is_empty() and _holstered:
+		arm_on_next_weapon = false
+		select_instant(_weapon_slots[0])
+		return
 	if active_weapon() != before:
 		if _weapon_holder:
 			_weapon_holder.cancel()

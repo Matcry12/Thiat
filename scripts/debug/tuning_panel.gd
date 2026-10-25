@@ -801,7 +801,7 @@ func _build_ui() -> void:
 		var death_row := HFlowContainer.new()
 		tuning_vbox.add_child(death_row)
 		_add_button(death_row, "Kill player", func(): _respawner.kill())
-		_add_button(death_row, "Go to nearest bag", _go_to_nearest_bag)
+		_add_button(death_row, "Go to nearest drop", _go_to_nearest_drop)
 	if _inventory:
 		var inv_row := HFlowContainer.new()
 		tuning_vbox.add_child(inv_row)
@@ -882,9 +882,11 @@ func _frame_status_text() -> String:
 	return pm.status_text() if pm else "n/a"
 
 
-func _go_to_nearest_bag() -> void:
+func _go_to_nearest_drop() -> void:
 	var best: Node2D
-	for b in get_tree().get_nodes_in_group("death_bag"):
+	for b in get_tree().get_nodes_in_group("pickup"):
+		if not (b as Pickup).death_drop:
+			continue
 		if best == null or b.global_position.distance_to(_player.global_position) < best.global_position.distance_to(_player.global_position):
 			best = b
 	if best and _map:

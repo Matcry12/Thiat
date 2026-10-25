@@ -81,14 +81,13 @@ at its altar and beat it. Beating it wins the game. One run: **20–30 minutes**
 
 ## 8. Death
 
-Respawn at home after a short delay. Keep weapons and tools. Drop **50%** (tune) of each
-material stack in a bag at the death spot; walking over it gives it back. The boss resets.
+Respawn at home after a short delay. Keep weapons and tools. Everything you carry (materials, tools, weapons) sprays out as loose items at the death spot (Minecraft style, [0042](../decision/0042-death-drops.md)); they vanish after 5 min; walking over them picks them up. The boss resets.
 
 ## 9. Game frame
 
 Title (Play / Continue / Settings / Quit), pause on `Esc` (Resume / Settings / Save & quit), settings
 (volume, shake strength, fullscreen), win screen. **Save and load:** the world seed + what changed
-(broken nodes, placed stations, dropped bags), the inventory, the player position, boss defeated.
+(broken nodes, placed stations, loose pickups), the inventory, the player position, boss defeated.
 
 ## 10. Not in v1
 
@@ -108,7 +107,7 @@ video, slice log line.
 | W3 | **Inventory** — `ItemData`, stacks, 9-slot hotbar + bag UI, tools as hotbar items, tool power | Hold an axe in the hotbar and chop faster | slot frame, bag panel, tool sprites + icons |
 | W4 | **Crafting** — `RecipeData`, place stations, craft near a station, the tier 1–2 recipes, furnace smelting | Build a workbench, craft a stone pickaxe, mine copper, forge a copper sword | workbench, furnace, anvil (in the pack), copper weapon sprites |
 | W5 | **Slimes** — generic enemy setup + slime + spawning by area + gel drop | Fight slimes in the forest | slime (idle / hop / hit) |
-| W6 | **Death & respawn** — home point, drop bag at death spot, boss reset | Die, wake at home, get your stuff back | campfire (in the pack: Bonfire), drop bag |
+| W6 | **Death & respawn** — home point, death drops at the death spot, boss reset | Die, wake at home, get your stuff back | campfire (in the pack: Bonfire), drop bag |
 | W7 | **Boss progression** — sleeping boss, altar, summon item, boss drop, boss weapons, win screen | **The full v1 loop, start to win** | altar, summon item icon, boss sleep pose, boss weapons |
 | W8 | **Game frame** — title, pause, settings, HUD icons for dodge/skill/guard | Feels like a real game | title logo, buttons, ability icons |
 | W9 | **Save / load** | Quit and continue later | — |
@@ -140,3 +139,4 @@ above. Until art exists, each slice ships with a placeholder that has the **same
 | W6 death and respawn | Sonnet 5.5 (one agent) | Opus judge: passed with fixes. A corpse killed mid-dash slid 87 px; F3 "Go to nearest bag" teleported without loading chunks or snapping the camera; a broken guard stayed broken after respawn and the boss kept old cooldowns; the bag was a 10 px dot hidden under the sword. All fixed with tests (dodge cancel, `teleport_player(Vector2)`, guard reset, boss cooldown reset, bigger bag look as exports). User playtest: pending | Die, wake at home after 2 s, half of each material in a bag at the death spot, walk over it to get it back, boss resets. Decision: [0039](../decision/0039-death-respawn.md). |
 | W8 game frame | Sonnet 5.5 (one agent) | Opus judge: passed with fixes. Shake had two owners (now only `CameraShake.shake_strength`); tests could read / write the real `settings.cfg` (now blocked under a test run); the guard stayed held after a pause; setting fullscreen off un-maximized the window; menus lacked focus and the title ignored Esc in Settings. All fixed. User playtest: pending | Title (Play / Continue / Settings / Quit), `Esc` pause, shared settings panel (volume, shake, fullscreen) saved to `user://settings.cfg`. Decision: [0040](../decision/0040-game-frame.md). |
 | W9 save / load | Sonnet 5.5 (one agent) | Opus judge: OK after fixes. After the boss died, saving never worked again (a dead boss stayed "engaged"; fixed at the root in `Boss._on_died` + `refusal()`); Save & quit gave no hint when refused (now a line on the button before quitting); loading a second weapon started a swap cast (now `Loadout.select_instant`). User playtest: pending | One slot `user://save.json`: seed + changes (gathered nodes, stations, furnaces, bags, inventory, position, HP, deaths, boss defeated). Autosave 60 s, Save & quit, window close; Continue only with a valid save. Decision: [0041](../decision/0041-save-load.md). |
+| W6b death drops | Sonnet 5.5 (one agent) | Opus judge: pending | User asked for Minecraft-style drops instead of the bag: items spray out as pickups, `despawn_time` 300 s (death drops only), `drop_gear` / `drop_share` exports, saved with their timers (save version 2). The bag code was deleted. Decision: [0042](../decision/0042-death-drops.md). User playtest: pending |

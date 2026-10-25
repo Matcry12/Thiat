@@ -1,6 +1,6 @@
 extends SceneTree
 # W9 (decision 0041): change a world -> save -> fresh arena -> Continue-style load -> same state (inventory, selected slot,
-# furnace, bag, a gathered node in a chunk that is NOT loaded, hp, deaths, position, a map export); refusals; corrupt files;
+# furnace, a death drop, a gathered node in a chunk that is NOT loaded, hp, deaths, position, a map export); refusals; corrupt files;
 # Continue disabled without a save. Everything goes to a temp path, never the real user://save.json.
 const World = preload("res://tests/support/craft_world.gd")
 var _ok := true
@@ -15,6 +15,10 @@ func _write(text: String) -> void:
 	f.store_string(text)
 	f.close()
 
+func _wipe_all(inv: Inventory) -> void:
+	for i in Inventory.SIZE:
+		inv.remove_from_slot(i, 99999)
+
 func _init() -> void:
 	SaveGame.path = "user://test_save.json"
 	SaveGame.force_io = true
@@ -26,7 +30,7 @@ func _init() -> void:
 	_check(not SaveGame.has_valid_save(), "corrupt file: no valid save")
 	_write(JSON.stringify({"version": 999, "world": {"seed": 5}, "player": {}, "inventory": []}))
 	_check(not SaveGame.has_valid_save(), "other version: no valid save")
-	_write(JSON.stringify({"version": 1, "world": {"seed": 5}}))
+	_write(JSON.stringify({"version": SaveGame.VERSION, "world": {"seed": 5}}))
 	_check(not SaveGame.has_valid_save(), "missing parts: no valid save")
 	var title = load("res://scenes/title.tscn").instantiate()
 	root.add_child(title)
@@ -56,7 +60,9 @@ func _init() -> void:
 	f.progress = 1.5
 	f.out_item = World.item("copper_bar")
 	f.out_count = 2
-	DeathBag.spawn(arena, home + Vector2(-200, 60), {&"stone": {"item": World.item("stone"), "count": 9}})
+	var drop := Pickup.spawn(arena, World.item("stone"), 9, home + Vector2(-200, 60), home + Vector2(-200, 60))
+	drop.death_drop = true
+	drop.despawn_left = 100.0
 	var far := -1
 	var near := -1
 	for i in m.result.obstacles.size():
@@ -96,7 +102,7 @@ func _init() -> void:
 	# --- save ---
 	_check(sg.save() == "" and SaveGame.has_valid_save(), "saved a valid file")
 	var raw = JSON.parse_string(FileAccess.get_file_as_string(SaveGame.path))
-	_check(int(raw["version"]) == 1 and int(raw["world"]["seed"]) == seed_a, "file has a version and the seed")
+	_check(int(raw["version"]) == SaveGame.VERSION and int(raw["world"]["seed"]) == seed_a, "file has a version and the seed")
 	arena.queue_free()
 	await process_frame
 	await process_frame
@@ -127,8 +133,8 @@ func _init() -> void:
 	var f2: Furnace = sts[0].furnace() if sts.size() == 1 else null
 	_check(f2 != null and f2.in_count + f2.out_count == 5 and f2.out_count >= 2 and f2.out_item.id == &"copper_bar" and (f2.in_count == 0 or f2.in_item.id == &"copper_ore"), "furnace input / output (it keeps smelting after the load, so counts add up)")
 	_check(sts.size() == 1 and sts[0].global_position.distance_to(home + Vector2(150, 80)) < 1.0, "station where it stood")
-	var bags := get_nodes_in_group("death_bag")
-	_check(bags.size() == 1 and (bags[0] as DeathBag).total() == 9, "death bag with its contents")
+	var drops := get_nodes_in_group("pickup")
+	_check(drops.size() == 1 and drops[0].amount == 9 and drops[0].death_drop and drops[0].despawn_left > 90.0 and drops[0].despawn_left <= 100.0, "death drop with its remaining despawn time")
 	# the unloaded chunk loads later: the node must not appear
 	m2.teleport_player(m2.result.obstacles[far]["pos"])
 	await process_frame
@@ -152,6 +158,19 @@ func _init() -> void:
 	_check(boss2.mode == Boss.Mode.DEAD and boss2.aggro != Boss.Aggro.ENGAGED, "a defeated boss is not engaged")
 	_check(sg2.save() == "", "saving works after the boss died")
 	_check(bool(SaveGame.read_save()["boss_defeated"]), "boss_defeated is written")
+
+	# --- a cursor stack with a full inventory is not lost on load (it spills as a pickup AFTER the old ones are freed) ---
+	_wipe_all(inv2)
+	inv2.add(World.item("wood"), 99999)
+	inv2.hold(World.item("copper_bar"), 5)
+	var d2 = JSON.parse_string(JSON.stringify(sg2.collect()))
+	sg2.apply(d2)
+	await physics_frame
+	var bars := inv2.count(&"copper_bar") + (inv2.held_count if inv2.held_item and inv2.held_item.id == &"copper_bar" else 0)
+	for pk in get_nodes_in_group("pickup"):
+		if pk.item.id == &"copper_bar":
+			bars += pk.amount
+	_check(bars == 5, "cursor stack + full inventory: all 5 copper bars still exist after load (%d)" % bars)
 
 	SaveGame.delete_save()
 	print("PASS" if _ok else "FAIL")
