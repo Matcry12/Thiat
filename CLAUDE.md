@@ -165,6 +165,8 @@ resolved.
 - [docs/wiki/prototype-v0.md](docs/wiki/prototype-v0.md) — v0 scope, architecture, debug/tuning tools.
 - [docs/decision/](docs/decision/) — 0001..0038. Settled; supersede with a new record, never ignore.
 - [docs/reference/godot/](docs/reference/godot/) — Godot 4 combat patterns, juice recipes, RL notes.
+- UI work: [docs/design/DESIGN.md](docs/design/DESIGN.md) (style "Island Workshop", decision 0043). Apply it;
+  new looks are designed in the web mockup `tools/ui_mock/` first (shots: `tools/ui_mock/shots.py`).
 - Map / world work: [docs/wiki/world-gen-plan.md](docs/wiki/world-gen-plan.md) and
   [docs/wiki/vegetation-rules.md](docs/wiki/vegetation-rules.md). Any new look gets a $0 preview picture first
   (`tools/asset_viewer/*.py`) that the user approves before it is built.

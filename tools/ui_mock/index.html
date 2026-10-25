@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cozy UI Mock</title>
+<style>
+  :root { --bg: #1b1218; --fg: #f3e4cc; --dim: #a98a76; --acc: #d89a3e; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.4 system-ui, sans-serif; }
+  header { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 10px 16px; }
+  header b { margin-right: 8px; color: var(--acc); }
+  header button { background: #2d1e22; color: var(--fg); border: 1px solid #5d3a36; padding: 5px 12px; cursor: pointer; }
+  header button.on { background: #7a4636; border-color: var(--acc); }
+  .stage { padding: 0 16px 16px; }
+  canvas { width: 100%; max-width: 1152px; image-rendering: pixelated; display: block; border: 1px solid #000; }
+  p.hint { color: var(--dim); margin: 6px 16px 0; }
+</style>
+</head>
+<body>
+<header>
+  <b>Cozy UI</b>
+  <button data-s="title" class="on">Title</button>
+  <button data-s="hud">HUD</button>
+  <button data-s="pause">Pause</button>
+  <button data-s="settings">Settings</button>
+  <button data-s="book">Bag + crafting</button>
+  <button data-s="parts">Parts close-up</button>
+</header>
+<p class="hint">Live mockup, not the game. Hover and click buttons, drag sliders, click recipes, use the &lt; / &gt; stepper, hover bag slots.</p>
+<div class="stage"><canvas id="c" width="576" height="324"></canvas></div>
+<script>
+// ---------- palette (warm tan, plum-brown lines, bronze trim) ----------
+const OUT=[62,36,39], LINE=[118,64,65];
+const PAPER_L=[234,208,170], PAPER=[214,179,142], PAGE=[198,153,125];
+const SLOT=[207,165,131], RIM=[182,127,104], WELL=[182,127,104], WELL_D=[161,108,88];
+const COVER_L=[150,84,62], COVER=[126,64,48], COVER_D=[86,42,38];
+const BRZ_L=[240,186,98], BRZ=[198,138,53], BRZ_D=[134,84,52];
+const CREAM=[252,242,222], GOLDTXT=[244,200,76], MUTED=[150,104,86];
+const HP_L=[255,128,104], HP=[222,52,52], HP_D=[150,26,44];
+const BOSS_L=[208,136,255], BOSS=[150,66,206], BOSS_D=[88,30,140];
+const OKG=[150,214,96];
+const TRACK=[52,26,44], SHADOW=[20,10,14];
+const ROPE_L=[196,160,96], ROPE_D=[134,84,52], ROPE_H=[222,190,128];
+const COLS={K:OUT,L:BRZ_L,G:BRZ,D:BRZ_D,R:HP,r:HP_L,d:HP_D,P:CREAM,p:PAPER,l:LINE,o:ROPE_L,q:ROPE_D,h:ROPE_H,B:BRZ,y:[214,186,128]};
+
+// ---------- font: 5 px wide, caps 7 rows, x-height 5, descenders 2 ----------
+const UP={
+A:".###.|#...#|#...#|#####|#...#|#...#|#...#",B:"####.|#...#|#...#|####.|#...#|#...#|####.",C:".###.|#...#|#....|#....|#....|#...#|.###.",
+D:"####.|#...#|#...#|#...#|#...#|#...#|####.",E:"#####|#....|#....|####.|#....|#....|#####",F:"#####|#....|#....|####.|#....|#....|#....",
+G:".###.|#...#|#....|#.###|#...#|#...#|.####",H:"#...#|#...#|#...#|#####|#...#|#...#|#...#",I:"###|.#.|.#.|.#.|.#.|.#.|###",
+J:"..###|...#.|...#.|...#.|#..#.|#..#.|.##..",K:"#...#|#..#.|#.#..|##...|#.#..|#..#.|#...#",L:"#....|#....|#....|#....|#....|#....|#####",
+M:"#...#|##.##|#.#.#|#.#.#|#...#|#...#|#...#",N:"#...#|##..#|#.#.#|#..##|#...#|#...#|#...#",O:".###.|#...#|#...#|#...#|#...#|#...#|.###.",
+P:"####.|#...#|#...#|####.|#....|#....|#....",Q:".###.|#...#|#...#|#...#|#.#.#|#..#.|.##.#",R:"####.|#...#|#...#|####.|#.#..|#..#.|#...#",
+S:".####|#....|#....|.###.|....#|....#|####.",T:"#####|..#..|..#..|..#..|..#..|..#..|..#..",U:"#...#|#...#|#...#|#...#|#...#|#...#|.###.",
+V:"#...#|#...#|#...#|#...#|#...#|.#.#.|..#..",W:"#...#|#...#|#...#|#.#.#|#.#.#|##.##|#...#",X:"#...#|#...#|.#.#.|..#..|.#.#.|#...#|#...#",
+Y:"#...#|#...#|.#.#.|..#..|..#..|..#..|..#..",Z:"#####|....#|...#.|..#..|.#...|#....|#####",
+"0":".###.|#...#|#..##|#.#.#|##..#|#...#|.###.","1":".#.|##.|.#.|.#.|.#.|.#.|###","2":".###.|#...#|....#|..##.|.#...|#....|#####",
+"3":"####.|....#|....#|.###.|....#|....#|####.","4":"#..#.|#..#.|#..#.|#####|...#.|...#.|...#.","5":"#####|#....|####.|....#|....#|#...#|.###.",
+"6":".###.|#....|#....|####.|#...#|#...#|.###.","7":"#####|....#|...#.|..#..|..#..|..#..|..#..","8":".###.|#...#|#...#|.###.|#...#|#...#|.###.",
+"9":".###.|#...#|#...#|.####|....#|....#|.###.",
+".":".|.|.|.|.|.|#",",":"..|..|..|..|..|.#|.#|#.",":":".|.|#|.|.|#|.","-":"...|...|...|###|...|...|...","/":"....#|...#.|...#.|..#..|.#...|.#...|#....",
+"%":"##..#|##.#.|...#.|..#..|.#...|.#.##|#..##","!":"#|#|#|#|#|.|#","'":"#|#|.|.|.|.|.","+":".....|.....|..#..|..#..|#####|..#..|..#..",
+"&":".##..|#..#.|.##..|.#...|#.#.#|#..#.|.##.#"," ":"..|..|..|..|..|..|..","<":"..#|.#.|#..|.#.|..#|...|...",">":"#..|.#.|..#|.#.|#..|...|...",
+};
+const LO={
+a:".....|.....|.###.|....#|.####|#...#|.####",b:"#....|#....|####.|#...#|#...#|#...#|####.",c:"....|....|.###|#...|#...|#...|.###",
+d:"....#|....#|.####|#...#|#...#|#...#|.####",e:".....|.....|.###.|#...#|#####|#....|.###.",f:"..##|.#..|.#..|###.|.#..|.#..|.#..",
+g:".....|.....|.####|#...#|#...#|#...#|.####|....#|.###.",h:"#....|#....|####.|#...#|#...#|#...#|#...#",i:"#|.|#|#|#|#|#",
+j:"..#|...|..#|..#|..#|..#|..#|#.#|.#.",k:"#...|#...|#..#|#.#.|##..|#.#.|#..#",l:"#.|#.|#.|#.|#.|#.|.#",
+m:".....|.....|##.#.|#.#.#|#.#.#|#.#.#|#.#.#",n:".....|.....|####.|#...#|#...#|#...#|#...#",o:".....|.....|.###.|#...#|#...#|#...#|.###.",
+p:".....|.....|####.|#...#|#...#|#...#|####.|#....|#....",q:".....|.....|.####|#...#|#...#|#...#|.####|....#|....#",r:"....|....|#.##|##..|#...|#...|#...",
+s:"....|....|.###|#...|.##.|...#|###.",t:"...|.#.|###|.#.|.#.|.#.|..#",u:".....|.....|#...#|#...#|#...#|#...#|.####",
+v:".....|.....|#...#|#...#|#...#|.#.#.|..#..",w:".....|.....|#...#|#...#|#.#.#|#.#.#|.#.#.",x:".....|.....|#...#|.#.#.|..#..|.#.#.|#...#",
+y:".....|.....|#...#|#...#|#...#|#...#|.####|....#|.###.",z:".....|.....|#####|...#.|..#..|.#...|#####",
+};
+const SMALL={0:"###|#.#|#.#|#.#|###",1:".#.|##.|.#.|.#.|###",2:"##.|..#|.#.|#..|###",3:"##.|..#|.##|..#|##.",4:"#.#|#.#|###|..#|..#",
+5:"###|#..|##.|..#|##.",6:".##|#..|###|#.#|###",7:"###|..#|.#.|.#.|.#.",8:"###|#.#|###|#.#|###",9:"###|#.#|###|..#|##.",
+Q:"###|#.#|#.#|###|..#",E:"###|#..|##.|#..|###",F:"###|#..|##.|#..|#..",R:"##.|#.#|##.|#.#|#.#",M:"#.#|###|###|#.#|#.#",B:"##.|#.#|##.|#.#|##.",S:".##|#..|.#.|..#|##.",P:"##.|#.#|##.|#..|#..",C:".##|#..|#..|#..|.##"};
+const BOLD={m:".......|.......|######.|#..#..#|#..#..#|#..#..#|#..#..#", w:".......|.......|#.....#|#.....#|#..#..#|#..#..#|.##.##.", W:"#.....#|#.....#|#.....#|#..#..#|#..#..#|#..#..#|.##.##.", M:"#.....#|##...##|#..#..#|#.....#|#.....#|#.....#|#.....#"};
+const FONT=Object.assign({},UP,LO);
+
+// ---------- canvas ----------
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');ctx.imageSmoothingEnabled=false;
+const W=576,H=324;
+const rgb=(c,a=1)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+function rect(x,y,w,h,c,a=1){if(w<=0||h<=0)return;ctx.fillStyle=rgb(c,a);ctx.fillRect(x,y,w,h);}
+function put(x,y,c,a=1){rect(x,y,1,1,c,a);}
+function sprite(x,y,pat,flipX=false,flipY=false,cols=COLS){const rows=pat.split('|');if(flipY)rows.reverse();rows.forEach((row,j)=>{const r=flipX?[...row].reverse():[...row];r.forEach((ch,i)=>{if(cols[ch])put(x+i,y+j,cols[ch]);});});}
+// rounded box: r=1 cuts 1 corner px, r=2 cuts a 3-px stair
+function rbox(x,y,w,h,c,r=1,a=1){
+  if(r===0){rect(x,y,w,h,c,a);return;}
+  if(r===1){rect(x+1,y,w-2,h,c,a);rect(x,y+1,1,h-2,c,a);rect(x+w-1,y+1,1,h-2,c,a);return;}
+  rect(x+2,y,w-4,h,c,a);rect(x+1,y+1,1,h-2,c,a);rect(x+w-2,y+1,1,h-2,c,a);rect(x,y+2,1,h-4,c,a);rect(x+w-1,y+2,1,h-4,c,a);
+}
+function framed(x,y,w,h,line,fill,r=1){rbox(x,y,w,h,line,r);rbox(x+1,y+1,w-2,h-2,fill,Math.max(0,r-1));}
+
+// ---------- text ----------
+function glyph(ch,bold){const wide=bold&&BOLD[ch];const g=(wide?BOLD[ch]:(FONT[ch]||FONT[' '])).split('|');const pts=[];g.forEach((row,j)=>[...row].forEach((b,i)=>{if(b==='#')pts.push([i,j]);}));return{pts,w:g[0].length,wide:!!wide};}
+function textW(s,o={}){const sc=o.scale||1,b=o.bold?1:0;let w=0;for(const ch of s){const g=glyph(ch,b);w+=(g.w+1+(g.wide?0:b))*sc;}return w-sc;}
+// o: scale, bold (doubles every stroke sideways), outline colour (1 px ring), shadow (thicker base), lower (colour for the lower rows)
+function text(x,y,s,col,o={}){
+  const sc=o.scale||1,b=o.bold?1:0,pts=[];let cx=x;
+  for(const ch of s){const g=glyph(ch,b),bb=g.wide?0:b;g.pts.forEach(([i,j])=>{for(let k=0;k<=bb;k++)pts.push([cx+(i+k)*sc,y+j*sc,j]);});cx+=(g.w+1+bb)*sc;}
+  if(o.outline){for(const [px,py] of pts)rect(px-1,py-1,sc+2,sc+2,o.outline);if(o.shadow)for(const [px,py] of pts)rect(px-1,py+sc,sc+2,2,o.outline);}
+  const BD=[CREAM,GOLDTXT,[214,150,56]],bi=j=>j<3?0:(j<5?1:2);
+  pts.forEach(([px,py,j])=>rect(px,py,sc,sc,o.bands?BD[bi(j)]:((o.lower&&j>=4)?o.lower:col)));
+  if(o.bands)pts.forEach(([px,py,j])=>{if(j===3||j===5)rect(px,py,sc,1,BRZ_L);});
+  return cx;
+}
+function smallW(s){return s.length*4-1;}
+function smallText(x,y,s,col,outline){const pts=[];[...s].forEach((ch,k)=>(SMALL[ch]||'').split('|').forEach((row,j)=>[...row].forEach((b,i)=>{if(b==='#')pts.push([x+k*4+i,y+j]);})));
+  if(outline)pts.forEach(([px,py])=>rect(px-1,py-1,3,3,outline));pts.forEach(([px,py])=>put(px,py,col));}
+function ctext(cx,y,s,col,o={}){const w=textW(s,o);return text(Math.round(cx-w/2),y,s,col,o);}
+
+// ---------- pieces ----------
+// ---- hand-made language: seeded, deterministic (never flickers), runs of 6-14 px, never single-px noise ----
+function rng(seed){let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
+function hs(s){let h=2166136261;for(const c of String(s))h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0;}
+function runs(r,n,m){const out=[];let p=m+Math.floor(r()*8);while(p<n-m-6){const l=6+Math.floor(r()*9),e=Math.min(l,n-m-p);if(r()<0.65)out.push([p,e]);p+=l+6+Math.floor(r()*9);}return out;}
+// ---- organic shapes: mask-built silhouettes that really bow, chip and round (per-element seed, never flickers) ----
+const CUTS={0:[],1:[1],2:[2,1],3:[3,1,1],5:[5,3,2,1,1]};
+function cbox(x,y,w,h,c,rad,a=1){ // box with its own radius [TL,TR,BR,BL] per corner
+  const L=k=>CUTS[rad[k]];
+  for(let j=0;j<h;j++){const lc=Math.max(L(0)[j]||0,L(3)[h-1-j]||0),rc=Math.max(L(1)[j]||0,L(2)[h-1-j]||0);rect(x+lc,y+j,w-lc-rc,1,c,a);}
+}
+function shuf(r,a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function profile(r,n,B,noise=true,m=6){ // outward px per position: sine bow + held +-1 steps (0 at least half the time)
+  const out=[];let i=0;
+  while(i<n){const l=8+Math.floor(r()*13),q=r(),v=q<.55?0:(q<.78?-1:1);
+    for(let k=0;k<l&&i<n;k++,i++){const b=B?Math.round(B*Math.sin(Math.PI*(i+.5)/n)):0,s=(noise&&B&&i>=m&&i<n-m)?v:0;out.push(Math.max(0,Math.min(3,b+s)));}}
+  return out;
+}
+// paint a 0/1 mask: d0 = OUT, d1 = lit (top/left) or dark (bottom/right), deeper = base
+function paintMask(M,W,H,ox,oy,o){
+  const f=(i,j)=>i>=0&&j>=0&&i<W&&j<H&&M[j*W+i]===1;
+  const D=new Int8Array(W*H).fill(-1);
+  for(let j=0;j<H;j++)for(let i=0;i<W;i++)if(f(i,j)&&!(f(i-1,j)&&f(i+1,j)&&f(i,j-1)&&f(i,j+1)))D[j*W+i]=0;
+  const d0=(i,j)=>i>=0&&j>=0&&i<W&&j<H&&D[j*W+i]===0;
+  const base=o.base||COVER,lt=o.lt||COVER_L,dk=o.dk||COVER_D;
+  for(let j=0;j<H;j++){let i=0;
+    if(o.shadow){while(i<W){if(!f(i,j)){i++;continue;}let e=i;while(f(e,j))e++;rect(ox+i+1,oy+j+2,e-i,1,SHADOW,.45);i=e;}i=0;}
+    while(i<W){if(!f(i,j)){i++;continue;}
+      const col=(a,b)=>D[b*W+a]===0?OUT:((d0(a,b-1)||d0(a-1,b))?lt:((d0(a,b+1)||d0(a+1,b))?dk:base));
+      const c=col(i,j);let e=i+1;while(f(e,j)&&col(e,j)===c)e++;rect(ox+i,oy+j,e-i,1,c);i=e;}}
+}
+function organicBox(x,y,w,h,seed,o={}){
+  const r=rng(seed),P=3,W=w+2*P,H=h+2*P,M=new Uint8Array(W*H);
+  const B=o.B??Math.max(1,Math.min(3,Math.round(w/55))),Bb=o.Bb??B,sB=o.sB??1,nz=o.noise!==false;
+  const top=profile(r,w,B,nz),bot=profile(r,w,Bb,nz),lef=profile(r,h,sB,nz),rig=profile(r,h,sB,nz);
+  const get=(i,j)=>M[(j+P)*W+i+P],set=(i,j,v=1)=>{if(i>=-P&&j>=-P&&i<w+P&&j<h+P)M[(j+P)*W+i+P]=v;};
+  for(let i=0;i<w;i++)for(let j=-top[i];j<h+bot[i];j++)set(i,j);
+  for(let j=0;j<h;j++)for(let i=-lef[j];i<w+rig[j];i++)set(i,j);
+  const rad=o.rad||shuf(r,[1,2,3,5]); // TL,TR,BR,BL
+  [[0,0,1,1],[w-1,0,-1,1],[w-1,h-1,-1,-1],[0,h-1,1,-1]].forEach(([cx,cy,sx,sy],k)=>{const R=rad[k],c=CUTS[R];
+    for(let v=-P;v<R;v++)for(let u=-P;u<R;u++){if((u<0&&v<R)||(v<0&&u<R)||(v>=0&&u>=0&&v<c.length&&u<c[v]))set(cx+sx*u,cy+sy*v,0);}});
+  if(o.chip!==false){const ed=[];if(w>=30)ed.push(0,2);if(h>=30)ed.push(1,3);
+    if(ed.length){const e=ed[Math.floor(r()*ed.length)],horiz=e===0||e===2,len=horiz?w:h,a=12+Math.floor(r()*(len-27+1));
+      for(let k=0;k<3;k++){const c=a+k;
+        if(horiz){let j=e===0?-P:h+P-1;while(j>=-P&&j<h+P&&!get(c,j))j+=e===0?1:-1;const d=e===0?1:-1;set(c,j,0);set(c,j+d,0);}
+        else{let i=e===3?-P:w+P-1;while(i>=-P&&i<w+P&&!get(i,c))i+=e===3?1:-1;const d=e===3?1:-1;set(i,c,0);set(i+d,c,0);}}}}
+  if(o.deckle){let i=4;while(i<w-4){const L=2+Math.floor(r()*4),on=r()<.5;
+    if(on)for(let k=i;k<Math.min(i+L,w-4);k++){let j=h+P-1;while(j>=0&&!get(k,j))j--;set(k,j,0);}i+=L;}}
+  paintMask(M,W,H,x-P,y-P,o);
+}
+function stitches(x0,x1,y,seed){const r=rng(seed);let i=x0;
+  while(i<x1){const L=r()<.3?3:2,skip=r()<.1;if(!skip)rect(i,y,Math.min(L,x1-i),1,RIM);i+=3+Math.floor(r()*3);}}
+// grain: sparse dashes + one knot in a wood/leather area
+function grain(x,y,w,h,seed,c,n,knot=true){const r=rng(seed);
+  for(let i=0;i<n;i++){const l=3+Math.floor(r()*6);rect(x+Math.floor(r()*(w-l)),y+Math.floor(r()*h),l,1,c,0.7);}
+  if(knot&&w>8&&h>4){const kx=x+2+Math.floor(r()*(w-6)),ky=y+Math.floor(r()*(h-3));rect(kx+1,ky,2,1,c);put(kx,ky+1,c);put(kx+3,ky+1,c);rect(kx+1,ky+2,2,1,c);}}
+function panel(x,y,w,h){ // hardcover frame round a paper card
+  const sd=hs(x*131+y*17+w*7+h);
+  organicBox(x,y,w,h,sd,{shadow:true});
+  rect(x+2,y+h-3,w-4,2,COVER_D);
+  framed(x+4,y+4,w-8,h-8,LINE,PAPER,1);rect(x+5,y+5,w-10,1,PAPER_L);
+  rect(x+5,y+h-6,w-10,1,PAGE);
+  const rd=rng(sd^0x9e37);let i=x+5; // deckled bottom edge of the card: 0/1 px offsets held 2-5 px
+  while(i<x+w-5){const L=2+Math.floor(rd()*4),off=rd()<.5,e=Math.min(L,x+w-5-i);if(off){rect(i,y+h-6,e,1,LINE);rect(i,y+h-5,e,1,COVER);}i+=L;}
+  stitches(x+10,x+w-11,y+8,sd+1);stitches(x+10,x+w-11,y+h-9,sd+2);
+}
+function ropeBand(t,u){ // diagonal rope band colour by anti-diagonal index (3 px period)
+  const m=t%3;return m===1?OUT:(m===2?(u%3===0?ROPE_H:ROPE_L):ROPE_D);}
+function ropeWrap(cx,cy,sx,sy,seed){ // 3 diagonal bands across a corner + a tail along the side
+  const P=(u,v,c)=>put(cx+sx*u,cy+sy*v,c),r=rng(seed);
+  for(let v=-1;v<=10;v++)for(let u=-1;u<=10;u++){const t=u+v;if(t<1||t>10)continue;P(u,v,ropeBand(t,u));}
+  const L=6+Math.floor(r()*5);
+  for(let k=0;k<L;k++){const v=10+k,sw=(k>=Math.floor(L*.35)&&k<=Math.floor(L*.7))?0:1; // swings 1 px out mid-way
+    if(k===L-1){const fx=sw+(r()<.5?0:1);P(fx-1,v,OUT);P(fx+1,v,OUT);P(fx,v,ROPE_D);P(fx,v+1,OUT);continue;}
+    P(sw-1,v,OUT);P(sw+2,v,OUT);P(sw,v,k%3===0?ROPE_D:ROPE_L);P(sw+1,v,k%3===1?ROPE_D:ROPE_H);
+    if(k===L-2)P(sw+(r()<.5?0:1),v+1,OUT);}
+}
+const MOSS="....gG...|..gGGg.g.|.gGdgGGg.|gGd.dgG..|.d..d....|d........",MOSSC={g:[132,168,72],G:[92,128,60],d:[52,78,44]};
+function brackets(x,y,w,h,o={}){ // 2 lashed bronze brackets, 1 rope wrap, 1 moss sprig - corners picked by seed
+  const r=rng(hs('br'+x+','+y+','+w)),kind=[];
+  if(o.plank){kind[0]=kind[1]='b';const b=r()<.5?2:3;kind[b]='b';kind[5-b]=r()<.5?'rope':'moss';}
+  else{const q=shuf(r,[0,1,2,3]);kind[q[0]]=kind[q[1]]='b';kind[q[2]]='rope';kind[q[3]]='moss';}
+  const c="KKKKKKKKK|KohqoohqK|KoqoooqoK|KqoooqooK|KoooKKKKK|KohqK....|KoqoK....|KqooK....|KKKKK....";
+  const C=[[x,y,1,1,x-2,y-2,false,false,x-2,y-2],[x+w-1,y,-1,1,x+w-7,y-2,true,false,x+w-7,y-2],[x,y+h-1,1,-1,x-2,y+h-7,false,true,x-2,y+h-4],[x+w-1,y+h-1,-1,-1,x+w-7,y+h-7,true,true,x+w-7,y+h-4]];
+  C.forEach(([cx,cy,sx,sy,bx,by,fx,fy,mx,my],k)=>{
+    if(kind[k]==='b')sprite(bx,by,c,fx,fy);
+    else if(kind[k]==='rope')ropeWrap(cx,cy,sx,sy,hs('rw'+x+y+k));
+    else sprite(mx,my,MOSS,fx,fy,MOSSC);});
+}
+function well(x,y,w,h){framed(x,y,w,h,LINE,WELL,1);rect(x+1,y+1,w-2,1,WELL_D);rect(x+1,y+1,1,h-2,WELL_D);}
+function slot(x,y,s=20,st=''){ // st: '' | 'sel' | 'hover'
+  const fill=st==='sel'?RIM:SLOT;
+  if(st==='pick'){ // chosen recipe: 2-px bronze frame + corner notches
+    rbox(x,y,s,s,BRZ_L,1);rbox(x+2,y+2,s-4,s-4,RIM,0);rect(x+2,y+2,s-4,1,WELL_D);
+    [[-1,-1],[s,-1],[-1,s],[s,s]].forEach(([a,b])=>put(x+a,y+b,BRZ));return;}
+  framed(x,y,s,s,st==='sel'?OUT:(st==='hover'?BRZ_L:RIM),fill,1);
+  rect(x+1,y+1,s-2,1,st==='sel'?WELL_D:PAGE);
+  rect(x+1,y+s-2,s-2,1,PAPER_L,0.5);
+}
+function button(x,y,w,h,label,id,o={}){ // raised pill; hover lifts colour, press sinks 1 px
+  const dis=o.disabled,hov=!dis&&hover===id, down=hov&&mouseDown, dy=down?1:0, sd=hs(id);
+  const fill=dis?[170,132,110]:o.primary?BRZ_L:(hov?[226,196,160]:PAGE);
+  const lip=dis?PAGE:o.primary?[252,224,150]:(hov?CREAM:PAPER), low=dis?RIM:o.primary?BRZ_D:COVER_L;
+  const rad=[0,1,2,3].map(k=>2+((sd>>(k*3))&1)); // wooden block: per-corner radius 2 or 3
+  const inn=rad.map(q=>q-1),side=(sd>>12)&1,split=Math.round(w*(.3+.4*(((sd>>14)&15)/15)));
+  cbox(x,y+2,w,h,OUT,rad); // base: 2 OUT rows under the pill, a 3rd under one seeded half
+  if(side)rect(x+CUTS[rad[3]][0]+1,y+h+2,split-CUTS[rad[3]][0]-1,1,OUT);else rect(x+split,y+h+2,w-split-CUTS[rad[2]][0]-1,1,OUT);
+  cbox(x,y+dy,w,h,OUT,rad);cbox(x+1,y+dy+1,w-2,h-2,fill,inn);
+  rect(x+2,y+dy+h-3,w-4,2,low);
+  const a=sd%3,b=(sd>>3)%4; rect(x+3+a,y+dy+1,w-6-a-b,1,lip); // slightly uneven top lip
+  let tx=Math.round(x+w/2-textW(label,{bold:true})/2);
+  if(o.icon){tx+=9;icon(tx-19,y+dy+Math.round(h/2)-8,o.icon);}
+  text(tx,y+dy+Math.round(h/2)-4,label,dis?MUTED:CREAM,{bold:true,outline:dis?LINE:(hov?LINE:OUT)});
+  if(o.menu&&hov)sprite(x+5,y+dy+Math.round(h/2)-3,"K....|KLK..|KLGK.|KLGGK|KLGK.|KLK..|K....");
+  if(!dis)hits.push({id,x,y,w,h:h+2});
+}
+function count(x,y,s,n){const t=String(n);smallText(x+s-3-smallW(t),y+s-8,t,CREAM,OUT);}
+const ICONS={};
+function icon(x,y,name,faded=false,sz=0,alpha=0){const im=ICONS[name];if(!im||!im.naturalWidth)return;ctx.save();if(alpha)ctx.globalAlpha=alpha;if(faded){ctx.globalAlpha=0.4;ctx.filter='grayscale(1)';}if(sz)ctx.drawImage(im,x,y,sz,sz);else ctx.drawImage(im,x,y);ctx.restore();}
+function ropeLine(x,y,w){ // slack rope: sags S px on a parabola, wraps twist along it
+  const S=Math.max(1,Math.min(3,Math.round(w/50)));
+  for(let i=0;i<w;i++){const t=(i+.5)/w,dy=Math.round(S*4*t*(1-t)),p=(i+dy)%3;
+    rect(x+i,y-1+dy,1,4,OUT);rect(x+i,y+dy,1,2,ROPE_L);if(p===0)put(x+i,y+dy,ROPE_D);if(p===1)put(x+i,y+dy+1,ROPE_D);}
+  const k="KKKKK|KohoK|KqoqK|KoqoK|KKKKK";sprite(x-3,y-1,k);sprite(x+w-2,y-1,k);}
+function keyNum(sx,sy,n,sel){smallText(sx+2,sy+2,String(n),sel?OUT:LINE);}
+function plankHeader(px,py,pw,title){ // wooden plank: slanted left cut, notched right end, one 1-px step, nails
+  const r=rng(hs('plank'+title+px)),x0=px-6,Wp=pw+12,Hp=23,M=new Uint8Array(Wp*Hp),stepX=Math.round(Wp*(.4+.2*r()));
+  for(let i=0;i<Wp;i++){const yo=i<stepX?0:1;for(let j=0;j<22;j++)M[(j+yo)*Wp+i]=1;}
+  for(let j=0;j<22;j++){for(let i=0;i<Math.min(3,j>>1);i++)M[j*Wp+i]=0;
+    const ins=(j>=8&&j<=13)?2:((j===7||j===14)?1:0);for(let k=0;k<ins;k++)M[(j+1)*Wp+Wp-1-k]=0;}
+  for(let i=3;i<Wp-3;i++)rect(x0+i,py+(i<stepX?0:1)+22,1,2,SHADOW,.45);
+  paintMask(M,Wp,Hp,x0,py,{base:COVER,lt:COVER_L,dk:COVER_D});
+  put(x0+stepX-1,py+1,OUT);put(x0+stepX,py+21,OUT);
+  const tw=textW(title,{bold:true,scale:2}),t0=px+pw/2-tw/2-4,t1=px+pw/2+tw/2+4;
+  [6,16].forEach(row=>{let xs=x0+7,d=0;while(xs<x0+Wp-7){const L=15+Math.floor(r()*16);
+    for(let i=xs;i<Math.min(xs+L,x0+Wp-7);i++)if(i<t0||i>t1)put(i,py+row+d+(i-x0<stepX?0:1),COVER_D);
+    xs+=L;d=Math.max(-1,Math.min(1,d+Math.floor(r()*3)-1));}});
+  const kx=x0+14,ky=py+9;rect(kx+1,ky,2,1,COVER_D);put(kx,ky+1,COVER_D);put(kx+3,ky+1,COVER_D);rect(kx+1,ky+2,2,1,COVER_D);
+  [[x0+5,py+9],[x0+Wp-7,py+10]].forEach(([nx,ny])=>{rect(nx,ny,2,2,OUT);put(nx,ny,BRZ_L);});
+  ctext(px+pw/2,py+4,title,CREAM,{bold:true,outline:OUT,scale:2});
+}
+
+const HEART="..KK.KK..|.KrRKRRK.|KRRRRRRRK|KRRRRRRdK|.KRRRRdK.|..KRRdK..|...KdK...|....K....";
+function glossBar(x,y,w,h,frac,c){ // c=[light,mid,dark]
+  rbox(x,y,w,h,TRACK,1);
+  const fw=Math.round(w*frac);if(fw<=0)return;
+  rbox(x,y,fw,h,c[1],1);rect(x+1,y+1,fw-2,1,c[0]);rect(x+2,y+2,fw-4,1,c[0],0.45);rect(x+1,y+h-2,fw-2,2,c[2]);rect(x+1,y+h-4,fw-2,1,c[2],0.5);
+}
+function hpBar(x,y,cur,max,w=120){
+  const h=14;
+  framed(x+6,y-1,w,h+6,OUT,ROPE_L,1); // rope frame: diagonal strands, phase shifts every 20-35 px
+  {const r=rng(hs('hp'+x+y));let sh=0,nx=x+7+20+Math.floor(r()*16);
+   for(let i=x+7;i<x+5+w;i++){if(i>=nx){sh++;nx+=20+Math.floor(r()*16);}
+     const st=a=>[ROPE_D,ROPE_H,ROPE_L][(i+a+sh)%3];put(i,y,st(0));put(i,y+1,st(1));put(i,y+h+2,st(0));put(i,y+h+3,st(1));}}
+  rbox(x+9,y+2,w-6,h,TRACK,1);
+  const tw0=Math.round((w-6)*Math.min(1,(cur+12)/max));
+  rbox(x+9,y+2,tw0,h,[255,176,150],1);rect(x+10,y+3,tw0-2,1,HP_L,0.6); // trail = the hit just taken
+  const fw=Math.round((w-6)*cur/max);rbox(x+9,y+2,fw,h,HP,1);rect(x+10,y+3,fw-2,1,HP_L);rect(x+11,y+4,fw-4,1,HP_L,0.45);rect(x+10,y+h-1,fw-2,2,HP_D);rect(x+10,y+h-3,fw-2,1,HP_D,0.5);
+  const t=`${cur}/${max}`;
+  ctext(x+9+(w-6)/2,y+6,t,CREAM,{outline:OUT,bold:true});
+  const sx=x-4,sy=y+1; // heart socket 14x16
+  rbox(sx,sy,14,16,OUT,2);rbox(sx+1,sy+1,12,14,BRZ,2);rect(sx+3,sy+1,8,1,BRZ_L);rect(sx+3,sy+14,8,1,BRZ_D);
+  rbox(sx+2,sy+2,10,12,TRACK,1);
+  sprite(sx+2,y+5,HEART);put(sx+4,y+6,HP_L);
+  const kn="KKKKK|KohoK|KqoqK|KoqoK|KKKKK";sprite(x+4,y+6,kn);sprite(x+w+1,y+6,kn); // knots at both ends
+}
+function bossBar(cx,y,frac,name,w=260){
+  const x=Math.round(cx-w/2),h=12,nw=textW(name,{bold:true})+10+16,nx=Math.round(cx-nw/2),ny=y-14;
+  organicBox(x-1,y-1,w+2,h+6,hs('boss'+x),{B:1,Bb:0,sB:0,noise:false,chip:false,rad:[1,1,1,1],base:BRZ_D,lt:BRZ_D,dk:BRZ_D});
+  framed(x,y,w,h+4,BRZ_D,BRZ,1);rect(x+1,y,w-2,1,BRZ_L);rect(x+1,y+h+2,w-2,1,BRZ_D);
+  glossBar(x+2,y+2,w-4,h,frac,[BOSS_L,BOSS,BOSS_D]);
+  const m=x+2+Math.round((w-4)/2); // phase-2 mark: cream tick through the bar
+  rect(m-1,y+2,3,h,OUT);rect(m,y+2,1,h,CREAM);
+  // name plate: mini ribbon sitting on the bar
+  [[nx-3,1],[nx+nw+1,-1]].forEach(([tx,d])=>{rect(tx-2,ny+2,6,12,OUT);rect(tx-1,ny+3,4,10,COVER_D);
+    const o=d>0?-1:2;put(tx+o,ny+8,OUT);put(tx+o+d,ny+7,OUT);put(tx+o+d,ny+9,OUT);}); // notched tails
+  organicBox(nx,ny,nw,14,hs('plate'+name),{B:1,sB:0,chip:false,rad:[2,1,3,1]});
+  ctext(cx,ny+3,name,CREAM,{bold:true,outline:OUT});
+  const tusk="KKK.........|KyyK........|.KyyK.......|.KPyyK......|..KPPyK.....|..KPPPpK....|...KPPPpK...|...KPPPPpK..|....KPPPPpK.|....KPPPPpK.|.....KPPPPpK|.....KPPPPpK"; // curved bone tusk; the lashing is a rope wrap
+  sprite(x-10,y-6,tusk);
+  sprite(x+w-2,y-5,tusk.split('|').slice(1).join('|'),true); // right tusk: tip one row lower, chipped
+  put(x+w+4,y-1,OUT);put(x+w+5,y-1,OUT);
+  [[x-6],[x+w-3]].forEach(([tx])=>{for(let v=0;v<5;v++)for(let u=0;u<9;u++){put(tx+u,y+4+v,(v===0||v===4)?OUT:ropeBand((u+v)%3+1,u));}});
+}
+function ability(x,y,name,cool=0,key=''){
+  framed(x,y,22,22,OUT,COVER_L,2);rect(x+2,y+1,18,1,[170,104,78]);well(x+2,y+2,18,18);icon(x+3,y+3,name);
+  if(cool>0){const ch=Math.round(16*cool);rect(x+3,y+3,16,ch,SHADOW,0.45);rect(x+3,y+2+ch,16,1,CREAM);ctext(x+11,y+7,'2',CREAM,{bold:true,outline:OUT});}
+  if(key){framed(x+5,y+17,13,11,OUT,PAPER_L,1);ctext(x+11,y+19,key,OUT,{bold:true});}
+}
+
+// ---------- screens ----------
+let hits=[],hover=null,mouseDown=false;
+const bg=new Image();bg.src='bg.png';
+function backdrop(){if(bg.naturalWidth)ctx.drawImage(bg,0,0,W,H);}
+function shade(a){rect(0,0,W,H,[26,14,20],a);}
+const state={screen:'title',vol:1.0,shake:0.5,full:false,rec:0,qty:1,drag:null,tip:null};
+const HOT=['wooden_sword','axe','pickaxe','wood'];
+function hotbar(x,y){
+  panel(x-8,y-11,9*23+16,44);brackets(x-8,y-11,9*23+16,44);
+  for(let i=0;i<9;i++){const sx=x+i*23;slot(sx,y,22,i===0?'pick':'');if(HOT[i])icon(sx+3,y+4,HOT[i]);keyNum(sx,y,i+1,i===0);}
+  count(x+3*23,y,22,37);
+}
+function hudLayer(withBoss=true,o={}){
+  if(o.hotbar!==false)hotbar(14,14);
+  hpBar(10,H-26,70,100);
+  [['dodge','Q'],['skill','E'],['guard','F']].forEach(([n,k],i)=>ability(10+i*26,H-62,n,i===1?0.55:0,k));
+  if(withBoss)bossBar(W/2,H-20,0.45,'Orc Warlord');
+}
+function drawTitle(){
+  backdrop();shade(0.5);
+  const s='BossFight',o={scale:4,bold:true,outline:OUT,shadow:true};
+  const tw=textW(s,o),tx=Math.round((W-tw)/2),ty=40;
+  const qx=tx-16,qy=ty-10,qw=tw+32,qh=64; // plaque behind the logo
+  organicBox(qx,qy,qw,qh,hs('plaque'),{shadow:true});
+  grain(qx+7,qy+7,qw-14,qh-14,hs('plaque'),COVER_D,14);
+  rect(qx+3,qy+3,qw-6,1,COVER_D);rect(qx+3,qy+qh-4,qw-6,1,COVER_D);rect(qx+3,qy+3,1,qh-6,COVER_D);rect(qx+qw-4,qy+3,1,qh-6,COVER_D);
+  brackets(qx,qy,qw,qh);
+  text(tx,ty+3,s,BRZ_D,{scale:4,bold:true});
+  text(tx,ty,s,CREAM,{...o,bands:true});
+  const pw=150,ph=128,px=Math.round((W-pw)/2),py=112;
+  ropeLine(tx+6,ty+37,tw-12);
+  panel(px,py,pw,ph);brackets(px,py,pw,ph);
+  button(px+14,py+14,pw-28,20,'Play','play',{menu:1,primary:1});
+  button(px+14,py+40,pw-28,20,'Continue','cont',{disabled:1}); // no save yet
+  button(px+14,py+66,pw-28,20,'Settings','set',{menu:1});
+  button(px+14,py+92,pw-28,20,'Quit','quit',{menu:1});
+  text(8,H-14,'v0.9',PAPER,{outline:OUT});
+}
+function drawPause(){
+  backdrop();hudLayer(false,{hotbar:false});shade(0.55);
+  const pw=170,ph=130,px=Math.round((W-pw)/2),py=Math.round((H-ph)/2);
+  panel(px,py,pw,ph);
+  brackets(px,py,pw,ph,{plank:1});plankHeader(px,py,pw,'Paused');
+  button(px+16,py+38,pw-32,20,'Resume','res',{menu:1});
+  button(px+16,py+66,pw-32,20,'Settings','set',{menu:1});
+  button(px+16,py+94,pw-32,20,'Save & quit','quit',{menu:1});
+}
+function slider(x,y,w,val,id,label){
+  const hov=hover===id;
+  well(x,y+1,w,8);rect(x+1,y+9,w-2,1,PAPER_L); // carved groove with a lit lip
+  const fw=Math.round((w-4)*val);rbox(x+2,y+3,fw,4,hov?BRZ_L:BRZ,1);rect(x+2,y+3,fw,1,BRZ_L);
+  sprite(x+2+fw-4,y-2,".KKKKKK.|KPPPPPPK|KPppppPK|KPppppPK|KPppppPK|KlpppplK|KllllllK|.KKKKKK.");
+  text(x+w+12,y+1,label,CREAM,{bold:true,outline:OUT});
+  hits.push({id,x:x-4,y:y-4,w:w+8,h:16,slider:{x:x+2,w:w-4}});
+}
+function checkbox(x,y,on,id){
+  const hov=hover===id;framed(x,y,14,14,hov?BRZ_D:OUT,SLOT,1);rect(x+1,y+1,12,1,PAGE);
+  if(on)sprite(x+2,y+3,"........K.|.......KGK|K.....KGK.|GK...KGK..|.GK.KGK...|..GKGK....|...GK.....");
+  hits.push({id,x,y,w:14,h:14});
+}
+function drawSettings(){
+  backdrop();hudLayer(false,{hotbar:false});shade(0.55);
+  const pw=240,ph=128,px=Math.round((W-pw)/2),py=Math.round((H-ph)/2);
+  panel(px,py,pw,ph);
+  brackets(px,py,pw,ph,{plank:1});plankHeader(px,py,pw,'Settings');
+  const lx=px+16,B={bold:true};
+  text(lx,py+35,'Volume',OUT,B);slider(lx+70,py+34,100,state.vol,'vol',Math.round(state.vol*100)+'%');
+  text(lx,py+56,'Shake',OUT,B);slider(lx+70,py+55,100,state.shake,'shake',Math.round(state.shake*100)+'%');
+  text(lx,py+77,'Fullscreen',OUT,B);checkbox(lx+70,py+74,state.full,'full');
+  button(px+(pw-100)/2,py+96,100,20,'Back','back',{menu:1});
+}
+const RECIPES=[
+  {n:'Workbench',i:'hammer',t:'Station',d:'Craft tools and gear.',need:[['wood',10,37]]},
+  {n:'Stone axe',i:'axe',t:'Tool',d:'Chops trees faster.',need:[['wood',3,37],['stone',3,12]]},
+  {n:'Stone pickaxe',i:'pickaxe',t:'Tool',d:'Breaks rocks and ore.',need:[['wood',3,37],['stone',3,12]]},
+  {n:'Bow',i:'bow',t:'Weapon',d:'Shoot from far away.',need:[['wood',6,37]]},
+  {n:'Copper bar',i:'copper_bar',t:'Material',d:'Melt ore into metal.',need:[['copper_ore',3,3]],lock:'Needs a furnace'},
+  {n:'Wooden sword',i:'wooden_sword',t:'Weapon',d:'A simple blade.',need:[['wood',5,37]]},
+  {n:'Copper axe',i:'copper_axe',t:'Tool',d:'Strong and sharp.',need:[['copper_bar',3,0],['wood',2,37]]},
+  {n:'Copper pickaxe',i:'copper_pickaxe',t:'Tool',d:'Digs deeper veins.',need:[['copper_bar',3,0],['wood',2,37]]},
+];
+const can=r=>r.need.every(([,n,have])=>have>=n*state.qty)&&!r.lock;
+const BAG={0:['wood',37],1:['stone',12],2:['copper_ore',3]};
+function drawBook(){
+  backdrop();hudLayer(false,{hotbar:false});shade(0.5);
+  const bw=330,bh=136,bx=Math.round((W-bw)/2),by=14;
+  const tabs=['hammer','copper_bar','sword'];
+  const tab=i=>{const tx=bx-22,ty=by+12+i*24,on=i===0;
+    if(on){rbox(tx,ty,26,22,OUT,2);rbox(tx+1,ty+1,24,20,PAPER,2);rect(tx+3,ty+1,22,1,PAPER_L);rect(bx-1,ty+1,9,20,PAPER);rect(tx+1,ty+7,2,8,GOLDTXT);}
+    else{framed(tx,ty,26,22,OUT,COVER_L,1);rect(tx+1,ty+1,24,1,[170,104,78]);rect(tx+1,ty+20,24,1,COVER_D);grain(tx+2,ty+14,22,5,hs('tab'+i),COVER_D,2,false);}
+    icon(tx+4,ty+3,tabs[i],false,0,on?0:0.75);
+    hits.push({id:'tab'+i,x:tx,y:ty,w:26,h:22,tip:[['Crafting','Furnace','Anvil'][i]]});};
+  tab(1);tab(2); // tucked behind the cover
+  organicBox(bx,by,bw,bh,hs('cover'));rect(bx+2,by+1,bw-4,2,COVER_L);rect(bx+2,by+bh-3,bw-4,2,COVER_D);
+  rect(bx+2,by+3,bw-4,1,COVER_L);rect(bx+2,by+bh-5,bw-4,1,COVER_D);
+  grain(bx+8,by+bh-4,bw-16,3,hs('cgrain'),COVER_D,5);
+  const pw=(bw-16)/2;
+  for(const k of [0,1]){const px=bx+7+k*(pw+2);framed(px,by+5,pw,bh-12,LINE,PAPER,1);rect(px+1,by+6,pw-2,1,PAPER_L);
+    rect(px+1,by+bh-10,pw-2,1,PAGE);rect(px+1,by+bh-9,pw-2,1,RIM); // page-stack edge
+    for(let g=0;g<5;g++)rect(k?px+1+g:px+pw-2-g,by+7,1,bh-18,LINE,0.34-0.06*g);
+    for(let j=0;j<3;j++){const n=3-j,x0=k?px+pw-n:px; // outer top corner curled over: PAGE underside, lit lip on the fold
+      rect(x0,by+5+j,n,1,PAGE);put(k?x0:x0+n-1,by+5+j,PAPER_L);}
+    rect((k?px+pw-5:px+1)+(k?2:0),by+bh-11,2,1,PAGE);
+    const nr=rng(hs('nick'+k));for(let n=0;n<3;n++){const nx=px+7+Math.floor(nr()*(pw-16)),nw=1+Math.floor(nr()*2);rect(nx,by+5,nw,1,PAPER_L);rect(nx,by+6,nw,1,PAGE);}} // 2-px-deep nicks
+  rect(bx+4,by+bh-7,bw-8,2,COVER_D); // hardcover lip under the pages
+  const spx0=bx+bw/2-2,sdx=j=>{const t=(j-(by+3))/(bh-6);return Math.round(2*4*t*(1-t));}; // gutter rope: same parabola, 2 px at the middle
+  for(let j=by+3;j<by+bh-3;j++){const d=sdx(j),spx=spx0+d;if(d)rect(spx0,j,d,1,OUT);put(spx,j,OUT);put(spx+3,j,OUT);const ph=(j+d)%4<2;put(spx+1,j,ph?ROPE_L:ROPE_D);put(spx+2,j,ph?ROPE_D:ROPE_L);}
+  [by+3,by+Math.round(bh/2)-2,by+bh-8].forEach(ky=>sprite(spx0-1+sdx(ky+2),ky,"KKKKK|KohoK|KqoqK|KoqoK|KKKKK"));
+  brackets(bx,by,bw,bh);
+  tab(0); // active tab joins the page
+  // left page: recipe grid
+  const lx=bx+12,ly=by+10;
+  icon(lx-1,ly-4,'hammer');text(lx+16,ly+1,'Recipes',CREAM,{bold:true,outline:OUT});
+  RECIPES.forEach((r,i)=>{const sx=lx+(i%6)*24,sy=ly+16+Math.floor(i/6)*24,id='r'+i;
+    slot(sx,sy,22,state.rec===i?'pick':(hover===id?'hover':''));icon(sx+3,sy+3,r.i,!can(r));
+    if(r.lock)sprite(sx+15,sy+15,".KKKK.|K....K|KKKKKK|KBLBBK|KBKBBK|KKKKKK");
+    hits.push({id,x:sx,y:sy,w:22,h:22,tip:[r.n,can(r)?'Ready to craft':(r.lock||'Missing items')]});});
+  for(let i=RECIPES.length;i<24;i++){const sx=lx+(i%6)*24,sy=ly+16+Math.floor(i/6)*24;slot(sx,sy,22);}
+  // right page: the chosen recipe
+  const r=RECIPES[state.rec],rx=bx+bw/2+8,ry=by+10;
+  slot(rx,ry,22,'sel');icon(rx+3,ry+3,r.i);
+  text(rx+28,ry+2,r.n,CREAM,{bold:true,outline:OUT});text(rx+28,ry+13,r.t,GOLDTXT,{outline:OUT});
+  const wh=4+r.need.length*23+(r.lock?14:0);well(rx,ry+26,pw-18,wh);
+  r.need.forEach(([n,q,have],i)=>{const sy=ry+28+i*23;slot(rx+4,sy,22);icon(rx+7,sy+3,n);
+    const ok=have>=q*state.qty;text(rx+31,sy+8,`${have}/${q*state.qty}`,ok?OKG:HP_L,{outline:OUT,bold:true});});
+  if(r.lock){const ly2=ry+26+2+r.need.length*23+1;rbox(rx+2,ly2,textW(r.lock)+20,12,HP_D,1);sprite(rx+4,ly2+2,".KKKK.|K....K|KKKKKK|KBLBBK|KBKBBK|KKKKKK");text(rx+14,ly2+2,r.lock,CREAM);}
+  text(rx,ry+26+wh+4,r.d,LINE);text(rx,ry+26+wh+15,'Makes '+(r.out||1),LINE);
+  const sy=ry+98;
+  button(rx,sy,14,16,'<','minus');framed(rx+17,sy,22,18,OUT,SLOT,1);ctext(rx+28,sy+5,String(state.qty),CREAM,{outline:OUT,bold:true});button(rx+42,sy,14,16,'>','plus');
+  if(can(r))button(rx+64,sy,pw-82,16,'Craft','craft',{icon:'hammer'});
+  else{rbox(rx+64,sy+2,pw-82,16,OUT,2);framed(rx+64,sy,pw-82,16,OUT,PAGE,2);sprite(rx+70,sy+5,".KKKK.|K....K|KKKKKK|KBLBBK|KBKBBK|KKKKKK");ctext(rx+64+(pw-82)/2+6,sy+4,'Craft',MUTED,{bold:true,outline:LINE});}
+  // bag panel under the book
+  const gw=9*23+15,gx=Math.round((W-gw)/2),gy=by+bh+6,gh=124;
+  panel(gx,gy,gw,gh);brackets(gx,gy,gw,gh);
+  for(let rr=0;rr<3;rr++)for(let c=0;c<9;c++){const sx=gx+8+c*23,sy2=gy+12+rr*23,k=rr*9+c,id='b'+k,it=BAG[k];
+    slot(sx,sy2,22,hover===id?'hover':'');if(it){icon(sx+3,sy2+4,it[0]);count(sx,sy2,22,it[1]);}
+    hits.push({id,x:sx,y:sy2,w:22,h:22,tip:it?[it[0].replace('_',' ').replace(/^./,m=>m.toUpperCase()),'Material  x'+it[1]]:null});}
+  rect(gx+8,gy+83,gw-16,1,RIM);rect(gx+8,gy+84,gw-16,1,PAPER_L);
+  for(let c=0;c<9;c++){const sx=gx+8+c*23,sy2=gy+90;slot(sx,sy2,22,c===0?'pick':'');if(HOT[c])icon(sx+3,sy2+4,HOT[c]);keyNum(sx,sy2,c+1,c===0);}
+  count(gx+8+3*23,gy+90,22,37);
+  if(state.tip)tooltip(state.tip);
+}
+function tooltip([x,y,lines]){
+  lines=lines.filter(Boolean);if(!lines.length)return;
+  const w=Math.max(...lines.map((l,i)=>textW(l,{bold:i===0})))+12,h=lines.length*11+6;
+  x=Math.min(Math.round(x)+8,W-w-2);y=Math.min(Math.round(y)+10,H-h-2);
+  organicBox(x,y,w,h,hs('tip'+lines[0]),{B:1,sB:1,rad:[1,3,2,1],deckle:true,chip:false,base:COVER_D,lt:COVER,dk:COVER_D,shadow:true});
+  const pc=Math.round(x+w/2);rect(pc-2,y-1,4,4,OUT);rect(pc-1,y,2,2,BRZ_L); // pinned note
+  lines.forEach((l,i)=>text(x+6,y+4+i*11,l,i?PAPER:CREAM,{bold:i===0,outline:i?null:OUT}));
+}
+function drawHud(){backdrop();hudLayer(true);}
+function drawParts(){
+  rect(0,0,W,H,[44,28,34]);
+  panel(14,14,120,78);brackets(14,14,120,78);ctext(74,25,'Panel',CREAM,{bold:true,outline:OUT,scale:2});
+  slot(30,52,22);slot(56,52,22,'hover');slot(82,52,22,'sel');icon(85,55,'stone');
+  const hv=hover;hover='demo';button(150,20,90,20,'Hover','demo',{menu:1});hover=hv;button(150,46,90,20,'Button','x',{menu:1});
+  well(256,18,100,48);slot(262,24,22);icon(265,27,'wood');text(290,32,'37/10',GOLDTXT,{outline:OUT,bold:true});
+  hpBar(380,22,70,100,150);ability(380,48,'dodge',0,'Q');ability(406,48,'skill',0.5,'E');ability(432,48,'guard',0,'F');
+  bossBar(200,120,0.45,'Orc Warlord',300);
+  panel(14,142,200,44);slider(30,159,120,0.6,'s','60%');checkbox(240,157,true,'c');
+  text(20,192,'The quick brown fox jumps over the lazy dog.',CREAM,{outline:OUT});
+  text(20,206,'ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789',CREAM,{outline:OUT});
+  text(20,220,'Bold: Recipes  Craft  Settings  Stone axe',CREAM,{outline:OUT,bold:true});
+  text(20,238,'BossFight',CREAM,{scale:3,bold:true,outline:OUT,lower:GOLDTXT});
+  tooltip([300,170,['Wood','Material  x37']]);
+}
+const SCREENS={title:drawTitle,hud:drawHud,pause:drawPause,settings:drawSettings,book:drawBook,parts:drawParts};
+function draw(){hits=[];ctx.clearRect(0,0,W,H);SCREENS[state.screen]();}
+
+// ---------- input ----------
+function art(e){const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height];}
+function hitAt(x,y){for(let i=hits.length-1;i>=0;i--){const h=hits[i];if(x>=h.x&&x<h.x+h.w&&y>=h.y&&y<h.y+h.h)return h;}return null;}
+cv.addEventListener('mousemove',e=>{const[x,y]=art(e);
+  if(state.drag){const h=state.drag;state[h.id]=Math.max(0,Math.min(1,(x-h.slider.x)/h.slider.w));draw();return;}
+  const h=hitAt(x,y);hover=h?h.id:null;state.tip=h&&h.tip&&h.tip[0]?[x,y,h.tip]:null;cv.style.cursor=h?'pointer':'default';draw();});
+cv.addEventListener('mousedown',e=>{mouseDown=true;const[x,y]=art(e);const h=hitAt(x,y);if(!h){draw();return;}
+  if(h.slider){state.drag=h;state[h.id]=Math.max(0,Math.min(1,(x-h.slider.x)/h.slider.w));}
+  else if(h.id==='full')state.full=!state.full;
+  else if(h.id[0]==='r'&&RECIPES[+h.id.slice(1)]){state.rec=+h.id.slice(1);state.qty=1;}
+  else if(h.id==='plus')state.qty=Math.min(9,state.qty+1);
+  else if(h.id==='minus')state.qty=Math.max(1,state.qty-1);
+  draw();});
+addEventListener('mouseup',e=>{mouseDown=false;const drag=state.drag;state.drag=null;if(drag)return;const[x,y]=art(e);const h=hitAt(x,y);if(!h){draw();return;}
+  if(h.id==='set')go('settings');else if(h.id==='back')go('pause');else if(h.id==='res'||h.id==='play')go('hud');else if(h.id==='quit'&&state.screen==='pause')go('title');else draw();});
+function go(s){state.screen=s;hover=null;state.tip=null;document.querySelectorAll('header button').forEach(b=>b.classList.toggle('on',b.dataset.s===s));draw();}
+document.querySelectorAll('header button').forEach(b=>b.onclick=()=>go(b.dataset.s));
+const names=['wooden_sword','axe','wood','stone','copper_ore','dodge','skill','guard','hand','hammer','pickaxe','bow','copper_bar','copper_pickaxe','copper_axe','sword'];
+let left=names.length+1;const done=()=>{if(--left<=0)draw();};
+names.forEach(n=>{const im=new Image();im.onload=done;im.onerror=done;im.src=`../../assets/ui/placeholder/${n}.png`;ICONS[n]=im;});
+bg.onload=done;bg.onerror=done;
+draw();
+</script>
+</body>
+</html>
