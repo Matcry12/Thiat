@@ -1,0 +1,209 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Game UI parts bake</title>
+<style>body{margin:0;background:#222}#c{display:none}#sheet{display:block;image-rendering:pixelated}</style></head>
+<body><canvas id="c" width="576" height="324"></canvas><canvas id="sheet"></canvas>
+<!-- Bakes every Island Workshop game-UI part at art scale 1 (draw at 2x, nearest). The engine (palette, fonts, organicBox, panel,
+     brackets, button, slot, hpBar, bossBar, ...) is read from tools/ui_mock/index.html at load time and patched in memory
+     (mock file is never edited): ctx becomes `let`, text is skipped (Godot draws the words), bars can draw frame-only.
+     Panels are drawn at their REAL mock coordinates (seeds depend on x,y,w,h) then cropped, so they match docs/design/shots.
+     Result: window.PARTS, window.SHEET_READY. Run: python3 tools/ui_bake/bake_game_parts.py -->
+<script type="text/plain" id="parts">
+// ================= parts code (same scope as the mock engine) =================
+let hits=[],hover=null,mouseDown=false;
+window.NOTEXT=true;
+function mk(w,h,fn){const c=document.createElement('canvas');c.width=w;c.height=h;const p=ctx;ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;try{fn()}finally{ctx=p}return c}
+const PARTS=[];
+function P(name,c,slice,content,center,extra){PARTS.push(Object.assign({name,canvas:c,slice,content,center},extra||{}));return c}
+function flat(c,l,t,r,b){const W_=c.width,H_=c.height,x=c.getContext('2d'),d=x.getImageData(0,0,W_,H_),D=d.data;
+  const cx=(l+W_-r)>>1,cy=(t+H_-b)>>1;
+  for(let y=0;y<H_;y++)for(let i=l;i<W_-r;i++)for(let k=0;k<4;k++)D[(y*W_+i)*4+k]=D[(y*W_+cx)*4+k];
+  for(let j=t;j<H_-b;j++)for(let i=0;i<W_;i++)for(let k=0;k<4;k++)D[(j*W_+i)*4+k]=D[(cy*W_+i)*4+k];
+  x.putImageData(d,0,0);return c}
+function flatH(c,l,r){const W_=c.width,H_=c.height,x=c.getContext('2d'),d=x.getImageData(0,0,W_,H_),D=d.data,cx=(l+W_-r)>>1; // stretch columns only: every row keeps its own colour (the gloss rows)
+  for(let y=0;y<H_;y++)for(let i=l;i<W_-r;i++)for(let k=0;k<4;k++)D[(y*W_+i)*4+k]=D[(y*W_+cx)*4+k];
+  x.putImageData(d,0,0);return c}
+const NEUT=[[255,255,255],[206,206,206],[128,128,128]]; // light / body / shade ramp: tinted by modulate in the game
+function cropOf(c,sx,sy,sw,sh){return mk(sw,sh,()=>ctx.drawImage(c,sx,sy,sw,sh,0,0,sw,sh))}
+const SRC=window.SRC;
+// real-coordinate draw: world rect (x,y,w,h) + pads -> canvas; fn draws with the mock's own coordinates
+const PL=8,PT=8,PB=10;
+function real(x,y,w,h,fn,pl=PL,pt=PT,pr=PL,pb=PB){return mk(w+pl+pr,h+pt+pb,()=>{ctx.translate(pl-x,pt-y);fn()})}
+// ---- panels (organic, baked at real size) ----
+const SC=2;
+function panelPart(name,x,y,w,h,plank,title,note){
+  const c=real(x,y,w,h,()=>{panel(x,y,w,h);if(plank){brackets(x,y,w,h,{plank:1});plankHeader(x,y,w,title)}else brackets(x,y,w,h)});
+  P(name,c,null,plank?[PL+10,PT+30,PL+10,PB+10]:[PL+10,PT+10,PL+10,PB+10],'none',{box:[PL,PT,w,h],note});}
+{const mid=(w,h)=>[Math.round((W-w)/2),Math.round((H-h)/2)];
+ panelPart('panel_title',Math.round((W-150)/2),112,150,128,0,'', 'Title menu panel 150x128. Menu buttons at box (14, 14+26*i), 122 wide x 20.');
+ let [px,py]=mid(170,130);panelPart('panel_pause',px,py,170,130,1,'Paused','Pause panel 170x130 with blank plank header (draw "Paused" in the bold font, scale 2, on top). Buttons at box (16,38+28*i), 138 wide x 20.');
+ [px,py]=mid(240,128);panelPart('panel_settings',px,py,240,128,1,'Settings','Settings panel 240x128, blank plank header. Rows lx=16: label y=35/56/77, slider x=86 (w100), checkbox x=86,y=74, Back button (70,96) 100 wide.');
+ // hotbar panel: mock hotbar(14,14)
+ panelPart('hotbar_panel',6,3,223,44,0,'','Hotbar panel 223x44. Slot i at box (8+23*i, 11), 22 px. Key number small font at slot +2,+2.');
+ const gw=9*23+15,gx=Math.round((W-gw)/2),gy=14+136+6;
+ panelPart('bag_panel',gx,gy,gw,124,0,'','Bag panel 222x124. Bag slots at box (8+23*c, 12+23*r) 3x9; divider_line at y=83; hotbar copy row at y=90.');}
+// ---- title logo, plaque, rope ----
+{const L=SRC.title.split('\n').map(s=>s.trim()),ix=s=>L.findIndex(l=>l.startsWith(s));
+ const consts=L.slice(ix('const s='),ix('const qx=')+1).join('\n');
+ const run=(body)=>new Function(consts+'\n'+body);
+ const g=run('return {tw,tx,ty,qx,qy,qw,qh}')(),{tw,tx,ty,qx,qy,qw,qh}=g;
+ const plaque=L.slice(ix('organicBox(qx'),ix('brackets(qx')+1).join('\n');
+ P('title_plaque',real(qx,qy,qw,qh,run(plaque)),null,[PL+10,PT+10,PL+10,PB+10],'none',{box:[PL,PT,qw,qh],note:'Wood plaque behind the logo, lashed corners; logo drawn at box (16,10). Real mock size '+qw+'x'+qh+'.'});
+ const logoLines=L.filter(l=>l.startsWith('text(tx')).join('\n');
+ P('title_logo',real(tx,ty,tw,28,run(logoLines),2,2,2,8),null,null,'none',{box:[2,2,tw,28],note:'"BossFight" scale-4 bold, 3 colour bands + OUT outline + BRZ_D drop. Pure picture, never re-typed.'});
+ const rl=L.find(l=>l.startsWith('ropeLine(')).replace('ty+37','ty+37');
+ P('title_rope',real(tx+6,ty+37,tw-12,6,run(rl),6,3,6,6),null,null,'none',{box:[6,3,tw-12,3],note:'Slack rope under the logo, at box-left x=0; place its top-left at logo.x+6-6.'});}
+// ---- buttons (mock button(), label '' ; the arrow is its own part) ----
+function btn(w,h,state,o){return mk(w,h+3,()=>{hover=(state==='idle'||state==='disabled')?null:'bid';mouseDown=state==='pressed';
+  button(0,0,w,h,'','bid',Object.assign({},o));hover=null;mouseDown=false})}
+const BS=[4,4,4,6],BC=[5,1,5,4];
+for(const [st,o,nm] of [['idle',{},'idle'],['hover',{},'hover'],['pressed',{},'pressed'],['idle',{primary:1},'primary'],['pressed',{primary:1},'primary_pressed'],['disabled',{disabled:1},'disabled']])
+  P('button_menu_'+nm,flat(btn(64,20,st,o),4,4,4,6),BS,BC,'tile',{note:'20 px tall menu button. Hover/focus: use button_menu_hover (primary stays primary), CREAM text with LINE outline, menu_arrow at left x=5.'});
+P('menu_arrow',mk(5,7,()=>sprite(0,0,"K....|KLK..|KLGK.|KLGGK|KLGK.|KLK..|K....")),null,null,'none',{note:'Gold arrow shown on the ONE hovered/focused menu button, at button (5, h/2-3).'});
+for(const [st,o,nm] of [['idle',{},'idle'],['hover',{},'hover'],['pressed',{},'pressed'],['disabled',{disabled:1},'disabled']])
+  P('button_small_'+nm,flat(btn(40,16,st,o),4,4,4,6),BS,BC,'tile',{note:'16 px tall small button (stepper < >, Craft).'});
+P('craft_disabled',flat(mk(40,19,()=>{rbox(0,2,40,16,OUT,2);framed(0,0,40,16,OUT,PAGE,2)}),4,4,4,5),[4,4,4,5],[5,1,5,4],'tile',{note:'Disabled Craft button (book). Padlock 6x6 at left+6, top+5; MUTED text + LINE outline.'});
+P('qty_box',flat(mk(22,18,()=>framed(0,0,22,18,OUT,SLOT,1)),3,3,3,3),[3,3,3,3],[2,2,2,2],'tile',{note:'Stepper number box 22x18, number bold CREAM + OUT.'});
+// ---- slider / checkbox ----
+P('slider_groove',flat(mk(24,9,()=>{well(0,0,24,8);rect(1,8,22,1,PAPER_L)}),3,3,3,2),[3,3,3,2],[2,2,2,2],'tile',{note:'Carved groove 8 tall + lit lip. In the mock: groove at slider (x, y+1), fill at (x+2, y+3).',rects:{fill_offset:[2,2],fill_height:4,knob_offset_y:-3}});
+P('slider_fill',flat(mk(8,4,()=>{rbox(0,0,8,4,BRZ,1);rect(0,0,8,1,BRZ_L)}),2,0,2,0),[2,0,2,0],null,'tile');
+P('slider_fill_hover',flat(mk(8,4,()=>{rbox(0,0,8,4,BRZ_L,1);rect(0,0,8,1,BRZ_L)}),2,0,2,0),[2,0,2,0],null,'tile');
+P('slider_knob',mk(8,8,()=>sprite(0,0,".KKKKKK.|KPPPPPPK|KPppppPK|KPppppPK|KPppppPK|KlpppplK|KllllllK|.KKKKKK.")),null,null,'none',{note:'8x8 paper knob, centre at fill end: x = groove.x + 2 + fillW - 4, y = groove.y - 3.'});
+const cbx=(on,hov)=>mk(14,14,()=>{framed(0,0,14,14,hov?BRZ_D:OUT,SLOT,1);rect(1,1,12,1,PAGE);if(on)sprite(2,3,"........K.|.......KGK|K.....KGK.|GK...KGK..|.GK.KGK...|..GKGK....|...GK.....")});
+P('checkbox_off',cbx(0,0),null,null,'none');P('checkbox_on',cbx(1,0),null,null,'none');P('checkbox_hover',cbx(0,1),null,null,'none');
+// ---- slots (22 px + 1 px pad for the pick corner dots) ----
+for(const [nm,st] of [['idle',''],['hover','hover'],['pick','pick'],['sel','sel']])
+  P('slot_'+nm,mk(24,24,()=>slot(1,1,22,st)),null,null,'none',{box:[1,1,22,22],note:'22x22 slot at box; icon 16 px at +3,+3 (hotbar/bag +3,+4). Sit it at (slot.x-1, slot.y-1).'});
+P('padlock',mk(6,6,()=>sprite(0,0,".KKKK.|K....K|KKKKKK|KBLBBK|KBKBBK|KKKKKK")),null,null,'none',{note:'6x6. Slot locked by station: at slot (15,15). Also on Craft disabled and lock_banner.'});
+// ---- abilities ----
+P('ability_frame',mk(22,22,()=>ability(0,0,'none',0,'')),null,null,'none',{rects:{icon:[3,3,16,16],keycap:[5,17,13,11]},note:'22x22. Icon 16 px at (3,3). Cooldown = SHADOW 0.45 wipe from top over the icon + 1 px CREAM edge + bold seconds. Keycap overlaps the bottom.'});
+P('ability_keycap',mk(13,11,()=>framed(0,0,13,11,OUT,PAPER_L,1)),null,null,'none',{note:'13x11 at ability (5,17); letter bold OUT centred (Q / E / F from project.godot).'});
+// ---- HP bar (mock hpBar at x=10,y=H-26,w=120) ----
+{const hx=10,hy=H-26,hw=120,hh=14,x0=hx-6,y0=hy-3;
+ window.BARFRAME=true;
+ P('hp_frame',real(x0,y0,hw+16,26,()=>hpBar(hx,hy,0,100,hw),0,0,0,0),null,null,'none',{rects:{fill:[hx+9-x0,hy+2-y0,hw-6,hh],number_centre:[hx+9+(hw-6)/2-x0,hy+6-y0],heart:[hx-4-x0,hy+1-y0,14,16]},note:'Rope frame + knots + bronze heart socket + empty track, real size 136x26 (bar w 120). Fill/trail go in rects.fill.'});
+ window.BARFRAME=false;
+ const full=real(x0,y0,hw+16,26,()=>hpBar(hx,hy,100,100,hw),0,0,0,0);
+ P('hp_fill',flatH(mk(hw-6,hh,()=>glossBar(0,0,hw-6,hh,1,NEUT)),3,3),[3,0,3,0],null,'tile',{note:'Neutral grey gloss ramp (light top rows, body, shade rows): TINT with modulate (red, low-HP pulse). Stretch columns only.'});
+ const fw=hw-6;
+ P('hp_trail',flatH(mk(fw,hh,()=>glossBar(0,0,fw,hh,1,[[255,214,196],[255,176,150],[214,122,104]])),3,3),[3,0,3,0],null,'tile',{note:'"Hit just taken" trail under the fill.'});}
+// ---- Boss bar (mock bossBar cx=W/2, y=H-20, w=260) ----
+{const bw=260,bh=12,cx=W/2,by_=H-20,bx_=Math.round(cx-bw/2),x0=bx_-12,y0=by_-8;
+ window.BARFRAME=true;
+ P('boss_frame',real(x0,y0,bw+24,28,()=>bossBar(cx,by_,0,'x',bw),0,0,0,0),null,null,'none',{rects:{fill:[bx_+2-x0,by_+2-y0,bw-4,bh],mark:[bx_+2+Math.round((bw-4)/2)-x0,by_+2-y0]},note:'Bronze frame + both bone tusks + rope bands + empty track, real size 284x28 (bar w 260 = 0.45 of 1152). Fill goes in rects.fill.'});
+ window.BARFRAME=false;
+ P('boss_fill',flatH(mk(bw-4,bh,()=>glossBar(0,0,bw-4,bh,1,NEUT)),3,3),[3,0,3,0],null,'tile',{note:'Neutral grey gloss ramp: TINT with modulate (purple, phase 2). Stretch columns only.'});
+ P('boss_mark',mk(3,bh,()=>{rect(0,0,3,bh,OUT);rect(1,0,1,bh,CREAM)}),null,null,'none',{note:'Phase-2 tick at 50%: x = fill.x + fillW/2 - 1.'});
+ // name plate, stretchable (B 0). cut straight from bossBar's own source
+ const nw=60,nx=20,ny=2,i0=SRC.bossPlate;
+ const plateFn=new Function('cx','nx','ny','nw','name',SRC.bossPlate.replace('{B:1,sB:0,chip:false','{B:0,Bb:0,sB:0,noise:false,chip:false'));
+ P('boss_plate',flatH(mk(nw+12,16,()=>{ctx.translate(-nx+6,-ny+1);plateFn(nx+nw/2,nx,ny,nw,'Orc')}),12,12),[12,0,12,0],[10,3,10,3],'tile',{note:'Name plate with notched tails (stretch to name width + 26). Sits centred on the bar, 14 above its top (bar.y-14). Name bold CREAM + OUT.'});}
+// ---- tooltip (torn pinned note, stretchable) ----
+{const w=60,h=28,Pd=4;
+ P('tooltip',flat(mk(w+2*Pd,h+2*Pd+3,()=>{ctx.translate(Pd,Pd);organicBox(0,0,w,h,hs('tipbake'),{B:0,Bb:0,sB:0,noise:false,rad:[1,3,2,1],deckle:true,chip:false,base:COVER_D,lt:COVER,dk:COVER_D,shadow:true})}),9,9,9,12),[9,9,9,12],[10,9,10,10],'tile',{note:'Torn note, COVER_D. Line 1 bold CREAM+OUT (name), line 2 body PAPER (type, count). Text starts at +6,+4. tooltip_pin at top centre, 1 px above the box.'});
+ P('tooltip_pin',mk(4,4,()=>{rect(0,0,4,4,OUT);rect(1,1,2,2,BRZ_L)}),null,null,'none');}
+// ---- book ----
+{const bw=330,bh=136,bx=Math.round((W-bw)/2),by=14,bk=SRC.book;
+ const i0=bk.indexOf("organicBox(bx,by,bw,bh,hs('cover'));"),e="brackets(bx,by,bw,bh);",i1=bk.indexOf(e)+e.length;
+ const cover=new Function('bx','by','bw','bh',bk.slice(i0,i1));
+ P('book_cover',real(bx,by,bw,bh,()=>cover(bx,by,bw,bh)),null,null,'none',{box:[PL,PT,bw,bh],
+  layout:{page_w:(bw-16)/2,left_page_x:7,right_page_x:7+(bw-16)/2+2,recipe_title:[12,10],recipe_slot0:[12,26],recipe_step:[24,24],recipe_cols:6,recipe_rows:4,
+   right_item_slot:[bw/2+8,10],right_name:[bw/2+8+28,12],right_type:[bw/2+8+28,23],ingredient_well:[bw/2+8,36],ingredient_row_step:23,stepper_y:108,minus:[bw/2+8,108,14,16],qty:[bw/2+8+17,108,22,18],plus:[bw/2+8+42,108,14,16],craft:[bw/2+8+64,108,(bw-16)/2-82,16],
+   tab_x:-22,tab_y0:12,tab_step:24},
+  note:'Open book: cover, both pages, page curls, nicks, rope binding + knots, clips/rope/moss. Pure picture, 330x136 at box. Tabs are separate parts. Layout numbers are relative to the box.'});
+ const t0=bk.indexOf('const tabs='),t1=bk.indexOf('tab(1);tab(2);'),tabsrc=bk.slice(t0,t1);
+ const tabFn=new Function('bx','by','return (function(){'+tabsrc+'\nreturn tab})()');
+ const tabOf=(i,w_)=>mk(w_,22,()=>{ctx.translate(-(bx-22),-(by+12+i*24));tabFn(bx,by)(i)});
+ P('book_tab_active',tabOf(0,31),null,null,'none',{note:'Active tab 26x22 + 5 px join over the page (31 wide). Top-left at book box (-22,12). Gold marker inside. Icon 16 px at +4,+3.'});
+ P('book_tab_idle_1',tabOf(1,26),null,null,'none',{note:'Idle tab 26x22, COVER_L, icon at 0.75 alpha. Put BEHIND the cover. Top-left at book box (-22,36).'});
+ P('book_tab_idle_2',tabOf(2,26),null,null,'none',{note:'Same as idle_1, other grain seed. Top-left at book box (-22,60).'});}
+P('well',flat(mk(12,12,()=>well(0,0,12,12)),3,3,3,3),[3,3,3,3],[4,4,4,4],'tile',{note:'Ingredient well: sunken WELL fill. Height = 4 + 23*rows (+14 with a lock banner).'});
+P('lock_banner',flat(mk(16,12,()=>rbox(0,0,16,12,HP_D,1)),3,0,3,0),[3,0,3,0],[14,0,2,0],'tile',{note:'Red "needs a station" bar, 12 tall: padlock at +2,+2, CREAM body text at +12.'});
+P('divider_line',mk(8,2,()=>{rect(0,0,8,1,RIM);rect(0,1,8,1,PAPER_L)}),[0,0,0,0],null,'tile',{note:'Bag divider, 2 rows (RIM + PAPER_L). Tile across; at bag y=83.'});
+
+// ================= sheet =================
+function nine(img,s,dx,dy,dw,dh){const [l,t,r,b]=s,W_=img.width,H_=img.height,X=[0,l,W_-r,W_],Y=[0,t,H_-b,H_],DX=[dx,dx+l,dx+dw-r,dx+dw],DY=[dy,dy+t,dy+dh-b,dy+dh];
+  for(let j=0;j<3;j++)for(let i=0;i<3;i++){const sw=X[i+1]-X[i],sh=Y[j+1]-Y[j],dw_=DX[i+1]-DX[i],dh_=DY[j+1]-DY[j];if(sw>0&&sh>0&&dw_>0&&dh_>0)ctx.drawImage(img,X[i],Y[j],sw,sh,DX[i],DY[j],dw_,dh_)}}
+const G=n=>PARTS.find(p=>p.name===n);
+const D9=(n,dx,dy,dw,dh)=>{const p=G(n);if(p.slice)nine(p.canvas,p.slice,dx,dy,dw,dh);else ctx.drawImage(p.canvas,dx,dy)};
+const DB=(n,bx,by)=>{const p=G(n),b=p.box||[0,0];ctx.drawImage(p.canvas,bx-b[0],by-b[1])};   // place by box origin
+const DR=(n,x,y)=>ctx.drawImage(G(n).canvas,x,y);
+function lab(x,y,s){text(x,y,s.replace(/_/g,'-'),CREAM)}
+function previews(y0){
+  const out=[];
+  // title
+  out.push(()=>{rect(0,0,W,H,[70,100,60]);rect(0,0,W,H,[26,14,20],.5);
+    const L=SRC.title.split('\n').map(s=>s.trim());const tw=textW('BossFight',{scale:4,bold:true}),tx=Math.round((W-tw)/2),ty=40,qx=tx-16,qy=ty-10;
+    DB('title_plaque',qx,qy);ctx.drawImage(G('title_logo').canvas,tx-2,ty-2);ctx.drawImage(G('title_rope').canvas,tx+6-6,ty+37-3);
+    const px=213,py=112;DB('panel_title',px,py);
+    [['Play','button_menu_primary'],['Continue','button_menu_disabled'],['Settings','button_menu_hover'],['Quit','button_menu_idle']].forEach(([l,n],i)=>{const by=py+14+i*26;D9(n,px+14,by,122,23);
+      text(Math.round(px+14+61-textW(l,{bold:true})/2),by+6,l,n.endsWith('disabled')?MUTED:CREAM,{bold:true,outline:n.endsWith('disabled')||n.endsWith('hover')?LINE:OUT});if(n.endsWith('hover'))DR('menu_arrow',px+14+5,by+7)});});
+  // pause
+  out.push(()=>{rect(0,0,W,H,[70,100,60]);hudParts();rect(0,0,W,H,[26,14,20],.55);
+    const px=203,py=97;DB('panel_pause',px,py);ctext(px+85,py+4,'Paused',CREAM,{bold:true,outline:OUT,scale:2});
+    ['Resume','Settings','Save & quit'].forEach((l,i)=>{const by=py+38+i*28;D9(i?'button_menu_idle':'button_menu_hover',px+16,by,138,23);text(Math.round(px+85-textW(l,{bold:true})/2),by+6,l,CREAM,{bold:true,outline:i?OUT:LINE});if(!i)DR('menu_arrow',px+21,by+7)});});
+  // settings
+  out.push(()=>{rect(0,0,W,H,[70,100,60]);hudParts();rect(0,0,W,H,[26,14,20],.55);
+    const px=168,py=98;DB('panel_settings',px,py);ctext(px+120,py+4,'Settings',CREAM,{bold:true,outline:OUT,scale:2});
+    [['Volume',.6,35],['Shake',.3,56]].forEach(([l,v,dy])=>{const lx=px+16,sx=lx+70,sy=py+dy-1;text(lx,py+dy,l,OUT,{bold:true});D9('slider_groove',sx,sy+1,100,9);
+      const fw=Math.round(96*v);D9('slider_fill',sx+2,sy+3,fw,4);DR('slider_knob',sx+2+fw-4,sy-2);text(sx+112,sy+1,Math.round(v*100)+'%',CREAM,{bold:true,outline:OUT})});
+    text(px+16,py+77,'Fullscreen',OUT,{bold:true});DR('checkbox_on',px+86,py+74);D9('button_menu_idle',px+70,py+96,100,23);text(px+120-textW('Back',{bold:true})/2,py+102,'Back',CREAM,{bold:true,outline:OUT});});
+  // hud
+  out.push(()=>{rect(0,0,W,H,[70,100,60]);hudParts(true,true)});
+  // book
+  out.push(()=>{rect(0,0,W,H,[70,100,60]);hudParts();rect(0,0,W,H,[26,14,20],.5);
+    const bw=330,bh=136,bx=123,by=14;DR('book_tab_idle_1',bx-22,by+36);DR('book_tab_idle_2',bx-22,by+60);DB('book_cover',bx,by);DR('book_tab_active',bx-22,by+12);
+    const lx=bx+12,ly=by+10;text(lx+16,ly+1,'Recipes',CREAM,{bold:true,outline:OUT});
+    for(let i=0;i<24;i++)DB(i===0?'slot_pick':'slot_idle',lx+(i%6)*24,ly+16+Math.floor(i/6)*24);
+    const rx=bx+bw/2+8,ry=by+10;DB('slot_sel',rx,ry);text(rx+28,ry+2,'Workbench',CREAM,{bold:true,outline:OUT});text(rx+28,ry+13,'Station',GOLDTXT,{outline:OUT});
+    D9('well',rx,ry+26,139,27);DB('slot_idle',rx+4,ry+28);text(rx+31,ry+36,'37/10',OKG,{outline:OUT,bold:true});text(rx,ry+57,'Craft tools and gear.',LINE);text(rx,ry+68,'Makes 1',LINE);
+    const sy=ry+98;D9('button_small_idle',rx,sy,14,19);D9('qty_box',rx+17,sy,22,18);D9('button_small_idle',rx+42,sy,14,19);D9('button_small_idle',rx+64,sy,75,19);text(rx+64+37-textW('Craft',{bold:true})/2,sy+4,'Craft',CREAM,{bold:true,outline:OUT});
+    const gw=222,gx=177,gy=by+bh+6;DB('bag_panel',gx,gy);
+    for(let r=0;r<3;r++)for(let c=0;c<9;c++)DB('slot_idle',gx+8+c*23,gy+12+r*23);
+    D9('divider_line',gx+8,gy+83,gw-16,2);for(let c=0;c<9;c++)DB(c===0?'slot_pick':'slot_idle',gx+8+c*23,gy+90);
+    D9('tooltip',300,200,50,28);DR('tooltip_pin',324,200);});
+  return out;}
+function hudParts(boss,hot){
+  if(hot){DB('hotbar_panel',6,3);for(let i=0;i<9;i++)DB(i===0?'slot_pick':'slot_idle',14+i*23,14);}
+  const hx=10,hy=H-26;DR('hp_frame',hx-6,hy-3);D9('hp_trail',hx+9,hy+2,Math.round(114*.82),14);D9('hp_fill',hx+9,hy+2,Math.round(114*.7),14);
+  text(hx+9+57-textW('70/100',{bold:true})/2,hy+6,'70/100',CREAM,{bold:true,outline:OUT});
+  ['Q','E','F'].forEach((k,i)=>{const ax=10+i*26,ay=H-62;DR('ability_frame',ax,ay);if(i===1){rect(ax+3,ay+3,16,9,SHADOW,.45);rect(ax+3,ay+12,16,1,CREAM)}DR('ability_keycap',ax+5,ay+17);ctext(ax+11,ay+19,k,OUT,{bold:true})});
+  if(boss){const bw=260,bx=158,by=H-20;DR('boss_frame',bx-12,by-8);D9('boss_fill',bx+2,by+2,Math.round(256*.45),12);DR('boss_mark',bx+2+128-1,by+2);
+    D9('boss_plate',Math.round(W/2-55),by-15,110,16);text(Math.round(W/2-textW('Orc Warlord',{bold:true})/2),by-11,'Orc Warlord',CREAM,{bold:true,outline:OUT})}}
+function sheet(){
+  const SW=720,PAD=6;let x=PAD,y=PAD,rowH=0;const place=[];
+  PARTS.forEach(p=>{const c=p.canvas,lw=p.name.length*6,w=Math.max(c.width,lw)+PAD;if(x+w>SW){x=PAD;y+=rowH+PAD+6;rowH=0}
+    place.push([p,x,y+9]);x+=w;rowH=Math.max(rowH,c.height+9)});
+  const partsH=y+rowH+PAD,pv=previews(),PH=H+8;
+  const total=partsH+pv.length*PH+8;
+  return mk(SW,total,()=>{rect(0,0,SW,total,[40,22,32]);
+    place.forEach(([p,px,py])=>{lab(px,py-9,p.name);rect(px,py,p.canvas.width,p.canvas.height,[96,120,84],.35);ctx.drawImage(p.canvas,px,py);
+      if(p.slice){const [l,t,r,b]=p.slice;ctx.fillStyle='rgba(120,220,255,.55)';ctx.fillRect(px+l,py,1,p.canvas.height);ctx.fillRect(px+p.canvas.width-r-1,py,1,p.canvas.height);
+        ctx.fillRect(px,py+t,p.canvas.width,1);ctx.fillRect(px,py+p.canvas.height-b-1,p.canvas.width,1)}});
+    pv.forEach((f,i)=>{ctx.save();ctx.translate(0,partsH+8+i*PH);ctx.beginPath();ctx.rect(0,0,W,H);ctx.clip();f();ctx.restore()});
+  });}
+window.PARTS=PARTS;
+</script>
+<script>
+(async()=>{
+  const src=await (await fetch('/tools/ui_mock/index.html')).text();
+  const a=src.indexOf('// ---------- palette'),b=src.indexOf('// ---------- screens');
+  if(a<0||b<0)throw new Error('engine markers not found in ui_mock/index.html');
+  let eng=src.slice(a,b);
+  const rep=(from,to)=>{if(!eng.includes(from))throw new Error('patch target missing: '+from.slice(0,60));eng=eng.replace(from,to)};
+  rep("const cv=document.getElementById('c'),ctx=cv.getContext('2d');","const cv=document.getElementById('c');let ctx=cv.getContext('2d');");
+  rep("ctext(px+pw/2,py+4,title,CREAM,{bold:true,outline:OUT,scale:2});","if(!window.NOTEXT)ctext(px+pw/2,py+4,title,CREAM,{bold:true,outline:OUT,scale:2});");
+  rep("ctext(x+9+(w-6)/2,y+6,t,CREAM,{outline:OUT,bold:true});","if(!window.NOTEXT)ctext(x+9+(w-6)/2,y+6,t,CREAM,{outline:OUT,bold:true});");
+  rep("rbox(x+9,y+2,tw0,h,[255,176,150],1);rect(x+10,y+3,tw0-2,1,HP_L,0.6);","if(!window.BARFRAME){rbox(x+9,y+2,tw0,h,[255,176,150],1);rect(x+10,y+3,tw0-2,1,HP_L,0.6);}");
+  rep("rbox(x+9,y+2,fw,h,HP,1);rect(x+10,y+3,fw-2,1,HP_L);rect(x+11,y+4,fw-4,1,HP_L,0.45);rect(x+10,y+h-1,fw-2,2,HP_D);rect(x+10,y+h-3,fw-2,1,HP_D,0.5);","if(!window.BARFRAME){rbox(x+9,y+2,fw,h,HP,1);rect(x+10,y+3,fw-2,1,HP_L);rect(x+11,y+4,fw-4,1,HP_L,0.45);rect(x+10,y+h-1,fw-2,2,HP_D);rect(x+10,y+h-3,fw-2,1,HP_D,0.5);}");
+  rep("rect(m-1,y+2,3,h,OUT);rect(m,y+2,1,h,CREAM);","if(!window.BARFRAME){rect(m-1,y+2,3,h,OUT);rect(m,y+2,1,h,CREAM);}");
+  const p0=eng.indexOf("[[nx-3,1],[nx+nw+1,-1]]"),pe="ctext(cx,ny+3,name,CREAM,{bold:true,outline:OUT});",p1=eng.indexOf(pe)+pe.length;
+  if(p0<0||p1<pe.length)throw new Error('boss plate block not found');
+  const plate=eng.slice(p0,p1).replace(pe,'');
+  eng=eng.slice(0,p0)+"if(!window.BARFRAME){"+eng.slice(p0,p1)+"}"+eng.slice(p1);
+  const fnBody=(n)=>{const i=src.indexOf('function '+n+'(){');if(i<0)throw new Error('no '+n);const j=src.indexOf('\n}\n',i);return src.slice(i+('function '+n+'(){').length,j)};
+  window.SRC={title:fnBody('drawTitle'),book:fnBody('drawBook'),bossPlate:plate};
+  const code=eng+'\n'+document.getElementById('parts').textContent+
+    '\nconst S=sheet();const sh=document.getElementById("sheet");sh.width=S.width;sh.height=S.height;sh.style.width=S.width*2+"px";sh.style.height=S.height*2+"px";sh.getContext("2d").drawImage(S,0,0);window.SHEET_READY=true;';
+  const s=document.createElement('script');s.textContent=code;document.body.append(s);
+})().catch(e=>{window.BAKE_ERR=String(e&&e.stack||e)});
+</script></body></html>

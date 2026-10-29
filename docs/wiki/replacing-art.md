@@ -121,8 +121,8 @@ Inspector. Empty texture = the grey placeholder. Put a PNG in and the look chang
 | "Locked" picture on slots | `lock_texture` | Empty = a dark tint |
 | Dodge / skill / guard icon (bottom-left) | `dodge_icon`, `skill_icon`, `guard_icon` | Empty = a plain square in `dodge_color` / `skill_color` / `guard_color`. Same slot frame; the cooldown is a dim that drains |
 | Hover name box | `tooltip_texture`, `tooltip_patch_margin`, `tooltip_pad`, `tooltip_font_size`, `tooltip_color`, `tooltip_offset` | Empty texture = flat panel (`tooltip_bg`, `tooltip_border`) |
-| Health bar | `bar_frame_texture`, `bar_fill_texture`, `bar_frame_patch_margin`, `health_bar_width` / `health_bar_height`, `health_fill_color`, `health_low_color`, `health_trail_color` | Frame is a nine-patch |
-| Boss bar | `boss_bg_texture`, `boss_fill_texture`, `boss_bar_width_fraction`, `boss_bar_height`, `boss_fill_color`, `boss_phase2_color`, `boss_marker_color` / `boss_marker_width`, `boss_fade_time`, `boss_flash_time` | Hidden until the boss wakes |
+| Health bar | `hp_frame_tex`, `hp_fill_tex`, `hp_trail_tex`, `health_low_color` | Island Workshop parts (assets/ui/game); fill caps come from slices.json |
+| Boss bar | `boss_frame_tex`, `boss_fill_tex`, `boss_plate_tex`, `boss_fill_color`, `boss_phase2_color`, `boss_fade_time`, `boss_flash_time` | Hidden until the boss wakes |
 | Slot size and gap | `slot_size` (44) and `slot_gap` (6) | One number each; the hotbar and the bag lay themselves out |
 | Count / key number text | `font`, `count_font_size`, `count_color`, `key_font_size`, `key_color` | |
 | Item icon | `icon` on the item file in `data/items/` (`ItemData`) | Placeholders live in `assets/ui/placeholder/` (16 x 16): replace the PNG or point `icon` at your own. No icon = a coloured square (the item's `color`). Weapons without an icon show their model's `Art` sprite |
@@ -156,9 +156,7 @@ The art sits with its feet on the bottom edge of the footprint, centred. If your
 
 | What | Field | Notes |
 |---|---|---|
-| Whole window background | `window_texture`, `window_patch_margin`, `window_pad`, `window_gap` | Nine-patch. Empty = flat `window_color` / `window_border` |
-| Crafting / furnace area frame | `section_texture`, `section_patch_margin`, `section_pad`, `craft_area_height` | Empty = flat `section_color` / `section_border` |
-| Recipe icons | `craft_slot_size`, `craft_slot_gap`, `craft_grid_columns`, `craft_grid_rows` | The icons are the same `ItemSlot` scene as the hotbar, so the slot frame art shows here too |
+| (removed) | the old flat window fields are gone: the book is built from the `book_*` / `well_tex` parts, see assets/ui/game/README.md | |
 | Lit / dim / flash | `craft_lit_color`, `craft_dim_color` (45% alpha), `craft_lit_backdrop` (light square), `craft_dim_backdrop` (dark square), `craft_flash_color`, `craft_flash_time` | Lit and dim never depend on the art's own colours: a lit icon sits on a light square, a dim one on a dark square and is faded. Flash = clicked while dim |
 | Held stack (cursor, bag and crafting) | `cursor_offset`, `cursor_scale`, `cursor_shadow_size`, `cursor_shadow_color`, `cursor_shadow_offset` | Drawn offset from the pointer, a bit bigger, with a soft shadow: it reads as lifted |
 | Ingredient icons in the hover | `tooltip_icon_size`, `craft_short_color`, `craft_enough_color` | The need count is white, or red when you are short |

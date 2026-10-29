@@ -6,7 +6,6 @@ extends CanvasLayer
 
 const TITLE := "res://scenes/title.tscn"
 
-@export var dim_color := Color(0.0, 0.0, 0.0, 0.6)
 @export var title_text := "Paused"
 ## Seconds the "Not saved: ..." line shows on the button before quitting to the title.
 @export var unsaved_notice_time := 1.2
@@ -22,8 +21,7 @@ func _ready() -> void:
 	GameSettings.apply()   # an arena started directly still honours the saved settings
 	_screen = MenuScreen.new()
 	_screen.title_text = title_text
-	_screen.title_size = 56
-	_screen.background_color = dim_color
+	_screen.style = MenuScreen.Style.PAUSE
 	_screen.items = [
 		{"text": "Resume", "cb": resume},
 		{"text": "Settings", "settings": true},
@@ -61,11 +59,13 @@ func handle_pause() -> void:
 
 func pause() -> void:
 	get_tree().paused = true
+	get_tree().call_group("hud", "set_paused_view", true)
 	_screen.back()
 	_screen.visible = true
 	_screen.focus_first()
 
 func resume() -> void:
+	get_tree().call_group("hud", "set_paused_view", false)
 	_screen.visible = false
 	get_tree().paused = false
 

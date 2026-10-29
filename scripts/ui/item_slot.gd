@@ -41,11 +41,26 @@ var cast_progress := 0.0      ## 0..1 fill while swapping to this slot's weapon
 var cooldown_frac := 0.0      ## 0..1 shade while the swap cooldown runs
 var tip_override := ""        ## hover name for slots that hold no item (the ability slots)
 var icon_tilt_degrees := -45.0
+## Island Workshop look (skin parts): icon top in art px inside the 22 px slot (hotbar / bag 4, book 3).
+var icon_top_art := 4
+var station_locked := false   ## padlock at the slot corner (recipe that needs a station you are not near)
+var grey_icon := false        ## icon drawn grey (recipe you lack the items for)
+var icon_modulate := Color.WHITE   ## tints the icon only (a recipe you cannot make), not the frame
+var bare := false             ## no frame picture (an icon on the page)
+var _padlock: TextureRect
+var _frame_src: Texture2D
+var _frame_scale := 0
+var _count_col := Color(-1, -1, -1, -1)   ## last font colour set on $Count (refresh() runs every frame; setting it again re-themes the label)
 var color_tint := Color(0, 0, 0, 0)
 var _picture: Texture2D
 var _tilt := 0.0
 
 func _ready() -> void:
+	_padlock = TextureRect.new()
+	_padlock.name = "Padlock"
+	_padlock.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_padlock.stretch_mode = TextureRect.STRETCH_KEEP
+	add_child(_padlock)
 	gui_input.connect(_on_gui_input)
 	mouse_entered.connect(func(): hovered = true; refresh())
 	mouse_exited.connect(func(): hovered = false; refresh())
@@ -57,6 +72,17 @@ func tip_text() -> String:
 	if tip_override != "":
 		return tip_override
 	return item.display_name if item != null else ""
+
+## The colour the slot is shaded with now (icon only in the Island Workshop look, the whole slot in the old one).
+func shade() -> Color:
+	return icon_modulate if PixelArt.art_mode(skin) and modulate == Color.WHITE else modulate
+
+## Second tooltip line ("Material  x37"); "" for slots with no item.
+func tip_sub() -> String:
+	if item == null or tip_override != "":
+		return ""
+	var t := item.category.capitalize()
+	return t + ("  x%d" % count if count > 1 else "")
 
 ## A slot that is not an item (dodge / skill / guard): a picture, or a plain colour while there is none.
 func set_picture(tex: Texture2D, fallback: Color) -> void:
@@ -103,8 +129,14 @@ func _on_gui_input(ev: InputEvent) -> void:
 func apply_skin() -> void:
 	if not is_node_ready() or skin == null:
 		return
+	_frame_src = null   # the skin / scale may have changed: pick the frame copy again
+	_count_col = Color(-1, -1, -1, -1)
+	if PixelArt.art_mode(skin):
+		_apply_art()
+		return
 	var sz := size_override if size_override > 0 else skin.slot_size
 	custom_minimum_size = Vector2(sz, sz)
+	_padlock.visible = false
 	_nine($Frame, frame_override if frame_override != null else skin.slot_texture, skin.slot_patch_margin, skin.frame_color, skin.frame_border)
 	_nine($SelectedFrame, skin.slot_selected_texture, skin.selected_patch_margin, Color(0, 0, 0, 0), skin.selected_border)
 	$SelectedFrame.offset_left = -skin.selected_grow
@@ -129,12 +161,69 @@ func apply_skin() -> void:
 	$LockOverlay/LockTint.visible = skin.lock_texture == null
 	$LockOverlay/LockTint.color = skin.lock_color
 
+## Island Workshop parts: frame picture (idle / hover / pick) at art scale, icon 16 art px, small-font count + key.
+func _apply_art() -> void:
+	var S := skin.art_scale
+	var sz := size_override if size_override > 0 else 22 * S
+	custom_minimum_size = Vector2(sz, sz)
+	var pad := float(S) * (sz / (22.0 * S))   # the 1 px pad of the picture
+	$Frame.patch_margin_left = 0
+	$Frame.patch_margin_top = 0
+	$Frame.patch_margin_right = 0
+	$Frame.patch_margin_bottom = 0
+	$Frame.offset_left = -pad
+	$Frame.offset_top = -pad
+	$Frame.offset_right = pad
+	$Frame.offset_bottom = pad
+	$Frame/Placeholder.visible = false
+	$SelectedFrame.visible = false
+	var k := sz / (22.0 * S)
+	$Icon.offset_left = 3 * S * k
+	$Icon.offset_top = icon_top_art * S * k
+	$Icon.offset_right = -3 * S * k
+	$Icon.offset_bottom = -(22 - icon_top_art - 16) * S * k
+	if bare and sz < 22 * S:   # an icon on its own (tooltip ingredients): it fills the whole square
+		$Icon.offset_left = 0
+		$Icon.offset_top = 0
+		$Icon.offset_right = 0
+		$Icon.offset_bottom = 0
+	for n in [$CastFill, $CooldownShade, $Hover, $Backdrop]:
+		n.offset_left = 0
+		n.offset_top = 0
+		n.offset_right = 0
+		n.offset_bottom = 0
+	PixelArt.style_label($Count, skin, "small", skin.pal_cream, true)
+	PixelArt.style_label($KeyLabel, skin, "small", skin.pal_cream, true)   # the slot number: small font at 2x (the mock's size), skin outline
+	$Count.offset_left = 0
+	$Count.offset_top = 0
+	$Count.offset_right = -3 * S
+	$Count.offset_bottom = -2 * S
+	$KeyLabel.offset_left = 2 * S
+	$KeyLabel.offset_top = 2 * S
+	$LockOverlay.texture = skin.lock_texture
+	$LockOverlay/LockTint.visible = skin.lock_texture == null
+	$LockOverlay/LockTint.color = skin.lock_color
+	PixelArt.set_pic(_padlock, skin.padlock_tex, S)
+	_padlock.position = Vector2(15, 15) * S * k
+	_refresh_frame()
+
+func _refresh_frame() -> void:
+	var tex: Texture2D = frame_override
+	if tex == null:
+		tex = skin.slot_pick_tex if selected else (skin.slot_hover_tex if hovered and mouse_filter != Control.MOUSE_FILTER_IGNORE else skin.slot_idle_tex)
+	if tex != _frame_src or skin.art_scale != _frame_scale:   # refresh() runs every frame: look the copy up only when it changes
+		_frame_src = tex
+		_frame_scale = skin.art_scale
+		$Frame.texture = PixelArt.up(tex, _frame_scale)
+	$Frame.visible = not bare
+
 ## State -> nodes (item, count, selected, ...). Cheap; call after changing anything.
 func refresh() -> void:
 	if not is_node_ready() or skin == null:
 		return
-	$SelectedFrame.visible = selected
-	$Backdrop.visible = backdrop.a > 0.0
+	var art := PixelArt.art_mode(skin)
+	$SelectedFrame.visible = selected and not art
+	$Backdrop.visible = backdrop.a > 0.0 and not art
 	$Backdrop.color = backdrop
 	$Tint.visible = color_tint.a > 0.0 and _picture == null
 	$Tint.color = color_tint
@@ -147,11 +236,23 @@ func refresh() -> void:
 	$CastFill.anchor_top = 1.0 - cast_progress
 	$CooldownShade.visible = cooldown_frac > 0.0
 	$CooldownShade.anchor_bottom = cooldown_frac
-	$Hover.visible = hovered and mouse_filter != Control.MOUSE_FILTER_IGNORE
+	$Hover.visible = hovered and mouse_filter != Control.MOUSE_FILTER_IGNORE and not art
+	if art:
+		_refresh_frame()
+		_padlock.visible = station_locked
+		$Icon.material = PixelArt.grey_material() if grey_icon else null
+		$Icon.modulate = icon_modulate
+		_set_count_color(count_tint if count_tint.a > 0.0 else skin.pal_cream)
 	$Count.text = count_text if count_text != "" else (str(count) if count > 1 else "")
-	$Count.add_theme_color_override("font_color", count_tint if count_tint.a > 0.0 else skin.count_color)
+	if not art:
+		_set_count_color(count_tint if count_tint.a > 0.0 else skin.count_color)
 	$KeyLabel.text = key_text
 	$LockOverlay.visible = locked
+
+func _set_count_color(c: Color) -> void:
+	if c != _count_col:
+		_count_col = c
+		$Count.add_theme_color_override("font_color", c)
 
 func _nine(r: NinePatchRect, tex: Texture2D, margin: int, fill: Color, border: Color) -> void:
 	r.texture = tex

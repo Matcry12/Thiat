@@ -1,69 +1,136 @@
 class_name CraftWindow
 extends Control
-## The crafting window (decision 0031): Tab / I opens ONE centred window. Top: the crafting area. Bottom: the
-## bag (3 x 9) and a copy of the hotbar (1 x 9). Crafting is simple: one grid of result icons. An icon is LIT
-## when you can craft it and DIMMED when you only hold part of its ingredients (recipes you have nothing for are
-## hidden). Click a lit icon: the item lands on the cursor (the ingredients are taken then), and you put it in
-## any slot like a bag stack. Shift click: straight into the inventory. The ingredients show only in the
-## hover tooltip (icons + need counts). Furnace tab (a furnace in range): [input] > [progress arrow] > [output].
+## The bag + crafting book (decisions 0029 / 0031, look = Island Workshop, docs/design/DESIGN.md section 6-7).
+## Tab / I opens ONE window: an open book on top (left page = a 6 x 4 grid of recipe icons, right page = the chosen
+## recipe: ingredients with have / need, a quantity stepper and a Craft button), the bag + a hotbar copy below.
+## Click an icon = choose it. Craft = the item lands on the cursor (put it in any slot), shift + Craft = straight into
+## the inventory. A Furnace tab shows [input] > [progress] > [output] when a furnace is near.
 ## Pure view: it reads Crafter / Inventory / Furnace by polling and EMITS requests; the HUD answers them.
-## Looks = InventorySkin and the ItemSlot scene; the layout is containers. No words: names are hover tooltips.
+## Everything is placed in ART px (1 art px = skin.art_scale screen px, whole numbers) from the baked parts in
+## assets/ui/game (README: "Bag + crafting book"). Organic pictures are never stretched.
 
-signal craft_requested(recipe: RecipeData, straight: bool)   ## straight = shift click: into the inventory, not the cursor
+signal craft_requested(recipe: RecipeData, straight: bool)   ## straight = shift + Craft: into the inventory, not the cursor
 signal furnace_input_clicked(shift: bool)
 signal furnace_output_clicked(shift: bool)
 signal rebuilt   ## the recipe icons are new (the HUD registers their hover names)
+signal recipe_chosen(recipe: RecipeData)
 
 const SLOT_SCENE := preload("res://scenes/ui/item_slot.tscn")
+const GRID_COLS := 6
+const GRID_ROWS := 4
 
 @export var skin: InventorySkin
+@export_group("Layout (art px)")
+## Book top edge, art px from the screen top (the mock puts it at 14). Horizontally the window is centred.
+@export var top_art := 14
+## Gap between the book and the bag, art px.
+@export var book_bag_gap_art := 6
+@export var qty_max := 20
+## Content margins of the stepper / Craft buttons (left, top, right, bottom).
+@export var btn_content_art := Vector4i(2, 0, 2, 3)
+## Craft button text inset right of the hammer / padlock (lit / dim), art px.
+@export var craft_text_inset_art := Vector2i(22, 14)
+## Longest item name that fits the page beside the item slot, art px.
+@export var name_max_art := 108
+## Ingredient row height in the well, art px (a 16 px icon + 2).
+@export var row_step_art := 18
+@export_group("Text")
+## Description text in the readable default font instead of the pixel one.
+@export var clean_desc := false   ## (the pixel font reads better on the book page; this is only a toggle)
+## One line under each item name in the book (data, by item id); a missing id falls back to its category.
+@export var blurbs := {
+	"workbench": "Craft tools and gear.", "furnace": "Melt ore into metal.", "anvil": "Forge strong tools.",
+	"stone_axe": "Chops trees faster.", "stone_pickaxe": "Breaks rocks and ore.", "bow": "Shoot from far away.",
+	"copper_bar": "Melt ore into metal.", "wooden_sword": "A simple blade.", "copper_axe": "Strong and sharp.",
+	"copper_pickaxe": "Digs deeper veins.", "copper_sword": "A keen copper blade.",
+}
+@export var category_blurbs := {
+	"material": "A raw material.", "tool": "Helps you gather.", "weapon": "Use it in a fight.", "placeable": "Place it in the world.",
+}
+@export var furnace_note := "Put ore on the left.\nTake bars on the right."
+## Lowest art y the description + "Makes" text may reach (the stepper row starts at 108).
+@export var desc_room_art := 104
+## Label top nudge, art px (a pixel font's glyph box sits a little high / low in a Label). The screen offset is rounded to whole pixels.
+@export var text_dy_art := 1.5
 
-## A right-pointing arrow drawn in code until the skin has a picture. `fill` (0..1) paints the left part in
-## `fill_color`: the furnace progress.
+## Furnace progress arrow, built from skin parts on whole art pixels: a track + fill shaft and the baked menu_arrow head.
+## `fill` (0..1) paints the shaft from the left in `fill_color`.
 class Arrow extends Control:
 	var color := Color.WHITE
 	var fill_color := Color(1, 0.6, 0.2)
-	var half_height := 7.0
+	var head: Texture2D       ## already upscaled
+	var art := 2              ## screen px per art px
+	var shaft_art := 4        ## shaft thickness, art px
 	var fill := 0.0
-	func _tri(x1: float, h: float) -> PackedVector2Array:
-		var k := 1.0 - x1 / maxf(size.x, 1.0)   # the triangle narrows towards the tip
-		var hh := half_height * k
-		return PackedVector2Array([Vector2(0, h - half_height), Vector2(x1, h - hh), Vector2(x1, h + hh), Vector2(0, h + half_height)])
 	func _draw() -> void:
-		var h := size.y * 0.5
-		draw_colored_polygon(PackedVector2Array([Vector2(0, h - half_height), Vector2(size.x, h), Vector2(0, h + half_height)]), color)
+		var hw := head.get_width() if head else 0
+		var sh := shaft_art * art
+		var y := roundf((size.y - sh) * 0.5 / art) * art
+		var w := size.x - hw
+		draw_rect(Rect2(0, y, w, sh), color)
 		if fill > 0.0:
-			var x1 := size.x * clampf(fill, 0.0, 1.0)
-			draw_colored_polygon(_tri(x1, h), fill_color)
+			draw_rect(Rect2(0, y, floorf(w * clampf(fill, 0.0, 1.0) / art) * art, sh), fill_color)
+		if head:
+			draw_texture(head, Vector2(w, roundf((size.y - head.get_height()) * 0.5 / art) * art), fill_color if fill >= 1.0 else color)
 
 var _crafter: Crafter
 var _inv: Inventory
 var _bag: BagPanel
 var _hotbar: Hotbar
-var _frame: PanelContainer
+var _frame: Control        ## the window rectangle (book + bag); the tabs stick out on its left
+var _book: Control         ## origin = the book's box top-left
+var _cover: TextureRect
+var _tab_idle: Array[TextureRect] = []
+var _tab_active: TextureRect
 var _marker: ItemSlot
 var _tab_craft: ItemSlot
 var _tab_furnace: ItemSlot
-var _tab_row: HBoxContainer
-var _craft_section: PanelContainer
-var _furnace_section: PanelContainer
-var _scroll: ScrollContainer
-var _grid: GridContainer
+var _title: Label
+var _empties: Array[TextureRect] = []
+var _craft_page: Control
+var _furnace_page: Control
+var _grid_box: Control
+var _right: Control        ## the chosen-item page (both tabs)
+var _sel_slot: ItemSlot
+var _name: Label
+var _type: Label
+var _well: NinePatchRect
+var _ing: Control
+var _banner: NinePatchRect
+var _banner_lock: TextureRect
+var _banner_text: Label
+var _desc: Label
+var _makes: Label
+var _steps: Control        ## stepper + Craft row
+var _minus: Button
+var _plus: Button
+var _qty_box: NinePatchRect
+var _qty_label: Label
+var _craft_btn: Button
+var _craft_lock: TextureRect
+var _craft_hammer: TextureRect
 var _f_in: ItemSlot
 var _f_out: ItemSlot
 var _f_arrow: Arrow
+var _f_note: Label
+var _f_in_label: Label
+var _f_out_label: Label
+var _tab_anvil: ItemSlot
 var _hint: TextureRect
 var _hint_tint: ColorRect
 var _recipe_slots: Array[ItemSlot] = []
 var _recipes: Array[RecipeData] = []
+var _sel: RecipeData
+var _qty := 1
 var _signature := ""
+var _panel_sig := ""
 var _flash_slot: ItemSlot
 var _flash_left := 0.0
 var _stations_sig := ""
 var _tab := "craft"
 var _furnace: Furnace
 var _applied: InventorySkin
-var _cells_applied := false
+var _can_craft_now := false
 
 func bind(inv: Inventory, loadout: Loadout, c: Crafter) -> void:
 	_inv = inv
@@ -122,91 +189,190 @@ func current_furnace() -> Furnace:
 	return _furnace
 
 func craft_visible() -> bool:
-	return _craft_section.visible
+	return _craft_page.visible
 
 func furnace_visible() -> bool:
-	return _furnace_section.visible
+	return _furnace_page.visible
 
 func hint_icon() -> TextureRect:
 	return _hint
+
+func selected_recipe() -> RecipeData:
+	return _sel
+
+func quantity() -> int:
+	return _qty
+
+func craft_button() -> Button:
+	return _craft_btn
+
+## Is the Craft button lit (the chosen recipe can be made `quantity()` times now)?
+func craft_enabled() -> bool:
+	return _can_craft_now
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_frame = PanelContainer.new()
+	_frame = Control.new()
 	_frame.name = "Frame"
 	_frame.mouse_filter = Control.MOUSE_FILTER_STOP   # the window eats clicks: no sword swing through it
-	_frame.set_anchors_preset(Control.PRESET_CENTER)
+	_frame.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	_frame.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_frame.grow_vertical = Control.GROW_DIRECTION_BOTH
 	_frame.visible = false
 	add_child(_frame)
-	var v := VBoxContainer.new()
-	v.name = "Parts"
-	v.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_frame.add_child(v)
 
-	# --- tab row: station marker, Crafting tab, Furnace tab (icons only)
-	_tab_row = HBoxContainer.new()
-	_tab_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(_tab_row)
+	_book = Control.new()
+	_book.name = "Book"
+	_book.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_frame.add_child(_book)
+	for i in 2:   # tabs tucked BEHIND the cover
+		var t := TextureRect.new()
+		t.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		t.stretch_mode = TextureRect.STRETCH_KEEP
+		_book.add_child(t)
+		_tab_idle.append(t)
+	_cover = TextureRect.new()
+	_cover.name = "Cover"
+	_cover.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_cover.stretch_mode = TextureRect.STRETCH_KEEP
+	_book.add_child(_cover)
+
+	_title = _label()
+	_book.add_child(_title)
 	_marker = _icon_slot(-1, false)
-	_tab_row.add_child(_marker)
-	_tab_craft = _icon_slot(0, true)
-	_tab_row.add_child(_tab_craft)
-	_tab_furnace = _icon_slot(1, true)
-	_tab_row.add_child(_tab_furnace)
+	_book.add_child(_marker)
+	for i in GRID_COLS * GRID_ROWS:
+		var e := TextureRect.new()
+		e.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		e.stretch_mode = TextureRect.STRETCH_KEEP
+		_book.add_child(e)
+		_empties.append(e)
 
-	# --- crafting area
-	_craft_section = PanelContainer.new()
-	_craft_section.name = "CraftArea"
-	_craft_section.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(_craft_section)
-	var h := HBoxContainer.new()
-	h.name = "CraftRow"
-	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_craft_section.add_child(h)
-	_scroll = ScrollContainer.new()
-	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_scroll.mouse_filter = Control.MOUSE_FILTER_PASS
-	_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	h.add_child(_scroll)
-	_grid = GridContainer.new()
-	_grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_scroll.add_child(_grid)
+	# --- left page, crafting tab: the recipe icons
+	_craft_page = Control.new()
+	_craft_page.name = "CraftArea"
+	_craft_page.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_book.add_child(_craft_page)
+	_grid_box = Control.new()
+	_grid_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_craft_page.add_child(_grid_box)
 
-	# --- furnace area
-	_furnace_section = PanelContainer.new()
-	_furnace_section.name = "FurnaceArea"
-	_furnace_section.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(_furnace_section)
-	var fh := HBoxContainer.new()
-	fh.alignment = BoxContainer.ALIGNMENT_CENTER
-	fh.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_furnace_section.add_child(fh)
+	# --- left page, furnace tab: [input] > [progress arrow] > [output]
+	_furnace_page = Control.new()
+	_furnace_page.name = "FurnaceArea"
+	_furnace_page.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_book.add_child(_furnace_page)
 	_f_in = SLOT_SCENE.instantiate()
 	_f_in.index = 0
-	_f_in.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_f_in.icon_top_art = 3
 	_f_in.slot_clicked.connect(func(_i: int, b: int, sh: bool): if b == MOUSE_BUTTON_LEFT: furnace_input_clicked.emit(sh))
-	fh.add_child(_f_in)
+	_furnace_page.add_child(_f_in)
+	_f_in_label = _label()
+	_f_in_label.text = "Ore"
+	_furnace_page.add_child(_f_in_label)
+	_f_out_label = _label()
+	_f_out_label.text = "Bar"
+	_furnace_page.add_child(_f_out_label)
 	_f_arrow = Arrow.new()
 	_f_arrow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_f_arrow.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	fh.add_child(_f_arrow)
+	_furnace_page.add_child(_f_arrow)
 	_f_out = SLOT_SCENE.instantiate()
 	_f_out.index = 1
-	_f_out.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_f_out.icon_top_art = 3
 	_f_out.slot_clicked.connect(func(_i: int, b: int, sh: bool): if b == MOUSE_BUTTON_LEFT: furnace_output_clicked.emit(sh))
-	fh.add_child(_f_out)
+	_furnace_page.add_child(_f_out)
 
-	# --- bag + hotbar copy (the bag is the existing BagPanel, moved in here)
+	# --- right page: the chosen item
+	_right = Control.new()
+	_right.name = "Chosen"
+	_right.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_book.add_child(_right)
+	_sel_slot = SLOT_SCENE.instantiate()
+	_sel_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sel_slot.icon_top_art = 3
+	_right.add_child(_sel_slot)
+	_name = _label()
+	_right.add_child(_name)
+	_type = _label()
+	_right.add_child(_type)
+	_well = NinePatchRect.new()
+	_well.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_right.add_child(_well)
+	_ing = Control.new()
+	_ing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_right.add_child(_ing)
+	_banner = NinePatchRect.new()
+	_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_right.add_child(_banner)
+	_banner_lock = TextureRect.new()
+	_banner_lock.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_banner_lock.stretch_mode = TextureRect.STRETCH_KEEP
+	_banner.add_child(_banner_lock)
+	_banner_text = _label()
+	_banner.add_child(_banner_text)
+	_desc = _label()
+	_desc.autowrap_mode = TextConfig.WRAP
+	_right.add_child(_desc)
+	_makes = _label()
+	_right.add_child(_makes)
+	_steps = Control.new()
+	_steps.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_right.add_child(_steps)
+	_minus = Button.new()
+	_minus.text = "<"
+	_minus.focus_mode = Control.FOCUS_NONE
+	_minus.pressed.connect(func(): _qty = maxi(_qty - 1, 1))
+	_steps.add_child(_minus)
+	_qty_box = NinePatchRect.new()
+	_qty_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_steps.add_child(_qty_box)
+	_qty_label = _label()
+	_qty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_qty_box.add_child(_qty_label)
+	_plus = Button.new()
+	_plus.text = ">"
+	_plus.focus_mode = Control.FOCUS_NONE
+	_plus.pressed.connect(func(): _qty = mini(_qty + 1, qty_max))
+	_steps.add_child(_plus)
+	_craft_btn = Button.new()
+	_craft_btn.text = "Craft"
+	_craft_btn.focus_mode = Control.FOCUS_NONE
+	_craft_btn.pressed.connect(func(): craft_selected(Input.is_key_pressed(KEY_SHIFT)))
+	_steps.add_child(_craft_btn)
+	_craft_hammer = TextureRect.new()
+	_craft_hammer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_craft_hammer.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_craft_hammer.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_craft_btn.add_child(_craft_hammer)
+	_craft_lock = TextureRect.new()
+	_craft_lock.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_craft_lock.stretch_mode = TextureRect.STRETCH_KEEP
+	_craft_btn.add_child(_craft_lock)
+
+	_f_note = _label()
+	_f_note.autowrap_mode = TextConfig.WRAP
+	_right.add_child(_f_note)
+
+	# --- the tab pictures in FRONT of the cover, and the clickable icons on them
+	_tab_active = TextureRect.new()
+	_tab_active.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tab_active.stretch_mode = TextureRect.STRETCH_KEEP
+	_book.add_child(_tab_active)
+	_tab_craft = _icon_slot(0, true)
+	_book.add_child(_tab_craft)
+	_tab_furnace = _icon_slot(1, true)
+	_book.add_child(_tab_furnace)
+	_tab_anvil = _icon_slot(2, true)
+	_book.add_child(_tab_anvil)
+
+	# --- bag + hotbar copy (the bag is the existing BagPanel)
 	_bag = BagPanel.new()
 	_bag.name = "Bag"
-	v.add_child(_bag)
+	_frame.add_child(_bag)
 	_hotbar = Hotbar.new()
 	_hotbar.name = "HotbarCopy"
-	v.add_child(_hotbar)
+	_frame.add_child(_hotbar)
 
 	# --- the lock icon (shown when the window cannot open): lives on the always-visible root
 	_hint = TextureRect.new()
@@ -224,61 +390,157 @@ func _ready() -> void:
 	_hint.visible = false
 	add_child(_hint)
 
+## Wrap mode in one place (Godot enum, kept short here).
+class TextConfig:
+	const WRAP := TextServer.AUTOWRAP_WORD_SMART
+
+func _label() -> Label:
+	var l := Label.new()
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return l
+
 func _icon_slot(idx: int, clickable: bool) -> ItemSlot:
 	var s: ItemSlot = SLOT_SCENE.instantiate()
 	s.index = idx
+	s.bare = true
+	s.icon_top_art = 3
 	s.mouse_filter = Control.MOUSE_FILTER_STOP if clickable else Control.MOUSE_FILTER_IGNORE
 	if clickable:
 		s.slot_clicked.connect(func(i: int, b: int, _sh: bool):
 			if b == MOUSE_BUTTON_LEFT:
-				_tab = "craft" if i == 0 else "furnace")
+				_tab = ["craft", "furnace", "anvil"][i])
 	return s
 
-# ------------------------------------------------------------------ skin
+# ------------------------------------------------------------------ skin / layout
 
-func _box(tex: Texture2D, patch: int, fill: Color, border: Color, pad: int, sk: InventorySkin) -> StyleBox:
-	var b: StyleBox
-	if tex != null:
-		var t := StyleBoxTexture.new()
-		t.texture = tex
-		for side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
-			t.set_texture_margin(side, patch)
-		b = t
-	else:
-		var f := StyleBoxFlat.new()
-		f.bg_color = fill
-		f.border_color = border
-		f.set_border_width_all(sk.slot_border_width)
-		b = f
-	for side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
-		b.set_content_margin(side, pad)
-	return b
+func _at(n: Control, x: float, y: float) -> void:
+	n.position = Vector2(x, y) * get_skin().art_scale
+
+func _sz(n: Control, w: float, h: float) -> void:
+	n.size = Vector2(w, h) * get_skin().art_scale
+
+func _text_at(l: Label, x: float, y: float) -> void:
+	var S := get_skin().art_scale
+	l.position = Vector2(roundf(x * S), roundf((y + text_dy_art) * S))   # whole screen pixels at any art scale
+
+## Small book button: four state pictures (part names = slices.json), label in the pixel bold font. The craft button's disabled look is its own part.
+func _btn_style(b: Button, sk: InventorySkin, disabled_tex: Texture2D, disabled_part: String) -> void:
+	var S := sk.art_scale
+	PixelArt.style_button(b, {
+		"normal": [sk.button_small_idle_tex, "button_small_idle"], "hover": [sk.button_small_hover_tex, "button_small_hover"],
+		"pressed": [sk.button_small_pressed_tex, "button_small_pressed"], "disabled": [disabled_tex, disabled_part]}, S, btn_content_art)
+	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	b.add_theme_font_override("font", sk.ui_font("bold"))
+	b.add_theme_font_size_override("font_size", PixelArt.font_px(sk, "bold"))
+	b.add_theme_constant_override("outline_size", sk.text_outline_size)
+	for c in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color"]:
+		b.add_theme_color_override(c, sk.pal_cream)
+	b.add_theme_color_override("font_outline_color", sk.text_outline_color)
+	b.add_theme_color_override("font_disabled_color", sk.pal_muted)
 
 func _apply_skin() -> void:
 	var sk := get_skin()
-	_frame.add_theme_stylebox_override("panel", _box(sk.window_texture, sk.window_patch_margin, sk.window_color, sk.window_border, sk.window_pad, sk))
-	for sec: PanelContainer in [_craft_section, _furnace_section]:
-		sec.add_theme_stylebox_override("panel", _box(sk.section_texture, sk.section_patch_margin, sk.section_color, sk.section_border, sk.section_pad, sk))
-		sec.custom_minimum_size.y = sk.craft_area_height
-	_frame.get_node("Parts").add_theme_constant_override("separation", sk.window_gap)
-	_tab_row.add_theme_constant_override("separation", sk.craft_slot_gap)
-	_grid.columns = maxi(sk.craft_grid_columns, 1)
-	_grid.add_theme_constant_override("h_separation", sk.craft_slot_gap)
-	_grid.add_theme_constant_override("v_separation", sk.craft_slot_gap)
-	_scroll.custom_minimum_size.y = maxi(sk.craft_grid_rows, 1) * (sk.craft_slot_size + sk.craft_slot_gap)
-	for s in [_marker, _tab_craft, _tab_furnace]:
-		_set_skin(s, sk, sk.tab_size)
-	for s in [_f_in, _f_out]:
-		_set_skin(s, sk, sk.furnace_slot_size)
-	_f_arrow.color = sk.furnace_arrow_color
-	_f_arrow.fill_color = sk.furnace_fill_color
-	_f_arrow.half_height = sk.furnace_arrow_height * 0.5
-	_f_arrow.custom_minimum_size = Vector2(sk.furnace_arrow_width, sk.furnace_arrow_height + 4)
+	var S := sk.art_scale
+	var W := 330
+	var H := 136 + book_bag_gap_art + 124
+	_frame.custom_minimum_size = Vector2(W, H) * S
+	_frame.size = Vector2(W, H) * S
+	_frame.offset_left = -W * S / 2.0
+	_frame.offset_right = W * S / 2.0
+	_frame.offset_top = top_art * S
+	_frame.offset_bottom = (top_art + H) * S
+	_book.position = Vector2.ZERO
+	PixelArt.set_pic(_cover, sk.book_cover_tex, S)
+	_cover.position = Vector2(-8, -8) * S   # the picture has an 8 px pad round the box
+	PixelArt.set_pic(_tab_active, sk.book_tab_active_tex, S)
+	for i in 2:
+		PixelArt.set_pic(_tab_idle[i], sk.book_tab_idle_1_tex if i == 0 else sk.book_tab_idle_2_tex, S)
+	for s in [_marker, _tab_craft, _tab_furnace, _tab_anvil, _f_in, _f_out, _sel_slot]:
+		_set_skin(s, sk, 0)
+	_sel_slot.frame_override = sk.slot_sel_tex
+	# left page
+	PixelArt.style_label(_title, sk, "bold", sk.pal_cream)
+	_text_at(_title, 28, 11)
+	_at(_marker, 10, 3)
+	for i in _empties.size():
+		PixelArt.set_pic(_empties[i], sk.slot_idle_tex, S)
+		_at(_empties[i], 11 + 24 * (i % GRID_COLS), 25 + 24 * (i / GRID_COLS))   # the picture is 1 px bigger than the slot
+	_grid_box.position = Vector2.ZERO
+	# tabs (the idle ones behind; the active one and the icons are placed in _update_tabs)
+	# right page (x = 173 in the book)
+	_at(_sel_slot, 173, 10)
+	PixelArt.style_label(_name, sk, "bold", sk.pal_cream)
+	_text_at(_name, 201, 12)
+	PixelArt.style_label(_type, sk, "body", sk.pal_goldtxt)
+	_text_at(_type, 201, 23)
+	PixelArt.set_nine(_well, sk.well_tex, "well", S)
+	_at(_well, 173, 36)
+	_at(_ing, 173, 36)
+	PixelArt.set_nine(_banner, sk.lock_banner_tex, "lock_banner", S)
+	PixelArt.set_pic(_banner_lock, sk.padlock_tex, S)
+	_at(_banner_lock, 2, 3)
+	PixelArt.style_label(_banner_text, sk, "body", sk.pal_cream, false)
+	_at(_banner_text, 12, 1)
+	_style_desc(sk)
+	PixelArt.style_label(_makes, sk, "body", sk.pal_line, false)
+	_steps.position = Vector2.ZERO
+	_at(_minus, 173, 108)
+	_sz(_minus, 14, 19)
+	_at(_plus, 215, 108)
+	_sz(_plus, 14, 19)
+	_at(_craft_btn, 237, 108)
+	_sz(_craft_btn, 75, 19)
+	for b in [_minus, _plus]:
+		_btn_style(b, sk, sk.button_small_disabled_tex, "button_small_disabled")
+	_btn_style(_craft_btn, sk, sk.craft_disabled_tex, "craft_disabled")
+	for k in ["normal", "hover", "pressed", "disabled"]:   # the label sits right of the hammer / padlock
+		(_craft_btn.get_theme_stylebox(k) as StyleBoxTexture).content_margin_left = (craft_text_inset_art.x if k != "disabled" else craft_text_inset_art.y) * S
+	PixelArt.set_nine(_qty_box, sk.qty_box_tex, "qty_box", S)
+	_at(_qty_box, 190, 108)
+	_sz(_qty_box, 22, 18)
+	PixelArt.style_label(_qty_label, sk, "bold", sk.pal_cream)
+	_qty_label.position = Vector2(0, roundf((4 + text_dy_art) * S))
+	_qty_label.size = Vector2(22 * S, 11 * S)
+	_craft_hammer.texture = sk.craft_tab_icon
+	_craft_hammer.size = Vector2(16, 16) * S
+	_at(_craft_hammer, 4, -1)
+	PixelArt.set_pic(_craft_lock, sk.padlock_tex, S)
+	_at(_craft_lock, 6, 5)
+	PixelArt.style_label(_f_note, sk, "body", sk.pal_line, false, clean_desc)
+	_at(_f_note, 173, 40)
+	_f_note.custom_minimum_size.x = 139 * S
+	# furnace page: [Ore slot] > [arrow] > [Bar slot], centred in the left page
+	var fy := 52
+	_at(_f_in, 38, fy)
+	_at(_f_out, 38 + 22 + 10 + 30 + 10, fy)
+	_f_arrow.art = S
+	_f_arrow.head = PixelArt.up(sk.menu_arrow_tex, S)
+	_f_arrow.position = Vector2(38 + 22 + 10, fy) * S
+	_f_arrow.size = Vector2(30, 22) * S
+	_f_arrow.color = sk.pal_line
+	_f_arrow.fill_color = sk.pal_hp_d
+	for pair in [[_f_in_label, 38], [_f_out_label, 38 + 22 + 10 + 30 + 10]]:
+		PixelArt.style_label(pair[0], sk, "body", sk.pal_line, false)
+		pair[0].horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		pair[0].size = Vector2(22 * S, 11 * S)
+		_text_at(pair[0], pair[1], fy + 24)
+	# bag + hotbar copy, under the book
+	var bag_x := (W - 222) / 2.0
+	var bag_y := 136.0 + book_bag_gap_art
+	_at(_bag, bag_x + 8, bag_y + 12)
+	var art := PixelArt.art_mode(sk)
+	_hotbar.set("gap_override", S if art else -1)
+	_at(_hotbar, bag_x + 8, bag_y + 12 + _bag.hotbar_row_dy_art)
 	_hint.texture = sk.lock_texture
 	_hint.custom_minimum_size = Vector2(sk.slot_size * 1.5, sk.slot_size * 1.5)
 	_hint_tint.visible = sk.lock_texture == null
 	_hint_tint.color = sk.lock_hint_color
-	_signature = ""   # rebuild the recipe icons with the new sizes
+	_signature = ""   # rebuild the recipe icons with the new look
+	_panel_sig = ""
+
+func _style_desc(sk: InventorySkin) -> void:
+	PixelArt.style_label(_desc, sk, "body", sk.pal_line, false, clean_desc)
+	_desc.custom_minimum_size.x = 139 * sk.art_scale
 
 func _set_skin(s: ItemSlot, sk: InventorySkin, size_px: int) -> void:
 	s.size_override = size_px
@@ -303,14 +565,17 @@ func _process(delta: float) -> void:
 	if not open:
 		return
 	_update_tabs(sk)
-	_craft_section.visible = _tab == "craft"
-	_furnace_section.visible = _tab == "furnace"
-	if _tab == "craft":
+	_craft_page.visible = _tab != "furnace"
+	_furnace_page.visible = _tab == "furnace"
+	for e in _empties:
+		e.visible = _tab != "furnace"
+	if _tab != "furnace":
 		_update_craft(sk, delta)
 	else:
 		_update_furnace(sk)
 
 func _update_tabs(sk: InventorySkin) -> void:
+	var S := sk.art_scale
 	var furnaces := _crafter.furnaces_in_range()
 	_furnace = furnaces[0] if not furnaces.is_empty() else null
 	var ids := []
@@ -318,17 +583,39 @@ func _update_tabs(sk: InventorySkin) -> void:
 		ids.append(str(st.station_id))
 	ids.sort()
 	var sig := ",".join(ids)
+	var anvil_near := ids.has("anvil")
 	if sig != _stations_sig:   # the stations around you changed: open on the nearest one's tab
 		_stations_sig = sig
 		var nearest := _crafter.nearest_station_any()
-		_tab = "furnace" if nearest != null and nearest.station_id == &"furnace" else "craft"
-	if _furnace == null:
 		_tab = "craft"
-	_tab_row.visible = true
-	_tab_craft.visible = _furnace != null    # two tabs only when there is a choice
-	_tab_furnace.visible = _furnace != null
-	_tab_craft.selected = _tab == "craft"
-	_tab_furnace.selected = _tab == "furnace"
+		if nearest != null and nearest.station_id == &"furnace":
+			_tab = "furnace"
+		elif nearest != null and nearest.station_id == &"anvil":
+			_tab = "anvil"
+	if (_tab == "furnace" and _furnace == null) or (_tab == "anvil" and not anvil_near):
+		_tab = "craft"
+	# three side tabs, always: Craft, Furnace, Anvil. A station that is not near is dimmed and cannot be clicked.
+	var tabs := [_tab_craft, _tab_furnace, _tab_anvil]
+	var names := ["craft", "furnace", "anvil"]
+	var avail := [true, _furnace != null, anvil_near]
+	var idle_i := 0
+	for i in 3:
+		var s: ItemSlot = tabs[i]
+		var ty := 12 + 24 * i
+		var active: bool = _tab == names[i]
+		s.selected = active
+		s.visible = true
+		s.mouse_filter = Control.MOUSE_FILTER_STOP if avail[i] else Control.MOUSE_FILTER_IGNORE
+		_at(s, -22 + 1, ty)
+		s.icon_modulate = Color.WHITE if active else Color(1, 1, 1, 0.75 if avail[i] else 0.35)
+		if active:
+			_at(_tab_active, -22, ty)
+		else:
+			_at(_tab_idle[idle_i], -22, ty)
+			idle_i += 1
+	_tab_active.visible = true
+	for i in 2:
+		_tab_idle[i].visible = i < idle_i
 	_tab_craft.set_picture(sk.craft_tab_icon, sk.tab_color)
 	_tab_craft.tip_override = "Crafting"
 	var fi := _crafter.station_item(&"furnace")
@@ -337,76 +624,246 @@ func _update_tabs(sk: InventorySkin) -> void:
 	else:
 		_tab_furnace.set_picture(null, Color(0.7, 0.35, 0.25))
 	_tab_furnace.tip_override = "Furnace"
+	var ai := _crafter.station_item(&"anvil")
+	if ai != null:
+		_tab_anvil.set_item(ai, 1)
+	else:
+		_tab_anvil.set_picture(null, Color(0.45, 0.45, 0.5))
+	_tab_anvil.tip_override = "Anvil"
 	var near := _crafter.nearest_station()
 	var mi := _crafter.station_item(&"furnace") if _tab == "furnace" else (_crafter.station_item(near.station_id) if near != null else null)
-	if mi != null:
-		_marker.set_item(mi, 1)
-	else:
-		_marker.set_picture(sk.hand_icon, sk.hand_color)
+	_marker.set_picture(sk.craft_tab_icon, sk.tab_color)   # the small hammer; the name says which station
 	_marker.tip_override = mi.display_name if mi else "Hand"
-	_marker.visible = _furnace == null   # with tabs the Furnace tab already shows the furnace: no icon twice
+	_marker.visible = _furnace == null   # with a furnace tab the header drops the icon
+	_title.text = "Furnace" if _tab == "furnace" else ("Anvil" if _tab == "anvil" else "Recipes")
+	_title.position.x = (32 if _furnace == null else 12) * S
 	# a cue on the Furnace tab while it works (smelting or output ready)
 	var busy := _furnace != null and (_furnace.is_running() or _furnace.out_count > 0)
 	var pulse := 0.5 + 0.5 * sin(Time.get_ticks_msec() * 0.001 * sk.furnace_tab_pulse_speed)
 	_tab_furnace.modulate = Color.WHITE.lerp(sk.furnace_tab_glow_color, pulse) if busy else Color.WHITE
-	for s in [_marker, _tab_craft, _tab_furnace]:
+	for s in tabs + [_marker]:
 		s.refresh()
 
 func _update_craft(sk: InventorySkin, delta: float) -> void:
 	var list := _crafter.listed_recipes()
-	var sig := ",".join(list.map(func(r: RecipeData): return str(r.get_instance_id())))
+	if _tab == "anvil":
+		var only: Array[RecipeData] = []
+		for r in list:
+			if r.station == &"anvil":
+				only.append(r)
+		list = only
+	var sig := _tab + ":" + ",".join(list.map(func(r: RecipeData): return str(r.get_instance_id())))
 	if sig != _signature:
 		_signature = sig
 		_rebuild(list, sk)
 	_flash_left = maxf(_flash_left - delta, 0.0)
+	var art := PixelArt.art_mode(sk)
 	for i in _recipe_slots.size():
 		var s := _recipe_slots[i]
-		var lit := _crafter.can_craft(_recipes[i])
+		var r := _recipes[i]
+		var lit := _crafter.can_craft(r)
+		s.selected = r == _sel
+		s.station_locked = not _crafter.station_ok(r)
+		s.grey_icon = not lit
 		s.backdrop = sk.craft_lit_backdrop if lit else sk.craft_dim_backdrop
+		var col := sk.craft_lit_color if lit else sk.craft_dim_color
 		if s == _flash_slot and _flash_left > 0.0:
 			s.modulate = sk.craft_flash_color
+		elif art:   # the picture dims, the frame stays
+			s.modulate = Color.WHITE
+			s.icon_modulate = Color(1, 1, 1, sk.missing_icon_alpha) if not lit else Color.WHITE
+			if not lit:
+				s.icon_modulate = Color(col.r, col.g, col.b, sk.missing_icon_alpha)
 		else:
-			s.modulate = sk.craft_lit_color if lit else sk.craft_dim_color
+			s.modulate = col
 		s.refresh()
+	_update_chosen(sk)
 
 func _rebuild(list: Array[RecipeData], sk: InventorySkin) -> void:
 	for s in _recipe_slots:
-		_grid.remove_child(s)
+		_grid_box.remove_child(s)
 		s.queue_free()
 	_recipe_slots.clear()
 	_recipes = list
-	for i in list.size():
+	if _sel == null or not list.has(_sel):
+		_sel = list[0] if not list.is_empty() else null
+		_qty = 1
+	var S := sk.art_scale
+	for i in mini(list.size(), GRID_COLS * GRID_ROWS):   # ponytail: no scrolling, 24 recipes fit; add a scroll when the list grows past it
 		var s: ItemSlot = SLOT_SCENE.instantiate()
 		s.index = i
-		s.size_override = sk.craft_slot_size
+		s.icon_top_art = 3
 		s.skin = sk
 		s.set_item(list[i].result, list[i].result_count)
-		s.slot_clicked.connect(func(idx: int, b: int, sh: bool):
+		s.slot_clicked.connect(func(idx: int, b: int, _sh: bool):
 			if b == MOUSE_BUTTON_LEFT:
-				_clicked(idx, sh))
-		_grid.add_child(s)
+				_clicked(idx))
+		_grid_box.add_child(s)
+		s.position = Vector2(12 + 24 * (i % GRID_COLS), 26 + 24 * (i / GRID_COLS)) * S
 		_recipe_slots.append(s)
 	rebuilt.emit()
 
-## Click on recipe icon `idx`. A dimmed icon does nothing but flash red; a lit one asks for the craft.
-func _clicked(idx: int, straight: bool) -> void:
+## Click on recipe icon `idx`: it becomes the chosen recipe. A dimmed icon also flashes red.
+func _clicked(idx: int) -> void:
 	if idx < 0 or idx >= _recipes.size():
 		return
-	if not _crafter.can_craft(_recipes[idx]):
+	if _sel != _recipes[idx]:
+		_qty = 1   # a new recipe starts at one craft
+	_sel = _recipes[idx]
+	_panel_sig = ""
+	recipe_chosen.emit(_sel)
+	if not _crafter.can_craft(_sel):
 		_flash_slot = _recipe_slots[idx]
 		_flash_left = get_skin().craft_flash_time
-		return
-	craft_requested.emit(_recipes[idx], straight)
 
-func _update_furnace(_sk: InventorySkin) -> void:
+## Choose recipe `i` of the shown list (tests, shortcuts).
+func select_recipe(i: int) -> void:
+	_clicked(i)
+
+func _need_total(g: IngredientData) -> int:
+	return g.count * _qty
+
+## Can the Craft button make `quantity()` crafts now? Asked of the Crafter (ingredients, station, lock, the held stack
+## and its limit), so what the button shows is what Crafter will do.
+func _can_craft_qty(r: RecipeData, straight := false) -> bool:
+	return r != null and _crafter.craftable_count(r, not straight) >= _qty
+
+## The Craft button: asks for `quantity()` crafts of the chosen recipe. Refused (nothing asked) when it is not lit.
+func craft_selected(straight: bool) -> bool:
+	if _sel == null or not _can_craft_qty(_sel, straight):
+		return false
+	for i in _qty:
+		craft_requested.emit(_sel, straight)
+	return true
+
+func _station_name(r: RecipeData) -> String:
+	var it := _crafter.station_item(r.station)
+	var n := it.display_name.to_lower() if it != null else String(r.station)
+	return ("an " if n[0] in "aeiou" else "a ") + n
+
+func _update_chosen(sk: InventorySkin) -> void:
+	var r := _sel
+	_right.visible = r != null
+	_f_note.visible = false
+	for n in [_well, _ing, _steps]:
+		n.visible = true
+	if r == null:
+		return
+	var S := sk.art_scale
+	_can_craft_now = _can_craft_qty(r)
+	var sig := "%d|%d|%s|%s|%s" % [r.get_instance_id(), _qty, ",".join(r.ingredients.map(func(g): return "%d" % _inv.count(g.item.id))), _crafter.station_ok(r), clean_desc]
+	if sig != _panel_sig:
+		_panel_sig = sig
+		_build_chosen(r, sk, S)
+	_qty_label.text = str(_qty)
+	_minus.disabled = _qty <= 1
+	_plus.disabled = _qty >= qty_max
+	_craft_btn.disabled = not _can_craft_now
+	_craft_hammer.visible = _can_craft_now
+	_craft_lock.visible = not _can_craft_now
+	_craft_btn.text = "Craft"
+	_craft_btn.add_theme_constant_override("h_separation", 0)
+
+func _build_chosen(r: RecipeData, sk: InventorySkin, S: int) -> void:
+	_sel_slot.set_item(r.result, r.result_count)
+	_sel_slot.refresh()
+	_set_name(r.result.display_name)
+	_type.text = "Station" if r.result.category == "placeable" else r.result.category.capitalize()
+	for c in _ing.get_children():
+		_ing.remove_child(c)
+		c.queue_free()
+	var rows := r.ingredients.size()
+	var locked := not _crafter.station_ok(r)
+	var wh := 4 + row_step_art * rows + (14 if locked else 0)
+	_sz(_well, 139, wh)
+	for i in rows:
+		var g := r.ingredients[i]
+		var s: ItemSlot = SLOT_SCENE.instantiate()
+		s.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		s.size_override = 16 * S   # a bare icon: the dark well is its background
+		s.bare = true
+		s.skin = sk
+		s.set_item(g.item, 1)
+		s.count_text = " "   # no stack number: have / need is the label beside it
+		s.position = Vector2(4, 2 + row_step_art * i) * S
+		_ing.add_child(s)
+		s.refresh()
+		var have := _inv.count(g.item.id)
+		var need := _need_total(g)
+		var l := PixelArt.label("%d/%d" % [have, need], sk, "bold", sk.pal_okg if have >= need else sk.pal_hp_l)
+		_text_at(l, 4 + 16 + 5, 2 + row_step_art * i + 3)
+		_ing.add_child(l)
+	_banner.visible = locked
+	if locked:
+		_banner_text.text = "Needs %s" % _station_name(r)
+		_at(_banner, 173 + 2, 36 + 2 + rows * row_step_art + 1)
+		_sz(_banner, PixelArt.text_w(_banner_text.text, sk, "body") / S + 18, 12)
+	var desc := String(blurbs.get(String(r.result.id), category_blurbs.get(r.result.category, "")))
+	_desc.text = desc
+	_style_desc(sk)
+	var dy := 36 + wh + 2
+	var n := _desc_lines(desc, sk, S)
+	# the stepper row starts at y 108: text that would run into it is left out (a tall well leaves no room)
+	_desc.visible = n > 0 and dy + n * 11 <= desc_room_art   # the description goes first when space is short
+	if _desc.visible:
+		_text_at(_desc, 173, dy)
+		_desc.size = Vector2(139 * S, 0)
+		dy += n * 11
+	_makes.text = "makes %d" % (r.result_count * _qty)
+	PixelArt.style_label(_makes, sk, "body", sk.pal_line, false)   # muted, on the subtitle line beside the type
+	_makes.visible = true
+	_text_at(_makes, 201 + PixelArt.text_w(_type.text, sk, "body") / S + 8, 23)
+
+## The item name, cut with ".." so it stays inside the book page.
+func _set_name(n: String) -> void:
+	var sk := get_skin()
+	_name.text = PixelArt.fit_text(n, sk, "bold", name_max_art * sk.art_scale)
+
+## How many lines the description takes (a pixel font line = 11 art px).
+func _desc_lines(desc: String, sk: InventorySkin, S: int) -> int:
+	if desc == "":
+		return 0
+	var f := sk.ui_font("body")
+	var w := 139 * S
+	var line := ""
+	var n := 1
+	for word in desc.split(" "):
+		var t := word if line == "" else line + " " + word
+		if f.get_string_size(t, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFonts.NATIVE["body"] * S).x > w and line != "":
+			n += 1
+			line = word
+		else:
+			line = t
+	return n
+
+func _update_furnace(sk: InventorySkin) -> void:
+	_right.visible = true
+	_sel_slot.visible = true
+	_panel_sig = ""   # the recipe widgets come back (rebuilt) when the tab changes
 	if _furnace == null:
 		return
+	var S := sk.art_scale
 	_f_in.set_item(_furnace.in_item, _furnace.in_count)
 	_f_out.set_item(_furnace.out_item, _furnace.out_count)
 	_f_in.refresh()
 	_f_out.refresh()
 	_f_arrow.fill = _furnace.progress_frac()
 	_f_arrow.queue_redraw()
+	# the right page: the furnace itself + a short how-to (no recipe widgets)
+	var fi := _crafter.station_item(&"furnace")
+	if fi != null:
+		_sel_slot.set_item(fi, 1)
+		_set_name(fi.display_name)
+	_sel_slot.refresh()
+	_type.text = "Station"
+	for n in [_well, _ing, _banner, _desc, _makes, _steps]:
+		n.visible = false
+	_f_note.visible = true
+	_f_note.text = furnace_note
+	_f_note.size = Vector2(139 * S, 0)
+
+func _enter_tree() -> void:
+	pass
 
 ## Hover name over recipe icon `s` ("" if it is not one).
 func recipe_ingredients(s: ItemSlot) -> Array:

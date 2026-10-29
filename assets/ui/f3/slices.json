@@ -1,0 +1,964 @@
+{
+ "art_scale": 2,
+ "note": "PNGs are art scale 1 (draw at 2x, nearest). slice/content = px of the PNG. center: tile = middle is uniform (stretch or tile ok); stretch = middle has detail, stretch only; none = fixed size.",
+ "parts": {
+  "dock_frame": {
+   "file": "dock_frame.png",
+   "size": [
+    144,
+    139
+   ],
+   "slice": {
+    "left": 24,
+    "top": 48,
+    "right": 24,
+    "bottom": 46
+   },
+   "content": {
+    "left": 14,
+    "top": 31,
+    "right": 14,
+    "bottom": 19
+   },
+   "center": "stretch",
+   "note": "includes plank (search bar goes on it at x=FM-6..), body well, footer card, clips/rope/moss. Place centre of plank over frame top.",
+   "box": {
+    "x": 8,
+    "y": 8,
+    "w": 128,
+    "h": 120
+   }
+  },
+  "plank_header": {
+   "file": "plank_header.png",
+   "size": [
+    140,
+    25
+   ],
+   "slice": {
+    "left": 18,
+    "top": 0,
+    "right": 9,
+    "bottom": 0
+   },
+   "content": {
+    "left": 14,
+    "top": 4,
+    "right": 14,
+    "bottom": 4
+   },
+   "center": "stretch"
+  },
+  "tab_idle": {
+   "file": "tab_idle.png",
+   "size": [
+    40,
+    14
+   ],
+   "slice": {
+    "left": 5,
+    "top": 6,
+    "right": 5,
+    "bottom": 3
+   },
+   "content": {
+    "left": 3,
+    "top": 1,
+    "right": 3,
+    "bottom": 2
+   },
+   "center": "stretch"
+  },
+  "tab_active": {
+   "file": "tab_active.png",
+   "size": [
+    40,
+    16
+   ],
+   "slice": {
+    "left": 5,
+    "top": 6,
+    "right": 5,
+    "bottom": 2
+   },
+   "content": {
+    "left": 3,
+    "top": 2,
+    "right": 3,
+    "bottom": 0
+   },
+   "center": "stretch"
+  },
+  "category_band": {
+   "file": "category_band.png",
+   "size": [
+    16,
+    13
+   ],
+   "slice": {
+    "left": 1,
+    "top": 1,
+    "right": 1,
+    "bottom": 3
+   },
+   "content": {
+    "left": 5,
+    "top": 2,
+    "right": 5,
+    "bottom": 3
+   },
+   "center": "tile"
+  },
+  "category_band_hover": {
+   "file": "category_band_hover.png",
+   "size": [
+    16,
+    13
+   ],
+   "slice": {
+    "left": 1,
+    "top": 1,
+    "right": 1,
+    "bottom": 3
+   },
+   "content": {
+    "left": 5,
+    "top": 2,
+    "right": 5,
+    "bottom": 3
+   },
+   "center": "tile"
+  },
+  "section_header": {
+   "file": "section_header.png",
+   "size": [
+    16,
+    10
+   ],
+   "slice": {
+    "left": 1,
+    "top": 1,
+    "right": 1,
+    "bottom": 2
+   },
+   "content": {
+    "left": 11,
+    "top": 1,
+    "right": 4,
+    "bottom": 1
+   },
+   "center": "tile"
+  },
+  "section_header_hover": {
+   "file": "section_header_hover.png",
+   "size": [
+    16,
+    10
+   ],
+   "slice": {
+    "left": 1,
+    "top": 1,
+    "right": 1,
+    "bottom": 2
+   },
+   "content": {
+    "left": 11,
+    "top": 1,
+    "right": 4,
+    "bottom": 1
+   },
+   "center": "tile"
+  },
+  "row_line": {
+   "file": "row_line.png",
+   "size": [
+    8,
+    1
+   ],
+   "slice": {
+    "left": 0,
+    "top": 0,
+    "right": 0,
+    "bottom": 0
+   },
+   "content": {
+    "left": 0,
+    "top": 0,
+    "right": 0,
+    "bottom": 0
+   },
+   "center": "tile"
+  },
+  "row_hover": {
+   "file": "row_hover.png",
+   "size": [
+    8,
+    11
+   ],
+   "slice": {
+    "left": 0,
+    "top": 0,
+    "right": 0,
+    "bottom": 1
+   },
+   "content": {
+    "left": 6,
+    "top": 0,
+    "right": 2,
+    "bottom": 1
+   },
+   "center": "tile"
+  },
+  "row_selected": {
+   "file": "row_selected.png",
+   "size": [
+    8,
+    11
+   ],
+   "slice": {
+    "left": 0,
+    "top": 0,
+    "right": 0,
+    "bottom": 1
+   },
+   "content": {
+    "left": 5,
+    "top": 0,
+    "right": 5,
+    "bottom": 1
+   },
+   "center": "tile"
+  },
+  "field": {
+   "file": "field.png",
+   "size": [
+    26,
+    12
+   ],
+   "slice": {
+    "left": 3,
+    "top": 3,
+    "right": 3,
+    "bottom": 3
+   },
+   "content": {
+    "left": 3,
+    "top": 2,
+    "right": 3,
+    "bottom": 2
+   },
+   "center": "tile"
+  },
+  "field_focus": {
+   "file": "field_focus.png",
+   "size": [
+    26,
+    12
+   ],
+   "slice": {
+    "left": 3,
+    "top": 3,
+    "right": 3,
+    "bottom": 3
+   },
+   "content": {
+    "left": 3,
+    "top": 2,
+    "right": 3,
+    "bottom": 2
+   },
+   "center": "tile"
+  },
+  "field_pending": {
+   "file": "field_pending.png",
+   "size": [
+    26,
+    12
+   ],
+   "slice": {
+    "left": 3,
+    "top": 3,
+    "right": 3,
+    "bottom": 3
+   },
+   "content": {
+    "left": 3,
+    "top": 2,
+    "right": 3,
+    "bottom": 2
+   },
+   "center": "tile"
+  },
+  "search_field": {
+   "file": "search_field.png",
+   "size": [
+    50,
+    16
+   ],
+   "slice": {
+    "left": 3,
+    "top": 3,
+    "right": 3,
+    "bottom": 3
+   },
+   "content": {
+    "left": 17,
+    "top": 2,
+    "right": 18,
+    "bottom": 2
+   },
+   "center": "tile"
+  },
+  "search_field_focus": {
+   "file": "search_field_focus.png",
+   "size": [
+    50,
+    16
+   ],
+   "slice": {
+    "left": 3,
+    "top": 3,
+    "right": 3,
+    "bottom": 3
+   },
+   "content": {
+    "left": 17,
+    "top": 2,
+    "right": 18,
+    "bottom": 2
+   },
+   "center": "tile"
+  },
+  "keycap": {
+   "file": "keycap.png",
+   "size": [
+    10,
+    11
+   ],
+   "slice": {
+    "left": 2,
+    "top": 2,
+    "right": 2,
+    "bottom": 2
+   },
+   "content": {
+    "left": 2,
+    "top": 1,
+    "right": 2,
+    "bottom": 1
+   },
+   "center": "tile"
+  },
+  "button_idle": {
+   "file": "button_idle.png",
+   "size": [
+    48,
+    17
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile"
+  },
+  "button_hover": {
+   "file": "button_hover.png",
+   "size": [
+    48,
+    17
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile"
+  },
+  "button_pressed": {
+   "file": "button_pressed.png",
+   "size": [
+    48,
+    17
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 2,
+    "right": 5,
+    "bottom": 3
+   },
+   "center": "tile"
+  },
+  "button_primary": {
+   "file": "button_primary.png",
+   "size": [
+    48,
+    17
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile"
+  },
+  "button_primary_hover": {
+   "file": "button_primary_hover.png",
+   "size": [
+    48,
+    17
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile"
+  },
+  "button_danger": {
+   "file": "button_danger.png",
+   "size": [
+    48,
+    17
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile"
+  },
+  "button_danger_hover": {
+   "file": "button_danger_hover.png",
+   "size": [
+    48,
+    17
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile"
+  },
+  "button_danger_armed": {
+   "file": "button_danger_armed.png",
+   "size": [
+    48,
+    17
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile",
+   "note": "\"Sure?\" state; the 2 px red countdown bar is drawn by code at bottom=9, left/right=6"
+  },
+  "button_disabled": {
+   "file": "button_disabled.png",
+   "size": [
+    48,
+    17
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile"
+  },
+  "chip_idle": {
+   "file": "chip_idle.png",
+   "size": [
+    48,
+    15
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 5
+   },
+   "content": {
+    "left": 3,
+    "top": 1,
+    "right": 3,
+    "bottom": 3
+   },
+   "center": "tile"
+  },
+  "chip_on_game": {
+   "file": "chip_on_game.png",
+   "size": [
+    48,
+    15
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 5
+   },
+   "content": {
+    "left": 3,
+    "top": 1,
+    "right": 3,
+    "bottom": 3
+   },
+   "center": "tile"
+  },
+  "pill_off": {
+   "file": "pill_off.png",
+   "size": [
+    12,
+    9
+   ],
+   "slice": {
+    "left": 2,
+    "top": 2,
+    "right": 2,
+    "bottom": 2
+   },
+   "content": {
+    "left": 2,
+    "top": 1,
+    "right": 2,
+    "bottom": 1
+   },
+   "center": "tile"
+  },
+  "pill_on": {
+   "file": "pill_on.png",
+   "size": [
+    12,
+    9
+   ],
+   "slice": {
+    "left": 2,
+    "top": 2,
+    "right": 2,
+    "bottom": 2
+   },
+   "content": {
+    "left": 2,
+    "top": 1,
+    "right": 2,
+    "bottom": 1
+   },
+   "center": "tile"
+  },
+  "badge": {
+   "file": "badge.png",
+   "size": [
+    14,
+    10
+   ],
+   "slice": {
+    "left": 3,
+    "top": 3,
+    "right": 3,
+    "bottom": 3
+   },
+   "content": {
+    "left": 3,
+    "top": 1,
+    "right": 3,
+    "bottom": 1
+   },
+   "center": "tile"
+  },
+  "footer_card": {
+   "file": "footer_card.png",
+   "size": [
+    48,
+    26
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 4
+   },
+   "content": {
+    "left": 5,
+    "top": 4,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile"
+  },
+  "note": {
+   "file": "note.png",
+   "size": [
+    80,
+    47
+   ],
+   "slice": {
+    "left": 9,
+    "top": 9,
+    "right": 9,
+    "bottom": 12
+   },
+   "content": {
+    "left": 11,
+    "top": 10,
+    "right": 11,
+    "bottom": 10
+   },
+   "center": "tile",
+   "note": "pin_nail sits at top centre, 1 px above the box top"
+  },
+  "popup": {
+   "file": "popup.png",
+   "size": [
+    104,
+    75
+   ],
+   "slice": {
+    "left": 9,
+    "top": 9,
+    "right": 9,
+    "bottom": 12
+   },
+   "content": {
+    "left": 13,
+    "top": 10,
+    "right": 13,
+    "bottom": 10
+   },
+   "center": "tile",
+   "note": "paper card; pin_nail at top centre"
+  },
+  "banner": {
+   "file": "banner.png",
+   "size": [
+    18,
+    12
+   ],
+   "slice": {
+    "left": 3,
+    "top": 3,
+    "right": 3,
+    "bottom": 3
+   },
+   "content": {
+    "left": 4,
+    "top": 2,
+    "right": 4,
+    "bottom": 2
+   },
+   "center": "tile"
+  },
+  "slider_groove": {
+   "file": "slider_groove.png",
+   "size": [
+    18,
+    6
+   ],
+   "slice": {
+    "left": 3,
+    "top": 0,
+    "right": 3,
+    "bottom": 0
+   },
+   "content": {
+    "left": 0,
+    "top": 0,
+    "right": 0,
+    "bottom": 0
+   },
+   "center": "tile"
+  },
+  "slider_fill": {
+   "file": "slider_fill.png",
+   "size": [
+    8,
+    3
+   ],
+   "slice": {
+    "left": 1,
+    "top": 0,
+    "right": 1,
+    "bottom": 0
+   },
+   "content": {
+    "left": 0,
+    "top": 0,
+    "right": 0,
+    "bottom": 0
+   },
+   "center": "tile"
+  },
+  "slider_knob": {
+   "file": "slider_knob.png",
+   "size": [
+    6,
+    8
+   ],
+   "center": "none"
+  },
+  "slider_knob_hover": {
+   "file": "slider_knob_hover.png",
+   "size": [
+    6,
+    8
+   ],
+   "center": "none"
+  },
+  "scroll_track": {
+   "file": "scroll_track.png",
+   "size": [
+    6,
+    4
+   ],
+   "slice": {
+    "left": 0,
+    "top": 0,
+    "right": 0,
+    "bottom": 0
+   },
+   "content": {
+    "left": 0,
+    "top": 0,
+    "right": 0,
+    "bottom": 0
+   },
+   "center": "tile"
+  },
+  "scroll_thumb": {
+   "file": "scroll_thumb.png",
+   "size": [
+    6,
+    12
+   ],
+   "slice": {
+    "left": 0,
+    "top": 2,
+    "right": 0,
+    "bottom": 2
+   },
+   "content": {
+    "left": 0,
+    "top": 0,
+    "right": 0,
+    "bottom": 0
+   },
+   "center": "tile"
+  },
+  "checkbox_off": {
+   "file": "checkbox_off.png",
+   "size": [
+    14,
+    14
+   ],
+   "center": "none"
+  },
+  "checkbox_on": {
+   "file": "checkbox_on.png",
+   "size": [
+    14,
+    14
+   ],
+   "center": "none"
+  },
+  "checkbox_hover": {
+   "file": "checkbox_hover.png",
+   "size": [
+    14,
+    14
+   ],
+   "center": "none"
+  },
+  "toggle_off": {
+   "file": "toggle_off.png",
+   "size": [
+    19,
+    10
+   ],
+   "center": "none"
+  },
+  "toggle_on": {
+   "file": "toggle_on.png",
+   "size": [
+    19,
+    10
+   ],
+   "center": "none"
+  },
+  "icon_star_on": {
+   "file": "icon_star_on.png",
+   "size": [
+    9,
+    9
+   ],
+   "center": "none"
+  },
+  "icon_star_off": {
+   "file": "icon_star_off.png",
+   "size": [
+    7,
+    7
+   ],
+   "center": "none"
+  },
+  "icon_star_off_btn": {
+   "file": "icon_star_off_btn.png",
+   "size": [
+    7,
+    7
+   ],
+   "center": "none"
+  },
+  "icon_reset": {
+   "file": "icon_reset.png",
+   "size": [
+    7,
+    7
+   ],
+   "center": "none"
+  },
+  "icon_copy": {
+   "file": "icon_copy.png",
+   "size": [
+    6,
+    6
+   ],
+   "center": "none"
+  },
+  "icon_refresh": {
+   "file": "icon_refresh.png",
+   "size": [
+    5,
+    5
+   ],
+   "center": "none"
+  },
+  "icon_tri_open": {
+   "file": "icon_tri_open.png",
+   "size": [
+    7,
+    5
+   ],
+   "center": "none"
+  },
+  "icon_tri_closed": {
+   "file": "icon_tri_closed.png",
+   "size": [
+    6,
+    9
+   ],
+   "center": "none"
+  },
+  "icon_pin_game": {
+   "file": "icon_pin_game.png",
+   "size": [
+    5,
+    7
+   ],
+   "center": "none"
+  },
+  "icon_check": {
+   "file": "icon_check.png",
+   "size": [
+    5,
+    5
+   ],
+   "center": "none"
+  },
+  "icon_dot_changed": {
+   "file": "icon_dot_changed.png",
+   "size": [
+    7,
+    7
+   ],
+   "center": "none"
+  },
+  "icon_search": {
+   "file": "icon_search.png",
+   "size": [
+    6,
+    7
+   ],
+   "center": "none"
+  },
+  "icon_scrub": {
+   "file": "icon_scrub.png",
+   "size": [
+    5,
+    3
+   ],
+   "center": "none"
+  },
+  "icon_pin_nail": {
+   "file": "icon_pin_nail.png",
+   "size": [
+    4,
+    4
+   ],
+   "center": "none"
+  }
+ }
+}

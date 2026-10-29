@@ -47,7 +47,7 @@ func _init() -> void:
 	_check(calls.B > calls_b and calls.A == 0 and calls.C == 0, "only the open block is evaluated")
 	var detail: Label = view._rows["B"].detail
 	_check(detail.visible and detail.autowrap_mode == TextServer.AUTOWRAP_WORD_SMART and "detail two" in detail.text, "expand shows wrapped detail")
-	_check(view._rows["B"].head.text.contains("B line one") and not view._rows["B"].head.text.contains("detail"), "summary = first line")
+	_check(view._rows["B"].summary.text.contains("B line one") and not view._rows["B"].summary.text.contains("detail"), "summary = first line")
 	view.toggle_pin("C")
 	await _frames(5)
 	_check(view.row_names() == ["C", "A", "B"] and pins == ["C"], "pin sorts first + emits pinned_changed")

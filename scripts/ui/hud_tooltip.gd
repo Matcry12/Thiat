@@ -11,12 +11,22 @@ var blocked := Callable()      ## () -> bool, e.g. "a stack is held"
 var mouse_override := Vector2(-1, -1)   ## tests only: (-1,-1) = the real mouse
 
 var _watched: Array = []       ## [Control, Callable]
+## Line 2 (type, count) in the readable font instead of the pixel one (long text can be hard to read in pixels).
+@export var clean_sub := false
 var _label: Label
+var _sub: Label
+var _pin: TextureRect
 var _extra: HBoxContainer      ## ingredient icons under the name (a recipe's hover)
 var _extra_sig := ""
 var _bg: NinePatchRect
 var _flat: Panel
 var _applied: InventorySkin
+var _art := false
+## Island Workshop note: padding inside the torn picture, art px (left, top, right, bottom). Roomy on purpose.
+@export_group("Island Workshop note (art px)")
+## Where the note sits under the hovered thing (a quarter of y is the gap).
+@export var offset_art := Vector2i(8, 14)
+@export var art_pad := Vector4i(8, 6, 8, 8)
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -40,12 +50,22 @@ func _ready() -> void:
 	_label = Label.new()
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(_label)
+	_sub = Label.new()
+	_sub.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_sub.visible = false
+	col.add_child(_sub)
 	_extra = HBoxContainer.new()
 	_extra.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_extra.visible = false
 	col.add_child(_extra)
 	add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	move_child(margin, -1)
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_pin = TextureRect.new()
+	_pin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_pin.stretch_mode = TextureRect.STRETCH_KEEP
+	_pin.visible = false
+	_bg.add_child(_pin)
 
 ## `extra` (optional) returns an Array of {item: ItemData, need: int, have: int}: shown as small icons with the
 ## need count (red when short) under the name. Used by the recipe icons: the tooltip is the only place a recipe's
@@ -73,7 +93,8 @@ func _show_extra(items: Array) -> void:
 		c.queue_free()
 	for d in items:
 		var s: ItemSlot = load("res://scenes/ui/item_slot.tscn").instantiate()
-		s.size_override = skin.tooltip_icon_size
+		s.size_override = 16 * skin.art_scale if PixelArt.art_mode(skin) else skin.tooltip_icon_size
+		s.bare = PixelArt.art_mode(skin)
 		s.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		s.skin = skin
 		s.set_item(d["item"], d["need"])
@@ -99,6 +120,23 @@ func _clipped(c: Control, m: Vector2) -> bool:
 
 func _apply_skin() -> void:
 	var sk := skin
+	_art = PixelArt.art_mode(sk) and sk.tooltip_tex != null
+	if _art:
+		var S := sk.art_scale
+		PixelArt.set_nine(_bg, sk.tooltip_tex, "tooltip", S)
+		var pad := get_node("Pad")
+		pad.add_theme_constant_override("margin_left", art_pad.x * S)
+		pad.add_theme_constant_override("margin_top", art_pad.y * S)
+		pad.add_theme_constant_override("margin_right", art_pad.z * S)
+		pad.add_theme_constant_override("margin_bottom", art_pad.w * S)
+		_flat.visible = false
+		PixelArt.style_label(_label, sk, "bold", sk.pal_cream)
+		PixelArt.style_label(_sub, sk, "body", sk.pal_paper, false, clean_sub)
+		PixelArt.set_pic(_pin, sk.tooltip_pin_tex, S)
+		return
+	_pin.visible = false
+	_label.remove_theme_constant_override("outline_size")
+	_sub.visible = false
 	_bg.texture = sk.tooltip_texture
 	for m in ["left", "top", "right", "bottom"]:
 		_bg.set("patch_margin_" + m, sk.tooltip_patch_margin)
@@ -124,6 +162,8 @@ func _process(_delta: float) -> void:
 		skin.changed.connect(_apply_skin)
 		_apply_skin()
 	var text := ""
+	var anchor := Rect2()
+	var sub := ""
 	var extras := []
 	if not (blocked.is_valid() and blocked.call()):
 		var m := _mouse()
@@ -132,13 +172,32 @@ func _process(_delta: float) -> void:
 			if is_instance_valid(c) and c.is_visible_in_tree() and c.get_global_rect().has_point(m) and not _clipped(c, m):
 				text = w[1].call()
 				if text != "":
+					anchor = c.get_global_rect()
+					var o: Object = (w[1] as Callable).get_object()
+					if o is ItemSlot:
+						sub = (o as ItemSlot).tip_sub()
 					if w[2].is_valid():
 						extras = w[2].call()
 					break
 	visible = text != ""
 	if visible:
 		_label.text = text
+		_sub.text = sub
+		_sub.visible = sub != "" and _art
 		_show_extra(extras)
 		reset_size()
 		var vp := get_viewport().get_visible_rect().size
+		if _art:
+			_pin.visible = true
+			# the note hangs under the hovered thing, pin on its centre; the card is clamped to the screen, the pin is not.
+			# No room below (bottom HUD): it sits above the thing instead of covering it.
+			var cx := anchor.get_center().x
+			var x := clampf(cx - size.x * 0.5, 0.0, maxf(vp.x - size.x, 0.0))
+			var gap := offset_art.y * 0.25 * skin.art_scale
+			var y := anchor.end.y + gap
+			if y + size.y > vp.y:
+				y = maxf(anchor.position.y - size.y - gap, 0.0)
+			position = Vector2(x, y)
+			_pin.position = Vector2(clampf(roundf(cx - x - _pin.size.x * 0.5), 0.0, size.x - _pin.size.x), -skin.art_scale)
+			return
 		position = (_mouse() + skin.tooltip_offset).min(vp - size).max(Vector2.ZERO)

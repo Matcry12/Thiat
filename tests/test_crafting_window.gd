@@ -1,7 +1,7 @@
 extends SceneTree
-# W4 crafting window (Minecraft-style, but you SELECT a recipe instead of placing items): one centred window
-# with the bag + a hotbar copy below, a recipe grid / read-only ingredient grid / result slot above, a furnace
-# tab, tooltips, no words, skin fields, F3 clearance, locked in the boss fight.
+# W4 crafting window, Island Workshop book: one window (centred sideways) with the bag + a hotbar copy below, a
+# recipe grid on the left page, the chosen recipe + stepper + Craft button on the right page, a furnace tab,
+# tooltips, skin fields, F3 clearance, locked in the boss fight. Click an icon = choose it; Craft = to the cursor.
 const World = preload("res://tests/support/craft_world.gd")
 var _ok := true
 
@@ -9,6 +9,17 @@ func _check(cond: bool, msg: String) -> void:
 	print(("ok   " if cond else "FAIL ") + msg)
 	if not cond:
 		_ok = false
+
+## Choose recipe `i` and press Craft (shift = straight into the inventory).
+func _craft(win: CraftWindow, i: int, straight := false) -> bool:
+	win.select_recipe(i)
+	return win.craft_selected(straight)
+
+func pick_i_for(win: CraftWindow, id: StringName) -> int:
+	for i in win.shown_recipes().size():
+		if win.shown_recipes()[i].result.id == id:
+			return i
+	return 0
 
 func _frames(n := 3) -> void:
 	for i in n:
@@ -42,13 +53,16 @@ func _init() -> void:
 	# --- one centred window, bag + hotbar copy inside, nothing overlapping ---
 	var fr := win.frame_rect()
 	_check(bag.is_open() and win.is_open() and fr.has_area(), "Tab opens the window")
-	_check(absf(fr.get_center().x - vp.x * 0.5) < 3.0 and absf(fr.get_center().y - vp.y * 0.5) < 3.0, "it is centred (%s in %s)" % [fr, vp])
+	_check(absf(fr.get_center().x - vp.x * 0.5) < 3.0 and absf(fr.position.y - win.top_art * sk.art_scale) < 1.0, "it is centred sideways, book top at top_art (%s in %s)" % [fr, vp])
 	_check(Rect2(Vector2.ZERO, vp).encloses(fr), "and fits the screen (%.0f x %.0f of %.0f x %.0f)" % [fr.size.x, fr.size.y, vp.x, vp.y])
 	_check(fr.encloses(bag.get_global_rect()) and fr.encloses(win.hotbar().get_global_rect()), "the bag and the hotbar copy are inside it")
 	_check(win.hotbar().get_global_rect().position.y > bag.get_global_rect().end.y - 1.0 and bag.get_global_rect().position.y > win.marker().get_global_rect().end.y, "top = crafting area, then the bag, then the hotbar row (bottom)")
 	_check(win.hotbar().slots().size() == Inventory.HOTBAR and bag.cells().size() == 27, "bag 3 x 9 + hotbar 1 x 9")
 	_check(not hud.hotbar().visible, "the HUD hotbar hides while the window is open (it would show the same slots twice)")
-	_check(not fr.intersects(hud.abilities().get_global_rect()) and not fr.intersects(hud.health_bar().get_global_rect()), "the window is clear of the ability icons and the health bar")
+	var clear := not fr.intersects(hud.health_bar().get_global_rect())
+	for a in hud.abilities().slots():
+		clear = clear and not fr.intersects(a.get_global_rect())
+	_check(clear, "the window is clear of the ability icons and the health bar")
 
 	# --- nothing held: nothing listed; hold part of a recipe: dimmed; hold it all: lit ---
 	_check(win.shown_recipes().is_empty(), "empty bag, no station: no recipe icon at all (hidden)")
@@ -57,8 +71,8 @@ func _init() -> void:
 	inv.add(World.item("wood"), 3)
 	await _frames()
 	_check(win.shown_recipes()[0].result.id == &"workbench", "3 wood: the workbench icon shows first")
-	_check(win.shown_recipes().size() > 1 and win.recipe_slots()[1].modulate == sk.craft_dim_color, "...and the recipes of stations out of range show dimmed after it")
-	_check(win.recipe_slots()[0].modulate == sk.craft_dim_color, "...dimmed: you hold a part of it")
+	_check(win.shown_recipes().size() > 1 and win.recipe_slots()[1].shade().a < 1.0, "...and the recipes of stations out of range show dimmed after it")
+	_check(win.recipe_slots()[0].shade().a < 1.0, "...dimmed: you hold a part of it")
 	win.recipe_slots()[0].slot_clicked.emit(0, MOUSE_BUTTON_LEFT, false)
 	_check(inv.held_item == null and inv.count(&"wood") == 3, "clicking a dimmed icon does nothing")
 	await _frames()
@@ -66,10 +80,10 @@ func _init() -> void:
 	await _frames(40)
 	inv.add(World.item("wood"), 27)
 	await _frames()
-	_check(win.recipe_slots()[0].modulate == sk.craft_lit_color, "30 wood: the icon is lit")
-	_check(win.recipe_slots()[0].backdrop == sk.craft_lit_backdrop and win.recipe_slots()[1].backdrop == sk.craft_dim_backdrop and sk.craft_lit_backdrop.get_luminance() > sk.craft_dim_backdrop.get_luminance() + 0.4, "lit = a light backdrop, dim = a dark one: independent of the art's colours")
-	_check(win.recipe_slots()[0].get_node("Backdrop").visible and win.recipe_slots()[0].get_node("Backdrop").color == sk.craft_lit_backdrop, "the backdrop node is drawn")
-	_check(win.recipe_slots()[0].get_node("Count") != null and win.recipe_slots()[0].custom_minimum_size.x == sk.craft_slot_size, "the icon is a normal slot")
+	_check(win.recipe_slots()[0].shade() == sk.craft_lit_color, "30 wood: the icon is lit")
+	_check(not win.recipe_slots()[0].grey_icon and win.recipe_slots()[1].grey_icon, "lit = full colour icon, dim = a grey faded icon: independent of the art's colours")
+	_check(win.selected_recipe() == win.shown_recipes()[0] and win.recipe_slots()[0].selected, "the first recipe is chosen by default (its slot shows the gold frame)")
+	_check(win.recipe_slots()[0].get_node("Count") != null and win.recipe_slots()[0].custom_minimum_size.x == 22 * sk.art_scale, "the icon is a normal slot (22 art px)")
 
 	# --- tooltip: the name, then the ingredient icons with need counts (the only place they show) ---
 	var tip := hud.tooltip()
@@ -90,9 +104,9 @@ func _init() -> void:
 	tip.mouse_override = Vector2(-1, -1)
 
 	# --- click: the item is on the cursor, the ingredients are gone; click again: it stacks ---
-	win.recipe_slots()[0].slot_clicked.emit(0, MOUSE_BUTTON_LEFT, false)
+	_craft(win, 0)
 	_check(inv.held_item != null and inv.held_item.id == &"workbench" and inv.held_count == 1 and inv.count(&"wood") == 20, "click a lit icon: a workbench is on the cursor, 10 wood taken now")
-	win.recipe_slots()[0].slot_clicked.emit(0, MOUSE_BUTTON_LEFT, false)
+	_craft(win, 0)
 	_check(inv.held_count == 2 and inv.count(&"wood") == 10, "click again: it stacks on the cursor (2)")
 	await _frames(2)
 	var cur: ItemSlot = bag._cursor
@@ -110,7 +124,7 @@ func _init() -> void:
 	_check(inv.held_item == null and inv.slot_item(bag_cell.index) != null and inv.slot_item(bag_cell.index).id == &"workbench" and inv.slot_count(bag_cell.index) == 2, "click a bag slot: the stack is put down there (like any bag stack)")
 
 	# --- closing while holding: back into the inventory, never lost ---
-	win.recipe_slots()[0].slot_clicked.emit(0, MOUSE_BUTTON_LEFT, false)
+	_craft(win, 0)
 	_check(inv.held_item != null and inv.count(&"wood") == 0, "craft once more (the last 10 wood), holding it")
 	bag.close()
 	await _frames()
@@ -121,7 +135,7 @@ func _init() -> void:
 	# --- shift click: straight into the inventory, no cursor ---
 	inv.add(World.item("wood"), 10)
 	await _frames()
-	win.recipe_slots()[0].slot_clicked.emit(0, MOUSE_BUTTON_LEFT, true)
+	_craft(win, 0, true)
 	_check(inv.held_item == null and inv.count(&"workbench") == 4 and inv.count(&"wood") == 0, "shift click: straight into the inventory, the cursor stays empty")
 
 	# --- at a workbench: more icons, sorted nearest-station first; no words ---
@@ -131,9 +145,13 @@ func _init() -> void:
 	await _frames()
 	_check(win.marker().tip_text() == "Workbench" and win.shown_recipes().size() == 8, "workbench in range: the marker shows it; 8 icons (the anvil itself needs bars you do not hold: hidden; the 3 copper tools use wood: dim)")
 	_check(win.shown_recipes()[0].station == &"workbench" and win.shown_recipes()[win.shown_recipes().size() - 1].station == &"anvil", "the workbench recipes come first, the out-of-range anvil ones last")
-	var texts := []
-	_labels(win, texts)
-	_check(texts.is_empty(), "no words anywhere in the window (only numbers): %s" % [texts])
+	_check(win.get_node("Frame/Book/Chosen").visible and win.shown_recipes().has(win.selected_recipe()), "the right page shows the chosen recipe")
+	win.select_recipe(pick_i_for(win, &"stone_pickaxe"))
+	win._plus.pressed.emit()
+	await _frames(2)
+	_check(win.quantity() == 2 and not win.craft_enabled(), "the > button raises the quantity; a pickaxe stacks 1, so two cannot land on the cursor: Craft stays dark (the Crafter's answer)")
+	win._minus.pressed.emit()
+	_check(win.quantity() == 1, "the < button lowers it")
 	var pick_i := -1
 	for i in win.shown_recipes().size():
 		if win.shown_recipes()[i].result.id == &"stone_pickaxe":
@@ -186,7 +204,7 @@ func _init() -> void:
 	inv.return_held()
 	fst.global_position = player.global_position + Vector2(400, 0)   # out of reach
 	await _frames()
-	_check(win.current_tab() == "craft" and not win.tab_slots()[1].visible, "furnace out of range: Crafting only")
+	_check(win.current_tab() == "craft" and win.tab_slots()[1].mouse_filter == Control.MOUSE_FILTER_IGNORE, "furnace out of range: Crafting only")
 
 	# --- F3 hides its status text rather than sit under the window ---
 	var tp: CanvasLayer = arena.get_node("TuningPanel")
@@ -199,10 +217,10 @@ func _init() -> void:
 	_check(win.shift() == 0.0, "F3 closed: it is centred again")
 
 	# --- the skin reshapes it live ---
-	sk.craft_slot_size = 52
-	await _frames()
-	_check(win.recipe_slots()[0].custom_minimum_size.x == 52, "craft_slot_size applies live")
-	sk.craft_slot_size = 44
+	sk.art_scale = 3
+	await _frames(3)
+	_check(win.recipe_slots()[0].custom_minimum_size.x == 66 and absf(win.frame_rect().size.x - 990.0) < 1.0, "art_scale applies live (22 x 3 slot, 330 x 3 book)")
+	sk.art_scale = 2
 
 	# --- locked in the boss fight ---
 	boss.aggro = Boss.Aggro.ENGAGED

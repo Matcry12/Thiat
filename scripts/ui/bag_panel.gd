@@ -30,6 +30,9 @@ var _hint_tint: ColorRect
 var _hint_left := 0.0
 var _open := false
 var _applied: InventorySkin
+var _divider: TextureRect   ## Island Workshop: the line between the bag and the hotbar copy (a skin part, tiled)
+## Island Workshop layout (art px, relative to the first bag slot): where the hotbar copy row sits under the grid.
+@export var hotbar_row_dy_art := 78
 
 func bind(inv: Inventory, hotbar: Hotbar) -> void:
 	_inv = inv
@@ -65,6 +68,13 @@ func _ready() -> void:
 	_bg_placeholder.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_bg_placeholder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_bg.add_child(_bg_placeholder)
+	_divider = TextureRect.new()
+	_divider.name = "Divider"
+	_divider.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_divider.stretch_mode = TextureRect.STRETCH_TILE
+	_divider.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_divider.visible = false
+	_body.add_child(_divider)
 	_margin = MarginContainer.new()
 	_margin.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -129,6 +139,15 @@ func _apply_open() -> void:
 
 func _apply_skin() -> void:
 	var sk := get_skin()
+	if PixelArt.art_mode(sk) and sk.bag_panel_tex != null:
+		_apply_art(sk)
+		return
+	_divider.visible = false
+	_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_bg.offset_left = 0
+	_bg.offset_top = 0
+	_bg.offset_right = 0
+	_bg.offset_bottom = 0
 	_bg.texture = sk.bag_panel_texture
 	for m in ["left", "top", "right", "bottom"]:
 		_bg.set("patch_margin_" + m, sk.bag_patch_margin)
@@ -142,6 +161,31 @@ func _apply_skin() -> void:
 	f.border_color = sk.frame_border
 	f.set_border_width_all(sk.bag_border_width)
 	_bg_placeholder.add_theme_stylebox_override("panel", f)
+	_hint.texture = sk.lock_texture
+	_hint.custom_minimum_size = Vector2(sk.slot_size, sk.slot_size)
+	_hint.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	_hint_tint.visible = sk.lock_texture == null
+	_hint_tint.color = sk.lock_hint_color
+
+## Island Workshop: the bag_panel picture at its real size (never stretched) behind the grid, divider under it.
+## This control's own rectangle is only the 3 x 9 grid; the picture overflows around it.
+func _apply_art(sk: InventorySkin) -> void:
+	var S := sk.art_scale
+	_bg.texture = PixelArt.up(sk.bag_panel_tex, S)
+	for m in ["left", "top", "right", "bottom"]:
+		_bg.set("patch_margin_" + m, 0)
+		_margin.add_theme_constant_override("margin_" + m, 0)
+	_bg.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_bg.position = Vector2(-16, -20) * S   # the picture has an 8 px pad, the first slot sits at box (8, 12)
+	_bg.size = _bg.texture.get_size()
+	_bg_placeholder.visible = false
+	_grid.add_theme_constant_override("h_separation", S)
+	_grid.add_theme_constant_override("v_separation", S)
+	add_theme_constant_override("separation", 0)
+	_divider.texture = PixelArt.up(sk.divider_line_tex, S)
+	_divider.position = Vector2(0, 71) * S   # box y 83 - first slot y 12
+	_divider.size = Vector2(206, 2) * S
+	_divider.visible = sk.divider_line_tex != null
 	_hint.texture = sk.lock_texture
 	_hint.custom_minimum_size = Vector2(sk.slot_size, sk.slot_size)
 	_hint.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN

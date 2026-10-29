@@ -49,7 +49,7 @@ Tools and weapons:
 
 Everything above is data: the F3 panel has a section per recipe (`Recipe <id>`), per smelt recipe (`Smelt <id>`), `Crafter`, `Placer` and each tool.
 
-## UI: one grid of icons, click, put it down
+## UI: one grid of icons, click, put it down (superseded by [0045](0045-ui-port-craft-book.md): click chooses, `Craft` makes)
 First version: a side column of rows. Second: a Minecraft-style window with ingredient grid and result slot. The user found that too complex ("a icon of item could craftable and uncraftable, when we click it it shows that item, we just drag it to inventory and that's was craft"). Final version:
 - `Tab` / `I` opens **one centred window** (`CraftWindow`): the crafting area on top, the bag (3 x 9, the existing `BagPanel`) and a **copy of the hotbar** below. The HUD hotbar at the top-left hides while it is open (it would show the same slots twice). The boss lock closes it like the bag; a lock icon shows when it cannot open.
 - **The crafting area is one grid of result icons, nothing else** (no ingredient grid, arrow or result slot). An icon is **lit** when you can craft it, **dimmed** when you hold at least one of its ingredients ("you are on the way"). Recipes you have nothing for are **hidden** (`Crafter.listed_recipes`). Order: the nearest station's recipes, then the craftable ones, then the rest (each by `order`).

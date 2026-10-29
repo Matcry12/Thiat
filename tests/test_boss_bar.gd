@@ -43,15 +43,11 @@ func _init() -> void:
 	_check(bar.visible and bar.is_awake() and bar.modulate.a >= 0.99, "boss engaged: the bar is shown (faded in)")
 	var vw := 1152.0
 	var r := bar.get_global_rect()
-	_check(absf(r.get_center().x - vw * 0.5) < 1.0 and is_equal_approx(r.size.x, vw * sk.boss_bar_width_fraction), "bottom centre, %.0f%% of the screen wide" % (sk.boss_bar_width_fraction * 100))
+	_check(absf(r.get_center().x - vw * 0.5) < 1.0 and is_equal_approx(r.size.x, sk.boss_frame_tex.get_size().x * sk.art_scale), "bottom centre, frame at real size (art x art_scale)")
 	_check(is_equal_approx(r.end.y, 648.0 - hud.margin_y), "above the bottom margin")
 	var bl := hud._bottom_left.get_global_rect()
 	_check(not r.intersects(bl), "does not touch the health bar or the ability icons")
-	_check(bar.size.y == sk.boss_bar_height, "height from the skin")
-	sk.boss_bar_height = 32
-	await _frames(3)
-	_check(bar.size.y == 32 and bar.get_global_rect().size.y == 32, "boss_bar_height follows the skin live (the marker is drawn over the full height)")
-	sk.boss_bar_height = 20
+	_check(is_equal_approx(bar.size.y, bar.natural_size(vw).y), "height = name plate + frame at real size")
 
 	# phase 2
 	var c1 := bar.fill_color()
@@ -75,11 +71,6 @@ func _init() -> void:
 	await process_frame
 	_check(bar._flash_left > 0.0, "entering phase 2 flashes")
 	await _until(func(): return bar._flash_left <= 0.0)
-	sk.boss_inset = 5
-	sk.boss_border_width = 4
-	await process_frame
-	_check((bar._frame as StyleBoxFlat).border_width_left == 4, "border width comes from the skin")
-
 	# F3 open: the bar keeps out of the tuning panel
 	var tp: CanvasLayer = arena.get_node("TuningPanel")
 	tp.visible = true

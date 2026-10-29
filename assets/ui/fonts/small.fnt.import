@@ -1,0 +1,17 @@
+[remap]
+
+importer="font_data_bmfont"
+type="FontFile"
+uid="uid://ux13nbmyvkyr"
+path="res://.godot/imported/small.fnt-ca743dd178d2b92cc84055243ee847c1.fontdata"
+
+[deps]
+
+source_file="res://assets/ui/fonts/small.fnt"
+dest_files=["res://.godot/imported/small.fnt-ca743dd178d2b92cc84055243ee847c1.fontdata"]
+
+[params]
+
+fallbacks=[]
+compress=true
+scaling_mode=2

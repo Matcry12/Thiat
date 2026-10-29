@@ -376,6 +376,10 @@ characters (Gemini + hand-cleaned); kept the egg placeholder, 32x30, plus 2 hand
    *Can F3 be fast to use and stay clean as features grow?* Web mockup (3 build→review rounds, 6.9→8.1/10), then a dock with search / Tune / Actions / Status, auto-saved overrides, the `debug` group contract.
    Log F3: built by Sonnet 5.5 agents (3 in parallel) · Opus judge round 1: 7 confirmed (Map section 2.7 s freeze, 90 ms boot hitch, new ranges clamping sapling radii, late-section overrides never applied, Hands/BodyRig double owner, toast only on F3 open, double map build); round 2: 2 new (startup heavy overrides not undoable, release build applying dev tuning) — all fixed · user: pending.
 
+**UI slice — Island Workshop in the game (2026-10-26, [0045](../decision/0045-ui-port-craft-book.md)).**
+   *Does the approved web style survive the port?* Baked pixel fonts + 111 parts from the mockups, title / pause / settings, HUD, bag + crafting book, tooltip, F3 dock (leather).
+   Log UI: built by Sonnet 5.5 agents (4 in parallel) · fresh Opus UI reviewer: in-game looks 4-6 at first (fat outlines, text overflowing baked buttons, empty plank, flat-baked bar fills) → 7-8 after 3-4 rounds · Opus code judge: 4 bugs (null skin slot error spam, lit Craft button lying, menu outline one state behind, fonts ignoring art_scale) + 3x duplicated art helpers + 68 dead skin fields — all fixed, re-judged commit-ready · user: chose the Craft button over click-to-cursor; asked for roomy F3 + clean font; pending playtest.
+
 ## 6. Done when
 
 - A fight lasts 60-120s and you lose the first few times.

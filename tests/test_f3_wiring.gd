@@ -26,7 +26,7 @@ func _init() -> void:
 	_check(panel.overrides.has_override("Player", "speed") and panel.overrides.count() == 1, "an edit creates an override")
 	var again := F3Overrides.new(cfg)
 	_check(again.count() == 1 and again.get_value("Player", "speed") == v0 + 40.0, "it survives a new store on the same file")
-	_check(panel.footer._info.text.begins_with("● 1 overrides") and panel.footer._info.text.contains("scene-only"), "footer counts it (scene node = scene-only)")
+	_check(panel.footer._info.text.begins_with("1 overrides") and panel.footer._chip.tooltip_text.contains("scene-only"), "footer counts it (scene node = scene-only)")
 	panel.apply_value("Player.speed", v0)
 	_check(panel.overrides.count() == 0, "back at the startup value: the override goes away")
 
@@ -51,14 +51,14 @@ func _init() -> void:
 	# --- Clear overrides: second click within 2 s ---
 	var clear: Button = panel.footer._clear
 	clear.pressed.emit()
-	_check(panel.overrides.count() == 1 and clear.text == "Sure?", "first click only asks")
+	_check(panel.overrides.count() == 1 and clear.text.begins_with("Sure?"), "first click only asks")
 	clear.pressed.emit()
 	_check(panel.overrides.count() == 0 and F3Overrides.new(cfg).count() == 0, "second click clears (and the file)")
 	_check(player.speed == v0, "the live value is back at the startup value")
 	panel.apply_value("Player.speed", v0 + 40.0)
 	clear.pressed.emit()
 	await create_timer(2.2).timeout
-	_check(clear.text == "Clear overrides" and panel.overrides.count() == 1, "after 2 s the ask lapses")
+	_check(clear.text == "Clear" and panel.overrides.count() == 1, "after 2 s the ask lapses")
 	panel.reset_value("Player.speed")
 	_check(panel.overrides.count() == 0 and player.speed == v0, "row reset clears that override")
 

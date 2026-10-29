@@ -1,0 +1,929 @@
+{
+ "art_scale": 2,
+ "note": "PNGs are art scale 1 (draw at 2x, nearest). slice/content = px of the PNG. center: tile = middle is uniform (stretch or tile ok); stretch = middle has detail, stretch only; none = fixed size.",
+ "parts": {
+  "panel_title": {
+   "file": "panel_title.png",
+   "size": [
+    166,
+    146
+   ],
+   "content": {
+    "left": 18,
+    "top": 18,
+    "right": 18,
+    "bottom": 20
+   },
+   "center": "none",
+   "note": "Title menu panel 150x128. Menu buttons at box (14, 14+26*i), 122 wide x 20.",
+   "box": {
+    "x": 8,
+    "y": 8,
+    "w": 150,
+    "h": 128
+   }
+  },
+  "panel_pause": {
+   "file": "panel_pause.png",
+   "size": [
+    186,
+    148
+   ],
+   "content": {
+    "left": 18,
+    "top": 38,
+    "right": 18,
+    "bottom": 20
+   },
+   "center": "none",
+   "note": "Pause panel 170x130 with blank plank header (draw \"Paused\" in the bold font, scale 2, on top). Buttons at box (16,38+28*i), 138 wide x 20.",
+   "box": {
+    "x": 8,
+    "y": 8,
+    "w": 170,
+    "h": 130
+   }
+  },
+  "panel_settings": {
+   "file": "panel_settings.png",
+   "size": [
+    256,
+    146
+   ],
+   "content": {
+    "left": 18,
+    "top": 38,
+    "right": 18,
+    "bottom": 20
+   },
+   "center": "none",
+   "note": "Settings panel 240x128, blank plank header. Rows lx=16: label y=35/56/77, slider x=86 (w100), checkbox x=86,y=74, Back button (70,96) 100 wide.",
+   "box": {
+    "x": 8,
+    "y": 8,
+    "w": 240,
+    "h": 128
+   }
+  },
+  "hotbar_panel": {
+   "file": "hotbar_panel.png",
+   "size": [
+    239,
+    62
+   ],
+   "content": {
+    "left": 18,
+    "top": 18,
+    "right": 18,
+    "bottom": 20
+   },
+   "center": "none",
+   "note": "Hotbar panel 223x44. Slot i at box (8+23*i, 11), 22 px. Key number small font at slot +2,+2.",
+   "box": {
+    "x": 8,
+    "y": 8,
+    "w": 223,
+    "h": 44
+   }
+  },
+  "bag_panel": {
+   "file": "bag_panel.png",
+   "size": [
+    238,
+    142
+   ],
+   "content": {
+    "left": 18,
+    "top": 18,
+    "right": 18,
+    "bottom": 20
+   },
+   "center": "none",
+   "note": "Bag panel 222x124. Bag slots at box (8+23*c, 12+23*r) 3x9; divider_line at y=83; hotbar copy row at y=90.",
+   "box": {
+    "x": 8,
+    "y": 8,
+    "w": 222,
+    "h": 124
+   }
+  },
+  "title_plaque": {
+   "file": "title_plaque.png",
+   "size": [
+    264,
+    82
+   ],
+   "content": {
+    "left": 18,
+    "top": 18,
+    "right": 18,
+    "bottom": 20
+   },
+   "center": "none",
+   "note": "Wood plaque behind the logo, lashed corners; logo drawn at box (16,10). Real mock size 248x64.",
+   "box": {
+    "x": 8,
+    "y": 8,
+    "w": 248,
+    "h": 64
+   }
+  },
+  "title_logo": {
+   "file": "title_logo.png",
+   "size": [
+    220,
+    38
+   ],
+   "center": "none",
+   "note": "\"BossFight\" scale-4 bold, 3 colour bands + OUT outline + BRZ_D drop. Pure picture, never re-typed.",
+   "box": {
+    "x": 2,
+    "y": 2,
+    "w": 216,
+    "h": 28
+   }
+  },
+  "title_rope": {
+   "file": "title_rope.png",
+   "size": [
+    216,
+    15
+   ],
+   "center": "none",
+   "note": "Slack rope under the logo, at box-left x=0; place its top-left at logo.x+6-6.",
+   "box": {
+    "x": 6,
+    "y": 3,
+    "w": 204,
+    "h": 3
+   }
+  },
+  "button_menu_idle": {
+   "file": "button_menu_idle.png",
+   "size": [
+    64,
+    23
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile",
+   "note": "20 px tall menu button. Hover/focus: use button_menu_hover (primary stays primary), CREAM text with LINE outline, menu_arrow at left x=5."
+  },
+  "button_menu_hover": {
+   "file": "button_menu_hover.png",
+   "size": [
+    64,
+    23
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile",
+   "note": "20 px tall menu button. Hover/focus: use button_menu_hover (primary stays primary), CREAM text with LINE outline, menu_arrow at left x=5."
+  },
+  "button_menu_pressed": {
+   "file": "button_menu_pressed.png",
+   "size": [
+    64,
+    23
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile",
+   "note": "20 px tall menu button. Hover/focus: use button_menu_hover (primary stays primary), CREAM text with LINE outline, menu_arrow at left x=5."
+  },
+  "button_menu_primary": {
+   "file": "button_menu_primary.png",
+   "size": [
+    64,
+    23
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile",
+   "note": "20 px tall menu button. Hover/focus: use button_menu_hover (primary stays primary), CREAM text with LINE outline, menu_arrow at left x=5."
+  },
+  "button_menu_primary_pressed": {
+   "file": "button_menu_primary_pressed.png",
+   "size": [
+    64,
+    23
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile",
+   "note": "20 px tall menu button. Hover/focus: use button_menu_hover (primary stays primary), CREAM text with LINE outline, menu_arrow at left x=5."
+  },
+  "button_menu_disabled": {
+   "file": "button_menu_disabled.png",
+   "size": [
+    64,
+    23
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile",
+   "note": "20 px tall menu button. Hover/focus: use button_menu_hover (primary stays primary), CREAM text with LINE outline, menu_arrow at left x=5."
+  },
+  "menu_arrow": {
+   "file": "menu_arrow.png",
+   "size": [
+    5,
+    7
+   ],
+   "center": "none",
+   "note": "Gold arrow shown on the ONE hovered/focused menu button, at button (5, h/2-3)."
+  },
+  "button_small_idle": {
+   "file": "button_small_idle.png",
+   "size": [
+    40,
+    19
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile",
+   "note": "16 px tall small button (stepper < >, Craft)."
+  },
+  "button_small_hover": {
+   "file": "button_small_hover.png",
+   "size": [
+    40,
+    19
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile",
+   "note": "16 px tall small button (stepper < >, Craft)."
+  },
+  "button_small_pressed": {
+   "file": "button_small_pressed.png",
+   "size": [
+    40,
+    19
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile",
+   "note": "16 px tall small button (stepper < >, Craft)."
+  },
+  "button_small_disabled": {
+   "file": "button_small_disabled.png",
+   "size": [
+    40,
+    19
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 6
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile",
+   "note": "16 px tall small button (stepper < >, Craft)."
+  },
+  "craft_disabled": {
+   "file": "craft_disabled.png",
+   "size": [
+    40,
+    19
+   ],
+   "slice": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 5
+   },
+   "content": {
+    "left": 5,
+    "top": 1,
+    "right": 5,
+    "bottom": 4
+   },
+   "center": "tile",
+   "note": "Disabled Craft button (book). Padlock 6x6 at left+6, top+5; MUTED text + LINE outline."
+  },
+  "qty_box": {
+   "file": "qty_box.png",
+   "size": [
+    22,
+    18
+   ],
+   "slice": {
+    "left": 3,
+    "top": 3,
+    "right": 3,
+    "bottom": 3
+   },
+   "content": {
+    "left": 2,
+    "top": 2,
+    "right": 2,
+    "bottom": 2
+   },
+   "center": "tile",
+   "note": "Stepper number box 22x18, number bold CREAM + OUT."
+  },
+  "slider_groove": {
+   "file": "slider_groove.png",
+   "size": [
+    24,
+    9
+   ],
+   "slice": {
+    "left": 3,
+    "top": 3,
+    "right": 3,
+    "bottom": 2
+   },
+   "content": {
+    "left": 2,
+    "top": 2,
+    "right": 2,
+    "bottom": 2
+   },
+   "center": "tile",
+   "note": "Carved groove 8 tall + lit lip. In the mock: groove at slider (x, y+1), fill at (x+2, y+3).",
+   "rects": {
+    "fill_offset": [
+     2,
+     2
+    ],
+    "fill_height": 4,
+    "knob_offset_y": -3
+   }
+  },
+  "slider_fill": {
+   "file": "slider_fill.png",
+   "size": [
+    8,
+    4
+   ],
+   "slice": {
+    "left": 2,
+    "top": 0,
+    "right": 2,
+    "bottom": 0
+   },
+   "center": "tile"
+  },
+  "slider_fill_hover": {
+   "file": "slider_fill_hover.png",
+   "size": [
+    8,
+    4
+   ],
+   "slice": {
+    "left": 2,
+    "top": 0,
+    "right": 2,
+    "bottom": 0
+   },
+   "center": "tile"
+  },
+  "slider_knob": {
+   "file": "slider_knob.png",
+   "size": [
+    8,
+    8
+   ],
+   "center": "none",
+   "note": "8x8 paper knob, centre at fill end: x = groove.x + 2 + fillW - 4, y = groove.y - 3."
+  },
+  "checkbox_off": {
+   "file": "checkbox_off.png",
+   "size": [
+    14,
+    14
+   ],
+   "center": "none"
+  },
+  "checkbox_on": {
+   "file": "checkbox_on.png",
+   "size": [
+    14,
+    14
+   ],
+   "center": "none"
+  },
+  "checkbox_hover": {
+   "file": "checkbox_hover.png",
+   "size": [
+    14,
+    14
+   ],
+   "center": "none"
+  },
+  "slot_idle": {
+   "file": "slot_idle.png",
+   "size": [
+    24,
+    24
+   ],
+   "center": "none",
+   "note": "22x22 slot at box; icon 16 px at +3,+3 (hotbar/bag +3,+4). Sit it at (slot.x-1, slot.y-1).",
+   "box": {
+    "x": 1,
+    "y": 1,
+    "w": 22,
+    "h": 22
+   }
+  },
+  "slot_hover": {
+   "file": "slot_hover.png",
+   "size": [
+    24,
+    24
+   ],
+   "center": "none",
+   "note": "22x22 slot at box; icon 16 px at +3,+3 (hotbar/bag +3,+4). Sit it at (slot.x-1, slot.y-1).",
+   "box": {
+    "x": 1,
+    "y": 1,
+    "w": 22,
+    "h": 22
+   }
+  },
+  "slot_pick": {
+   "file": "slot_pick.png",
+   "size": [
+    24,
+    24
+   ],
+   "center": "none",
+   "note": "22x22 slot at box; icon 16 px at +3,+3 (hotbar/bag +3,+4). Sit it at (slot.x-1, slot.y-1).",
+   "box": {
+    "x": 1,
+    "y": 1,
+    "w": 22,
+    "h": 22
+   }
+  },
+  "slot_sel": {
+   "file": "slot_sel.png",
+   "size": [
+    24,
+    24
+   ],
+   "center": "none",
+   "note": "22x22 slot at box; icon 16 px at +3,+3 (hotbar/bag +3,+4). Sit it at (slot.x-1, slot.y-1).",
+   "box": {
+    "x": 1,
+    "y": 1,
+    "w": 22,
+    "h": 22
+   }
+  },
+  "padlock": {
+   "file": "padlock.png",
+   "size": [
+    6,
+    6
+   ],
+   "center": "none",
+   "note": "6x6. Slot locked by station: at slot (15,15). Also on Craft disabled and lock_banner."
+  },
+  "ability_frame": {
+   "file": "ability_frame.png",
+   "size": [
+    22,
+    22
+   ],
+   "center": "none",
+   "note": "22x22. Icon 16 px at (3,3). Cooldown = SHADOW 0.45 wipe from top over the icon + 1 px CREAM edge + bold seconds. Keycap overlaps the bottom.",
+   "rects": {
+    "icon": [
+     3,
+     3,
+     16,
+     16
+    ],
+    "keycap": [
+     5,
+     17,
+     13,
+     11
+    ]
+   }
+  },
+  "ability_keycap": {
+   "file": "ability_keycap.png",
+   "size": [
+    13,
+    11
+   ],
+   "center": "none",
+   "note": "13x11 at ability (5,17); letter bold OUT centred (Q / E / F from project.godot)."
+  },
+  "hp_frame": {
+   "file": "hp_frame.png",
+   "size": [
+    136,
+    26
+   ],
+   "center": "none",
+   "note": "Rope frame + knots + bronze heart socket + empty track, real size 136x26 (bar w 120). Fill/trail go in rects.fill.",
+   "rects": {
+    "fill": [
+     15,
+     5,
+     114,
+     14
+    ],
+    "number_centre": [
+     72,
+     9
+    ],
+    "heart": [
+     2,
+     4,
+     14,
+     16
+    ]
+   }
+  },
+  "hp_fill": {
+   "file": "hp_fill.png",
+   "size": [
+    114,
+    14
+   ],
+   "slice": {
+    "left": 3,
+    "top": 0,
+    "right": 3,
+    "bottom": 0
+   },
+   "center": "tile",
+   "note": "Neutral grey gloss ramp (light top rows, body, shade rows): TINT with modulate (red, low-HP pulse). Stretch columns only."
+  },
+  "hp_trail": {
+   "file": "hp_trail.png",
+   "size": [
+    114,
+    14
+   ],
+   "slice": {
+    "left": 3,
+    "top": 0,
+    "right": 3,
+    "bottom": 0
+   },
+   "center": "tile",
+   "note": "\"Hit just taken\" trail under the fill."
+  },
+  "boss_frame": {
+   "file": "boss_frame.png",
+   "size": [
+    284,
+    28
+   ],
+   "center": "none",
+   "note": "Bronze frame + both bone tusks + rope bands + empty track, real size 284x28 (bar w 260 = 0.45 of 1152). Fill goes in rects.fill.",
+   "rects": {
+    "fill": [
+     14,
+     10,
+     256,
+     12
+    ],
+    "mark": [
+     142,
+     10
+    ]
+   }
+  },
+  "boss_fill": {
+   "file": "boss_fill.png",
+   "size": [
+    256,
+    12
+   ],
+   "slice": {
+    "left": 3,
+    "top": 0,
+    "right": 3,
+    "bottom": 0
+   },
+   "center": "tile",
+   "note": "Neutral grey gloss ramp: TINT with modulate (purple, phase 2). Stretch columns only."
+  },
+  "boss_mark": {
+   "file": "boss_mark.png",
+   "size": [
+    3,
+    12
+   ],
+   "center": "none",
+   "note": "Phase-2 tick at 50%: x = fill.x + fillW/2 - 1."
+  },
+  "boss_plate": {
+   "file": "boss_plate.png",
+   "size": [
+    72,
+    16
+   ],
+   "slice": {
+    "left": 12,
+    "top": 0,
+    "right": 12,
+    "bottom": 0
+   },
+   "content": {
+    "left": 10,
+    "top": 3,
+    "right": 10,
+    "bottom": 3
+   },
+   "center": "tile",
+   "note": "Name plate with notched tails (stretch to name width + 26). Sits centred on the bar, 14 above its top (bar.y-14). Name bold CREAM + OUT."
+  },
+  "tooltip": {
+   "file": "tooltip.png",
+   "size": [
+    68,
+    39
+   ],
+   "slice": {
+    "left": 9,
+    "top": 9,
+    "right": 9,
+    "bottom": 12
+   },
+   "content": {
+    "left": 10,
+    "top": 9,
+    "right": 10,
+    "bottom": 10
+   },
+   "center": "tile",
+   "note": "Torn note, COVER_D. Line 1 bold CREAM+OUT (name), line 2 body PAPER (type, count). Text starts at +6,+4. tooltip_pin at top centre, 1 px above the box."
+  },
+  "tooltip_pin": {
+   "file": "tooltip_pin.png",
+   "size": [
+    4,
+    4
+   ],
+   "center": "none"
+  },
+  "book_cover": {
+   "file": "book_cover.png",
+   "size": [
+    346,
+    154
+   ],
+   "center": "none",
+   "note": "Open book: cover, both pages, page curls, nicks, rope binding + knots, clips/rope/moss. Pure picture, 330x136 at box. Tabs are separate parts. Layout numbers are relative to the box.",
+   "box": {
+    "x": 8,
+    "y": 8,
+    "w": 330,
+    "h": 136
+   },
+   "layout": {
+    "page_w": 157,
+    "left_page_x": 7,
+    "right_page_x": 166,
+    "recipe_title": [
+     12,
+     10
+    ],
+    "recipe_slot0": [
+     12,
+     26
+    ],
+    "recipe_step": [
+     24,
+     24
+    ],
+    "recipe_cols": 6,
+    "recipe_rows": 4,
+    "right_item_slot": [
+     173,
+     10
+    ],
+    "right_name": [
+     201,
+     12
+    ],
+    "right_type": [
+     201,
+     23
+    ],
+    "ingredient_well": [
+     173,
+     36
+    ],
+    "ingredient_row_step": 23,
+    "stepper_y": 108,
+    "minus": [
+     173,
+     108,
+     14,
+     16
+    ],
+    "qty": [
+     190,
+     108,
+     22,
+     18
+    ],
+    "plus": [
+     215,
+     108,
+     14,
+     16
+    ],
+    "craft": [
+     237,
+     108,
+     75,
+     16
+    ],
+    "tab_x": -22,
+    "tab_y0": 12,
+    "tab_step": 24
+   }
+  },
+  "book_tab_active": {
+   "file": "book_tab_active.png",
+   "size": [
+    31,
+    22
+   ],
+   "center": "none",
+   "note": "Active tab 26x22 + 5 px join over the page (31 wide). Top-left at book box (-22,12). Gold marker inside. Icon 16 px at +4,+3."
+  },
+  "book_tab_idle_1": {
+   "file": "book_tab_idle_1.png",
+   "size": [
+    26,
+    22
+   ],
+   "center": "none",
+   "note": "Idle tab 26x22, COVER_L, icon at 0.75 alpha. Put BEHIND the cover. Top-left at book box (-22,36)."
+  },
+  "book_tab_idle_2": {
+   "file": "book_tab_idle_2.png",
+   "size": [
+    26,
+    22
+   ],
+   "center": "none",
+   "note": "Same as idle_1, other grain seed. Top-left at book box (-22,60)."
+  },
+  "well": {
+   "file": "well.png",
+   "size": [
+    12,
+    12
+   ],
+   "slice": {
+    "left": 3,
+    "top": 3,
+    "right": 3,
+    "bottom": 3
+   },
+   "content": {
+    "left": 4,
+    "top": 4,
+    "right": 4,
+    "bottom": 4
+   },
+   "center": "tile",
+   "note": "Ingredient well: sunken WELL fill. Height = 4 + 23*rows (+14 with a lock banner)."
+  },
+  "lock_banner": {
+   "file": "lock_banner.png",
+   "size": [
+    16,
+    12
+   ],
+   "slice": {
+    "left": 3,
+    "top": 0,
+    "right": 3,
+    "bottom": 0
+   },
+   "content": {
+    "left": 14,
+    "top": 0,
+    "right": 2,
+    "bottom": 0
+   },
+   "center": "tile",
+   "note": "Red \"needs a station\" bar, 12 tall: padlock at +2,+2, CREAM body text at +12."
+  },
+  "divider_line": {
+   "file": "divider_line.png",
+   "size": [
+    8,
+    2
+   ],
+   "slice": {
+    "left": 0,
+    "top": 0,
+    "right": 0,
+    "bottom": 0
+   },
+   "center": "tile",
+   "note": "Bag divider, 2 rows (RIM + PAPER_L). Tile across; at bag y=83."
+  }
+ }
+}

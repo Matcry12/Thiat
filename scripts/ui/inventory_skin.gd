@@ -110,65 +110,12 @@ extends Resource
 		lock_color = v
 		emit_changed()
 
-@export_group("Bars: textures (empty = placeholder)")
-@export var bar_frame_texture : Texture2D:
-	set(v):
-		bar_frame_texture = v
-		emit_changed()
-@export var bar_fill_texture : Texture2D:
-	set(v):
-		bar_fill_texture = v
-		emit_changed()
-@export var bar_frame_patch_margin := 4:
-	set(v):
-		bar_frame_patch_margin = v
-		emit_changed()
-@export var boss_bg_texture : Texture2D:
-	set(v):
-		boss_bg_texture = v
-		emit_changed()
-@export var boss_fill_texture : Texture2D:
-	set(v):
-		boss_fill_texture = v
-		emit_changed()
 @export_group("Health bar")
-@export var health_bar_width := 220:
-	set(v):
-		health_bar_width = v
-		emit_changed()
-@export var health_bar_height := 18:
-	set(v):
-		health_bar_height = v
-		emit_changed()
-@export var bar_frame_margin := 2:
-	set(v):
-		bar_frame_margin = v
-		emit_changed()
-@export var bar_frame_color := Color(0.08, 0.02, 0.02, 0.85):
-	set(v):
-		bar_frame_color = v
-		emit_changed()
-@export var bar_frame_border := Color(0, 0, 0, 0.95):
-	set(v):
-		bar_frame_border = v
-		emit_changed()
-@export var health_fill_color := Color(0.82, 0.14, 0.14):
-	set(v):
-		health_fill_color = v
-		emit_changed()
 @export var health_low_color := Color(1.0, 0.5, 0.4):
 	set(v):
 		health_low_color = v
 		emit_changed()
-@export var health_trail_color := Color(1.0, 0.78, 0.7, 0.9):
-	set(v):
-		health_trail_color = v
-		emit_changed()
 @export_group("Boss bar")
-@export var boss_bar_width_fraction := 0.45:
-	set(v):
-		boss_bar_width_fraction = v
-		emit_changed()   ## of the screen width
 @export var boss_fade_time := 0.3:
 	set(v):
 		boss_fade_time = v
@@ -181,23 +128,11 @@ extends Resource
 	set(v):
 		boss_hide_delay = v
 		emit_changed()   ## after the boss is defeated, so the kill reads
-@export var boss_bar_height := 20:
-	set(v):
-		boss_bar_height = v
-		emit_changed()
-@export var boss_bg_color := Color(0.07, 0.04, 0.09, 1.0):
-	set(v):
-		boss_bg_color = v
-		emit_changed()
-@export var boss_border_color := Color(0, 0, 0, 1):
-	set(v):
-		boss_border_color = v
-		emit_changed()
 @export var boss_fill_color := Color(0.8, 0.2, 0.9):
 	set(v):
 		boss_fill_color = v
 		emit_changed()
-@export var boss_phase2_color := Color(1.0, 0.35, 0.2):
+@export var boss_phase2_color := Color(1.0, 0.23, 0.53):  ## modulate over the grey gloss ramp of boss_fill: hot pink (~#d0306e), never red (the HP bar is red)
 	set(v):
 		boss_phase2_color = v
 		emit_changed()
@@ -208,14 +143,6 @@ extends Resource
 @export var boss_flash_time := 0.6:
 	set(v):
 		boss_flash_time = v
-		emit_changed()
-@export var boss_marker_color := Color.WHITE:
-	set(v):
-		boss_marker_color = v
-		emit_changed()
-@export var boss_marker_width := 3:
-	set(v):
-		boss_marker_width = v
 		emit_changed()
 @export var slot_border_width := 2:
 	set(v):
@@ -228,14 +155,6 @@ extends Resource
 @export var lock_hint_color := Color(1, 0.6, 0.5):
 	set(v):
 		lock_hint_color = v
-		emit_changed()
-@export var boss_border_width := 2:
-	set(v):
-		boss_border_width = v
-		emit_changed()
-@export var boss_inset := 2:
-	set(v):
-		boss_inset = v
 		emit_changed()
 @export var boss_flash_speed := 18.0:
 	set(v):
@@ -284,19 +203,20 @@ extends Resource
 		tooltip_offset = v
 		emit_changed()
 @export_group("Ability placeholder colours")
-@export var dodge_color := Color(0.35, 0.6, 0.9)
-@export var skill_color := Color(0.95, 0.8, 0.3)
-@export var guard_color := Color(0.65, 0.68, 0.75)
+@export var dodge_color := Color(0.35, 0.6, 0.9):
+	set(v):
+		dodge_color = v
+		emit_changed()
+@export var skill_color := Color(0.95, 0.8, 0.3):
+	set(v):
+		skill_color = v
+		emit_changed()
+@export var guard_color := Color(0.65, 0.68, 0.75):
+	set(v):
+		guard_color = v
+		emit_changed()
 
 @export_group("Crafting window (W4, decision 0031)")
-@export var window_texture: Texture2D:
-	set(v):
-		window_texture = v
-		emit_changed()   ## the centred crafting window: nine-patch; empty = flat placeholder
-@export var section_texture: Texture2D:
-	set(v):
-		section_texture = v
-		emit_changed()   ## frame of the crafting / furnace area inside the window: nine-patch; empty = flat
 @export var craft_tab_icon: Texture2D:
 	set(v):
 		craft_tab_icon = v
@@ -305,78 +225,6 @@ extends Resource
 	set(v):
 		hand_icon = v
 		emit_changed()   ## station marker when you craft by hand (empty = a coloured square)
-@export var window_patch_margin := 8:
-	set(v):
-		window_patch_margin = v
-		emit_changed()
-@export var window_pad := 10:
-	set(v):
-		window_pad = v
-		emit_changed()   ## inner margin of the window, px
-@export var window_gap := 8:
-	set(v):
-		window_gap = v
-		emit_changed()   ## between the window parts, px
-@export var section_patch_margin := 6:
-	set(v):
-		section_patch_margin = v
-		emit_changed()
-@export var section_pad := 6:
-	set(v):
-		section_pad = v
-		emit_changed()   ## inner margin of the crafting / furnace area, px
-@export var craft_area_height := 112:
-	set(v):
-		craft_area_height = v
-		emit_changed()   ## height of the crafting area (the same for Crafting and Furnace), px
-@export var craft_slot_size := 44:
-	set(v):
-		craft_slot_size = v
-		emit_changed()   ## recipe icons and ingredient slots, px
-@export var furnace_slot_size := 56:
-	set(v):
-		furnace_slot_size = v
-		emit_changed()   ## the big result slot, px
-@export var craft_slot_gap := 4:
-	set(v):
-		craft_slot_gap = v
-		emit_changed()   ## between icons in the recipe grid and the ingredient grid, px
-@export var craft_grid_columns := 9:
-	set(v):
-		craft_grid_columns = v
-		emit_changed()   ## result icons per row in the recipe grid
-@export var craft_grid_rows := 2:
-	set(v):
-		craft_grid_rows = v
-		emit_changed()   ## rows shown before the recipe grid scrolls
-@export var furnace_arrow_width := 60:
-	set(v):
-		furnace_arrow_width = v
-		emit_changed()   ## px
-@export var furnace_arrow_height := 22:
-	set(v):
-		furnace_arrow_height = v
-		emit_changed()   ## px, the drawn triangle
-@export var tab_size := 36:
-	set(v):
-		tab_size = v
-		emit_changed()   ## the tab / station-marker squares, px
-@export var window_color := Color(0.07, 0.09, 0.14, 0.96):
-	set(v):
-		window_color = v
-		emit_changed()
-@export var window_border := Color(0.35, 0.4, 0.55):
-	set(v):
-		window_border = v
-		emit_changed()
-@export var section_color := Color(0.12, 0.14, 0.2, 0.8):
-	set(v):
-		section_color = v
-		emit_changed()
-@export var section_border := Color(0.3, 0.34, 0.48):
-	set(v):
-		section_border = v
-		emit_changed()
 @export var craft_dim_color := Color(1, 1, 1, 0.45):
 	set(v):
 		craft_dim_color = v
@@ -385,14 +233,6 @@ extends Resource
 	set(v):
 		craft_lit_color = v
 		emit_changed()   ## recipe icon tint when you can craft it
-@export var furnace_arrow_color := Color(0.9, 0.9, 0.9, 0.9):
-	set(v):
-		furnace_arrow_color = v
-		emit_changed()
-@export var furnace_fill_color := Color(1.0, 0.62, 0.2):
-	set(v):
-		furnace_fill_color = v
-		emit_changed()   ## the progress arrow fill
 @export var craft_short_color := Color(1.0, 0.35, 0.3):
 	set(v):
 		craft_short_color = v
@@ -405,10 +245,6 @@ extends Resource
 	set(v):
 		tab_color = v
 		emit_changed()   ## Crafting tab square while there is no icon
-@export var hand_color := Color(0.8, 0.7, 0.55):
-	set(v):
-		hand_color = v
-		emit_changed()   ## station marker square while there is no icon
 @export var furnace_tab_glow_color := Color(1.5, 1.1, 0.7):
 	set(v):
 		furnace_tab_glow_color = v
@@ -458,3 +294,307 @@ extends Resource
 	set(v):
 		cursor_shadow_offset = v
 		emit_changed()
+
+## ===== Island Workshop parts (decision 0043) =====
+## Baked by tools/ui_bake/bake_game_parts.py into assets/ui/game/ (art scale 1; draw at art_scale, nearest). Slot lists per screen: assets/ui/game/README.md.
+## <part>_tex = the picture. Nine-patch + content margins are NOT fields: PixelArt reads them from assets/ui/game/slices.json (part name = the
+## field name without "_tex"), so a rebake cannot drift from the code.
+@export_group("Island Workshop: scale")
+@export_range(1, 4) var art_scale := 2:
+	set(v):
+		art_scale = v
+		emit_changed()  ## 1 art px = this many screen px. Part size * art_scale = size on screen.
+@export_group("Island Workshop: Menus")
+@export var panel_title_tex: Texture2D:
+	set(v):
+		panel_title_tex = v
+		emit_changed()
+@export var panel_pause_tex: Texture2D:
+	set(v):
+		panel_pause_tex = v
+		emit_changed()
+@export var panel_settings_tex: Texture2D:
+	set(v):
+		panel_settings_tex = v
+		emit_changed()
+@export var title_plaque_tex: Texture2D:
+	set(v):
+		title_plaque_tex = v
+		emit_changed()
+@export var title_logo_tex: Texture2D:
+	set(v):
+		title_logo_tex = v
+		emit_changed()
+@export var title_rope_tex: Texture2D:
+	set(v):
+		title_rope_tex = v
+		emit_changed()
+@export var button_menu_idle_tex: Texture2D:
+	set(v):
+		button_menu_idle_tex = v
+		emit_changed()
+@export var button_menu_hover_tex: Texture2D:
+	set(v):
+		button_menu_hover_tex = v
+		emit_changed()
+@export var button_menu_pressed_tex: Texture2D:
+	set(v):
+		button_menu_pressed_tex = v
+		emit_changed()
+@export var button_menu_primary_tex: Texture2D:
+	set(v):
+		button_menu_primary_tex = v
+		emit_changed()
+@export var button_menu_primary_pressed_tex: Texture2D:
+	set(v):
+		button_menu_primary_pressed_tex = v
+		emit_changed()
+@export var button_menu_disabled_tex: Texture2D:
+	set(v):
+		button_menu_disabled_tex = v
+		emit_changed()
+@export var menu_arrow_tex: Texture2D:
+	set(v):
+		menu_arrow_tex = v
+		emit_changed()
+@export var slider_groove_tex: Texture2D:
+	set(v):
+		slider_groove_tex = v
+		emit_changed()
+@export var slider_fill_tex: Texture2D:
+	set(v):
+		slider_fill_tex = v
+		emit_changed()
+@export var slider_fill_hover_tex: Texture2D:
+	set(v):
+		slider_fill_hover_tex = v
+		emit_changed()
+@export var slider_knob_tex: Texture2D:
+	set(v):
+		slider_knob_tex = v
+		emit_changed()
+@export var checkbox_off_tex: Texture2D:
+	set(v):
+		checkbox_off_tex = v
+		emit_changed()
+@export var checkbox_on_tex: Texture2D:
+	set(v):
+		checkbox_on_tex = v
+		emit_changed()
+@export var checkbox_hover_tex: Texture2D:
+	set(v):
+		checkbox_hover_tex = v
+		emit_changed()
+@export_group("Island Workshop: HUD")
+@export var hotbar_panel_tex: Texture2D:
+	set(v):
+		hotbar_panel_tex = v
+		emit_changed()
+@export var slot_idle_tex: Texture2D:
+	set(v):
+		slot_idle_tex = v
+		emit_changed()
+@export var slot_hover_tex: Texture2D:
+	set(v):
+		slot_hover_tex = v
+		emit_changed()
+@export var slot_pick_tex: Texture2D:
+	set(v):
+		slot_pick_tex = v
+		emit_changed()
+@export var slot_sel_tex: Texture2D:
+	set(v):
+		slot_sel_tex = v
+		emit_changed()
+@export var ability_frame_tex: Texture2D:
+	set(v):
+		ability_frame_tex = v
+		emit_changed()
+@export var ability_keycap_tex: Texture2D:
+	set(v):
+		ability_keycap_tex = v
+		emit_changed()
+@export var hp_frame_tex: Texture2D:
+	set(v):
+		hp_frame_tex = v
+		emit_changed()
+@export var hp_fill_tex: Texture2D:
+	set(v):
+		hp_fill_tex = v
+		emit_changed()
+@export var hp_trail_tex: Texture2D:
+	set(v):
+		hp_trail_tex = v
+		emit_changed()
+@export var boss_frame_tex: Texture2D:
+	set(v):
+		boss_frame_tex = v
+		emit_changed()
+@export var boss_fill_tex: Texture2D:
+	set(v):
+		boss_fill_tex = v
+		emit_changed()
+@export var boss_mark_tex: Texture2D:
+	set(v):
+		boss_mark_tex = v
+		emit_changed()
+@export var boss_plate_tex: Texture2D:
+	set(v):
+		boss_plate_tex = v
+		emit_changed()
+@export_group("Island Workshop: Bag & book")
+@export var bag_panel_tex: Texture2D:
+	set(v):
+		bag_panel_tex = v
+		emit_changed()
+@export var divider_line_tex: Texture2D:
+	set(v):
+		divider_line_tex = v
+		emit_changed()
+@export var book_cover_tex: Texture2D:
+	set(v):
+		book_cover_tex = v
+		emit_changed()
+@export var book_tab_active_tex: Texture2D:
+	set(v):
+		book_tab_active_tex = v
+		emit_changed()
+@export var book_tab_idle_1_tex: Texture2D:
+	set(v):
+		book_tab_idle_1_tex = v
+		emit_changed()
+@export var book_tab_idle_2_tex: Texture2D:
+	set(v):
+		book_tab_idle_2_tex = v
+		emit_changed()
+@export var well_tex: Texture2D:
+	set(v):
+		well_tex = v
+		emit_changed()
+@export var qty_box_tex: Texture2D:
+	set(v):
+		qty_box_tex = v
+		emit_changed()
+@export var button_small_idle_tex: Texture2D:
+	set(v):
+		button_small_idle_tex = v
+		emit_changed()
+@export var button_small_hover_tex: Texture2D:
+	set(v):
+		button_small_hover_tex = v
+		emit_changed()
+@export var button_small_pressed_tex: Texture2D:
+	set(v):
+		button_small_pressed_tex = v
+		emit_changed()
+@export var button_small_disabled_tex: Texture2D:
+	set(v):
+		button_small_disabled_tex = v
+		emit_changed()
+@export var craft_disabled_tex: Texture2D:
+	set(v):
+		craft_disabled_tex = v
+		emit_changed()
+@export var lock_banner_tex: Texture2D:
+	set(v):
+		lock_banner_tex = v
+		emit_changed()
+@export var padlock_tex: Texture2D:
+	set(v):
+		padlock_tex = v
+		emit_changed()
+@export var tooltip_tex: Texture2D:
+	set(v):
+		tooltip_tex = v
+		emit_changed()
+@export var tooltip_pin_tex: Texture2D:
+	set(v):
+		tooltip_pin_tex = v
+		emit_changed()
+@export_group("Island Workshop: palette (DESIGN.md section 2)")
+@export var pal_out := Color8(62, 36, 39):
+	set(v):
+		pal_out = v
+		emit_changed()  ## outline, text on paper
+@export var pal_line := Color8(118, 64, 65):
+	set(v):
+		pal_line = v
+		emit_changed()  ## secondary text on paper
+@export var pal_paper := Color8(214, 179, 142):
+	set(v):
+		pal_paper = v
+		emit_changed()  ## tooltip line 2
+@export var pal_cream := Color8(252, 242, 222):
+	set(v):
+		pal_cream = v
+		emit_changed()  ## text on dark / buttons (with OUT outline)
+@export var pal_goldtxt := Color8(244, 200, 76):
+	set(v):
+		pal_goldtxt = v
+		emit_changed()  ## sub-titles, item type
+@export var pal_muted := Color8(150, 104, 86):
+	set(v):
+		pal_muted = v
+		emit_changed()  ## disabled text only
+@export var pal_okg := Color8(150, 214, 96):
+	set(v):
+		pal_okg = v
+		emit_changed()  ## have enough
+@export var pal_hp_l := Color8(255, 128, 104):
+	set(v):
+		pal_hp_l = v
+		emit_changed()  ## not enough
+@export var pal_hp_d := Color8(150, 26, 44):
+	set(v):
+		pal_hp_d = v
+		emit_changed()
+@export var pal_shadow := Color8(20, 10, 14):
+	set(v):
+		pal_shadow = v
+		emit_changed()  ## cooldown wipe base (alpha below)
+@export var text_outline_color := Color8(84, 48, 46):  ## pixel-font outline (dark wood brown, not near-black pal_out)
+	set(v):
+		text_outline_color = v
+		emit_changed()
+@export var text_outline_size := 1:  ## art px of that outline
+	set(v):
+		text_outline_size = v
+		emit_changed()
+@export var dim_color := Color8(26, 14, 20):
+	set(v):
+		dim_color = v
+		emit_changed()
+@export var dim_alpha_menu := 0.5:  ## title, book
+	set(v):
+		dim_alpha_menu = v
+		emit_changed()
+@export var dim_alpha_pause := 0.55:  ## pause, settings
+	set(v):
+		dim_alpha_pause = v
+		emit_changed()
+@export var cooldown_alpha := 0.45:  ## ability wipe, over pal_shadow
+	set(v):
+		cooldown_alpha = v
+		emit_changed()
+@export var missing_icon_alpha := 0.4:  ## recipe icon you cannot craft (the mock also greys it)
+	set(v):
+		missing_icon_alpha = v
+		emit_changed()
+@export_group("Island Workshop: fonts")
+@export var font_body: Font:  ## empty = UiFonts.get_font("body"); drawn at 9 * art_scale
+	set(v):
+		font_body = v
+		emit_changed()
+@export var font_bold: Font:  ## empty = UiFonts.get_font("bold"); 9 * art_scale (headers x2)
+	set(v):
+		font_bold = v
+		emit_changed()
+@export var font_small: Font:  ## empty = UiFonts.get_font("small"); 5 * art_scale
+	set(v):
+		font_small = v
+		emit_changed()
+
+func ui_font(kind: String) -> Font:
+	## kind: "body" | "bold" | "small". Skin override, else the baked pixel font with outline support.
+	var f: Font = get("font_" + kind)
+	return f if f != null else UiFonts.get_font(kind)

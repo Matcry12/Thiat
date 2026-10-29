@@ -2,7 +2,7 @@ extends CanvasLayer
 class_name HUD
 ## HUD (decision 0030). Top-left: Hotbar, then the bag when it opens (decision 0029). Bottom-left: the
 ## ability icons (dodge / skill / guard) above the health bar. Bottom centre: the boss bar while a boss is awake.
-## No words: names and the HP number only appear in the hover tooltip (HudTooltip). Everything is
+## No words but the boss name and the HP number (decision 0043); other names show in the hover tooltip (HudTooltip). Everything is
 ## placed with anchors + containers; the only numbers are the margins below.
 ##
 ## No shield bar here: the guard's shield is the curved GuardBar next to the player (decision 0015).
@@ -14,6 +14,7 @@ class_name HUD
 @export var margin_x := 16
 @export var margin_y := 12
 @export var block_gap := 8            ## between stacked blocks
+@export var boss_left_gap := 2        ## boss bar to the health bar (the mock has them touching)
 @export var f3_gap := 8               ## clear space kept around the HUD when F3 is open
 @export var ui_layer := 10            ## above the F3 layer, so draw order never depends on tree order
 
@@ -34,9 +35,17 @@ var _tuning: CanvasLayer
 var _boss: Boss
 var _boss_bar: BossBar
 var _skin: InventorySkin
+var _paused_view := false   ## the pause / settings menu is up: the hotbar hides (DESIGN.md), the HUD itself does not tick while paused
+
+## Called by the PauseMenu when it opens / closes.
+func set_paused_view(on: bool) -> void:
+	_paused_view = on
+	if _hotbar:
+		_hotbar.visible = not on and not (_bag != null and _bag.is_open())
 
 func _ready() -> void:
 	add_to_group("debug")
+	add_to_group("hud")
 	var player: Node = get_node(player_path)
 	_health = player.get_node("Health")
 	_loadout = player.get_node_or_null("Loadout")
@@ -75,7 +84,7 @@ func f3_insets() -> Vector2:
 func _process(_delta: float) -> void:
 	_layer.layer = ui_layer
 	if _hotbar and _bag:
-		_hotbar.visible = not _bag.is_open()
+		_hotbar.visible = not _bag.is_open() and not _paused_view
 	if _win:   # the centred window slides left rather than sit under the F3 tuning panel
 		var dx := 0.0
 		if _tuning and _tuning.visible and _tuning.has_method("right_panel_width") and _win.is_open():
@@ -92,20 +101,21 @@ func _process(_delta: float) -> void:
 	if _boss:
 		_place_boss_bar()
 
-## Bottom centre, `boss_bar_width_fraction` of the screen wide, kept clear of the bottom-left block
-## (health + abilities) and of the F3 tuning panel: if the centred bar would touch them it slides / narrows.
+## Bottom centre at real art size, kept clear of the bottom-left block (health + abilities) and of the F3 dock:
+## if the centred bar would touch them it slides, and when the whole frame no longer fits it drops to 1x.
 func _place_boss_bar() -> void:
 	var vw := get_viewport().get_visible_rect().size.x
-	var left := _bottom_left.get_global_rect().end.x + block_gap
+	var left := _bottom_left.get_global_rect().end.x + boss_left_gap
 	var right := vw - margin_x
 	if _tuning and _tuning.visible and _tuning.has_method("right_panel_width"):
 		right = vw - _tuning.right_panel_width() - f3_gap
-	var w := minf(vw * _skin.boss_bar_width_fraction, right - left)
+	var sz := _boss_bar.natural_size(right - left)
+	var w := minf(sz.x, right - left)
 	var x0 := clampf((vw - w) * 0.5, left, right - w)
 	_boss_bar.offset_left = x0
 	_boss_bar.offset_right = x0 + w
 	_boss_bar.offset_bottom = -margin_y
-	_boss_bar.offset_top = -margin_y - _skin.boss_bar_height
+	_boss_bar.offset_top = -margin_y - sz.y
 
 func _corner(preset: int) -> VBoxContainer:
 	var b := VBoxContainer.new()
@@ -132,6 +142,7 @@ func _build_ui(player: Node) -> void:
 		_tooltip.blocked = func(): return inv.held_item != null   # no name over a stack on the cursor
 		_hotbar = Hotbar.new()
 		_hotbar.skin = skin
+		_hotbar.framed = true
 		_top_left.add_child(_hotbar)
 		_hotbar.bind(_loadout, inv)
 		# Tab / I opens ONE centred window: crafting area on top, bag + a hotbar copy below (decision 0031).

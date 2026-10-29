@@ -7,23 +7,23 @@ extends ScrollContainer
 signal pinned_changed(names: Array)
 
 @export var refresh_rate := 4.0   # text refreshes per second
-@export var font_size := 12
-@export var detail_font_size := 11
-@export var row_gap := 3
-@export var summary_color := Color("c4cdd9")
-@export var detail_color := Color("9aa5b4")
-@export var row_color := Color("171a21")
-@export var pinned_row_color := Color("1c2433")
-@export var chip_on_color := Color("e6b450")
-@export var chip_off_color := Color("7a8494")
+@export var row_gap := 2
+@export var detail_pack_chars := 28   # two short facts share a detail line up to this many characters
+@export var detail_indent := 20.0
+@export var open_bar_color := Color8(150, 214, 96)   # the thin bar at the left of an open block
+@export var open_bar_width := 4.0
+@export var detail_line_spacing := 2
+@export var pin_icon_tint := Color(2.0, 1.8, 1.5)
+@export var chip_height := 24.0
 
 var _providers: Array = []
 var _pinned: Array = []
 var _open: Dictionary = {}
-var _rows: Dictionary = {}   # name -> {panel, summary, detail, chip}
+var _rows: Dictionary = {}   # name -> {head, summary, detail, bar, detail_box}
 var _box := VBoxContainer.new()
 var _since := 0.0
 var _dirty := false
+var art_scale := 2
 
 func _ready() -> void:
 	horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -97,43 +97,83 @@ func _rebuild() -> void:
 
 func _make_row(n: String) -> Control:
 	var pinned := n in _pinned
-	var panel := PanelContainer.new()
-	panel.name = n
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = pinned_row_color if pinned else row_color
-	sb.set_corner_radius_all(4)
-	sb.set_content_margin_all(5)
-	panel.add_theme_stylebox_override("panel", sb)
+	var row := HBoxContainer.new()   # [open bar][block]
+	row.name = n
+	row.add_theme_constant_override("separation", 2)
+	var bar := ColorRect.new()
+	bar.color = open_bar_color
+	bar.custom_minimum_size.x = open_bar_width
+	bar.visible = false
+	row.add_child(bar)
 	var v := VBoxContainer.new()
-	panel.add_child(v)
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	v.add_theme_constant_override("separation", 0)
+	row.add_child(v)
 	var h := HBoxContainer.new()
+	h.add_theme_constant_override("separation", 4)
 	v.add_child(h)
-	var head := Button.new()
-	head.flat = true
+	var head := Button.new()   # name; the whole line is the click target (the summary + chip sit on top of it)
+	head.theme_type_variation = "F3Block"
 	head.focus_mode = Control.FOCUS_NONE
 	head.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	head.clip_text = true
-	head.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	head.add_theme_font_size_override("font_size", font_size)
-	head.add_theme_color_override("font_color", summary_color)
+	head.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	head.expand_icon = false
+	head.custom_minimum_size.y = chip_height
 	head.pressed.connect(toggle_open.bind(n))
 	h.add_child(head)
+	var summary := Label.new()   # first line of the text, small caps, tail-ellipsis (never under the chip)
+	summary.theme_type_variation = "F3Small"
+	summary.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	summary.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	summary.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	summary.clip_text = true
+	summary.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	summary.mouse_filter = Control.MOUSE_FILTER_STOP   # a click on it opens the block too
+	summary.gui_input.connect(func(ev: InputEvent):
+		if ev is InputEventMouseButton and ev.pressed and ev.button_index == MOUSE_BUTTON_LEFT:
+			toggle_open(n))
+	h.add_child(summary)
 	var chip := Button.new()
 	chip.focus_mode = Control.FOCUS_NONE
-	chip.add_theme_font_size_override("font_size", detail_font_size)
-	chip.add_theme_color_override("font_color", chip_on_color if pinned else chip_off_color)
-	chip.text = "on game ✓" if pinned else "pin to game"
-	chip.tooltip_text = "Keep this block in the card over the game"
+	if pinned:
+		chip.theme_type_variation = "F3ChipOn"
+		chip.text = "On game"
+		chip.icon = F3Theme.tex("icon_check", art_scale)
+		chip.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	else:
+		chip.theme_type_variation = "F3Icon"
+		chip.icon = F3Theme.tex("icon_pin_game", art_scale)
+		chip.custom_minimum_size.x = chip_height
+		for c in ["icon_normal_color", "icon_hover_color", "icon_pressed_color"]:   # the baked pin is dark: lift it on the leather
+			chip.add_theme_color_override(c, pin_icon_tint)
+	chip.tooltip_text = "Keep this block in the card over the game" if not pinned else "Remove this block from the card over the game"
+	chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	chip.pressed.connect(toggle_pin.bind(n))
 	h.add_child(chip)
 	var detail := Label.new()
+	detail.theme_type_variation = "F3Name"
+	detail.add_theme_constant_override("line_spacing", detail_line_spacing)
 	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	detail.add_theme_font_size_override("font_size", detail_font_size)
-	detail.add_theme_color_override("font_color", detail_color)
 	detail.visible = false
-	v.add_child(detail)
-	_rows[n] = {"head": head, "detail": detail}
-	return panel
+	var dm := MarginContainer.new()
+	dm.add_theme_constant_override("margin_left", int(detail_indent))
+	dm.add_theme_constant_override("margin_bottom", 4)
+	dm.add_child(detail)
+	v.add_child(dm)
+	_rows[n] = {"head": head, "summary": summary, "detail": detail, "bar": bar, "detail_box": dm}
+	return row
+
+
+## Short facts share a line: "frame 4/6" + "fps 7.0" -> "frame 4/6  fps 7.0" (up to `detail_pack_chars`), so a block is not a tall list.
+func _pack(lines: PackedStringArray) -> String:
+	var out := PackedStringArray()
+	for l in lines:
+		if not out.is_empty() and out[out.size() - 1].length() + 2 + l.length() <= detail_pack_chars:
+			out[out.size() - 1] += "  " + l
+		else:
+			out.append(l)
+	return "\n".join(out)
+
 
 func _refresh_row(n: String) -> void:
 	var row: Dictionary = _rows.get(n, {})
@@ -146,10 +186,14 @@ func _refresh_row(n: String) -> void:
 		txt = str(p.text.call()) if not p.is_empty() else ""
 	var lines := txt.split("\n")
 	var first: String = lines[0] if lines.size() > 0 else ""
-	row.head.text = "%s   %s" % [n, first] if (open or n in _pinned) else n   # ponytail: closed + unpinned rows have no live line (not evaluated)
+	row.head.text = n
+	row.summary.text = first.split("  ")[0]   # ponytail: closed + unpinned rows have no live line (not evaluated)
 	var d: Label = row.detail
-	d.text = "\n".join(lines.slice(1))
-	d.visible = open and d.text != ""   # first line is already in the head
+	d.text = _pack(lines.slice(1))
+	d.visible = open and d.text != ""   # first line is already in the summary
+	row.detail_box.visible = d.visible
+	row.bar.visible = open
+	row.head.icon = F3Theme.tex("icon_tri_open" if open else "icon_tri_closed", art_scale)
 
 func _process(delta: float) -> void:
 	if _dirty and is_visible_in_tree():

@@ -6,40 +6,33 @@ extends PanelContainer
 @export var top := 8.0
 @export var min_left := 480.0           # right of the hotbar
 @export var max_width := 268.0
-@export var font_size := 11
-@export var name_color := "#8fb8ff"
-@export var override_color := "#e6b450"
-@export var bg_color := Color(0.047, 0.055, 0.07, 0.82)
-@export var border_color := Color("2a303b")
-@export var text_color := Color("c4cdd9")
+@export var name_color := "#f4c84c"     # GOLDTXT: the block name
+@export var override_color := "#f4c84c"
+@export var text_color := Color8(252, 242, 222)
 @export var max_lines_per_block := 3
+@export var text_size := 14
 
 var _label := RichTextLabel.new()
 var _blocks: Array = []
 var _overrides := 0
 
 func _ready() -> void:
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = bg_color
-	sb.border_color = border_color
-	sb.set_border_width_all(1)
-	sb.set_corner_radius_all(6)
-	sb.content_margin_left = 9
-	sb.content_margin_right = 9
-	sb.content_margin_top = 6
-	sb.content_margin_bottom = 6
-	add_theme_stylebox_override("panel", sb)
+	theme_type_variation = "F3Note"   # a dark note pinned with a nail (the dock's theme is set by the TuningPanel)
 	_label.bbcode_enabled = true
 	_label.fit_content = true
 	_label.scroll_active = false
 	_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_label.add_theme_font_size_override("normal_font_size", font_size)
-	_label.add_theme_font_size_override("bold_font_size", font_size)
+	for f in ["normal_font_size", "bold_font_size"]:
+		_label.add_theme_font_size_override(f, text_size)
 	_label.add_theme_color_override("default_color", text_color)
-	_label.custom_minimum_size.x = max_width - 18
+	_label.add_theme_constant_override("line_separation", 4)
+	_label.custom_minimum_size.x = max_width - 44
 	add_child(_label)
 	_ignore_mouse(self)
 	_redraw()
+
+func _draw() -> void:
+	F3Theme.draw_nail(self)
 
 ## Place between the hotbar and the dock: left edge at max(min_left, ...), never past `right_limit`.
 func set_span(right_limit: float) -> void:
@@ -47,7 +40,7 @@ func set_span(right_limit: float) -> void:
 	position = Vector2(min_left, top)
 	custom_minimum_size.x = w
 	size.x = w
-	_label.custom_minimum_size.x = w - 18
+	_label.custom_minimum_size.x = w - 44
 
 func set_blocks(blocks: Array) -> void:   # [{name, text}]
 	_blocks = blocks

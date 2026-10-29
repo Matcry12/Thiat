@@ -10,6 +10,58 @@
 [ext_resource type="Texture2D" path="res://assets/ui/placeholder/hand.png" id="6"]
 [ext_resource type="Texture2D" path="res://assets/ui/placeholder/hammer.png" id="7"]
 
+[ext_resource type="Texture2D" path="res://assets/ui/game/panel_title.png" id="g_panel_title"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/panel_pause.png" id="g_panel_pause"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/panel_settings.png" id="g_panel_settings"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/title_plaque.png" id="g_title_plaque"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/title_logo.png" id="g_title_logo"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/title_rope.png" id="g_title_rope"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/button_menu_idle.png" id="g_button_menu_idle"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/button_menu_hover.png" id="g_button_menu_hover"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/button_menu_pressed.png" id="g_button_menu_pressed"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/button_menu_primary.png" id="g_button_menu_primary"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/button_menu_primary_pressed.png" id="g_button_menu_primary_pressed"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/button_menu_disabled.png" id="g_button_menu_disabled"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/menu_arrow.png" id="g_menu_arrow"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/slider_groove.png" id="g_slider_groove"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/slider_fill.png" id="g_slider_fill"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/slider_fill_hover.png" id="g_slider_fill_hover"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/slider_knob.png" id="g_slider_knob"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/checkbox_off.png" id="g_checkbox_off"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/checkbox_on.png" id="g_checkbox_on"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/checkbox_hover.png" id="g_checkbox_hover"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/hotbar_panel.png" id="g_hotbar_panel"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/slot_idle.png" id="g_slot_idle"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/slot_hover.png" id="g_slot_hover"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/slot_pick.png" id="g_slot_pick"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/slot_sel.png" id="g_slot_sel"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/ability_frame.png" id="g_ability_frame"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/ability_keycap.png" id="g_ability_keycap"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/hp_frame.png" id="g_hp_frame"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/hp_fill.png" id="g_hp_fill"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/hp_trail.png" id="g_hp_trail"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/boss_frame.png" id="g_boss_frame"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/boss_fill.png" id="g_boss_fill"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/boss_mark.png" id="g_boss_mark"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/boss_plate.png" id="g_boss_plate"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/bag_panel.png" id="g_bag_panel"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/divider_line.png" id="g_divider_line"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/book_cover.png" id="g_book_cover"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/book_tab_active.png" id="g_book_tab_active"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/book_tab_idle_1.png" id="g_book_tab_idle_1"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/book_tab_idle_2.png" id="g_book_tab_idle_2"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/well.png" id="g_well"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/qty_box.png" id="g_qty_box"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/button_small_idle.png" id="g_button_small_idle"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/button_small_hover.png" id="g_button_small_hover"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/button_small_pressed.png" id="g_button_small_pressed"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/button_small_disabled.png" id="g_button_small_disabled"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/craft_disabled.png" id="g_craft_disabled"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/lock_banner.png" id="g_lock_banner"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/padlock.png" id="g_padlock"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/tooltip.png" id="g_tooltip"]
+[ext_resource type="Texture2D" path="res://assets/ui/game/tooltip_pin.png" id="g_tooltip_pin"]
+
 [resource]
 script = ExtResource("1")
 dodge_icon = ExtResource("2")
@@ -18,3 +70,54 @@ guard_icon = ExtResource("4")
 lock_texture = ExtResource("5")
 hand_icon = ExtResource("6")
 craft_tab_icon = ExtResource("7")
+panel_title_tex = ExtResource("g_panel_title")
+panel_pause_tex = ExtResource("g_panel_pause")
+panel_settings_tex = ExtResource("g_panel_settings")
+title_plaque_tex = ExtResource("g_title_plaque")
+title_logo_tex = ExtResource("g_title_logo")
+title_rope_tex = ExtResource("g_title_rope")
+button_menu_idle_tex = ExtResource("g_button_menu_idle")
+button_menu_hover_tex = ExtResource("g_button_menu_hover")
+button_menu_pressed_tex = ExtResource("g_button_menu_pressed")
+button_menu_primary_tex = ExtResource("g_button_menu_primary")
+button_menu_primary_pressed_tex = ExtResource("g_button_menu_primary_pressed")
+button_menu_disabled_tex = ExtResource("g_button_menu_disabled")
+menu_arrow_tex = ExtResource("g_menu_arrow")
+slider_groove_tex = ExtResource("g_slider_groove")
+slider_fill_tex = ExtResource("g_slider_fill")
+slider_fill_hover_tex = ExtResource("g_slider_fill_hover")
+slider_knob_tex = ExtResource("g_slider_knob")
+checkbox_off_tex = ExtResource("g_checkbox_off")
+checkbox_on_tex = ExtResource("g_checkbox_on")
+checkbox_hover_tex = ExtResource("g_checkbox_hover")
+hotbar_panel_tex = ExtResource("g_hotbar_panel")
+slot_idle_tex = ExtResource("g_slot_idle")
+slot_hover_tex = ExtResource("g_slot_hover")
+slot_pick_tex = ExtResource("g_slot_pick")
+slot_sel_tex = ExtResource("g_slot_sel")
+ability_frame_tex = ExtResource("g_ability_frame")
+ability_keycap_tex = ExtResource("g_ability_keycap")
+hp_frame_tex = ExtResource("g_hp_frame")
+hp_fill_tex = ExtResource("g_hp_fill")
+hp_trail_tex = ExtResource("g_hp_trail")
+boss_frame_tex = ExtResource("g_boss_frame")
+boss_fill_tex = ExtResource("g_boss_fill")
+boss_mark_tex = ExtResource("g_boss_mark")
+boss_plate_tex = ExtResource("g_boss_plate")
+bag_panel_tex = ExtResource("g_bag_panel")
+divider_line_tex = ExtResource("g_divider_line")
+book_cover_tex = ExtResource("g_book_cover")
+book_tab_active_tex = ExtResource("g_book_tab_active")
+book_tab_idle_1_tex = ExtResource("g_book_tab_idle_1")
+book_tab_idle_2_tex = ExtResource("g_book_tab_idle_2")
+well_tex = ExtResource("g_well")
+qty_box_tex = ExtResource("g_qty_box")
+button_small_idle_tex = ExtResource("g_button_small_idle")
+button_small_hover_tex = ExtResource("g_button_small_hover")
+button_small_pressed_tex = ExtResource("g_button_small_pressed")
+button_small_disabled_tex = ExtResource("g_button_small_disabled")
+craft_disabled_tex = ExtResource("g_craft_disabled")
+lock_banner_tex = ExtResource("g_lock_banner")
+padlock_tex = ExtResource("g_padlock")
+tooltip_tex = ExtResource("g_tooltip")
+tooltip_pin_tex = ExtResource("g_tooltip_pin")

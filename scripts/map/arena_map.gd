@@ -1990,7 +1990,7 @@ func debug_actions() -> Array:
 		{"label": "Go home", "run": func(): teleport_player("home")},
 		{"label": "Go to boss", "run": func(): teleport_player("boss")},
 		{"label": "Biome map", "toggle": func(): return biome_map_on, "run": func(): biome_map_on = not biome_map_on},
-		{"label": "Generate", "arg": "int", "run": func(v): generate_seed(clampi(int(v), 1, 9999))},   # seed 1-9999
+		{"label": "Generate", "arg": "int", "hint": "seed", "run": func(v): generate_seed(clampi(int(v), 1, 9999))},   # seed 1-9999
 	]
 
 ## A slider that rebuilds the world (applied when the drag ENDS): every ArenaMap number that is not a look. The look / camera ones are cheap and follow the drag.

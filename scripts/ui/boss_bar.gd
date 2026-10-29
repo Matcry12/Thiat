@@ -13,8 +13,6 @@ var _awake := false
 var _shown := 0.0        # 0..1 fade/slide progress
 var _hide_in := -1.0     # > 0: seconds until set_awake(false) (after a defeat)
 var _flash_left := 0.0
-var _frame: StyleBox
-var _applied: InventorySkin
 
 func bind(b: Boss) -> void:
 	_boss = b
@@ -47,33 +45,43 @@ func fill_color() -> Color:
 		c = c.lerp(sk.boss_flash_color, t * (sk.boss_flash_mix + (1.0 - sk.boss_flash_mix) * sin(t * sk.boss_flash_speed)))
 	return c
 
+@export var title := "Orc Warlord"   ## name on the plate when the boss has no `boss_name`
+@export_group("Frame layout (art px; the end caps come from assets/ui/game/slices.json boss_fill / boss_plate)")
+@export var fill_x := 14
+@export var fill_y := 10
+@export var fill_w := 256
+@export var fill_h := 12
+@export var plate_h := 16
+@export var plate_gap := -5   ## art px between the plate bottom and the frame top (negative = the plate overlaps the frame)
+@export var plate_pad := 26   ## plate width = name width + this
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	visible = false
 
-func _apply_skin() -> void:
+## Art px -> screen px: the skin's art_scale while `avail_w` holds the whole frame, else 1 (F3 dock / narrow window).
+func scale_for(avail_w: float) -> int:
 	var sk := get_skin()
-	if sk.boss_bg_texture:
-		var t := StyleBoxTexture.new()
-		t.texture = sk.boss_bg_texture
-		t.set_texture_margin_all(sk.bar_frame_patch_margin)
-		_frame = t
-	else:
-		var f := StyleBoxFlat.new()
-		f.bg_color = sk.boss_bg_color
-		f.set_border_width_all(sk.boss_border_width)
-		f.border_color = sk.boss_border_color
-		_frame = f
+	return sk.art_scale if avail_w >= _frame_size(sk).x * sk.art_scale else 1
+
+## The frame picture's size (art px); a fixed fallback while the skin slot is empty.
+func _frame_size(sk: InventorySkin) -> Vector2:
+	return sk.boss_frame_tex.get_size() if sk.boss_frame_tex != null else Vector2(284, 28)
+
+## Real size of the bar + name plate at the scale that fits `avail_w`. The HUD places the bar with this.
+func natural_size(avail_w: float) -> Vector2:
+	var sk := get_skin()
+	var sc := scale_for(avail_w)
+	var f := _frame_size(sk)
+	return Vector2(f.x, plate_h + plate_gap + f.y) * sc
+
+func boss_title() -> String:
+	var n = _boss.get("boss_name") if _boss else null
+	return str(n) if n != null and str(n) != "" else title
 
 func _process(delta: float) -> void:
 	var sk := get_skin()
-	if sk != _applied:
-		if _applied != null:
-			_applied.changed.disconnect(_apply_skin)
-		_applied = sk
-		sk.changed.connect(_apply_skin)
-		_apply_skin()
 	var dt := delta / maxf(Engine.time_scale, 0.0001)
 	if _hide_in > 0.0:
 		_hide_in -= dt
@@ -87,19 +95,29 @@ func _process(delta: float) -> void:
 		queue_redraw()
 
 func _draw() -> void:
+	if _boss == null:
+		return
 	var sk := get_skin()
+	var sc := scale_for(size.x)
 	draw_set_transform(Vector2(0, (1.0 - _shown) * sk.boss_slide_px))
-	var w := size.x
-	var h := size.y
-	draw_style_box(_frame, Rect2(0, 0, w, h))
-	var m := float(sk.boss_inset)
-	var inner := Rect2(m, m, w - 2 * m, h - 2 * m)
+	var top := (plate_h + plate_gap) * sc                      # bar frame starts below the name plate
+	var fw := _frame_size(sk).x * sc
+	var x0 := roundf((size.x - fw) * 0.5)
+	PixelArt.draw_pic(self, sk.boss_frame_tex, Vector2(x0, top), sc)
+	var fr := Rect2(Vector2(x0 + fill_x * sc, top + fill_y * sc), Vector2(fill_w, fill_h) * sc)
 	var frac := clampf(_boss.health.hp / maxf(_boss.health.max_hp, 1.0), 0.0, 1.0)
-	var r := Rect2(inner.position, Vector2(roundf(inner.size.x * frac), inner.size.y))
-	if r.size.x > 0.0:
-		if sk.boss_fill_texture:
-			draw_texture_rect(sk.boss_fill_texture, r, false, fill_color())
-		else:
-			draw_rect(r, fill_color())
-	var mx := roundf(w * _boss.phase2_threshold - sk.boss_marker_width * 0.5)
-	draw_rect(Rect2(mx, 0, sk.boss_marker_width, h), sk.boss_marker_color)
+	var w := roundf(fr.size.x * frac / sc) * sc
+	if w > 0.0:
+		PixelArt.draw_h3(self, sk.boss_fill_tex, Rect2(fr.position, Vector2(w, fr.size.y)), PixelArt.slice("boss_fill").x, sc, fill_color())   # grey gloss ramp x tint
+	var mx := fr.position.x + roundf(fr.size.x / sc * _boss.phase2_threshold) * sc - sc
+	PixelArt.draw_pic(self, sk.boss_mark_tex, Vector2(mx, fr.position.y), sc)
+	# name plate: bold CREAM + OUT, width = name + 26 art px, centred, `plate_gap` above the bar
+	var f := sk.ui_font("bold")
+	var fs := UiFonts.NATIVE["bold"] * sc
+	var name := boss_title()
+	var tw := f.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+	var pw := roundf(tw / sc) * sc + plate_pad * sc
+	var pt := sk.boss_plate_tex
+	var pr := Rect2(Vector2(roundf((size.x - pw) * 0.5), 0), Vector2(pw, (pt.get_size().y if pt != null else plate_h) * sc))
+	PixelArt.draw_h3(self, pt, pr, PixelArt.slice("boss_plate").x, sc)
+	PixelArt.text_centered(self, f, name, fs, pr.get_center(), sk.pal_cream, sk.text_outline_color)

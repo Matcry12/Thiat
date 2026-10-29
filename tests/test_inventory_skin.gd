@@ -36,6 +36,11 @@ func _init() -> void:
 		await process_frame
 	var sk := hb.get_skin()
 	_check(sk == bag.get_skin(), "hotbar and bag share one skin")
+	# The Island Workshop parts (art mode) are their own look; this test is the old placeholder -> texture swap contract.
+	sk.slot_idle_tex = null
+	sk.bag_panel_tex = null
+	await process_frame
+	await process_frame
 	var s0 := hb.slots()[0]
 	for role in ["Frame", "SelectedFrame", "Icon", "Count", "KeyLabel", "LockOverlay"]:
 		_check(s0.get_node_or_null(role) != null, "slot has a child named " + role)

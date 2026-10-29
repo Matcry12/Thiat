@@ -42,12 +42,12 @@ func _init():
 	hp.hp = hp.max_hp
 	bar._process(0.016)
 	check("healing snaps the trail up", is_equal_approx(bar.trail_fraction(), 1.0))
-	check("bar only: no text line, height = skin health_bar_height", bar.custom_minimum_size.y == bar.get_skin().health_bar_height)
+	check("rope frame at real size: art height x art_scale", bar.custom_minimum_size == bar.get_skin().hp_frame_tex.get_size() * bar.get_skin().art_scale)
 	check("hover text is the HP number", bar.tip_text() == "%d / %d" % [roundi(hp.max_hp), roundi(hp.max_hp)])
-	bar.get_skin().health_bar_height = 30
+	bar.get_skin().art_scale = 3
 	bar._process(0.016)
-	check("skin health_bar_height re-measures live", bar.custom_minimum_size.y == 30 and bar.size.y == 30)
-	bar.get_skin().health_bar_height = 18
+	check("skin art_scale re-measures live", bar.custom_minimum_size.y == 26 * 3 and bar.size.y == 26 * 3)
+	bar.get_skin().art_scale = 2
 	bar._process(0.016)
 
 	# --- hotbar ---
@@ -94,12 +94,12 @@ func _init():
 
 	# --- live tuning ---
 	var sk := hb.get_skin()
-	sk.slot_size = 60
+	sk.art_scale = 3
 	hb._process(0.016)
 	await process_frame
 	await process_frame
-	check("skin slot_size applies live", hb.slots()[0].size.x == 60 and hb.slots()[1].position.x == 60 + sk.slot_gap)
-	sk.slot_size = 44
+	check("skin art_scale applies live (slot = 22 art px)", hb.slots()[0].size.x == 66 and hb.slots()[1].position.x == 66 + hb.art_gap * 3)
+	sk.art_scale = 2
 	hb._process(0.016)
 
 	# --- layout: hotbar top-left, health + abilities bottom-left ---

@@ -17,6 +17,9 @@ var _or_less := false
 var _or_greater := false
 var _range = null   # Vector3(min, max, step) or null: no range hint, no slider
 var _name: Label
+var _name2: Label
+var _line1 := ""
+var _hex: Label
 var _fields: Array[LineEdit] = []
 var _slider: HSlider
 var _check: CheckBox
@@ -44,7 +47,8 @@ func setup(dock: F3Dock, info: Dictionary, show_section: bool) -> void:
 	_range = info.get("range")
 	_or_less = info.get("or_less", false)
 	_or_greater = info.get("or_greater", false)
-	add_theme_constant_override("separation", dock.row_gap)
+	var two_line := type == TYPE_VECTOR2 or type == TYPE_COLOR
+	add_theme_constant_override("separation", dock.pad_x)
 	custom_minimum_size.y = dock.row_height
 	var indent := Control.new()
 	indent.custom_minimum_size.x = dock.row_indent
@@ -58,50 +62,71 @@ func setup(dock: F3Dock, info: Dictionary, show_section: bool) -> void:
 	add_child(nm_box)
 	if show_section:
 		var sl := Label.new()
-		sl.text = info["section"]
-		sl.add_theme_font_size_override("font_size", dock.small_font_size)
-		sl.add_theme_color_override("font_color", dock.dim_color)
+		sl.text = str(info["section"]).to_upper()
+		sl.theme_type_variation = "F3Small"
 		sl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		nm_box.add_child(sl)
-	_name = Label.new()
-	_name.text = prop
-	_name.clip_text = true
-	_name.mouse_filter = Control.MOUSE_FILTER_STOP
-	_name.mouse_default_cursor_shape = Control.CURSOR_HSIZE if (type == TYPE_FLOAT or type == TYPE_INT) else Control.CURSOR_ARROW
-	_name.tooltip_text = _tooltip(info)
-	_name.add_theme_font_size_override("font_size", dock.font_size)
-	_name.gui_input.connect(_scrub_input.bind(0))
+	var lines := dock.name_lines(prop, dock.name_width(two_line) - dock.row_indent)
+	_line1 = lines[0]
+	_name = _name_label(lines[0], info, 0)
 	nm_box.add_child(_name)
+	if lines.size() > 1:   # hanging indent: line 2 starts a bit to the right so the two lines read as one name
+		var m := MarginContainer.new()
+		m.add_theme_constant_override("margin_left", dock.row_indent)
+		m.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_name2 = _name_label(lines[1], info, 0)
+		m.add_child(_name2)
+		nm_box.add_child(m)
+	var ctl_parent: Container = self
+	if two_line:   # name on line 1, its controls on line 2
+		ctl_parent = HBoxContainer.new()
+		ctl_parent.add_theme_constant_override("separation", dock.vector_gap if type == TYPE_VECTOR2 else dock.pad_x)
+		ctl_parent.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		nm_box.add_child(ctl_parent)
 
 	match type:
 		TYPE_BOOL:
 			_check = CheckBox.new()
+			_check.theme_type_variation = "F3Toggle"
 			_check.focus_mode = Control.FOCUS_NONE
 			_check.toggled.connect(func(on: bool): _dock.panel.request_value(key, on))
-			add_child(_check)
+			ctl_parent.add_child(_check)
 		TYPE_COLOR:
 			_picker = ColorPickerButton.new()
+			_picker.theme_type_variation = "F3Swatch"
 			_picker.focus_mode = Control.FOCUS_NONE
-			_picker.custom_minimum_size = Vector2(dock.number_width, dock.row_height - 6)
+			_picker.custom_minimum_size = Vector2(dock.number_width * 0.6, dock.row_height - 2)
 			_picker.edit_alpha = true
-			_picker.color_changed.connect(func(c: Color): _dock.panel.request_value(key, c))
-			add_child(_picker)
+			_picker.color_changed.connect(func(c: Color):
+				_hex.text = _hex_of(c)
+				_dock.panel.request_value(key, c))
+			ctl_parent.add_child(_picker)
+			_hex = Label.new()
+			_hex.theme_type_variation = "F3FieldLabel"
+			_hex.custom_minimum_size.y = dock.row_height - 2
+			ctl_parent.add_child(_hex)
 		TYPE_VECTOR2:
 			for axis in 2:
+				var hd := HBoxContainer.new()   # the scrub handle: "⟷ x" (drag it to scrub the axis)
+				hd.add_theme_constant_override("separation", 2)
+				hd.mouse_filter = Control.MOUSE_FILTER_STOP
+				hd.mouse_default_cursor_shape = Control.CURSOR_HSIZE
+				hd.tooltip_text = "drag to scrub (Shift fine, Ctrl coarse)"
+				hd.gui_input.connect(_scrub_input.bind(axis))
+				hd.add_child(dock.icon_rect("icon_scrub"))
 				var h := Label.new()
-				h.text = "<>" + ("x" if axis == 0 else "y")
-				h.add_theme_font_size_override("font_size", dock.small_font_size)
+				h.text = "x" if axis == 0 else "y"
+				h.theme_type_variation = "F3Small"
 				h.add_theme_color_override("font_color", dock.accent_color)
-				h.mouse_filter = Control.MOUSE_FILTER_STOP
-				h.mouse_default_cursor_shape = Control.CURSOR_HSIZE
-				h.tooltip_text = "drag to scrub (Shift fine, Ctrl coarse)"
-				h.gui_input.connect(_scrub_input.bind(axis))
-				add_child(h)
-				add_child(_make_field(axis))
+				h.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				hd.add_child(h)
+				ctl_parent.add_child(hd)
+				ctl_parent.add_child(_make_field(axis))
 		_:
 			add_child(_make_field(0))
 			if _range != null:
 				_slider = HSlider.new()
+				_slider.theme_type_variation = "F3Slider"
 				_slider.focus_mode = Control.FOCUS_NONE
 				_slider.scrollable = false
 				_slider.allow_greater = _or_greater
@@ -131,31 +156,44 @@ func setup(dock: F3Dock, info: Dictionary, show_section: bool) -> void:
 				gap.custom_minimum_size.x = dock.slider_width
 				add_child(gap)
 
-	_reset = Button.new()
-	_reset.icon = F3Icons.get_icon("reset")
-	_reset.flat = true
-	_reset.focus_mode = Control.FOCUS_NONE
-	_reset.custom_minimum_size.x = dock.icon_width
-	_reset.tooltip_text = "reset to the startup value"
+	_reset = _icon_button("icon_reset", "reset to the startup value")
 	_reset.pressed.connect(func(): _dock.panel.reset_value(key))
 	add_child(_reset)
-	_copy = Button.new()   # scene-only override (no .tres to write): copy "prop = value" to paste into the .tscn / script
-	_copy.icon = F3Icons.get_icon("copy")
-	_copy.flat = true
-	_copy.focus_mode = Control.FOCUS_NONE
-	_copy.custom_minimum_size.x = dock.icon_width
-	_copy.tooltip_text = "scene-only: copy \"prop = value\" to paste into the scene or script"
-	_copy.visible = false
-	_copy.pressed.connect(func(): DisplayServer.clipboard_set("%s = %s" % [prop, var_to_str(obj.get(prop))]))
-	add_child(_copy)
-	_pin = Button.new()
-	_pin.flat = true
-	_pin.focus_mode = Control.FOCUS_NONE
-	_pin.custom_minimum_size.x = dock.icon_width
-	_pin.tooltip_text = "pin to the top of Tune"
+	_pin = _icon_button("icon_star_off", "pin to the top of Tune")
 	_pin.pressed.connect(func(): _dock.toggle_pin(key))
 	add_child(_pin)
+	if two_line:   # the buttons sit on line 2 (the controls line)
+		for b in [_reset, _pin]:
+			b.size_flags_vertical = Control.SIZE_SHRINK_END
 	sync()
+
+
+func _name_label(text_: String, info: Dictionary, _i: int) -> Label:
+	var l := Label.new()
+	l.text = text_
+	l.clip_text = true
+	l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	l.mouse_filter = Control.MOUSE_FILTER_STOP
+	l.mouse_default_cursor_shape = Control.CURSOR_HSIZE if (type == TYPE_FLOAT or type == TYPE_INT) else Control.CURSOR_ARROW
+	l.tooltip_text = _tooltip(info)
+	l.gui_input.connect(_scrub_input.bind(0))
+	return l
+
+
+func _icon_button(part: String, tip: String) -> Button:
+	var b := Button.new()
+	b.theme_type_variation = "F3Icon"
+	b.icon = F3Theme.tex(part, _dock.art_scale)
+	b.focus_mode = Control.FOCUS_NONE
+	b.custom_minimum_size.x = _dock.icon_width
+	b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	b.tooltip_text = tip
+	return b
+
+
+func _hex_of(c: Color) -> String:
+	return "#" + c.to_html(c.a < 1.0).to_upper()
 
 
 func _tooltip(info: Dictionary) -> String:
@@ -171,9 +209,10 @@ func _tooltip(info: Dictionary) -> String:
 
 func _make_field(axis: int) -> LineEdit:
 	var f := LineEdit.new()
-	f.custom_minimum_size.x = _dock.number_width
+	f.theme_type_variation = "F3Field"
+	f.custom_minimum_size = Vector2(_dock.number_width, _dock.row_height - 2)
+	f.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	f.alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	f.add_theme_font_size_override("font_size", _dock.small_font_size + 1)
 	f.select_all_on_focus = true
 	f.context_menu_enabled = false
 	f.text_submitted.connect(func(_t: String): _commit(); f.release_focus())
@@ -229,7 +268,7 @@ func cancel_edit() -> void:
 func _set_pending(on: bool) -> void:
 	_pending = on
 	for f in _fields:
-		f.add_theme_color_override("font_color", _dock.mod_color if on else _dock.text_color)
+		f.theme_type_variation = "F3FieldPending" if on else "F3Field"   # amber field until Enter / release
 
 
 func is_editing() -> bool:
@@ -254,6 +293,7 @@ func sync(force := false) -> void:
 				_check.set_pressed_no_signal(v)
 			TYPE_COLOR:
 				_picker.color = v
+				_hex.text = _hex_of(v)
 			TYPE_VECTOR2:
 				_fields[0].text = _fmt(v.x)
 				_fields[1].text = _fmt(v.y)
@@ -266,16 +306,25 @@ func sync(force := false) -> void:
 	var st := (1 if ch else 0) + (2 if cp else 0)
 	if st != _s_state:
 		_s_state = st
-		_name.add_theme_color_override("font_color", _dock.mod_color if ch else _dock.text_color)
-		_name.text = ("● " if ch else "") + prop
+		_name.theme_type_variation = "F3Changed" if ch else "F3Name"
+		_name.text = ("● " if ch else "") + _line1
+		if _name2:
+			_name2.theme_type_variation = "F3Changed" if ch else "F3Name"
 		_reset.modulate.a = 1.0 if ch else 0.0
 		_reset.disabled = not ch
-		_copy.visible = cp
+		if cp and _copy == null:   # scene-only override (no .tres to write): built the first time it is needed
+			_copy = _icon_button("icon_copy", "scene-only: copy \"prop = value\" to paste into the scene or script")
+			_copy.pressed.connect(func(): DisplayServer.clipboard_set("%s = %s" % [prop, var_to_str(obj.get(prop))]))
+			add_child(_copy)
+			move_child(_copy, _pin.get_index())
+			if type == TYPE_VECTOR2 or type == TYPE_COLOR:
+				_copy.size_flags_vertical = Control.SIZE_SHRINK_END
+		if _copy:
+			_copy.visible = cp
 	var pinned := _dock.is_pinned(key)
 	if int(pinned) != _s_pin:
 		_s_pin = int(pinned)
-		_pin.icon = F3Icons.get_icon("star" if pinned else "star_o")
-		_pin.self_modulate = _dock.pin_color if pinned else _dock.dim_color
+		_pin.icon = F3Theme.tex("icon_star_on" if pinned else "icon_star_off", _dock.art_scale)
 
 
 # ------------------------------------------------------------ keys / scrub ---
@@ -343,6 +392,36 @@ func _end_scrub() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	if _pending:
 		_commit()
+
+
+## Search hit: a soft gold band behind the matched letters of the name (cheap: one ColorRect child of the name label).
+func highlight(q: String) -> void:
+	var i := _name.text.to_lower().find(q.to_lower())
+	if q == "" or i < 0:
+		return
+	var f := _name.get_theme_font("font")
+	var fs := _name.get_theme_font_size("font_size")
+	var x0 := f.get_string_size(_name.text.substr(0, i), HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+	var w := f.get_string_size(_name.text.substr(i, q.length()), HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x
+	var r := ColorRect.new()
+	r.color = _dock.mod_color
+	r.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	r.position = Vector2(x0, 2)
+	r.size = Vector2(w, _name.size.y - 4 if _name.size.y > 8 else fs)
+	var m := Label.new()   # the matched letters again, dark on the gold
+	m.theme_type_variation = "F3Paper"
+	m.text = _name.text.substr(i, q.length())
+	m.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	m.position = Vector2(x0, 0)
+	_name.add_child(r)
+	_name.add_child(m)
+
+
+## The row divider (row_line.png, tiled): a thin line under every row.
+func _draw() -> void:
+	var t := F3Theme.tex("row_line", _dock.art_scale) if _dock else null
+	if t:
+		draw_texture_rect(t, Rect2(0, size.y - t.get_height(), size.x, t.get_height()), true)
 
 
 func _exit_tree() -> void:

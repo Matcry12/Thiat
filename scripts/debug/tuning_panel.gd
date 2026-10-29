@@ -322,13 +322,16 @@ func _build_ui() -> void:
 	dock.setup(self, _sections)
 
 	status_view = F3StatusView.new()
+	status_view.art_scale = dock.art_scale
 	dock.attach_status(status_view)
 	status_view.pinned_changed.connect(func(names: Array):
 		overrides.set_pinned_status(names)
 		card.set_blocks(status_view.pinned_blocks()))
 	card = F3WatchCard.new()
+	card.theme = dock.theme   # the one look (F3Theme): the note is outside the dock tree
 	root.add_child(card)
 	toast = F3Toast.new()
+	toast.theme = dock.theme
 	_toast_layer = CanvasLayer.new()   # its own layer: the startup toast must show with F3 closed
 	_toast_layer.layer = 128
 	add_child(_toast_layer)

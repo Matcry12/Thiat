@@ -36,7 +36,7 @@ func _init() -> void:
 	_check(panel.status_view.row_names().has("Fake"), "its status block is listed")
 	panel.status_view.toggle_open("Fake")
 	await process_frame
-	_check(str(panel.status_view._rows["Fake"].head.text).contains("fake ok"), "and shows its text")
+	_check(str(panel.status_view._rows["Fake"].summary.text).contains("fake ok"), "and shows its text")
 
 	# the buttons work
 	var stack: Array = [panel.dock]
@@ -58,7 +58,7 @@ func _init() -> void:
 	flag_btn.pressed.emit()
 	_check(fake.flag and flag_btn.text.ends_with("on"), "toggle flips and shows on")
 	wipe.pressed.emit()
-	_check(fake.poked == 1 and wipe.text == "Sure?", "danger needs a second click")
+	_check(fake.poked == 1 and wipe.text.begins_with("Sure?"), "danger needs a second click")
 	wipe.pressed.emit()
 	_check(fake.poked == -1, "second click runs it")
 

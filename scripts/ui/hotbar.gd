@@ -12,6 +12,16 @@ const SLOT_SCENE := preload("res://scenes/ui/item_slot.tscn")
 @export var skin: InventorySkin
 @export var icon_tilt_degrees := -45.0
 @export var cast_color := Color(1, 1, 1, 0.4)
+## Pixels between slots; -1 = framed hotbar: `art_gap` art px, otherwise the skin's slot_gap (the bag's copy sets its own).
+@export var gap_override := -1
+## The HUD hotbar sits on the carved panel (hotbar_panel, real size); the copy inside the bag window does not.
+var framed := false
+@export var art_gap := 1                     ## 23 art px step - 22 px slot (assets/ui/game/README.md)
+@export var pad_left := 8                    ## art px from the panel box to the first slot
+@export var pad_top := 11
+@export var panel_w := 223
+@export var panel_h := 44
+@export var panel_pad := 8                   ## transparent pad around the panel box inside hotbar_panel.png
 @export var cooldown_color := Color(0, 0, 0, 0.6)
 
 var _loadout: Loadout
@@ -19,6 +29,7 @@ var _inv: Inventory
 var interactive := false   ## set by the bag panel while it is open
 var _slots: Array[ItemSlot] = []
 var _row: HBoxContainer
+var _pad: MarginContainer
 var _cast_to := -1
 
 func bind(l: Loadout, inv: Inventory) -> void:
@@ -42,7 +53,15 @@ func _ready() -> void:
 	_row = HBoxContainer.new()
 	_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_row.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	add_child(_row)
+	_row.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	if framed:   # the panel is drawn behind (see _draw); the row sits on its carved strip
+		_pad = MarginContainer.new()
+		_pad.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(_pad)
+		_pad.add_child(_row)
+		draw.connect(_draw_panel)
+	else:
+		add_child(_row)
 	for i in Inventory.HOTBAR:
 		var s: ItemSlot = SLOT_SCENE.instantiate()
 		s.index = i
@@ -65,7 +84,16 @@ func _process(_delta: float) -> void:
 	if _loadout == null or _inv == null or _row == null:
 		return
 	var sk := get_skin()
-	_row.add_theme_constant_override("separation", sk.slot_gap)
+	_row.add_theme_constant_override("separation", _gap(sk))
+	if _pad:
+		var sc := sk.art_scale
+		_pad.add_theme_constant_override("margin_left", pad_left * sc)
+		_pad.add_theme_constant_override("margin_top", pad_top * sc)
+		if sk.hotbar_panel_tex:
+			var bs := _panel_box(sk)
+			custom_minimum_size = bs.size
+			_pad.custom_minimum_size = bs.size
+		queue_redraw()
 	var active := _loadout.active_index()
 	var cd := _loadout.cooldown_left()
 	var cd_frac := clampf(cd / maxf(_loadout.swap_cooldown, 0.001), 0.0, 1.0)
@@ -86,3 +114,19 @@ func _process(_delta: float) -> void:
 		var is_weapon := s.item != null and s.item.category == "weapon"
 		s.cooldown_frac = cd_frac if (cd > 0.0 and is_weapon and _loadout.weapon_slot(active) != i) else 0.0
 		s.refresh()
+
+func _gap(sk: InventorySkin) -> int:
+	if gap_override >= 0:
+		return gap_override
+	return art_gap * sk.art_scale if framed else sk.slot_gap
+
+## Panel box (the carved strip) in screen px.
+func _panel_box(sk: InventorySkin) -> Rect2:
+	return Rect2(Vector2.ZERO, Vector2(panel_w, panel_h) * sk.art_scale)
+
+func _draw_panel() -> void:
+	var sk := get_skin()
+	if sk.hotbar_panel_tex == null:
+		return
+	var sc := sk.art_scale
+	draw_texture_rect(sk.hotbar_panel_tex, Rect2(Vector2(-panel_pad, -panel_pad) * sc, sk.hotbar_panel_tex.get_size() * sc), false)

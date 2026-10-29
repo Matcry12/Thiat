@@ -83,6 +83,9 @@ func _init() -> void:
 
 	# look from the skin
 	var sk := hud.hotbar().get_skin()
+	sk.tooltip_tex = null   # the old flat-placeholder contract; the baked note look is the Island Workshop part
+	await process_frame
+	await process_frame
 	var big := tip.size
 	sk.tooltip_font_size = 28
 	sk.tooltip_pad = 12

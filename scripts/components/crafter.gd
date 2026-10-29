@@ -162,6 +162,27 @@ func craft_to_cursor(r: RecipeData) -> bool:
 	crafted.emit(r)
 	return true
 
+## How many times in a row `r` can be crafted right now, exactly as `craft_to_cursor` (to_cursor) or `craft` (into the
+## inventory) will do it: ingredients, station, bag lock and, for the cursor, the held stack and its stack limit.
+## The crafting window asks this for its Craft button, so the button never promises more than this class delivers.
+func craftable_count(r: RecipeData, to_cursor := true) -> int:
+	if r == null or not can_craft(r):
+		return 0
+	var inv := inventory()
+	var n := 1 << 30
+	for g in r.ingredients:
+		n = mini(n, inv.count(g.item.id) / maxi(g.count, 1))
+	if to_cursor:   # the first craft always lands (empty hand); the next ones must stack on it
+		var held := inv.held_item
+		var per := maxi(r.result_count, 1)
+		if held == null:
+			n = mini(n, maxi(r.result.stack_limit() / per, 1))
+		elif held.id != r.result.id:
+			return 0
+		else:
+			n = mini(n, (held.stack_limit() - inv.held_count) / per)
+	return maxi(n, 0)
+
 func station_ok(r: RecipeData) -> bool:
 	return r.station == &"" or station_ids_in_range().has(r.station)
 

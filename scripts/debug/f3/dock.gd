@@ -9,31 +9,48 @@ extends PanelContainer
 @export_group("Layout")
 @export var dock_width := 380.0: set = _set_dock_width
 @export var margin := 8.0: set = _set_margin
-@export var row_height := 24.0
-@export var row_gap := 5
-@export var row_indent := 14.0
-@export var header_height := 26.0
+@export var row_height := 28.0
+@export var section_height := 26.0
+@export var category_height := 30.0        ## category / Pinned
+@export var pad_x := 8                      ## padding inside the dock body and between columns (name / field / slider / icons)
+@export var button_gap := 6                 ## between action buttons
+@export var group_gap := 6                  ## extra space above each @export_group sub-heading
+@export var vector_gap := 4                 ## between the x and y fields of a Vector2
+@export var footer_height := 44.0          ## one line inside the footer card
+@export var tab_height := 28.0             ## idle tab; the active one is 4 px taller
+@export var row_indent := 8.0
 @export var name_min_width := 48.0
-@export var number_width := 58.0
-@export var slider_width := 64.0
+@export var number_width := 52.0
+@export var slider_width := 44.0
 @export var icon_width := 20.0
+@export var scroll_width := 12.0
 @export var max_results := 60
+@export var name_ellipsis_chars := 28      ## names longer than this may be cut with "..." (shorter ones wrap after `_`)
 @export_group("Behaviour")
 @export var camera_ease_speed := 10.0
 @export var sync_interval := 0.25
 @export_group("Look")
-@export var font_size := 12
-@export var small_font_size := 10
-@export var bg_color := Color(0.059, 0.067, 0.086)
-@export var cat_bg_color := Color(0.114, 0.133, 0.169)
-@export var sec_bg_color := Color(0.086, 0.102, 0.129)
-@export var field_bg_color := Color(0.055, 0.063, 0.078)
-@export var line_color := Color(0.17, 0.196, 0.239)
-@export var text_color := Color(0.84, 0.87, 0.9)
-@export var dim_color := Color(0.49, 0.53, 0.58)
-@export var accent_color := Color(0.42, 0.71, 1.0)
-@export var mod_color := Color(1.0, 0.71, 0.33)
-@export var pin_color := Color(1.0, 0.82, 0.29)
+@export var art_scale := 2                 ## screen px per art px (slices.json art_scale); fonts use the same factor
+@export var text_font: Font               ## names, numbers, search, status lines, hints. null = Godot's default font
+@export var text_size := 15
+@export var small_text_size := 13         ## captions, counts, hints
+@export var text_outline := 0             ## 0 or 1 (1 px OUT ring behind the text)
+@export var label_font: Font              ## tabs, headers, buttons. null = the pixel Bold (assets/ui/fonts)
+@export var label_size := 18              ## 2x the pixel font's native 9
+@export var button_pad_y := 3.0            ## px added above and below the button art content
+@export var button_pad := 4.0              ## px added to each side of the button art content margins
+@export var search_lift := 10             ## art px the search field sits higher: it lies INSIDE the top plank
+@export var sticky_color := Color8(86, 42, 38)   ## COVER_D: behind the sticky header copies
+@export var out_color := Color8(62, 36, 39)           ## ink: text on paper (buttons, fields)
+@export var outline_from_skin := true     ## the pixel-font outline colour = InventorySkin text_outline_color (one source)
+@export var line_color := Color8(118, 64, 65)
+@export var text_color := Color8(252, 242, 222)      ## cream: text on leather (always with the OUT outline)
+@export var dim_color := Color8(234, 208, 170)       ## small captions on leather
+@export var muted_color := Color8(150, 104, 86)
+@export var accent_color := Color8(150, 214, 96)     ## axis handles, "enough"
+@export var mod_color := Color8(244, 200, 76)        ## changed / typing hint / gold text
+@export var hp_color := Color8(222, 52, 52)
+@export var hp_dark_color := Color8(150, 26, 44)
 
 var panel   # TuningPanel
 var dragging := false          ## a row slider is being dragged
@@ -44,6 +61,12 @@ var _search: LineEdit
 var _tab := "Tune"
 var _tab_buttons := {}
 var _info: Label
+var _info_row: HBoxContainer
+var _last_tab := "Tune"
+var _sticky_bg: ColorRect
+var _render_id := 0
+var _last_q := ""
+var _keycap: Button
 var _collapse_btn: Button
 var _scroll: ScrollContainer
 var _tune: VBoxContainer
@@ -78,8 +101,8 @@ func setup(p, sections: Array) -> void:
 	panel = p
 	_sections = sections
 	add_to_group("f3_dock")
-	theme = _make_theme()
-	add_theme_stylebox_override("panel", _box(bg_color, line_color, 1, 6))
+	theme = F3Theme.build(look())
+	theme_type_variation = "F3Dock"
 	_layout()
 	_load_pins()
 
@@ -87,66 +110,96 @@ func setup(p, sections: Array) -> void:
 	vb.add_theme_constant_override("separation", 0)
 	add_child(vb)
 
-	var top := MarginContainer.new()
-	for side in ["left", "right", "top"]:
-		top.add_theme_constant_override("margin_" + side, 8)
-	vb.add_child(top)
-	var top_box := VBoxContainer.new()
-	top.add_child(top_box)
+	# search sits on the plank (the frame's top part)
 	_search = LineEdit.new()
-	_search.placeholder_text = "Search settings...  ( / )"
-	_search.clear_button_enabled = true
-	_search.text_changed.connect(func(_t: String): _render())
-	top_box.add_child(_search)
+	_search.theme_type_variation = "F3Search"
+	_search.placeholder_text = "Search (press /)"
+	_search.custom_minimum_size.y = 16 * art_scale
+	_search.text_changed.connect(func(t: String):
+		_keycap.text = "x" if t != "" else "/"
+		_render())
+	vb.add_child(_search)
+	var mag := TextureRect.new()
+	mag.texture = F3Theme.tex("icon_search", art_scale)
+	mag.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mag.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	mag.set_anchors_preset(Control.PRESET_LEFT_WIDE)
+	mag.offset_left = 6 * art_scale
+	mag.offset_right = 15 * art_scale
+	_search.add_child(mag)
+	_keycap = Button.new()   # "/" = press it to search; "x" = clear
+	_keycap.theme_type_variation = "F3Keycap"
+	_keycap.text = "/"
+	_keycap.focus_mode = Control.FOCUS_NONE
+	_keycap.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
+	_keycap.offset_left = -15 * art_scale
+	_keycap.offset_right = -4 * art_scale
+	_keycap.offset_top = 2 * art_scale
+	_keycap.offset_bottom = -2 * art_scale
+	_keycap.pressed.connect(func():
+		if _search.text != "":
+			set_search("")
+		else:
+			_search.grab_focus())
+	_search.add_child(_keycap)
+	var gap := Control.new()   # the typing hint hangs in this gap, so it never moves the layout
+	gap.custom_minimum_size.y = (2 + search_lift) * art_scale
+	gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vb.add_child(gap)
+	_typing = Label.new()
+	_typing.theme_type_variation = "F3Hint"
+	_typing.text = "TYPING: GAME KEYS PAUSED  (ESC LEAVES)"
+	_typing.visible = false
+	_typing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_typing.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_typing.offset_top = -art_scale
+	_typing.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	gap.add_child(_typing)
+
 	var tabs := HBoxContainer.new()
-	tabs.add_theme_constant_override("separation", 2)
-	top_box.add_child(tabs)
+	tabs.add_theme_constant_override("separation", art_scale)
+	vb.add_child(tabs)
 	var group := ButtonGroup.new()
 	for t in ["Tune", "Actions", "Status"]:
 		var b := Button.new()
+		b.theme_type_variation = "F3Tab"
 		b.text = t
 		b.toggle_mode = true
 		b.button_group = group
 		b.button_pressed = t == _tab
 		b.focus_mode = Control.FOCUS_NONE
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.add_theme_stylebox_override("normal", _box(Color(0, 0, 0, 0), line_color, 0, 0, 2))
-		b.add_theme_stylebox_override("hover", _box(Color(1, 1, 1, 0.04), line_color, 0, 0, 2))
-		b.add_theme_stylebox_override("pressed", _box(Color(0, 0, 0, 0), accent_color, 0, 0, 2))
-		b.add_theme_stylebox_override("hover_pressed", _box(Color(1, 1, 1, 0.04), accent_color, 0, 0, 2))
-		b.add_theme_color_override("font_color", dim_color)
-		b.add_theme_color_override("font_pressed_color", text_color)
-		b.add_theme_color_override("font_hover_pressed_color", text_color)
+		b.size_flags_vertical = Control.SIZE_SHRINK_END
 		b.pressed.connect(show_tab.bind(t))
 		tabs.add_child(b)
 		_tab_buttons[t] = b
+	_size_tabs()
 
 	var info_row := HBoxContainer.new()
-	info_row.custom_minimum_size.y = row_height + 4.0
+	_info_row = info_row
+	info_row.custom_minimum_size.y = row_height + 2.0 * art_scale
 	vb.add_child(info_row)
 	var pad := Control.new()
-	pad.custom_minimum_size.x = 4
+	pad.custom_minimum_size.x = 4 * art_scale
 	info_row.add_child(pad)
 	_info = Label.new()
-	_info.add_theme_font_size_override("font_size", small_font_size + 1)
-	_info.add_theme_color_override("font_color", dim_color)
+	_info.theme_type_variation = "F3Small"
 	_info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_info.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_info.clip_text = true
 	info_row.add_child(_info)
 	_collapse_btn = Button.new()
-	_collapse_btn.text = "collapse all"
+	_collapse_btn.theme_type_variation = "F3Link"
+	_collapse_btn.text = "Collapse all"
 	_collapse_btn.focus_mode = Control.FOCUS_NONE
-	_collapse_btn.add_theme_font_size_override("font_size", small_font_size + 1)
-	_collapse_btn.pressed.connect(func():
-		_open_cat = ""
-		_open_secs.clear()
-		_render())
+	_collapse_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_collapse_btn.pressed.connect(collapse_all)
 	info_row.add_child(_collapse_btn)
 
 	_banner = Label.new()
-	_banner.add_theme_color_override("font_color", mod_color)
-	_banner.add_theme_font_size_override("font_size", small_font_size + 2)
+	_banner.theme_type_variation = "F3Banner"
 	_banner.visible = false
+	_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vb.add_child(_banner)
 
 	var wrap := Control.new()
@@ -168,22 +221,39 @@ func setup(p, sections: Array) -> void:
 	_sticky.add_theme_constant_override("separation", 0)
 	_sticky.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_sticky.anchor_right = 1.0
-	_sticky.offset_right = -8
+	_sticky.offset_right = -scroll_width
+	_sticky_bg = ColorRect.new()   # opaque behind the copies: the rows scrolling under never show through
+	_sticky_bg.color = sticky_color
+	_sticky_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	wrap.add_child(_sticky_bg)
 	wrap.add_child(_sticky)
 
-	var foot := PanelContainer.new()
-	foot.add_theme_stylebox_override("panel", _box(field_bg_color, line_color, 0, 0, 0, 1))
+	# footer: the card baked into the frame; the content sits inside it (one line)
+	var foot := MarginContainer.new()
+	foot.add_theme_constant_override("margin_top", 2 * art_scale)
+	foot.custom_minimum_size.y = footer_height + 4.0 * art_scale
 	vb.add_child(foot)
 	var fb := VBoxContainer.new()
+	fb.alignment = BoxContainer.ALIGNMENT_CENTER
 	foot.add_child(fb)
 	_footer_box = fb
-	_typing = Label.new()
-	_typing.text = "typing: game keys paused  (Esc leaves)"
-	_typing.add_theme_color_override("font_color", mod_color)
-	_typing.add_theme_font_size_override("font_size", small_font_size + 1)
-	_typing.visible = false
-	fb.add_child(_typing)
 	_render()
+
+
+func look() -> Dictionary:
+	var outline := out_color
+	if outline_from_skin and ResourceLoader.exists("res://data/ui/inventory_skin.tres"):
+		var skin = load("res://data/ui/inventory_skin.tres")
+		if skin != null and "text_outline_color" in skin:
+			outline = skin.text_outline_color
+	return {"ink": out_color, "button_pad_y": button_pad_y,"text_font": text_font, "text_size": text_size, "small_text_size": small_text_size, "text_outline": text_outline,
+		"label_font": label_font, "button_pad": button_pad, "search_lift": search_lift, "label_size": label_size, "scale": art_scale, "out": outline, "line": line_color, "cream": text_color, "gold": mod_color, "muted": muted_color,
+		"dim": dim_color, "hp": hp_color, "hp_dark": hp_dark_color, "ok": accent_color, "footer_height": footer_height}
+
+
+func _size_tabs() -> void:
+	for n in _tab_buttons:
+		_tab_buttons[n].custom_minimum_size.y = tab_height + (4.0 if n == _tab else 0.0)
 
 
 func _page(parent: Node) -> VBoxContainer:
@@ -194,52 +264,60 @@ func _page(parent: Node) -> VBoxContainer:
 	return v
 
 
-# ------------------------------------------------------------------ look ---
-
-func _box(bg: Color, border := Color(0, 0, 0, 0), width := 0, radius := 0, bottom := 0, top := 0) -> StyleBoxFlat:
-	var s := StyleBoxFlat.new()
-	s.bg_color = bg
-	s.border_color = border
-	s.set_border_width_all(width)
-	if bottom > 0:
-		s.border_width_bottom = bottom
-	if top > 0:
-		s.border_width_top = top
-	s.set_corner_radius_all(radius)
-	s.content_margin_left = 8
-	s.content_margin_right = 8
-	s.content_margin_top = 4
-	s.content_margin_bottom = 4
-	return s
+## Width of the name column of a row (px). `two_line` rows (Vector2, Color) have the whole row.
+func name_width(two_line: bool) -> float:
+	var inner := dock_width - 2.0 * 6.0 * art_scale - scroll_width - 4.0
+	var w := inner - row_indent - icon_width * 2.0 - pad_x * 5.0
+	return w if two_line else w - number_width - slider_width
 
 
-func _make_theme() -> Theme:
-	var t := Theme.new()
-	t.default_font_size = font_size
-	t.set_color("font_color", "Label", text_color)
-	t.set_color("font_color", "Button", text_color)
-	t.set_color("font_hover_color", "Button", Color.WHITE)
-	t.set_color("font_color", "LineEdit", text_color)
-	t.set_color("font_color", "CheckBox", text_color)
-	t.set_stylebox("normal", "Button", _box(Color(0.15, 0.17, 0.22), Color(0.22, 0.25, 0.31), 1, 4))
-	t.set_stylebox("hover", "Button", _box(Color(0.19, 0.22, 0.28), accent_color, 1, 4))
-	t.set_stylebox("pressed", "Button", _box(Color(0.12, 0.23, 0.32), accent_color, 1, 4))
-	t.set_stylebox("disabled", "Button", _box(Color(0, 0, 0, 0)))
-	t.set_stylebox("normal", "LineEdit", _box(field_bg_color, Color(0.15, 0.17, 0.22), 1, 3))
-	t.set_stylebox("focus", "LineEdit", _box(Color(0.063, 0.082, 0.11), accent_color, 1, 3))
-	t.set_stylebox("read_only", "LineEdit", _box(field_bg_color, Color(0.15, 0.17, 0.22), 1, 3))
+var _name_cache := {}
+
+## A name as 1-2 lines: it wraps after a `_` (line 2 is indented by the row), never in the middle of a word. A name that still does
+## not fit stays one line and the Label cuts it with "...".
+func name_lines(prop: String, width: float) -> PackedStringArray:
+	var k := "%s|%d" % [prop, int(width)]
+	if _name_cache.has(k):
+		return _name_cache[k]
+	var f: Font = text_font if text_font != null else ThemeDB.fallback_font
+	var fs := text_size
+	var out := PackedStringArray([prop])
+	if prop.length() * fs * 0.7 > width and f.get_string_size(prop, HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x > width:
+		var best := -1
+		var i := prop.find("_")
+		while i != -1:
+			if f.get_string_size(prop.substr(0, i + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, fs).x > width:
+				break
+			best = i
+			i = prop.find("_", i + 1)
+		if best != -1:
+			out = PackedStringArray([prop.substr(0, best + 1), prop.substr(best + 1)])
+	_name_cache[k] = out
+	return out
+
+
+## A small icon picture (a part of the baked set) that never takes the mouse.
+func icon_rect(part: String) -> TextureRect:
+	var t := TextureRect.new()
+	t.texture = F3Theme.tex(part, art_scale)
+	t.stretch_mode = TextureRect.STRETCH_KEEP_CENTERED
+	t.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	t.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	return t
 
+
+# ------------------------------------------------------------------ look ---
 
 func _layout() -> void:
 	anchor_left = 1.0
 	anchor_right = 1.0
 	anchor_top = 0.0
 	anchor_bottom = 1.0
-	offset_left = -(dock_width + margin)
-	offset_right = -margin
-	offset_top = margin
-	offset_bottom = -margin
+	var o := frame_overhang()   # the frame art (clips, moss) is drawn this far outside the control
+	offset_left = -(dock_width + margin + o)
+	offset_right = -(margin + o)
+	offset_top = margin + o
+	offset_bottom = -(margin + o)
 	mouse_filter = Control.MOUSE_FILTER_STOP   # nothing under the dock gets a click
 
 
@@ -255,7 +333,11 @@ func _set_margin(v: float) -> void:
 
 ## From the screen edge: what the HUD and the boss bar keep clear of.
 func occupied_width() -> float:
-	return dock_width + margin
+	return dock_width + margin + 2.0 * frame_overhang()
+
+
+func frame_overhang() -> float:
+	return 8.0 * art_scale
 
 
 # ----------------------------------------------------------------- state ---
@@ -264,6 +346,7 @@ func show_tab(t: String) -> void:
 	_tab = t
 	for n in _tab_buttons:
 		_tab_buttons[n].set_pressed_no_signal(n == t)
+	_size_tabs()
 	_render()
 
 
@@ -292,6 +375,22 @@ func open_section(sec_name: String) -> void:
 	if _search.text != "":
 		_search.text = ""
 	show_tab("Tune")
+
+
+func collapse_all() -> void:
+	_open_cat = ""
+	_open_secs.clear()
+	_render()
+
+
+## Scroll so the header of an open section is at the top (tests, shots).
+func scroll_to_section(sec_name: String) -> void:
+	flush(true)
+	if _sec_blocks.has(sec_name):
+		await get_tree().process_frame
+		await get_tree().process_frame
+		# the section header lands right under the sticky category band, so its first row is not hidden under the stack
+		_scroll.scroll_vertical = int(_sec_blocks[sec_name].global_position.y - _tune.global_position.y - category_height)
 
 
 func row_for(key: String) -> F3PropRow:
@@ -328,22 +427,20 @@ func pointer_over() -> bool:
 	return false
 
 
-func add_action_group(title: String) -> HFlowContainer:
+func add_action_group(title: String, count := -1) -> HFlowContainer:
 	if _groups.has(title):
 		return _groups[title]
-	var l := Label.new()
-	l.text = title.to_upper()
-	l.add_theme_font_size_override("font_size", small_font_size)
-	l.add_theme_color_override("font_color", dim_color)
-	var m := MarginContainer.new()
-	m.add_theme_constant_override("margin_left", 10)
-	m.add_theme_constant_override("margin_top", 8)
-	m.add_child(l)
-	_actions.add_child(m)
+	var h := _make_header({"kind": "cat", "title": title, "count": "" if count < 0 else str(count), "open": true})
+	h.mouse_filter = Control.MOUSE_FILTER_IGNORE   # a title, not a fold
+	_actions.add_child(h)
 	var f := HFlowContainer.new()
+	f.add_theme_constant_override("h_separation", button_gap)
+	f.add_theme_constant_override("v_separation", button_gap)
 	var fm := MarginContainer.new()
-	fm.add_theme_constant_override("margin_left", 10)
-	fm.add_theme_constant_override("margin_right", 10)
+	fm.add_theme_constant_override("margin_left", int(row_indent / 2))
+	fm.add_theme_constant_override("margin_right", int(row_indent / 2))
+	fm.add_theme_constant_override("margin_top", button_gap)
+	fm.add_theme_constant_override("margin_bottom", button_gap)
 	fm.add_child(f)
 	_actions.add_child(fm)
 	_groups[title] = f
@@ -377,7 +474,7 @@ func _set_actions_now(groups: Array) -> void:
 	for g in groups:
 		if g["actions"].is_empty():
 			continue
-		var f := add_action_group(g["title"])
+		var f := add_action_group(g["title"], g["actions"].size())
 		for a in g["actions"]:
 			_add_action(f, "%s/%s" % [g["title"], a["label"]], a)
 
@@ -395,10 +492,11 @@ func _add_action(f: HFlowContainer, id: String, a: Dictionary) -> void:
 	if a.has("arg"):
 		var h := HBoxContainer.new()
 		var e := LineEdit.new()
-		e.placeholder_text = label.to_lower()
+		e.placeholder_text = a.get("hint", label.to_lower())
 		e.max_length = 6
-		e.custom_minimum_size = Vector2(64, 0)
-		e.add_theme_font_size_override("font_size", 11)
+		e.theme_type_variation = "F3Field"
+		e.custom_minimum_size = Vector2(number_width + 48, row_height)
+		e.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		if a["arg"] == "int":
 			e.text_changed.connect(func(t: String):   # digits only
 				var clean := ""
@@ -436,10 +534,10 @@ func _add_action(f: HFlowContainer, id: String, a: Dictionary) -> void:
 
 func _action_button(text: String, cb: Callable) -> Button:
 	var b := Button.new()
+	b.theme_type_variation = "F3Button"
 	b.text = text
 	b.focus_mode = Control.FOCUS_NONE   # only text fields take keyboard focus: Enter / Space must never re-press "Kill player"
 	b.pressed.connect(cb)
-	b.add_theme_font_size_override("font_size", 11)   # small buttons: all rows (wrapped) fit in a 720 px window
 	return b
 
 
@@ -447,10 +545,10 @@ func _refresh_toggles() -> void:
 	for t in _toggles:
 		var on: bool = _cur[t["id"]]["toggle"].call()
 		if t.get("on", null) == on:
-			continue   # only a flip touches text and colour
+			continue   # only a flip touches text and look
 		t["on"] = on
-		t["btn"].text = "%s  %s" % [t["label"], "on" if on else "off"]
-		t["btn"].add_theme_color_override("font_color", accent_color if on else dim_color)
+		t["btn"].text = "%s %s" % [t["label"], "on" if on else "off"]
+		t["btn"].theme_type_variation = "F3Primary" if on else "F3Button"   # gold when on
 
 
 ## Tests: the number field of an `arg` action, and a way to press its button.
@@ -547,34 +645,9 @@ func show_banner(text: String, seconds := 0.0) -> void:
 	_banner_left = seconds
 
 
-## Red button: the first click only asks "Sure?"; a second one within `confirm_seconds` runs `cb`.
+## Red button: the first click only asks "Sure? 2s" (cream look + shrinking bar); a second one within `confirm_seconds` runs `cb`.
 func danger_button(text: String, cb: Callable, confirm_seconds := 2.0) -> Button:
-	var b := Button.new()
-	b.text = text
-	b.focus_mode = Control.FOCUS_NONE
-	b.add_theme_font_size_override("font_size", 11)
-	b.add_theme_color_override("font_color", Color(1.0, 0.55, 0.52))
-	b.add_theme_stylebox_override("normal", _box(Color(0.24, 0.1, 0.11), Color(0.55, 0.2, 0.2), 1, 4))
-	b.add_theme_stylebox_override("hover", _box(Color(0.32, 0.12, 0.13), Color(0.9, 0.3, 0.3), 1, 4))
-	b.add_theme_stylebox_override("pressed", _box(Color(0.5, 0.12, 0.12), Color(1, 0.4, 0.4), 1, 4))
-	b.set_meta("armed", 0)   # 0 = idle, else the arm number (a late timer from an earlier arm must not disarm a new one)
-	b.pressed.connect(func():
-		if int(b.get_meta("armed")) != 0:
-			b.set_meta("armed", 0)
-			b.text = text
-			b.add_theme_color_override("font_color", Color(1.0, 0.55, 0.52))
-			cb.call()
-			return
-		var n := Time.get_ticks_msec() + 1
-		b.set_meta("armed", n)
-		b.text = "Sure?"
-		b.add_theme_color_override("font_color", Color.WHITE)
-		get_tree().create_timer(confirm_seconds).timeout.connect(func():
-			if is_instance_valid(b) and int(b.get_meta("armed")) == n:
-				b.set_meta("armed", 0)
-				b.text = text
-				b.add_theme_color_override("font_color", Color(1.0, 0.55, 0.52))))
-	return b
+	return F3DangerButton.new().setup(text, cb, confirm_seconds, art_scale)
 
 
 # ---------------------------------------------------------------- render ---
@@ -604,7 +677,11 @@ func _clear(n: Node) -> void:
 
 func _render() -> void:
 	var q := _search.text.strip_edges()
-	var keep := _scroll.scroll_vertical
+	var keep := _scroll.scroll_vertical if _tab == _last_tab and (q == "") == (_last_q == "") else 0   # each tab starts at its top
+	_last_tab = _tab
+	_last_q = q
+	_render_id += 1
+	var rid := _render_id
 	_rows.clear()
 	_headers.clear()
 	_pin_block = null
@@ -619,12 +696,16 @@ func _render() -> void:
 	_scroll.visible = not (_status_view and _status_view.visible)
 	_collapse_btn.visible = q == "" and _tab == "Tune"
 	_info.visible = q != "" or _tab == "Tune"
+	_info_row.visible = _info.visible
 	if q != "":
 		_render_results(q)
 	elif _tab == "Tune":
 		_render_tree()
 	if _tune.visible:
 		await get_tree().process_frame   # the content grows next frame: put the scroll back after it
+		if rid == _render_id:   # (a newer render owns the scroll)
+			_scroll.scroll_vertical = keep
+	else:
 		_scroll.scroll_vertical = keep
 
 
@@ -634,10 +715,11 @@ func _render_results(q: String) -> void:
 	if hits.is_empty():
 		var l := Label.new()
 		l.text = "No settings match \"%s\"." % q
-		l.add_theme_color_override("font_color", dim_color)
+		l.theme_type_variation = "F3Dim"
 		_tune.add_child(l)
 	for i in mini(hits.size(), max_results):
 		_add_row(_tune, hits[i]["prop"], true)
+		_tune.get_child(_tune.get_child_count() - 1).highlight(q)
 
 
 ## Tune tree. Blocks: pin block = [header, rows]; category block = [header, section blocks]; section block = [header, rows].
@@ -646,7 +728,7 @@ func _render_tree() -> void:
 	var n_settings := 0
 	for s in _sections:
 		n_settings += s["props"].size()
-	_info.text = "%d sections  %d settings" % [_sections.size(), n_settings]
+	_info.text = "%d settings" % n_settings
 	_pin_block = VBoxContainer.new()
 	_pin_block.add_theme_constant_override("separation", 0)
 	_tune.add_child(_pin_block)
@@ -704,7 +786,7 @@ func _fill_sec(s: Dictionary) -> void:
 	var sname: String = s["name"]
 	var sec_open: bool = _open_secs.has(sname)
 	sb.add_child(_make_header({"kind": "sec", "title": sname, "count": str(s["props"].size()), "open": sec_open, "heavy": s["heavy"],
-		"changed": panel.changed_count(s["props"]),
+		"tres": F3Overrides.can_write_to_tres(s["obj"]), "changed": panel.changed_count(s["props"]),
 		"cb": func(): _toggle_sec(sname)}))
 	if not sec_open:
 		return
@@ -714,12 +796,11 @@ func _fill_sec(s: Dictionary) -> void:
 			group = info["group"]
 			if group != "":
 				var gl := Label.new()
+				gl.theme_type_variation = "F3Group"
 				gl.text = group.to_upper()
-				gl.add_theme_font_size_override("font_size", small_font_size)
-				gl.add_theme_color_override("font_color", accent_color)
 				var gm := MarginContainer.new()
-				gm.add_theme_constant_override("margin_left", 22)
-				gm.add_theme_constant_override("margin_top", 5)
+				gm.add_theme_constant_override("margin_left", int(row_indent))
+				gm.add_theme_constant_override("margin_top", art_scale * 2 + group_gap)
 				gm.add_child(gl)
 				sb.add_child(gm)
 		_add_row(sb, info, false)
@@ -792,42 +873,51 @@ func _make_header(a: Dictionary) -> Button:
 	var b := Button.new()
 	b.set_meta("a", a)
 	b.focus_mode = Control.FOCUS_NONE
-	b.custom_minimum_size.y = header_height
-	var bg := cat_bg_color if a["kind"] != "sec" else sec_bg_color
-	b.add_theme_stylebox_override("normal", _box(bg, line_color, 0, 0, 1))
-	b.add_theme_stylebox_override("hover", _box(bg.lightened(0.08), line_color, 0, 0, 1))
-	b.add_theme_stylebox_override("pressed", _box(bg.lightened(0.08), line_color, 0, 0, 1))
+	var sec: bool = a["kind"] == "sec"
+	b.theme_type_variation = "F3Section" if sec else "F3Category"
+	b.custom_minimum_size.y = section_height if sec else category_height
 	var h := HBoxContainer.new()
 	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	h.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	h.offset_left = 18.0 if a["kind"] == "sec" else 8.0
+	h.offset_left = (row_indent + 4.0) if sec else 8.0
 	h.offset_right = -8.0
-	h.add_theme_constant_override("separation", 6)
+	h.add_theme_constant_override("separation", art_scale * 2)
 	b.add_child(h)
-	var arrow := "" if a["kind"] == "pin" else ("v" if a["open"] else ">")
-	_header_label(h, arrow, dim_color, small_font_size)
-	_header_label(h, a["title"], text_color if a["kind"] != "sec" else Color(0.78, 0.82, 0.88), font_size)
+	if a["kind"] == "pin":
+		h.add_child(icon_rect("icon_star_on"))
+	else:
+		h.add_child(icon_rect("icon_tri_open" if a["open"] else "icon_tri_closed"))
+	var title := Label.new()
+	title.theme_type_variation = "F3Title"
+	title.text = a["title"]
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	h.add_child(title)
+	if a.get("tres", false):
+		h.add_child(_header_chip(".TRES", "F3Badge"))
 	if a.get("heavy", false):
-		_header_label(h, "[rebuild]", mod_color, small_font_size)
+		h.add_child(_header_chip("⟳", "F3Gold"))
 	if a.get("changed", 0) > 0:
-		_header_label(h, "● %d" % a["changed"], mod_color, small_font_size)
+		h.add_child(icon_rect("icon_dot_changed"))
+		h.add_child(_header_chip(str(a["changed"]), "F3Gold"))
 	var sp := Control.new()
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sp.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	h.add_child(sp)
-	_header_label(h, a["count"], dim_color, small_font_size + 1)
+	if a["count"] != "":
+		h.add_child(_header_chip(str(a["count"]).to_upper(), "F3Small"))
 	if a.has("cb"):
 		b.pressed.connect(a["cb"])
 	return b
 
 
-func _header_label(parent: Node, text: String, col: Color, size: int) -> void:
+func _header_chip(text: String, variation: String) -> Label:
 	var l := Label.new()
+	l.theme_type_variation = variation
 	l.text = text
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	l.add_theme_color_override("font_color", col)
-	l.add_theme_font_size_override("font_size", size)
-	parent.add_child(l)
+	l.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	return l
 
 
 ## Category + section header that scrolled off the top stay visible (copies of the real ones: same click).
@@ -841,7 +931,7 @@ func _update_sticky() -> void:
 		if kind == "cat" and y <= 0.0:
 			cat_i = i
 			sec_i = -1
-		elif kind == "sec" and cat_i >= 0 and y <= header_height:
+		elif kind == "sec" and cat_i >= 0 and y <= category_height:
 			sec_i = i
 	if Vector2i(cat_i, sec_i) == _sticky_ids:
 		return
@@ -872,6 +962,9 @@ func _process(delta: float) -> void:
 			_banner.visible = false
 	if _tune.visible and _search.text.strip_edges() == "":
 		_update_sticky()
+	_sticky.offset_right = -maxf(0.0, _wrap.size.x - _tune.size.x)   # as wide as the rows: up to the scroll bar
+	_sticky_bg.visible = _sticky.get_child_count() > 0
+	_sticky_bg.size = Vector2(_wrap.size.x + _sticky.offset_right, _sticky.get_combined_minimum_size().y)
 	_sync_left -= dt
 	if _sync_left <= 0.0:
 		_sync_left = sync_interval
