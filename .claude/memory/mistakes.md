@@ -29,3 +29,5 @@
 - 2026-10-22: "let's do it" after a side discussion = the main task (map), not the side topic. Ask which one when a side topic was the last thing discussed.
 - 2026-10-23: used only the one tree sheet already in the game; the pack has 3 tree models x 4 sizes in assets/third_party/pixel_crawler/.../Trees → before picking sprites, list the whole pack folder, not just assets/map.
 - 2026-10-23: floor props (reeds, bushes, flowers) shipped upside down and copper as a placeholder circle; screenshots were only judged at overview size → for every new draw path, zoom (crop at 4x) on a few known sprites and compare with the source sheet before reporting.
+- 2026-10-30: mapped every strip in a pack (roll, hurt, side) when the user only wanted idle/run/death → use only the animations the user names; ask which ones are used before wiring extras
+- 2026-10-30: a simple sprite swap took 15+ min (Sonnet agent + full suite + judge + shot tool) → for small asset/visual swaps do it inline, run only the touched tests, skip the judge unless logic changed

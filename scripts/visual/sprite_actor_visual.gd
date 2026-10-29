@@ -69,6 +69,15 @@ enum SnapMode { NONE, WORLD_PX, ART_PX }
 @export var flip_deadzone := 0.3
 ## Shadow shrink on the baked "up" run frames, world px (the old-art `bounce_amp_px` is a different feel number).
 @export var directional_lift_px := 3.0
+@export_group("Death pose")
+## Used only when the SpriteFrames has a `death` animation. Plays when this actor's Health emits `died`, and
+## goes back to idle/run once hp is above 0 again (Health.revive on respawn; there is no "revived" signal).
+@export var health_path := NodePath("../Health")
+## Speed multipliers for a GIF-timed set (one that has `death`, e.g. Pixel Plains): 1.0 = the baked GIF timing. They replace
+## idle_fps / run_fps for such a set; sets without `death` keep the fps knobs above. Death holds its last frame until respawn.
+@export_range(0.25, 20.0, 0.05) var idle_speed := 1.0
+@export_range(0.25, 20.0, 0.05) var run_speed := 1.0
+@export_range(0.25, 20.0, 0.05) var death_speed := 1.0
 @export_group("Shadow (breathes with the bounce)")
 @export var shadow_on := true
 @export var shadow_min_scale := 0.8   ## Shadow scale at full lift (1 = no change)
@@ -97,6 +106,8 @@ var _shadow_rest_alpha := 1.0
 var _base := &"idle"             ## idle | run (the move state), independent of front/side
 var _front := true               ## directional body: facing mostly down
 var _hit_left := 0.0
+var _dead := false
+var _health: Health
 var _shadow_base_scale := Vector2.ONE   ## the Shadow node's own scale (rig.shadow_scale multiplies it)             ## seconds of the hit animation still to play
 
 ## "idle"/"run" fps = SpriteFrames' own speed * speed_scale, so the .tres is never written to.
@@ -105,6 +116,8 @@ func _anim() -> AnimatedSprite2D:
 
 func _play(anim_name: StringName) -> void:
 	_base = anim_name
+	if _dead:
+		return                       # the death pose stays until Health is back above 0
 	if _hit_left > 0.0 and is_directional():
 		return                       # the hit pose finishes first, then _process resumes idle/run
 	_play_resolved(false)
@@ -141,7 +154,7 @@ func _play_resolved(keep_frame: bool) -> void:
 		a.speed_scale = 1.0           # hold times are baked into the frames
 	else:
 		var fps := run_fps if _base == &"run" else idle_fps
-		a.speed_scale = fps / maxf(a.sprite_frames.get_animation_speed(n), 0.001)
+		a.speed_scale = (run_speed if _base == &"run" else idle_speed) if _has_death() else fps / maxf(a.sprite_frames.get_animation_speed(n), 0.001)
 	if a.animation != n or not a.is_playing():
 		var f := a.frame
 		var p := a.frame_progress
@@ -155,8 +168,9 @@ func status_text() -> String:
 	if a == null or a.sprite_frames == null:
 		return "static body"
 	var dir_txt := ("  facing: %s%s  hit: %.2fs" % ["front" if _front and _has_front() else "side", " (flipped)" if _facing_left and not (_front and _has_front()) else "", _hit_left]) if is_directional() else ""
+	var dead_txt := "  DEAD" if _dead else ""
 	var rig_txt := ("\n" + rig.status_text()) if rig else ""
-	return "anim: %s  frame: %d/%d  fps: %.1f  y: %+.1f  squash: %.2f  shadow: %.2f  dust: %d" % [a.animation, a.frame + 1, a.sprite_frames.get_frame_count(a.animation), a.sprite_frames.get_animation_speed(a.animation) * a.speed_scale, a.position.y - _rest_position.y, _squash_left, _shadow_scale_now(), _dust_alive()] + dir_txt + rig_txt
+	return "anim: %s  frame: %d/%d  fps: %.1f  y: %+.1f  squash: %.2f  shadow: %.2f  dust: %d" % [a.animation, a.frame + 1, a.sprite_frames.get_frame_count(a.animation), a.sprite_frames.get_animation_speed(a.animation) * a.speed_scale, a.position.y - _rest_position.y, _squash_left, _shadow_scale_now(), _dust_alive()] + dir_txt + dead_txt + rig_txt
 
 func _shadow_scale_now() -> float:
 	return shadow.scale.x / _shadow_rest_scale.x if shadow else 1.0
@@ -195,7 +209,22 @@ func _ready() -> void:
 		_rest_scale = b.scale
 	if not Engine.is_editor_hint():
 		_play(&"idle")
+		_health = get_node_or_null(health_path) as Health
+		if _health:
+			_health.died.connect(_on_died)
 		_apply_rig_siblings.call_deferred()      # WeaponVisual / Hands come later in the tree: wait until they are ready
+
+func _has_death() -> bool:
+	var a := _anim()
+	return a != null and a.sprite_frames != null and a.sprite_frames.has_animation(&"death")
+
+func _on_died() -> void:
+	if not _has_death():
+		return
+	_dead = true
+	_running = false
+	_anim().speed_scale = death_speed
+	_anim().play(&"death")
 
 func _set_rig(v: BodyRig) -> void:
 	if rig and rig.changed.is_connected(_on_rig_changed):
@@ -259,7 +288,12 @@ func _process(delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
 	var a := _anim()
+	if _dead and _health and _health.hp > 0.0:
+		_dead = false                # respawned
+		_play_resolved(false)
 	if a != null:
+		if _dead:
+			return
 		if is_directional():
 			_update_directional(a, delta)
 		else:
