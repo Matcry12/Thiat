@@ -1,4 +1,5 @@
 extends SceneTree
+const SmallMap = preload("res://tests/support/small_map.gd")
 ## Pixel Plains trees + plants (slice 3): oaks are gatherable nodes (treepp_*), flowers / tufts / hedge caps come from the pp_* PropSets,
 ## everything is gated per biome by PixelPlainsGround.show_*, and a seed gives the same result twice.
 var _ok := true
@@ -15,6 +16,7 @@ func _init() -> void:
 	m0.map_seed = 3
 	m0.map_cols = 200
 	m0.map_rows = 120
+	SmallMap.apply(m0)   # v3 sized biomes + water for the 512 island; these counts need the 200 x 120 sizes
 	root.add_child(arena)
 	arena.get_node("Boss").passive = true
 	await process_frame
@@ -60,7 +62,8 @@ func _init() -> void:
 	print("  deco per set: %s" % [kinds])
 	for id in kinds:
 		_check(String(id).begins_with("pp_"), "deco only from pp_ sets (%s)" % id)
-	_check(kinds.has(&"pp_flowers") and kinds.has(&"pp_tufts") and kinds.has(&"pp_hedges"), "flowers, tufts and hedge caps are placed")
+	_check(kinds.has(&"pp_flowers") and kinds.has(&"pp_tufts"), "flowers and tufts are placed")
+	_check(not kinds.has(&"pp_hedges"), "no hedge caps (show_hedges all 0 since v4: loose squares)")
 	# same seed, same trees and deco
 	var r2 := MapGen.generate(style, p, 3)
 	_check(r2.obstacles.size() == r.obstacles.size() and r2.deco.size() == r.deco.size(), "deterministic (%d obstacles, %d deco)" % [r.obstacles.size(), r.deco.size()])

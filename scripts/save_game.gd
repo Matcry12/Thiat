@@ -6,7 +6,7 @@ extends Node
 ## on it (gathered nodes by placement index, stations, loose pickups). Never saves while dead, while the boss is
 ## engaged, or under a test run (BOSSFIGHT_TEST_SEED set) unless `force_io`.
 
-const VERSION := 2   # 2: loose pickups replace death bags (0042)
+const VERSION := 3   # 3: map v3 (fewer, bigger lakes + rivers, 2x biomes, no rocks): an old seed would build another island; 2: loose pickups replace death bags (0042)
 
 static var path := "user://save.json"
 static var force_io := false      ## tests of this class only (they also point `path` at a temp file)

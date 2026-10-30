@@ -44,6 +44,7 @@ func _init() -> void:
 	plain.plain_weight = 1.0
 	plain.plain_light = [Vector2i(10, 7)] as Array[Vector2i]
 	plain.all_flat = false   # the reference is the pack's own raised-edge pairs
+	plain.dark_dirt_gap = 1   # the reference applies the dark-next-to-dirt rule
 	var rows: Array = JSON.parse_string(FileAccess.get_file_as_string("res://tests/support/pixel_plains/grid.json"))["rows"]
 	var res := _result(rows, 3)
 	var out := GroundBaker.bake_region(res, _style(plain), 0, 0, res.cols + 1, res.rows + 1)
@@ -110,7 +111,9 @@ func _init() -> void:
 	var shares := PixelPlainsBaker.shares(res2, real)
 	_check(shares[3] > 0 and shares[4] > 0, "the seam grid has sand and snow %s" % [shares])
 	# the map rule: a dark cell touching dirt is light grass
-	var mats := PixelPlainsBaker.cell_materials(_result(["...", "dD.", "..."], 1), real, 0, 0, 2, 2)
+	var gap_pp := real.duplicate() as PixelPlainsGround
+	gap_pp.dark_dirt_gap = 1   # the rule itself (off in the data since 0047: flat edges handle dark next to dirt)
+	var mats := PixelPlainsBaker.cell_materials(_result(["...", "dD.", "..."], 1), gap_pp, 0, 0, 2, 2)
 	_check(mats.count(PixelPlainsGround.Mat.DARK + 1) == 0, "dark next to dirt became light")
 	# F3 edits must reach the map: a changed export emits `changed`
 	var hits := [0]

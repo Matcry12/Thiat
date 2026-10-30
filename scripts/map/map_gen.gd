@@ -77,27 +77,28 @@ class Params:
 	var corridor_half := 2            ## half width of the land bridge carved when home and boss are cut apart
 	# Water (0038 step 3)
 	var water_on := true              ## false = no rivers, lakes or shallows (the island is dry land and deep ocean)
-	var river_period := 110.0         ## cells per wave of the ridge noise
+	var river_period := 260.0         ## cells per wave of the ridge noise
 	var river_octaves := 5
-	var river_w_inland := 1.5         ## half width in cells far from the sea ...
-	var river_w_sea := 2.5            ## ... and at the sea
+	var river_w_inland := 2.5         ## half width in cells far from the sea ...
+	var river_w_sea := 3.5            ## ... and at the sea
 	var river_grow_dist := 110.0      ## distance from the sea over which the width goes from river_w_sea to river_w_inland
 	var river_rough_max := 0.88       ## no river on peaks (roughness above this)
-	var river_min_cells := 40         ## river pieces smaller than this are dropped
+	var river_min_cells := 600         ## river pieces smaller than this are dropped
 	var river_inland_min := 22.0      ## a river must get at least this far from the sea somewhere (else it only hugs the coast)
 	var lake_humid_min := 0.35        ## lake centres only where humidity is above this ...
 	var lake_inland_min := 8.0        ## ... at least this many cells (plus 1.4 radii) from the sea ...
 	var lake_rough_max := 0.85        ## ... and not rougher than this
-	var lake_min_cells := 6
+	var lake_min_cells := 400
+	var water_min_cells := 40         ## after rivers + lakes: a fresh-water body (4-connected) smaller than this is land again (no 1-3 cell specks)
 	var river_big_n := 2
-	var river_big_w_inland := 2.5
-	var river_big_w_sea := 5.5
+	var river_big_w_inland := 4.5
+	var river_big_w_sea := 8.0
 	var river_big_reach := 3
-	var lake_big_n := 3
-	var lake_big_r_min := 9.5
-	var lake_big_r_max := 12.5
+	var lake_big_n := 4
+	var lake_big_r_min := 16.0
+	var lake_big_r_max := 22.0
 	var lake_big_on_river := 2
-	var lake_pond_n := 30
+	var lake_pond_n := 0
 	var lake_pond_r_min := 1.5
 	var lake_pond_r_max := 4.0
 	var lake_pond_on_river := 0.3
@@ -108,8 +109,8 @@ class Params:
 	var lake_pond_blobs_min := 1
 	var lake_pond_blobs_max := 3
 	var lake_warp := 3.5
-	var lake_shape_period := 11.0
-	var lake_gap := 4
+	var lake_shape_period := 30.0
+	var lake_gap := 8
 	var shore_cells := 1.5            ## land shore around a river / lake: 1 = one ring, 2 = two rings, 1.5 = a ragged second ring
 	var shallow_min := 1.0            ## ocean shallows along the coast are between these many cells wide (noise)
 	var shallow_max := 2.4
@@ -161,7 +162,7 @@ class Params:
 	var tree_fade_lo := 0.35          ## BiomeData.fade_by_density: a try's chance goes 0 -> 1 as the local density d goes lo -> hi
 	var tree_fade_hi := 0.55
 	var veg_density_period := 18.0    ## cells per wave of the local density noise d (drives tree age, bush gating)
-	var copper_near_home_cells := 70.0 ## at least one copper rock (with two rocks beside it) stands on dry land within this many cells of home; 0 = no promise
+	var copper_near_home_cells := 0.0  ## at least one copper rock (with two rocks beside it) stands on dry land within this many cells of home; 0 = no promise
 	var rock_group_radius := 2.2      ## cells: middle rock pieces of a group lie within this of its centre (mineable rocks need room)
 	var fir_group_radius := 3.0       ## cells: a tree group (BiomeData.group_model) spreads this far
 	var age_core := 0.75              ## f above = core (old / mature)
@@ -998,6 +999,7 @@ static func _make_water(res: Result, p: Params, home: Vector2i, zc: Rect2i) -> v
 		t = _lap(res, "water.rivers", t)
 		_make_lakes(res, p, home, zc, dc, cw, fresh, fresh_cells)
 		t = _lap(res, "water.lakes", t)
+		_drop_small_water(p, fresh, fresh_cells)
 		# --- cut the fresh water out of the land; the land around it is the shore
 		for i in fresh_cells:
 			land[i] = 0
@@ -1228,6 +1230,39 @@ static func _make_lakes(res: Result, p: Params, home: Vector2i, zc: Rect2i, dc: 
 				if fresh[c] == 0:
 					fresh_cells.append(c)
 				fresh[c] = 2
+
+
+## Fresh-water bodies (river + lake cells, 4-connected) below `water_min_cells` become land again; fresh_cells keeps only the kept ones.
+static func _drop_small_water(p: Params, fresh: PackedByteArray, fresh_cells: PackedInt32Array) -> void:
+	if p.water_min_cells <= 1 or fresh_cells.is_empty():
+		return
+	var n := p.cols * p.rows
+	var wm := PackedByteArray()
+	wm.resize(n)
+	for i in fresh_cells:
+		wm[i] = 1
+	var seen := PackedByteArray()
+	seen.resize(n)
+	var spans := PackedInt32Array()
+	var stack := PackedInt32Array()
+	for i in fresh_cells:
+		if seen[i] == 1:
+			continue
+		spans.clear()
+		if _span_fill(wm, seen, p.cols, p.rows, i, 1, spans, stack) >= p.water_min_cells:
+			continue
+		for k in range(0, spans.size(), 2):
+			for c in range(spans[k], spans[k] + spans[k + 1]):
+				fresh[c] = 0
+	var kept := PackedInt32Array()
+	var dup := PackedByteArray()
+	dup.resize(n)
+	for i in fresh_cells:
+		if fresh[i] != 0 and dup[i] == 0:
+			dup[i] = 1
+			kept.append(i)
+	fresh_cells.clear()
+	fresh_cells.append_array(kept)
 
 
 static func _climate_noise(noise_seed: int, period: float, octaves: int) -> FastNoiseLite:

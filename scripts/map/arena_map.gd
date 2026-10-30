@@ -251,7 +251,7 @@ signal rebuilt
 	set(v):
 		water_on = v
 		_changed()
-@export var river_period := 110.0:
+@export var river_period := 260.0:
 	set(v):
 		river_period = v
 		_changed()
@@ -260,12 +260,12 @@ signal rebuilt
 		river_octaves = v
 		_changed()
 ## Half width of a river in cells, far from the sea ...
-@export_range(0.0, 4.0, 0.02, "or_greater", "or_less") var river_w_inland := 1.5:
+@export_range(0.0, 4.0, 0.02, "or_greater", "or_less") var river_w_inland := 2.5:
 	set(v):
 		river_w_inland = v
 		_changed()
 ## ... and at the sea.
-@export_range(0.0, 6.0, 0.02, "or_greater", "or_less") var river_w_sea := 2.5:
+@export_range(0.0, 6.0, 0.02, "or_greater", "or_less") var river_w_sea := 3.5:
 	set(v):
 		river_w_sea = v
 		_changed()
@@ -278,7 +278,7 @@ signal rebuilt
 	set(v):
 		river_rough_max = v
 		_changed()
-@export var river_min_cells := 40:
+@export var river_min_cells := 600:
 	set(v):
 		river_min_cells = v
 		_changed()
@@ -299,9 +299,14 @@ signal rebuilt
 	set(v):
 		lake_rough_max = v
 		_changed()
-@export var lake_min_cells := 6:
+@export var lake_min_cells := 400:
 	set(v):
 		lake_min_cells = v
+		_changed()
+## After rivers and lakes: any fresh-water body smaller than this (cells) is land again (no 1-3 cell specks, no stub river pieces).
+@export var water_min_cells := 40:
+	set(v):
+		water_min_cells = v
 		_changed()
 ## The longest rivers (by cells) are widened ...
 @export var river_big_n := 2:
@@ -309,12 +314,12 @@ signal rebuilt
 		river_big_n = v
 		_changed()
 ## ... to this half width far from the sea ...
-@export var river_big_w_inland := 2.5:
+@export var river_big_w_inland := 4.5:
 	set(v):
 		river_big_w_inland = v
 		_changed()
 ## ... and at the sea (a 7-12 wide mouth).
-@export var river_big_w_sea := 5.5:
+@export var river_big_w_sea := 8.0:
 	set(v):
 		river_big_w_sea = v
 		_changed()
@@ -324,15 +329,15 @@ signal rebuilt
 		river_big_reach = v
 		_changed()
 ## Landmark lakes (radius lake_big_r_min..max cells).
-@export var lake_big_n := 3:
+@export var lake_big_n := 4:
 	set(v):
 		lake_big_n = v
 		_changed()
-@export var lake_big_r_min := 9.5:
+@export var lake_big_r_min := 16.0:
 	set(v):
 		lake_big_r_min = v
 		_changed()
-@export var lake_big_r_max := 12.5:
+@export var lake_big_r_max := 22.0:
 	set(v):
 		lake_big_r_max = v
 		_changed()
@@ -342,7 +347,7 @@ signal rebuilt
 		lake_big_on_river = v
 		_changed()
 ## Small ponds, clustered where the wetness noise is high and some next to rivers.
-@export var lake_pond_n := 30:
+@export var lake_pond_n := 0:
 	set(v):
 		lake_pond_n = v
 		_changed()
@@ -393,12 +398,12 @@ signal rebuilt
 		lake_warp = v
 		_changed()
 ## Cells per wobble of a lake edge.
-@export var lake_shape_period := 11.0:
+@export var lake_shape_period := 30.0:
 	set(v):
 		lake_shape_period = v
 		_changed()
 ## Cells kept between two big lakes.
-@export var lake_gap := 4:
+@export var lake_gap := 8:
 	set(v):
 		lake_gap = v
 		_changed()
@@ -419,19 +424,19 @@ signal rebuilt
 @export_group("Climate")
 ## Climate biomes (decision 0038): three smooth noise maps (temperature, humidity, roughness) decide the biome of every land cell.
 ## Periods = cells per wave (bigger = bigger zones), warp = how much the borders wiggle. Every change rebuilds the map.
-@export var climate_temp_period: float = 300.0:   # 0038 step 2: ~2.5x the 200x120 values (120 / 60 / 40 / 36 / 11), so a 512 island has the same number of zones
+@export var climate_temp_period: float = 600.0:   # 0038 step 2: ~2.5x the 200x120 values (120 / 60 / 40 / 36 / 11), so a 512 island has the same number of zones
 	set(v):
 		climate_temp_period = v
 		_changed()
-@export var climate_humid_period: float = 150.0:
+@export var climate_humid_period: float = 300.0:
 	set(v):
 		climate_humid_period = v
 		_changed()
-@export var climate_rough_period: float = 100.0:
+@export var climate_rough_period: float = 200.0:
 	set(v):
 		climate_rough_period = v
 		_changed()
-@export var climate_warp_period: float = 90.0:
+@export var climate_warp_period: float = 180.0:
 	set(v):
 		climate_warp_period = v
 		_changed()
@@ -468,7 +473,7 @@ signal rebuilt
 	set(v):
 		beach_noise_octaves = v
 		_changed()
-@export var biome_smooth_half: int = 3:
+@export var biome_smooth_half: int = 6:
 	set(v):
 		biome_smooth_half = v
 		_changed()
@@ -484,7 +489,7 @@ signal rebuilt
 	set(v):
 		biome_smooth_passes = v
 		_changed()
-@export var biome_min_blob: int = 90:
+@export var biome_min_blob: int = 400:
 	set(v):
 		biome_min_blob = v
 		_changed()
@@ -500,11 +505,11 @@ signal rebuilt
 	set(v):
 		cold_beach_t = v
 		_changed()
-@export var home_calm_cells: float = 10.0:
+@export var home_calm_cells: float = 20.0:
 	set(v):
 		home_calm_cells = v
 		_changed()
-@export var home_calm_fade: float = 16.0:
+@export var home_calm_fade: float = 32.0:
 	set(v):
 		home_calm_fade = v
 		_changed()
@@ -557,7 +562,7 @@ signal rebuilt
 	set(v):
 		veg_density_period = v
 		_changed()
-@export var copper_near_home_cells: float = 70.0:
+@export var copper_near_home_cells: float = 0.0:
 	set(v):
 		copper_near_home_cells = v
 		_changed()
@@ -1316,6 +1321,7 @@ func make_params() -> MapGen.Params:
 	p.lake_inland_min = lake_inland_min
 	p.lake_rough_max = lake_rough_max
 	p.lake_min_cells = lake_min_cells
+	p.water_min_cells = water_min_cells
 	p.river_big_n = river_big_n
 	p.river_big_w_inland = river_big_w_inland
 	p.river_big_w_sea = river_big_w_sea

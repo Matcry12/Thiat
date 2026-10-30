@@ -13,6 +13,7 @@ b_temp = 0.62
 b_humid = 0.92
 b_rough = 0.12
 temp_class = 2
+shore_ground = 5
 ground = 3
 fresh_pull_cells = 10.0
 tint_bright = 0.62

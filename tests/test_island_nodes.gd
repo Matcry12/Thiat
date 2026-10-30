@@ -1,4 +1,5 @@
 extends SceneTree
+const SmallMap = preload("res://tests/support/small_map.gd")
 var _ok := true
 
 func _check(cond: bool, msg: String) -> void:
@@ -81,6 +82,7 @@ func _init() -> void:
 	arena.get_node("ArenaMap").map_seed = 3   # 0038 step 4: seed 3 has every biome on the 200 x 120 island, Plains and rocky hills included
 	arena.get_node("ArenaMap").map_cols = 200   # 0038 step 2: the default island is 512 x 512 now; these counts were tuned at 200 x 120
 	arena.get_node("ArenaMap").map_rows = 120
+	SmallMap.apply(arena.get_node("ArenaMap"))   # v3 sized biomes + water for the 512 island; these counts need the 200 x 120 sizes
 	arena.get_node("ArenaMap").style.pixel_plains = null   # these tests count trees and deco: the old ground look keeps them (Pixel Plains hides both)
 	root.add_child(arena)
 	arena.get_node("Boss").passive = true

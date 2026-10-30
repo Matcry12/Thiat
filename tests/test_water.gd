@@ -18,10 +18,10 @@ func _params(cols: int, rows: int) -> MapGen.Params:
 	p.player_spawn = Vector2(0.12 * p.world.x, 0.5 * p.world.y)
 	p.zone = Rect2(Vector2(0.86 * p.world.x, 0.5 * p.world.y) - Vector2(440, 230), Vector2(880, 460))
 	p.spawns = PackedVector2Array([p.player_spawn])
-	p.climate_temp_period = 300.0   # the 512 numbers (ArenaMap defaults)
-	p.climate_humid_period = 150.0
-	p.climate_rough_period = 100.0
-	p.climate_warp_period = 90.0
+	p.climate_temp_period = 600.0   # the 512 numbers (ArenaMap defaults, v3: biomes 2x)
+	p.climate_humid_period = 300.0
+	p.climate_rough_period = 200.0
+	p.climate_warp_period = 180.0
 	p.climate_warp_amp = 28.0
 	return p
 
@@ -51,6 +51,7 @@ func _init() -> void:
 	var dry_ok := true
 	var conn_ok := true
 	var lakes_ok := true
+	var small_water := false   # a fresh-water body under water_min_cells
 	var ms := 0
 	for sd in [11, 7]:
 		var t := Time.get_ticks_msec()
@@ -79,7 +80,7 @@ func _init() -> void:
 		for i in n:
 			if body[i] == 1 and seen[i] == 0:
 				var spans := PackedInt32Array()
-				MapGen._span_fill(body, seen, p.cols, p.rows, i, 1, spans, stack)
+				small_water = small_water or MapGen._span_fill(body, seen, p.cols, p.rows, i, 1, spans, stack) < p.water_min_cells
 				var touches := false
 				var has_river := false
 				for k in range(0, spans.size(), 2):
@@ -102,8 +103,9 @@ func _init() -> void:
 				lake_n += 1
 				if sz > 150:
 					big_lake += 1
+				small_water = small_water or sz < p.water_min_cells
 		print("  seed %d: %d lake bodies, %d of them over 150 cells" % [sd, lake_n, big_lake])
-		lakes_ok = lakes_ok and lake_n >= 12 and big_lake >= 2
+		lakes_ok = lakes_ok and lake_n >= 2 and lake_n <= 6 and big_lake >= 2   # v3: 2-4 big lakes (a lake on a river may split), no ponds
 		# edge: ocean all round, deep (not shallow, not walkable)
 		for x in p.cols:
 			for y in [0, 1, 2, p.rows - 1]:
@@ -139,7 +141,8 @@ func _init() -> void:
 		kinds_ok = kinds_ok and MapGen.water_kind(r, p, ocean_cell) == MapGen.WaterKind.OCEAN and free[3 * nx + 3] == 0
 	_check(rivers_total > 2000 and lakes_total > 1500, "rivers and lakes exist on 512 x 512 (%d river cells, %d lake cells over 2 seeds)" % [rivers_total, lakes_total])
 	_check(rivers_ok, "every river body (with the lakes on its path) reaches the sea (touches water that is not fresh)")
-	_check(lakes_ok, "water v2: at least 12 lake bodies per seed and 2 big ones (over 150 cells)")
+	_check(lakes_ok, "water v3: 2-6 lake bodies per seed, 2 big ones (over 150 cells), no ponds")
+	_check(not small_water, "no fresh-water body (river or lake) under water_min_cells")
 	_check(wet_ok, "walkable = dry land or shallow water; no cell is both")
 	_check(kinds_ok, "WaterKind: land = NONE, rivers / lakes / coast shallows = SHALLOW and walkable on the walk grid, deep ocean = OCEAN and blocked")
 	_check(edge_ok, "ocean (not walkable) all round the map edge")
