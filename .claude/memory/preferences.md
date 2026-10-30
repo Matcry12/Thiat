@@ -73,7 +73,7 @@ at game size?", not only code. User: "tell opus to judge harder" after a blocky 
   defaults instead of asking, say which defaults were taken, and let the user redirect.
 - The user often skips "commit?" questions; ask once per slice, never commit without a clear "commit".
 - Visual/tile work: verify on test shapes before baking the real map (see mistakes.md 2026-10-16).
-- Tests: small change → run only the related tests (seconds). Full `tools/run_tests.sh` (~85 tests, minutes) only before a commit. The user asked why a one-number change took minutes (2026-10-22).
+- Tests: fix rounds → `tools/run_tests.sh --changed` (only tests tied to changed files) or name tests: `tools/run_tests.sh tests/test_x.gd`. Full `tools/run_tests.sh` (100 tests, ~2 min, 8 in parallel) once before a commit. Parallel runs are safe now: each process has its own user://. The user asked why a one-number change took minutes (2026-10-22).
 
 ## Map / world (2026-10-23)
 - Map art = Pixel Crawler only (0034). Dirt only where something explains it, never random (0035). Roads off by default.

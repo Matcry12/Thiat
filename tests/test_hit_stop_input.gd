@@ -21,6 +21,7 @@ func _arena() -> Node:
 	return arena
 
 func _init():
+	OS.set_environment("BOSSFIGHT_TEST_MAP_CELLS", "192")   # small island: this test does not need the full map
 	for freeze in [false, true, "tap"]:
 		var arena = _arena()
 		await process_frame

@@ -183,6 +183,10 @@ resolved.
 **Verify (rule 2, made concrete)**
 - GDScript change → `godot --headless --check-only --script <file>` (the PostToolUse hook runs this
   automatically and blocks on parse errors); `godot --headless --quit` to boot the project.
+- Tests: `tools/run_tests.sh` = full suite, 8 at a time (`-j N`), slowest 15 printed at the end. Fix rounds:
+  `tools/run_tests.sh --changed` (tests tied to files changed vs main) or `tools/run_tests.sh tests/test_x.gd ...`.
+  Full suite once before commit. Each test gets its own `user://` and `--fixed-fps 60`, so parallel runs (and other
+  worktrees) never clash. A test that does not need the whole island sets `BOSSFIGHT_TEST_MAP_CELLS=192` first.
 - Python change → `pytest rl/` and a short smoke run of the env.
 - Gameplay feel (hit timing, dodge windows) can't be verified headless — say so, ask the user to playtest.
 

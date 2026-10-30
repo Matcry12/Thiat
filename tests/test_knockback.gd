@@ -38,6 +38,7 @@ func place_clear(body: CharacterBody2D, dir: Vector2, dist: float) -> void:
 				return
 
 func _init():
+	OS.set_environment("BOSSFIGHT_TEST_MAP_CELLS", "192")   # small island: this test does not need the full map
 	arena = load("res://scenes/arena.tscn").instantiate()
 	root.add_child(arena)
 	boss = arena.get_node("Boss")
