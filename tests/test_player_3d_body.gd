@@ -17,9 +17,26 @@ func _init():
 	player.set_physics_process(false)
 	var vis: SpriteActorVisual = player.get_node("Visual")
 	var body := vis.get_node("Body") as AnimatedSprite2D
-	check("player ships the side-only Tiny RPG soldier (temp art, decision 0032)", vis.is_directional() and body.sprite_frames.has_animation(&"run_side") and not body.sprite_frames.has_animation(&"idle_front") and vis.rig.display_name.begins_with("tiny soldier"))
+	var f := body.sprite_frames
+	check("player ships the Pixel Plains character: plain set with only idle / run / death", not vis.is_directional() and f.has_animation(&"idle") and f.has_animation(&"run") and f.has_animation(&"death") and f.get_animation_names().size() == 3 and vis.rig.display_name.begins_with("pixel plains"))
+	vis.set_facing(Vector2.LEFT)
+	check("pixel plains: facing left = flip_h", body.flip_h and body.animation == &"idle")
+	vis.set_facing(Vector2.RIGHT)
+	check("pixel plains: facing right = not flipped", not body.flip_h)
+	var hp: Health = player.get_node("Health")
+	hp.take_damage(hp.hp + hp.shield + hp.armor + 1.0)
+	check("death: Health.died plays the death pose", body.animation == &"death" and vis.status_text().contains("DEAD"))
+	vis.set_move_state("run")
+	check("death: a move state does not cut the death pose", body.animation == &"death")
+	check("death plays 10 frames (stand, jump, fall, lie), not looping", f.get_frame_count(&"death") == 10 and not f.get_animation_loop(&"death"))
+	vis.set_move_state("idle")
+	player.respawn()
+	await process_frame
+	await process_frame
+	check("respawn: back to idle", body.animation == &"idle" and not vis.status_text().contains("DEAD"))
+	vis.rig = load("res://data/body_rigs/tiny_soldier.tres")
 	vis.set_facing(Vector2.DOWN)
-	check("side-only set: facing down still plays idle_side", body.animation == &"idle_side")
+	check("side-only set (tiny soldier): player ships it as a rig, facing down plays idle_side", vis.is_directional() and not body.sprite_frames.has_animation(&"idle_front") and body.animation == &"idle_side")
 	vis.rig = load("res://data/body_rigs/blocky.tres")           # the rest of this test is about the full directional set
 	check("blocky rig: directional with a front view", vis.is_directional() and body.sprite_frames.has_animation(&"run_front"))
 	check("body position/scale come from the rig (feet on the origin)", body.scale == vis.rig.body_scale and body.position == vis.rig.body_position)

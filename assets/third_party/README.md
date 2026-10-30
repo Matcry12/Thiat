@@ -10,5 +10,6 @@ elsewhere, so a pack can be updated by replacing its folder.
 | `tiny_rpg/` | Tiny RPG Character Asset Pack (Soldier + Orc, free) | zerie | Game use + edits OK; **no redistribution, no AI training**. See `tiny_rpg/LICENSE-NOTE.md` | itch.io, zerie, "Tiny RPG Character Asset Pack" |
 | `serene_village/` | Serene Village - revamped 16x16 (v1.9, free) | LimeZu | **CC BY 4.0**: commercial use + edits OK, **credit required** ("Serene Village tileset by LimeZu"). See `serene_village/LICENSE-NOTE.md` | https://limezu.itch.io/serenevillagerevamped |
 | `pixel_plains/` | Pixel Plains v1.0 (free) | SnowHex (Jose Javier) | Commercial use + edits OK, **credit required**; **no resale / redistribution**, no crypto/NFT. See `pixel_plains/ReadMe.txt` | https://snowhex.itch.io/pixel-plains |
+| `pixel_plains/character/` | Pixel Plains — main character (cut from the store-preview GIF by `tools/asset_viewer/pixel_plains_char.py`: 6 strips + `anims.json`) | SnowHex | The user owns the Pixel Plains pack; credit SnowHex. Check the pack's own license file for terms | https://img.itch.zone/aW1hZ2UvMjgwMTY1Ni8xNzIxNTI0MS5naWY=/original/q74igv.gif |
 
 Ground tiles, tagged: [docs/wiki/ground-tiles.md](../../docs/wiki/ground-tiles.md).

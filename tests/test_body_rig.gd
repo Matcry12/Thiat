@@ -46,7 +46,7 @@ func _init():
 	var loadout: Loadout = player.get_node("Loadout")
 	var blocky: BodyRig = load("res://data/body_rigs/blocky.tres")
 	var soft: BodyRig = load("res://data/body_rigs/soft_body.tres")
-	check("player starts with the tiny soldier rig", vis.rig.display_name.begins_with("tiny soldier"))
+	check("player starts with the pixel plains rig", vis.rig.display_name.begins_with("pixel plains"))
 	vis.rig = blocky
 	check("blocky rig loads and shrinks the weapon picture", vis.rig == blocky and blocky.visual_scale < 1.0)
 	check("WeaponVisual (gameplay pivot) is NOT moved by the rig", wv.position == Vector2(0, -9) and hands.position == Vector2(0, -9))

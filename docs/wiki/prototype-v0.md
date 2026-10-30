@@ -379,6 +379,7 @@ characters (Gemini + hand-cleaned); kept the egg placeholder, 32x30, plus 2 hand
 **UI slice — Island Workshop in the game (2026-10-26, [0045](../decision/0045-ui-port-craft-book.md)).**
    *Does the approved web style survive the port?* Baked pixel fonts + 111 parts from the mockups, title / pause / settings, HUD, bag + crafting book, tooltip, F3 dock (leather).
    Log UI: built by Sonnet 5.5 agents (4 in parallel) · fresh Opus UI reviewer: in-game looks 4-6 at first (fat outlines, text overflowing baked buttons, empty plank, flat-baked bar fills) → 7-8 after 3-4 rounds · Opus code judge: 4 bugs (null skin slot error spam, lit Craft button lying, menu outline one state behind, fonts ignoring art_scale) + 3x duplicated art helpers + 68 dead skin fields — all fixed, re-judged commit-ready · user: chose the Craft button over click-to-cursor; asked for roomy F3 + clean font; pending playtest.
+   Log PP (Pixel Plains player look): cut from the SnowHex store GIF by Opus ($0 script) · swap built by Sonnet 5.5 agents, then trimmed inline · Opus judge: 1 bug (roll cut short on a front/side switch; roll later dropped) · user: only idle / run / death (the jump-and-sleep strip) wanted, speeds tuned to 1x, process too slow for a swap; playtested "looks fine".
 
 ## 6. Done when
 
