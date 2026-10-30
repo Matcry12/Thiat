@@ -33,3 +33,4 @@
 - 2026-10-30: user asked to "do a simple anims first to see" → I sent the other session to wire idle+run into the player; they only wanted to watch the animation → "see / look" = show a GIF or preview, no game wiring.
 - 2026-10-30: mapped every strip in a pack (roll, hurt, side) when the user only wanted idle/run/death → use only the animations the user names; ask which ones are used before wiring extras
 - 2026-10-30: a simple sprite swap took 15+ min (Sonnet agent + full suite + judge + shot tool) → for small asset/visual swaps do it inline, run only the touched tests, skip the judge unless logic changed
+- 2026-10-30: palette swap recoloured the top row of tree ground shadows (shadow green = a leaf green; fixed 7-row guard was too short) → when a swap colour is shared by two parts (leaf vs shadow, dirt vs grass shadow), split them by position/region, never by a fixed row count; zoom 16x on each piece size vs the original.
