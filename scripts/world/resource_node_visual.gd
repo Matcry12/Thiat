@@ -26,7 +26,7 @@ func show_remains(d: ResourceNodeData) -> void:
 	body_alpha(1.0)
 
 func _set_region(body: Sprite2D, r: Rect2, foot: Vector2) -> void:
-	body.texture = _d.texture
+	body.texture = _d.body_texture()
 	body.region_enabled = true
 	body.region_rect = r
 	body.scale = Vector2.ONE * _d.pixel_scale

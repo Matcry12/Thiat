@@ -104,6 +104,13 @@ for r, v in enumerate(OV):
     for idx in OAKS:
         b = rc.TREE_BOXES[idx]; sheet.alpha_composite(oak(idx, v), (b[0], r * H + b[1]))
 sheet.save(f"{OUT}/oaks.png")
+# same sheet without the ground shadow under the trunk (ResourceNodeData.ground_shadow off picks this one)
+ns = np.array(sheet)
+for r, v in enumerate(OV):
+    for idx in OAKS:
+        b = rc.TREE_BOXES[idx]; _, sh, _ = tree_parts(box(TREES, b))
+        ys, xs = np.where(sh); ns[r * H + b[1] + ys, b[0] + xs, 3] = 0
+Image.fromarray(ns).save(f"{OUT}/oaks_noshadow.png")
 for r, v in enumerate(OV):
     for idx, (size, age) in OAKS.items():
         b = rc.TREE_BOXES[idx]; ax, ay, tw = trunk(box(TREES, b), 0)

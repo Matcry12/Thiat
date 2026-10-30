@@ -4,6 +4,7 @@
 [ext_resource type="Resource" path="res://data/items/wood.tres" id="2"]
 [ext_resource type="Texture2D" path="res://assets/map/pixel_plains/oaks.png" id="3"]
 [ext_resource type="Texture2D" path="res://assets/map/pixel_plains/hedges.png" id="4"]
+[ext_resource type="Texture2D" path="res://assets/map/pixel_plains/oaks_noshadow.png" id="5"]
 
 [resource]
 script = ExtResource("1")
@@ -21,6 +22,8 @@ regions = Array[Rect2]([Rect2(99, 0, 42, 43), Rect2(243, 0, 42, 43), Rect2(99, 6
 anchors = PackedVector2Array(21, 40, 21, 40, 21, 40, 21, 40)
 remains_region = Rect2(15, 93, 18, 11)
 remains_texture = ExtResource("4")
+ground_shadow = false
+texture_no_shadow = ExtResource("5")
 pixel_scale = 2
 fade_when_behind = true
 color = Color(0.25, 0.55, 0.25, 1)

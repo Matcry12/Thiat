@@ -36,6 +36,7 @@ for var, season in SEASON.items():
 [ext_resource type="Resource" path="res://data/items/wood.tres" id="2"]
 [ext_resource type="Texture2D" path="res://assets/map/pixel_plains/oaks.png" id="3"]
 [ext_resource type="Texture2D" path="res://assets/map/pixel_plains/{STUMP["file"]}" id="4"]
+[ext_resource type="Texture2D" path="res://assets/map/pixel_plains/oaks_noshadow.png" id="5"]
 
 [resource]
 script = ExtResource("1")
@@ -53,6 +54,8 @@ regions = Array[Rect2]([{", ".join(rect(s["region"]) for s in sp)}])
 anchors = PackedVector2Array({", ".join(vec(s["anchor"]) for s in sp)})
 remains_region = {rect(STUMP["region"])}
 remains_texture = ExtResource("4")
+ground_shadow = false
+texture_no_shadow = ExtResource("5")
 pixel_scale = {PX}
 fade_when_behind = true
 color = Color(0.25, 0.55, 0.25, 1)
@@ -102,7 +105,8 @@ propset("hedges", "hedges.png", rows)
 
 # ---- per-biome switches (1 = the pack has art for it there)
 def shown(kind): return [1 if M["by_biome"][b].get(kind, 0) > 0 else 0 for b in BIOMES]
-sw = {"show_trees": shown("oak"), "show_flowers": shown("flower"), "show_tufts": shown("tuft"), "show_hedges": shown("hedge"), "show_other": [0] * len(BIOMES)}
+# show_hedges all 0 since v4: loose hedge caps read as stray squares (user)
+sw = {"show_trees": shown("oak"), "show_flowers": shown("flower"), "show_tufts": shown("tuft"), "show_hedges": [0] * len(BIOMES), "show_other": [0] * len(BIOMES)}
 SEASONS = ["green", "yellow", "orange", "red", "teal", "dead", "snow"]   # BiomeData.SEASONS
 def fallback(b):   # the first oak colour the manifest made for this biome (-1 = none)
     for s in S:
@@ -113,7 +117,7 @@ p = os.path.join(ROOT, "data/maps/ground_pixel_plains.tres")
 t = open(p).read()
 t = re.sub(r"^(show_\w+|tree_fallback_season) = .*\n", "", t, flags=re.M)
 t = re.sub(r"^(hide_trees|hide_veg) = .*\n", "", t, flags=re.M)
-t = t.replace("dark_dirt_gap = 1\n", "dark_dirt_gap = 1\n" + "".join("%s = PackedInt32Array(%s)\n" % (k, ", ".join(map(str, v))) for k, v in sw.items()))
+t = re.sub(r"^(dark_dirt_gap = \d+\n)", lambda m: m.group(1) + "".join("%s = PackedInt32Array(%s)\n" % (k, ", ".join(map(str, v))) for k, v in sw.items()), t, count=1, flags=re.M)
 open(p, "w").write(t)
 
 # ---- grass.tres

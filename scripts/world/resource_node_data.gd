@@ -47,6 +47,10 @@ extends Resource
 @export var remains_region := Rect2()
 ## Sheet of `remains_region` when it is not `texture` (Pixel Plains: the stump is on another sheet). Null = `texture`.
 @export var remains_texture: Texture2D
+## The baked ground shadow under the trunk (Pixel Plains oaks): on = `texture`, off = `texture_no_shadow` (same layout, shadow pixels clear).
+@export var ground_shadow := false
+## `texture` without the ground shadow. Null = always `texture`.
+@export var texture_no_shadow: Texture2D
 @export var pixel_scale := 2
 ## Body alpha while the player stands hidden behind the picture.
 @export var fade_when_behind := false
@@ -76,3 +80,8 @@ func all_regions() -> Array[Rect2]:
 func look_for(area: int, pick: int) -> int:
 	var list: PackedInt32Array = [looks_forest, looks_rocky, looks_boss][clampi(area, 0, 2)]
 	return -1 if list.is_empty() else list[pick % list.size()]
+
+
+## The sheet the body draws from (ground shadow switch).
+func body_texture() -> Texture2D:
+	return texture if ground_shadow or texture_no_shadow == null else texture_no_shadow

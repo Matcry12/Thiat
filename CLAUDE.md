@@ -174,6 +174,7 @@ resolved.
 - Map / world work: [docs/wiki/world-gen-plan.md](docs/wiki/world-gen-plan.md) and
   [docs/wiki/vegetation-rules.md](docs/wiki/vegetation-rules.md). Any new look gets a $0 preview picture first
   (`tools/asset_viewer/*.py`) that the user approves before it is built.
+  Map art lives in `assets/map/pixel_plains/`. Map art changed → update `assets/map/pixel_plains/README.md` in the same change.
 
 **How we work** ([0007](docs/decision/0007-working-agreement.md))
 - Vertical slices, one question each, playtested by the user before the next slice starts.
