@@ -24,6 +24,7 @@ var rocks := -1
 var veg_g: Dictionary
 var rocks_g: Dictionary
 var stumps := {}            ## model number -> Array of set indices
+var pp_sets := {}           ## Pixel Plains mode: kind (flowers tufts hedges) -> set index of pp_<kind> (data/maps/prop_pp_*.tres; groups "<role>@<biome label>")
 var occ: PackedByteArray
 var stamp := PackedByteArray()
 var dn: FastNoiseLite
@@ -59,6 +60,8 @@ func run(result: MapGen.Result, style: MapStyle, params: MapGen.Params) -> void:
 			&"rocks":
 				rocks = i
 				rocks_g = sets[i].groups
+			&"pp_flowers", &"pp_tufts", &"pp_hedges":
+				pp_sets[StringName(String(sets[i].id).substr(3))] = i
 			_:
 				var parts := String(sets[i].id).split("_")   # stump_oak_s3
 				if parts.size() == 3 and parts[0] == "stump":
@@ -86,6 +89,18 @@ func run(result: MapGen.Result, style: MapStyle, params: MapGen.Params) -> void:
 
 
 # ------------------------------------------------------------------ helpers ---
+
+## Pixel Plains switch (PixelPlainsGround.show_*): is this kind of plant drawn in biome `b`? Always true with the old art.
+func _on(kind: StringName, b: int) -> bool:
+	return p.pp == null or p.pp.shows(kind, b)
+
+
+## A flower / tuft / bush: in Pixel Plains mode from the pack's own set (group "<role>@<biome label>", no group = nothing), else from the old sheet.
+func _addk(kind: StringName, bd: BiomeData, name: StringName, x: float, y: float) -> void:
+	if p.pp == null:
+		_add(veg, veg_g, name, x, y)
+	elif pp_sets.has(kind):
+		_add(pp_sets[kind], sets[pp_sets[kind]].groups, StringName("%s@%s" % [name, bd.label]), x, y)
 
 func _stream(k: int) -> RandomNumberGenerator:
 	var r := RandomNumberGenerator.new()
@@ -183,7 +198,7 @@ func _wpick(w: Array) -> int:
 func _rock_pieces() -> void:
 	for pc in res.rock_pieces:
 		var ci := _cell(pc.x, pc.y)
-		if not _free_any(ci) or res.veg_clear[ci] == 1 or _trunk_within(pc.x, pc.y, 1.5):
+		if not _free_any(ci) or not _on(&"other", res.biome[ci]) or res.veg_clear[ci] == 1 or _trunk_within(pc.x, pc.y, 1.5):
 			continue
 		occ[ci] = 2
 		_add(rocks, rocks_g, ROCK_PIECE[int(pc.z)], pc.x, pc.y)
@@ -194,7 +209,7 @@ func _bushes() -> void:
 		rng = _stream(0 * 16 + b)   # one stream per pass and biome
 		var bd := res.biomes[b]
 		var w := [bd.bush_w_green, bd.bush_w_yellow, bd.bush_w_orange, bd.bush_w_red]
-		if bd.bush_per_block <= 0.0 or (not bd.bush_dead and _wpick(w) < 0):
+		if bd.bush_per_block <= 0.0 or (not bd.bush_dead and _wpick(w) < 0) or not _on(&"hedges", b):
 			continue
 		var gated := bd.bush_d_lo > 0.0 or bd.bush_d_hi < 1.0
 		for s in _spots(b, bd.bush_per_block):
@@ -218,7 +233,7 @@ func _bush(b: int, bd: BiomeData, w: Array, x: float, y: float) -> bool:
 		return false
 	var name: StringName = &"deadbush" if bd.bush_dead else BUSH[maxi(_wpick(w), 0)]
 	occ[ci] = 3
-	_add(veg, veg_g, name, x, y)
+	_addk(&"hedges", bd, name, x, y)
 	return true
 
 
@@ -227,7 +242,7 @@ func _flowers() -> void:
 		rng = _stream(1 * 16 + b)   # one stream per pass and biome
 		var bd := res.biomes[b]
 		var w := [bd.flower_w_orange, bd.flower_w_white, bd.flower_w_blue, bd.flower_w_yellow]
-		if bd.flower_per_block <= 0.0 or _wpick(w) < 0:
+		if bd.flower_per_block <= 0.0 or _wpick(w) < 0 or not _on(&"flowers", b):
 			continue
 		for s in _spots(b, bd.flower_per_block):
 			if bd.flower_in_clear and res.veg_clear[int(s.z)] == 0:
@@ -245,8 +260,8 @@ func _flowers() -> void:
 						break
 				if apart:
 					pts.append(q)
-					_add(veg, veg_g, FLOWER[row], q.x, q.y)
-			if rng.randf() < bd.flower_fox:   # a few foxgloves at the rim
+					_addk(&"flowers", bd, FLOWER[row], q.x, q.y)
+			if rng.randf() < bd.flower_fox and _on(&"other", b):   # a few foxgloves at the rim
 				for _k in rng.randi_range(2, 3):
 					var a := rng.randf() * TAU
 					var qx: float = s.x + cos(a) * bd.flower_spread
@@ -259,7 +274,7 @@ func _foxglove() -> void:
 	for b in res.biomes.size():
 		rng = _stream(2 * 16 + b)   # one stream per pass and biome
 		var bd := res.biomes[b]
-		if bd.fox_per_block <= 0.0:
+		if bd.fox_per_block <= 0.0 or not _on(&"other", b):
 			continue
 		for s in _spots(b, bd.fox_per_block):
 			for _k in rng.randi_range(mini(bd.fox_min, bd.fox_max), maxi(bd.fox_min, bd.fox_max)):
@@ -273,7 +288,7 @@ func _mushrooms() -> void:
 	for b in res.biomes.size():
 		rng = _stream(3 * 16 + b)   # one stream per pass and biome
 		var bd := res.biomes[b]
-		if bd.mush_tries <= 0.0:
+		if bd.mush_tries <= 0.0 or not _on(&"other", b):
 			continue
 		for s in _spots(b, bd.mush_tries):
 			for _k in rng.randi_range(mini(bd.mush_group_min, bd.mush_group_max), maxi(bd.mush_group_min, bd.mush_group_max)):
@@ -287,7 +302,7 @@ func _stumps() -> void:
 	for b in res.biomes.size():
 		rng = _stream(4 * 16 + b)   # one stream per pass and biome
 		var bd := res.biomes[b]
-		if bd.stump_per_block <= 0.0:
+		if bd.stump_per_block <= 0.0 or not _on(&"other", b):
 			continue
 		for s in _spots(b, bd.stump_per_block):
 			var ci := int(s.z)
@@ -312,7 +327,7 @@ func _reeds() -> void:
 	while i >= 0:
 		rng = streams[res.biome[i]]
 		var bd := res.biomes[res.biome[i]]
-		if bd.reed_per_shore > 0.0 and res.land[i] == 1 and res.area[i] != MapGen.Area.BOSS and rng.randf() < bd.reed_per_shore:
+		if bd.reed_per_shore > 0.0 and _on(&"other", res.biome[i]) and res.land[i] == 1 and res.area[i] != MapGen.Area.BOSS and rng.randf() < bd.reed_per_shore:
 			var name: StringName = &"reed_green" if rng.randf() * (bd.reed_w_green + bd.reed_w_brown) < bd.reed_w_green else &"reed_brown"
 			var x := i % cols
 			var y := i / cols
@@ -344,7 +359,7 @@ func _tufts() -> void:
 		rng = _stream(6 * 16 + b)   # one stream per pass and biome
 		var bd := res.biomes[b]
 		var w := [bd.tuft_w_green, bd.tuft_w_yellow, bd.tuft_w_brown, bd.fern_w_green, bd.fern_w_yellow, bd.fern_w_brown]
-		if bd.tuft_p <= 0.0 or _wpick(w) < 0:
+		if bd.tuft_p <= 0.0 or _wpick(w) < 0 or not _on(&"tufts", b):
 			continue
 		for s in _spots(b, bd.tuft_p * 2.0 * MapGen.TREE_BLOCK * MapGen.TREE_BLOCK):
 			var ci := int(s.z)
@@ -356,7 +371,7 @@ func _tufts() -> void:
 				continue
 			occ[ci] = 5
 			var cy := ci / cols
-			_add(veg, veg_g, TUFT[which], s.x, cy + 0.6 + 0.4 * (s.y - cy))
+			_addk(&"tufts", bd, TUFT[which], s.x, cy + 0.6 + 0.4 * (s.y - cy))
 
 
 func _near_trunk_or_rock(ci: int) -> bool:

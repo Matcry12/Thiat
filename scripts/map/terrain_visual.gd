@@ -9,11 +9,15 @@ extends Node2D
 const WATER_SHADER := preload("res://scripts/map/terrain_water.gdshader")
 const GROUND_SHADER := preload("res://scripts/map/terrain_ground.gdshader")
 const FOAM_SHADER := preload("res://scripts/map/terrain_foam.gdshader")
+const FLAT_WATER_SHADER := preload("res://scripts/map/terrain_water_flat.gdshader")   ## Pixel Plains water (0046): replaces WATER_SHADER
+const ANIM_SHADER := preload("res://scripts/map/terrain_anim.gdshader")               ## Pixel Plains animated foam: replaces FOAM_SHADER
 
 var _water: Sprite2D
 var _grounds: Node2D   ## parent of every chunk's ground sprite (drawn above the water)
 var _foams: Node2D     ## parent of every chunk's foam sprite (drawn above the ground)
 var _foam_material: ShaderMaterial   ## one for all foam sprites
+var _anim_material: ShaderMaterial   ## the same for Pixel Plains' animation masks
+var _flat_params := {}               ## PixelPlainsGround.shader_params(); empty = the old water + foam
 var _look := {}
 var _chunks := {}      ## key -> {ground: Sprite2D, foam: Sprite2D}
 
@@ -38,12 +42,33 @@ func _ready() -> void:
 	add_child(_foams)
 	_foam_material = ShaderMaterial.new()
 	_foam_material.shader = FOAM_SHADER
+	_anim_material = ShaderMaterial.new()
+	_anim_material.shader = ANIM_SHADER
 	visible = false
 
 
 ## The water under the whole map. water: its repeating picture; map_art_px: the map's size in art pixels; art_scale: screen px per art px.
-func begin_island(water: Image, map_art_px: Vector2, art_scale: float, shallow: Image = null, tile := 16.0) -> void:
+## flat: PixelPlainsGround.shader_params() = the Pixel Plains water (one flat colour + marks) and animated foam instead of the old shader water.
+func begin_island(water: Image, map_art_px: Vector2, art_scale: float, shallow: Image = null, tile := 16.0, flat := {}) -> void:
 	clear_chunks()
+	_flat_params = flat
+	if not flat.is_empty():
+		var one := Image.create_empty(1, 1, false, Image.FORMAT_RGBA8)
+		one.fill(Color.WHITE)
+		_water.texture = ImageTexture.create_from_image(one)
+		var fm := ShaderMaterial.new()
+		fm.shader = FLAT_WATER_SHADER
+		for k in flat:
+			fm.set_shader_parameter(k, flat[k])
+			_anim_material.set_shader_parameter(k, flat[k])
+		_water.material = fm
+		_set_water_rect(map_art_px, art_scale, tile)
+		visible = true
+		return
+	if _water.material.shader != WATER_SHADER:   # back from the Pixel Plains water
+		var wm0 := ShaderMaterial.new()
+		wm0.shader = WATER_SHADER
+		_water.material = wm0
 	_water.texture = ImageTexture.create_from_image(water)
 	var wm := _water.material as ShaderMaterial
 	if shallow == null:
@@ -52,9 +77,15 @@ func begin_island(water: Image, map_art_px: Vector2, art_scale: float, shallow: 
 		wm.set_shader_parameter("shallow_mask", ImageTexture.create_from_image(shallow))
 		wm.set_shader_parameter("map_cells", Vector2(shallow.get_width(), shallow.get_height()))
 		wm.set_shader_parameter("tile", tile)
-	_water.region_rect = Rect2(Vector2.ZERO, map_art_px)
-	_water.scale = Vector2.ONE * art_scale
+	_set_water_rect(map_art_px, art_scale, tile)
 	visible = true
+
+
+## The water reaches as far as the ground pictures: they start half a tile before the first cell, so the water starts there and is one tile bigger.
+func _set_water_rect(map_art_px: Vector2, art_scale: float, tile: float) -> void:
+	_water.position = Vector2(-tile * 0.5, -tile * 0.5) * art_scale
+	_water.region_rect = Rect2(Vector2.ZERO, map_art_px + Vector2(tile, tile))
+	_water.scale = Vector2.ONE * art_scale
 
 
 ## One chunk's ground and foam. images: GroundBaker.bake_region() result plus tint / shade maps that cover cells
@@ -85,7 +116,7 @@ func set_chunk(key: int, first_corner: Vector2i, images: Dictionary, art_scale: 
 	foam.texture = ImageTexture.create_from_image(images["foam"])
 	foam.position = pos
 	foam.scale = Vector2.ONE * art_scale
-	foam.material = _foam_material
+	foam.material = _anim_material if images.get("anim", false) else _foam_material
 	_foams.add_child(foam)
 	_chunks[key] = {"ground": ground, "foam": foam}
 	_apply_ground_look(gm)
@@ -133,10 +164,11 @@ func hide_island() -> void:
 ## foam_alpha, foam_pulse, foam_speed, shallow_lighten, shallow_color}.
 func set_look(look: Dictionary) -> void:
 	_look = look
-	for k in ["shimmer_speed", "shimmer_strength", "shimmer_scale", "shimmer_amount", "wave_strength", "drift_scale", "drift_speed", "shimmer_color", "shallow_lighten", "shallow_color"]:
-		(_water.material as ShaderMaterial).set_shader_parameter(k, look[k])
-	for k in ["foam_alpha", "foam_pulse", "foam_speed", "foam_color"]:
-		_foam_material.set_shader_parameter(k, look[k])
+	if _flat_params.is_empty():   # the Pixel Plains water has its own numbers (begin_island)
+		for k in ["shimmer_speed", "shimmer_strength", "shimmer_scale", "shimmer_amount", "wave_strength", "drift_scale", "drift_speed", "shimmer_color", "shallow_lighten", "shallow_color"]:
+			(_water.material as ShaderMaterial).set_shader_parameter(k, look[k])
+		for k in ["foam_alpha", "foam_pulse", "foam_speed", "foam_color"]:
+			_foam_material.set_shader_parameter(k, look[k])
 	for key in _chunks:
 		_apply_ground_look(((_chunks[key]["ground"] as Sprite2D).material) as ShaderMaterial)
 
@@ -146,3 +178,4 @@ func _apply_ground_look(m: ShaderMaterial) -> void:
 		return
 	for k in ["ground_brightness", "ground_saturation"]:
 		m.set_shader_parameter(k, _look[k])
+	m.set_shader_parameter("neutral", _look.get("ground_neutral", false))

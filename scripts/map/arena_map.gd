@@ -975,13 +975,31 @@ func status_text() -> String:
 	for b in result.biomes.size():
 		if not biome_pct.is_empty() and biome_pct[b] > 0:
 			shares.append("%s %d" % [result.biomes[b].label, biome_pct[b]])
-	return "zoom: %.2f (target %.2f)\nseed: %d  size: %dx%d cells (%dx%d px)\ndirt patches: %d  rocks: %d  deco: %d  bushes: %d\narea %s  land %d%%  nodes %d  dirt cells %d\nbiome %s  temperature %.2f  humidity %.2f  roughness %.2f  f %.2f\nwater: %s\nbiome %% of land: %s\ntrees by age: %s\ntrees by colour: %s\ndeco by kind: %s\nbuild %d ms (world data %d ms, first chunks %d ms)\n%s" % [
+	return "zoom: %.2f (target %.2f)\nseed: %d  size: %dx%d cells (%dx%d px)\ndirt patches: %d  rocks: %d  deco: %d  bushes: %d\narea %s  land %d%%  nodes %d  dirt cells %d\nbiome %s  temperature %.2f  humidity %.2f  roughness %.2f  f %.2f\nground: %s\nwater: %s\nbiome %% of land: %s\ntrees by age: %s\ntrees by colour: %s\ndeco by kind: %s\nbuild %d ms (world data %d ms, first chunks %d ms)\n%s" % [
 		_camera.zoom.x if _camera else 1.0, camera_zoom, current_seed, map_cols, map_rows, map_size().x, map_size().y,
 		result.patches.size(), result.obstacles.size(), result.deco.size(), result.border.size(),
 		["forest", "rocky", "boss"][ai] if ai >= 0 else "water", land_pct, node_count, result.dirt_cells.size(),
 		_biome_name(here), _climate_here(result.temp, here), _climate_here(result.humid, here), _climate_here(result.rough, here), _climate_here(result.f, here),
-		water_text, ", ".join(shares),
+		_ground_text(here), water_text, ", ".join(shares),
 		" ".join(MapGen.AGES.map(func(a): return "%s %d" % [a, tree_counts.get(a, 0)])), _counts_text(tree_colours), _counts_text(deco_counts), build_ms, gen_ms, bake_ms, _streamer.status_text() if _streamer else ""]
+
+
+var _pp_shares: Array[int] = []
+var _pp_shares_of: MapGen.Result
+
+func _ground_text(here_pos: Vector2) -> String:
+	if style == null or style.pixel_plains == null:
+		return "old tinted tiles"
+	if _pp_shares_of != result:   # counted once per map
+		_pp_shares = PixelPlainsBaker.shares(result, style.pixel_plains)
+		_pp_shares_of = result
+	var hi := _cell_i(here_pos)
+	var cell_text := "" if hi < 0 else "\n  here: " + PixelPlainsBaker.report(result, style.pixel_plains, hi % result.cols, hi / result.cols)
+	var shown := ""
+	if hi >= 0:   # which plants the pack art draws in the biome under the player (PixelPlainsGround.show_*)
+		var bi: int = result.biome[hi]
+		shown = "\n  plants here (biome %d): %s" % [bi, " ".join(["trees", "flowers", "tufts", "hedges", "other"].map(func(k): return "%s %s" % [k, "on" if style.pixel_plains.shows(StringName(k), bi) else "hidden"]))]
+	return "pixel plains, no tint (land: dirt %d%% light %d%% dark %d%% sand %d%% snow %d%%, before the dark-near-dirt rule)  all trees hidden %s  all plants hidden %s%s%s" % [_pp_shares[0], _pp_shares[1], _pp_shares[2], _pp_shares[3], _pp_shares[4], style.pixel_plains.hide_trees, style.pixel_plains.hide_veg, shown, cell_text]
 
 
 func _cell_i(pos: Vector2) -> int:   ## index into result.land / f / biome, -1 off the grid
@@ -1350,12 +1368,13 @@ func make_params() -> MapGen.Params:
 	p.calm_temp = calm_temp
 	p.calm_humid = calm_humid
 	p.calm_rough = calm_rough
-	p.trees_on = trees_on
 	p.legacy_tiles = map_cols * map_rows <= legacy_tiles_max_cells
 	p.band_lo = band_lo
 	p.band_hi = band_hi
 	p.fir_group_radius = fir_group_radius
-	p.veg_on = veg_on
+	p.pp = style.pixel_plains
+	p.trees_on = trees_on and not (p.pp != null and p.pp.hide_trees)
+	p.veg_on = veg_on and not (p.pp != null and p.pp.hide_veg)
 	p.tree_fade_lo = tree_fade_lo
 	p.tree_fade_hi = tree_fade_hi
 	p.veg_density_period = veg_density_period
@@ -1814,6 +1833,8 @@ func _setup_island_terrain() -> void:
 	for d in style.grounds:   # an edited GroundData (F3 / editor) clears the piece cache and re-bakes the ground
 		if d != null and not d.changed.is_connected(_on_ground_resource_changed):
 			d.changed.connect(_on_ground_resource_changed)
+	if style.pixel_plains != null and not style.pixel_plains.changed.is_connected(_on_pp_changed):
+		style.pixel_plains.changed.connect(_on_pp_changed)
 	for b in style.biomes:   # an edited BiomeData (F3): climate / ground / tree fields rebuild the map, look fields only re-tint
 		if not b.changed.is_connected(_changed):
 			b.changed.connect(_changed)
@@ -1828,7 +1849,8 @@ func _setup_island_terrain() -> void:
 			mask[at] = 255
 			at = mask.find(1, at + 1)
 		shallow_img = Image.create_from_data(result.cols, result.rows, false, Image.FORMAT_L8, mask)
-	_terrain.begin_island(GroundBaker.water_image(style, 4, result.seed), Vector2(result.cols + 1, result.rows + 1) * t, float(style.pixel_scale), shallow_img, t)
+	_terrain.begin_island(GroundBaker.water_image(style, 4, result.seed), Vector2(result.cols + 1, result.rows + 1) * t, float(style.pixel_scale), shallow_img, t,
+		style.pixel_plains.shader_params() if style.pixel_plains != null else {})
 	_apply_terrain_look()
 
 
@@ -1852,7 +1874,7 @@ func tint_look() -> Dictionary:
 	var tints: Array[Color] = []
 	for a in [[forest_bright, forest_warm], [rocky_bright, rocky_warm], [1.0, 0.0]]:   # boss: in its pixels, see _sync_boss_ground
 		tints.append(Color(a[0] * (1.0 + a[1]), a[0], a[0] * (1.0 - a[1])))
-	return {"tint": tints, "sat": [forest_sat, rocky_sat, 1.0], "shade_variation": shade_variation, "shade_scale": shade_scale}
+	return {"tint": tints, "sat": [forest_sat, rocky_sat, 1.0], "shade_variation": shade_variation, "shade_scale": shade_scale, "neutral": style != null and style.pixel_plains != null}
 
 
 ## Tint sliders: redo only the one-pixel-per-cell tint maps of the loaded chunks, not the ground pictures.
@@ -1866,7 +1888,7 @@ func _apply_terrain_look() -> void:
 	if _terrain == null:
 		return
 	_terrain.set_look({"shimmer_speed": shimmer_speed, "shimmer_strength": shimmer_strength, "shimmer_scale": shimmer_scale,
-		"shimmer_amount": shimmer_amount, "wave_strength": wave_strength, "ground_brightness": ground_brightness, "ground_saturation": ground_saturation, "drift_scale": drift_scale, "drift_speed": drift_speed,
+		"shimmer_amount": shimmer_amount, "wave_strength": wave_strength, "ground_brightness": ground_brightness, "ground_saturation": ground_saturation, "ground_neutral": style != null and style.pixel_plains != null, "drift_scale": drift_scale, "drift_speed": drift_speed,
 		"shimmer_color": Color(shimmer_r, shimmer_g, shimmer_b), "shallow_lighten": shallow_tint_amount, "shallow_color": Color(shallow_tint_r, shallow_tint_g, shallow_tint_b), "foam_color": Color(foam_r, foam_g, foam_b), "foam_alpha": foam_alpha, "foam_pulse": foam_pulse, "foam_speed": foam_speed})
 
 
@@ -1889,6 +1911,11 @@ func _on_biome_look() -> void:
 	_biome_overlay_for = null
 	_apply_biome_map()
 	_retint()
+
+
+func _on_pp_changed() -> void:   # Pixel Plains table / hide switch edited (F3): new cache, whole map again (trees and deco depend on it)
+	GroundBaker.clear_cache()
+	_changed()
 
 
 func _on_ground_resource_changed() -> void:
@@ -1986,6 +2013,8 @@ func debug_children() -> Array:
 				out.append({"name": "Ground " + String(gd.id), "object": gd})
 		for bd in style.biomes:   # climate point, ground, trees, rocks, deco, tint of every biome (0038)
 			out.append({"name": "Biome " + bd.label, "object": bd})
+	if style and style.pixel_plains != null:
+		out.append({"name": "Pixel Plains", "object": style.pixel_plains})
 	for k in ["tree", "rock", "copper_rock", "tree_oak_sapling", "tree_oak_young", "tree_oak_small", "tree_oak_mature", "tree_oak_old", "tree_fir_sapling", "tree_fir_young", "tree_fir_small", "tree_fir_mature", "tree_fir_old"]:
 		out.append({"name": "Node " + k.replace("_rock", ""), "object": load("res://data/resource_nodes/%s.tres" % k), "cat": "Items & Crafting"})
 	return out

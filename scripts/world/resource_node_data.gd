@@ -45,6 +45,8 @@ extends Resource
 @export var looks_boss: PackedInt32Array = PackedInt32Array()
 ## What stays after it breaks (a stump). Empty = nothing stays.
 @export var remains_region := Rect2()
+## Sheet of `remains_region` when it is not `texture` (Pixel Plains: the stump is on another sheet). Null = `texture`.
+@export var remains_texture: Texture2D
 @export var pixel_scale := 2
 ## Body alpha while the player stands hidden behind the picture.
 @export var fade_when_behind := false

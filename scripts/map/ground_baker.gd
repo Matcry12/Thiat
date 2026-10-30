@@ -231,6 +231,8 @@ static func _cut(img: Image, cx: int, cy: int, cut: int) -> void:
 
 ## Art pixels per tile (cell) of the island grounds.
 static func tile_of(style: MapStyle) -> int:
+	if style.pixel_plains != null:
+		return style.pixel_plains.tile_size
 	return style.grounds[MapGen.Ground.GRASS].tile_size
 
 
@@ -238,6 +240,7 @@ static func tile_of(style: MapStyle) -> int:
 static func clear_cache() -> void:
 	_layers.clear()
 	_discs.clear()
+	PixelPlainsBaker.clear_cache()
 
 
 static func _hash(x: int, y: int, s: int) -> int:
@@ -260,6 +263,8 @@ static func bake(res: MapGen.Result, style: MapStyle, look: Dictionary) -> Dicti
 ## so the piece needs the cells one step out (the ground array outside the map counts as water): neighbours join up pixel for pixel,
 ## and a piece baked alone equals the same pixels of the whole picture.
 static func bake_region(res: MapGen.Result, style: MapStyle, ci0: int, cj0: int, tiles_w: int, tiles_h: int) -> Dictionary:
+	if style.pixel_plains != null:   # the pack's own ground, see PixelPlainsBaker; the old path below stays for pixel_plains = null
+		return PixelPlainsBaker.bake_region(res, style.pixel_plains, ci0, cj0, tiles_w, tiles_h)
 	var cols := res.cols
 	var rows := res.rows
 	var by_ground: Array[Layer] = []
@@ -468,6 +473,10 @@ static func tint_image(res: MapGen.Result, look: Dictionary) -> Image:
 
 ## The same for the cells [cx, cx + w) x [cy, cy + h); a cell outside the map takes its nearest cell (a chunk's maps reach one cell out).
 static func tint_image_region(res: MapGen.Result, look: Dictionary, cx: int, cy: int, w: int, h: int) -> Image:
+	if look.get("neutral", false):   # Pixel Plains: the pack's pixels as they are (the shader skips the maps too)
+		var one := Image.create_empty(w, h, false, Image.FORMAT_RGBA8)
+		one.fill(Color8(128, 128, 128, 128))
+		return one
 	var tints: Array = look["tint"]
 	var sats: Array = look["sat"]
 	var biome_tint: Array[Color] = []   # per biome id: its own tint and saturation, looked up once
@@ -576,6 +585,10 @@ static func shade_image(res: MapGen.Result, look: Dictionary) -> Image:
 
 ## The same for the cells [cx, cx + w) x [cy, cy + h). The noise is a function of the cell, so a piece matches the whole map's pixels.
 static func shade_image_region(res: MapGen.Result, look: Dictionary, cx: int, cy: int, w: int, h: int) -> Image:
+	if look.get("neutral", false):
+		var one := Image.create_empty(w, h, false, Image.FORMAT_RGB8)
+		one.fill(Color8(128, 128, 128))
+		return one
 	var var_amount: float = look["shade_variation"]
 	var noise := FastNoiseLite.new()
 	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH

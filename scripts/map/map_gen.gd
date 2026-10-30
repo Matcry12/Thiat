@@ -154,6 +154,7 @@ class Params:
 	var dirt_patch_size := 2.5        ## biggest patch radius, cells
 	# Vegetation (0037 + 0038 step 4, rules in docs/wiki/vegetation-rules.md). What each biome grows is BiomeData (F3 "Biome <label>"); these are the shared numbers.
 	var trees_on := true              ## false = the old flat density trees everywhere
+	var pp: PixelPlainsGround = null  ## Pixel Plains ground: its per-biome show_* switches pick what grows (trees: treepp_* nodes only); null = the old art
 	var veg_on := true                ## false = no biome deco passes (flowers, tufts, bushes ... and the rock groups' small stones)
 	var band_lo := 0.45               ## border band between an open (Plains) and a wooded biome: below it no forest tries, above band_hi always
 	var band_hi := 0.65
@@ -216,6 +217,7 @@ class Result:
 	var shallow := PackedByteArray()         ## 1 on shallow water (rivers, lakes, the first ocean cells along the coast): walkable, nothing is placed on it. Empty on a flat map
 	var fresh := PackedByteArray()           ## 1 river, 2 lake (a subset of `shallow`)
 	var shore := PackedByteArray()           ## 1 on the dry land cells around a river / lake: their ground is BiomeData.shore_ground
+	var level_override := PackedByteArray()  ## Pixel Plains: a level per cell that replaces the level rules. Only tools/ground_case_scene.gd and tests set it (forced border cases)
 	var warp_x := PackedFloat32Array()       ## the domain warp (cells) per cell, shared by the continent, the climate and the water; freed when the water is done
 	var warp_y := PackedFloat32Array()
 	var coast_dist := PackedByteArray()      ## _water_dist of the dry land at biome time (1 = touches the ocean); freed when the water is done
@@ -1568,11 +1570,12 @@ static func veg_count(rng: RandomNumberGenerator, v: float) -> int:
 
 
 ## Aged tree nodes of the style: model * 100 + season * 10 + age index -> index into style.resource_nodes. Empty when the style has none.
-static func _tree_kinds(style: MapStyle) -> Dictionary:
+static func _tree_kinds(style: MapStyle, pp := false) -> Dictionary:
 	var out := {}
+	var prefix := "treepp" if pp else "tree"   # Pixel Plains oaks have their own nodes (data/resource_nodes/treepp_*)
 	for ki in style.resource_nodes.size():
 		var parts := String((style.resource_nodes[ki] as ResourceNodeData).id).split("_")   # tree_oak_old / tree_oak_yellow_old
-		if parts.size() < 3 or parts.size() > 4 or parts[0] != "tree":
+		if parts.size() < 3 or parts.size() > 4 or parts[0] != prefix:
 			continue
 		var model := BiomeData.MODELS.find(StringName(parts[1]))
 		var age := AGES.find(StringName(parts[parts.size() - 1]))
@@ -1691,7 +1694,7 @@ static func _place_trees(res: Result, style: MapStyle, p: Params, kinds: Diction
 	for b in nb:
 		var bd := res.biomes[b]
 		var rows := bd.tree_rows()
-		if bd.tree_tries <= 0.0 or rows.is_empty():
+		if bd.tree_tries <= 0.0 or rows.is_empty() or (p.pp != null and not p.pp.shows(&"trees", b)):
 			continue
 		var total := 0.0
 		for r in rows:
@@ -1732,7 +1735,10 @@ static func _place_trees(res: Result, style: MapStyle, p: Params, kinds: Diction
 					var sci := sc.y * cols + sc.x if sc.x >= 0 and sc.y >= 0 and sc.x < cols and sc.y < p.rows else -1
 					var sd := d if sci < 0 else veg_density(res, bd, dn, sp.x, sp.y, sci)
 					var age := _tree_age(p, bd, sd, rng)
-					_put_tree(res, style, p, rng, sc, b, _tree_node(kinds, int(row.x), int(row.y), age), bd.tree_ring, home)
+					var node := _tree_node(kinds, int(row.x), int(row.y), age)
+					if node < 0 and p.pp != null and int(row.x) == 1 and b < p.pp.tree_fallback_season.size() and p.pp.tree_fallback_season[b] >= 0:
+						node = _tree_node(kinds, 1, p.pp.tree_fallback_season[b], age)   # Pixel Plains has no dead / teal oak: the biome's own colour stands there
+					_put_tree(res, style, p, rng, sc, b, node, bd.tree_ring, home)
 
 
 ## Trees, rocks and copper. Boss land: each kind at its `density_boss`. Elsewhere (0038 step 4) per biome: lone rocks and copper by
@@ -1750,11 +1756,13 @@ static func _place_nodes(res: Result, style: MapStyle, p: Params) -> void:
 		widest = maxf(widest, k.radius)
 	res.obstacle_bucket = 2.0 * widest + spacing
 	t = _lap(res, "nodes.cells", t)
-	var tree_kinds := _tree_kinds(style) if p.trees_on else {}   # aged trees fill the land (below); the old tree then keeps to the boss land
+	var tree_kinds := _tree_kinds(style, p.pp != null) if p.trees_on else {}   # aged trees fill the land (below); the old tree then keeps to the boss land
 	var ki_rock := -1
 	var ki_copper := -1
 	for ki in style.resource_nodes.size():
 		var kind: ResourceNodeData = style.resource_nodes[ki]
+		if String(kind.id).begins_with("tree") and (String(kind.id).begins_with("treepp") != (p.pp != null)):
+			continue   # the old trees in Pixel Plains mode (boss land stays treeless) and the Pixel Plains oaks in the old look: not scattered
 		if kind.id == &"rock":
 			ki_rock = ki
 		elif kind.id == &"copper_rock":

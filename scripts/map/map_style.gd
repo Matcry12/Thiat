@@ -29,6 +29,9 @@ extends Resource
 ## Island ground (decision 0033), indexed by MapGen.Ground: [water (null), dirt, cobble, grass, boss grass].
 ## Each is a GroundData (fills + edge frame). Empty = the island falls back to the old two-layer ground.
 @export var grounds: Array[GroundData] = []
+## Pixel Plains ground (SnowHex pack, data/maps/ground_pixel_plains.tres). Set = the island ground is drawn from the pack's own quarters with no
+## tint, and the things that clash (trees, vegetation, dirt stamps) are hidden; null = the old ground look above.
+@export var pixel_plains: PixelPlainsGround
 ## The climate biomes, in the order of MapGen.Biome (decision 0038, data/biomes/*.tres). Empty = no island.
 @export var biomes: Array[BiomeData] = []
 ## Water art for the shader layer: tiles of `water_texture` (water_fills) lay under the shimmer.

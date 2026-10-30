@@ -24,6 +24,7 @@ func _placements(m: ArenaMap) -> Array:
 func _init() -> void:
 	var arena = load("res://scenes/arena.tscn").instantiate()
 	arena.get_node("ArenaMap").map_seed = 11
+	arena.get_node("ArenaMap").style.pixel_plains = null   # these tests count trees and deco: the old ground look keeps them (Pixel Plains hides both)
 	root.add_child(arena)
 	arena.get_node("Boss").passive = true
 	await process_frame

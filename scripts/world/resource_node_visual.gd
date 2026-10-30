@@ -21,6 +21,8 @@ func show_variant(d: ResourceNodeData, v: int) -> void:
 
 func show_remains(d: ResourceNodeData) -> void:
 	_set_region(get_node("Body"), d.remains_region, Vector2(d.remains_region.size.x * 0.5, d.remains_region.size.y))
+	if d.remains_texture != null:
+		get_node("Body").texture = d.remains_texture
 	body_alpha(1.0)
 
 func _set_region(body: Sprite2D, r: Rect2, foot: Vector2) -> void:

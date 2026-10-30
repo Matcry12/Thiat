@@ -13,9 +13,13 @@ uniform vec2 map_cells = vec2(1.0);              // size of tint_map / shade_map
 uniform vec2 map_margin = vec2(0.0);             // how many cells before the picture's first cell the maps start
 uniform float ground_brightness = 1.0;   // master: every ground, after the area tint
 uniform float ground_saturation = 1.0;
+uniform bool neutral = false;                    // Pixel Plains: the pack's pixels unchanged, no tint / shade / brightness / saturation
 
 void fragment() {
 	vec4 c = texture(TEXTURE, UV);
+	if (neutral) {
+		COLOR = c;
+	} else {
 	vec2 cell_uv = clamp(((UV * tex_size - vec2(half_tile)) / tile + map_margin) / map_cells, 0.0, 1.0);
 	vec4 t = texture(tint_map, cell_uv);
 	float shade = texture(shade_map, cell_uv).r * 2.0;
@@ -23,4 +27,5 @@ void fragment() {
 	vec3 rgb = mix(vec3(lum), c.rgb, t.a * 2.0) * t.rgb * 2.0 * shade;
 	float l2 = dot(rgb, vec3(0.299, 0.587, 0.114));
 	COLOR = vec4(mix(vec3(l2), rgb, ground_saturation) * ground_brightness, c.a);
+	}
 }

@@ -1,0 +1,4946 @@
+{
+ "version": 1,
+ "note": "region = x,y,w,h in `file`. anchor = foot point (x,y) relative to the region top-left; collision_radius px (trunk estimate, 0 = no collision). Pack pixels only, recolour only.",
+ "sprites": [
+  {
+   "id": "oak_s_green_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    61,
+    65,
+    22,
+    42
+   ],
+   "anchor": [
+    11.0,
+    39
+   ],
+   "collision_radius": 3,
+   "size": "s",
+   "age": "sapling",
+   "tone": "dark",
+   "src_box": 10
+  },
+  {
+   "id": "oak_s_green_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    205,
+    65,
+    22,
+    42
+   ],
+   "anchor": [
+    11.0,
+    39
+   ],
+   "collision_radius": 3,
+   "size": "s",
+   "age": "sapling",
+   "tone": "light",
+   "src_box": 11
+  },
+  {
+   "id": "oak_m_green_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    57,
+    0,
+    30,
+    43
+   ],
+   "anchor": [
+    15.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "m",
+   "age": "young",
+   "tone": "dark",
+   "src_box": 0
+  },
+  {
+   "id": "oak_m_green_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    201,
+    0,
+    30,
+    43
+   ],
+   "anchor": [
+    15.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "m",
+   "age": "young",
+   "tone": "light",
+   "src_box": 2
+  },
+  {
+   "id": "oak_l_green_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    99,
+    0,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l",
+   "age": "mature",
+   "tone": "dark",
+   "src_box": 1
+  },
+  {
+   "id": "oak_l_green_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    243,
+    0,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l",
+   "age": "mature",
+   "tone": "light",
+   "src_box": 3
+  },
+  {
+   "id": "oak_l_patch_green_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    99,
+    64,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l_patch",
+   "age": "mature",
+   "tone": "dark",
+   "src_box": 8
+  },
+  {
+   "id": "oak_l_patch_green_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    243,
+    64,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l_patch",
+   "age": "mature",
+   "tone": "light",
+   "src_box": 9
+  },
+  {
+   "id": "oak_tall_green_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    13,
+    53,
+    22,
+    54
+   ],
+   "anchor": [
+    11.0,
+    51
+   ],
+   "collision_radius": 3,
+   "size": "tall",
+   "age": "old",
+   "tone": "dark",
+   "src_box": 6
+  },
+  {
+   "id": "oak_tall_green_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    157,
+    53,
+    22,
+    54
+   ],
+   "anchor": [
+    11.0,
+    51
+   ],
+   "collision_radius": 3,
+   "size": "tall",
+   "age": "old",
+   "tone": "light",
+   "src_box": 7
+  },
+  {
+   "id": "oak_s_autumn_orange_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    61,
+    173,
+    22,
+    42
+   ],
+   "anchor": [
+    11.0,
+    39
+   ],
+   "collision_radius": 3,
+   "size": "s",
+   "age": "sapling",
+   "tone": "dark",
+   "src_box": 10
+  },
+  {
+   "id": "oak_s_autumn_orange_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    205,
+    173,
+    22,
+    42
+   ],
+   "anchor": [
+    11.0,
+    39
+   ],
+   "collision_radius": 3,
+   "size": "s",
+   "age": "sapling",
+   "tone": "light",
+   "src_box": 11
+  },
+  {
+   "id": "oak_m_autumn_orange_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    57,
+    108,
+    30,
+    43
+   ],
+   "anchor": [
+    15.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "m",
+   "age": "young",
+   "tone": "dark",
+   "src_box": 0
+  },
+  {
+   "id": "oak_m_autumn_orange_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    201,
+    108,
+    30,
+    43
+   ],
+   "anchor": [
+    15.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "m",
+   "age": "young",
+   "tone": "light",
+   "src_box": 2
+  },
+  {
+   "id": "oak_l_autumn_orange_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    99,
+    108,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l",
+   "age": "mature",
+   "tone": "dark",
+   "src_box": 1
+  },
+  {
+   "id": "oak_l_autumn_orange_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    243,
+    108,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l",
+   "age": "mature",
+   "tone": "light",
+   "src_box": 3
+  },
+  {
+   "id": "oak_l_patch_autumn_orange_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    99,
+    172,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l_patch",
+   "age": "mature",
+   "tone": "dark",
+   "src_box": 8
+  },
+  {
+   "id": "oak_l_patch_autumn_orange_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    243,
+    172,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l_patch",
+   "age": "mature",
+   "tone": "light",
+   "src_box": 9
+  },
+  {
+   "id": "oak_tall_autumn_orange_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    13,
+    161,
+    22,
+    54
+   ],
+   "anchor": [
+    11.0,
+    51
+   ],
+   "collision_radius": 3,
+   "size": "tall",
+   "age": "old",
+   "tone": "dark",
+   "src_box": 6
+  },
+  {
+   "id": "oak_tall_autumn_orange_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    157,
+    161,
+    22,
+    54
+   ],
+   "anchor": [
+    11.0,
+    51
+   ],
+   "collision_radius": 3,
+   "size": "tall",
+   "age": "old",
+   "tone": "light",
+   "src_box": 7
+  },
+  {
+   "id": "oak_s_yellow_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    61,
+    281,
+    22,
+    42
+   ],
+   "anchor": [
+    11.0,
+    39
+   ],
+   "collision_radius": 3,
+   "size": "s",
+   "age": "sapling",
+   "tone": "dark",
+   "src_box": 10
+  },
+  {
+   "id": "oak_s_yellow_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    205,
+    281,
+    22,
+    42
+   ],
+   "anchor": [
+    11.0,
+    39
+   ],
+   "collision_radius": 3,
+   "size": "s",
+   "age": "sapling",
+   "tone": "light",
+   "src_box": 11
+  },
+  {
+   "id": "oak_m_yellow_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    57,
+    216,
+    30,
+    43
+   ],
+   "anchor": [
+    15.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "m",
+   "age": "young",
+   "tone": "dark",
+   "src_box": 0
+  },
+  {
+   "id": "oak_m_yellow_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    201,
+    216,
+    30,
+    43
+   ],
+   "anchor": [
+    15.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "m",
+   "age": "young",
+   "tone": "light",
+   "src_box": 2
+  },
+  {
+   "id": "oak_l_yellow_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    99,
+    216,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l",
+   "age": "mature",
+   "tone": "dark",
+   "src_box": 1
+  },
+  {
+   "id": "oak_l_yellow_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    243,
+    216,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l",
+   "age": "mature",
+   "tone": "light",
+   "src_box": 3
+  },
+  {
+   "id": "oak_l_patch_yellow_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    99,
+    280,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l_patch",
+   "age": "mature",
+   "tone": "dark",
+   "src_box": 8
+  },
+  {
+   "id": "oak_l_patch_yellow_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    243,
+    280,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l_patch",
+   "age": "mature",
+   "tone": "light",
+   "src_box": 9
+  },
+  {
+   "id": "oak_tall_yellow_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    13,
+    269,
+    22,
+    54
+   ],
+   "anchor": [
+    11.0,
+    51
+   ],
+   "collision_radius": 3,
+   "size": "tall",
+   "age": "old",
+   "tone": "dark",
+   "src_box": 6
+  },
+  {
+   "id": "oak_tall_yellow_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    157,
+    269,
+    22,
+    54
+   ],
+   "anchor": [
+    11.0,
+    51
+   ],
+   "collision_radius": 3,
+   "size": "tall",
+   "age": "old",
+   "tone": "light",
+   "src_box": 7
+  },
+  {
+   "id": "oak_s_red_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    61,
+    389,
+    22,
+    42
+   ],
+   "anchor": [
+    11.0,
+    39
+   ],
+   "collision_radius": 3,
+   "size": "s",
+   "age": "sapling",
+   "tone": "dark",
+   "src_box": 10
+  },
+  {
+   "id": "oak_s_red_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    205,
+    389,
+    22,
+    42
+   ],
+   "anchor": [
+    11.0,
+    39
+   ],
+   "collision_radius": 3,
+   "size": "s",
+   "age": "sapling",
+   "tone": "light",
+   "src_box": 11
+  },
+  {
+   "id": "oak_m_red_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    57,
+    324,
+    30,
+    43
+   ],
+   "anchor": [
+    15.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "m",
+   "age": "young",
+   "tone": "dark",
+   "src_box": 0
+  },
+  {
+   "id": "oak_m_red_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    201,
+    324,
+    30,
+    43
+   ],
+   "anchor": [
+    15.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "m",
+   "age": "young",
+   "tone": "light",
+   "src_box": 2
+  },
+  {
+   "id": "oak_l_red_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    99,
+    324,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l",
+   "age": "mature",
+   "tone": "dark",
+   "src_box": 1
+  },
+  {
+   "id": "oak_l_red_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    243,
+    324,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l",
+   "age": "mature",
+   "tone": "light",
+   "src_box": 3
+  },
+  {
+   "id": "oak_l_patch_red_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    99,
+    388,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l_patch",
+   "age": "mature",
+   "tone": "dark",
+   "src_box": 8
+  },
+  {
+   "id": "oak_l_patch_red_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    243,
+    388,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l_patch",
+   "age": "mature",
+   "tone": "light",
+   "src_box": 9
+  },
+  {
+   "id": "oak_tall_red_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    13,
+    377,
+    22,
+    54
+   ],
+   "anchor": [
+    11.0,
+    51
+   ],
+   "collision_radius": 3,
+   "size": "tall",
+   "age": "old",
+   "tone": "dark",
+   "src_box": 6
+  },
+  {
+   "id": "oak_tall_red_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    157,
+    377,
+    22,
+    54
+   ],
+   "anchor": [
+    11.0,
+    51
+   ],
+   "collision_radius": 3,
+   "size": "tall",
+   "age": "old",
+   "tone": "light",
+   "src_box": 7
+  },
+  {
+   "id": "oak_s_snow_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "snow",
+   "biome": [
+    "snowy"
+   ],
+   "region": [
+    61,
+    497,
+    22,
+    42
+   ],
+   "anchor": [
+    11.0,
+    39
+   ],
+   "collision_radius": 3,
+   "size": "s",
+   "age": "sapling",
+   "tone": "dark",
+   "src_box": 10
+  },
+  {
+   "id": "oak_s_snow_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "snow",
+   "biome": [
+    "snowy"
+   ],
+   "region": [
+    205,
+    497,
+    22,
+    42
+   ],
+   "anchor": [
+    11.0,
+    39
+   ],
+   "collision_radius": 3,
+   "size": "s",
+   "age": "sapling",
+   "tone": "light",
+   "src_box": 11
+  },
+  {
+   "id": "oak_m_snow_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "snow",
+   "biome": [
+    "snowy"
+   ],
+   "region": [
+    57,
+    432,
+    30,
+    43
+   ],
+   "anchor": [
+    15.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "m",
+   "age": "young",
+   "tone": "dark",
+   "src_box": 0
+  },
+  {
+   "id": "oak_m_snow_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "snow",
+   "biome": [
+    "snowy"
+   ],
+   "region": [
+    201,
+    432,
+    30,
+    43
+   ],
+   "anchor": [
+    15.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "m",
+   "age": "young",
+   "tone": "light",
+   "src_box": 2
+  },
+  {
+   "id": "oak_l_snow_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "snow",
+   "biome": [
+    "snowy"
+   ],
+   "region": [
+    99,
+    432,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l",
+   "age": "mature",
+   "tone": "dark",
+   "src_box": 1
+  },
+  {
+   "id": "oak_l_snow_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "snow",
+   "biome": [
+    "snowy"
+   ],
+   "region": [
+    243,
+    432,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l",
+   "age": "mature",
+   "tone": "light",
+   "src_box": 3
+  },
+  {
+   "id": "oak_l_patch_snow_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "snow",
+   "biome": [
+    "snowy"
+   ],
+   "region": [
+    99,
+    496,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l_patch",
+   "age": "mature",
+   "tone": "dark",
+   "src_box": 8
+  },
+  {
+   "id": "oak_l_patch_snow_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "snow",
+   "biome": [
+    "snowy"
+   ],
+   "region": [
+    243,
+    496,
+    42,
+    43
+   ],
+   "anchor": [
+    21.0,
+    40
+   ],
+   "collision_radius": 3,
+   "size": "l_patch",
+   "age": "mature",
+   "tone": "light",
+   "src_box": 9
+  },
+  {
+   "id": "oak_tall_snow_dark",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "snow",
+   "biome": [
+    "snowy"
+   ],
+   "region": [
+    13,
+    485,
+    22,
+    54
+   ],
+   "anchor": [
+    11.0,
+    51
+   ],
+   "collision_radius": 3,
+   "size": "tall",
+   "age": "old",
+   "tone": "dark",
+   "src_box": 6
+  },
+  {
+   "id": "oak_tall_snow_light",
+   "file": "oaks.png",
+   "kind": "oak",
+   "variant": "snow",
+   "biome": [
+    "snowy"
+   ],
+   "region": [
+    157,
+    485,
+    22,
+    54
+   ],
+   "anchor": [
+    11.0,
+    51
+   ],
+   "collision_radius": 3,
+   "size": "tall",
+   "age": "old",
+   "tone": "light",
+   "src_box": 7
+  },
+  {
+   "id": "hedge_long2_green",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    0,
+    16,
+    64,
+    32
+   ],
+   "anchor": [
+    32.0,
+    32
+   ],
+   "collision_radius": 0,
+   "piece": "long2"
+  },
+  {
+   "id": "hedge_cap_a_green",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    32,
+    0,
+    16,
+    16
+   ],
+   "anchor": [
+    8.0,
+    16
+   ],
+   "collision_radius": 0,
+   "piece": "cap_a"
+  },
+  {
+   "id": "hedge_cap_b_green",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    48,
+    0,
+    16,
+    16
+   ],
+   "anchor": [
+    8.0,
+    16
+   ],
+   "collision_radius": 0,
+   "piece": "cap_b"
+  },
+  {
+   "id": "hedge_post_green",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    64,
+    0,
+    16,
+    48
+   ],
+   "anchor": [
+    8.0,
+    48
+   ],
+   "collision_radius": 0,
+   "piece": "post"
+  },
+  {
+   "id": "hedge_frame_green",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    80,
+    0,
+    48,
+    48
+   ],
+   "anchor": [
+    24.0,
+    48
+   ],
+   "collision_radius": 0,
+   "piece": "frame"
+  },
+  {
+   "id": "hedge_block_green",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    80,
+    48,
+    48,
+    48
+   ],
+   "anchor": [
+    24.0,
+    48
+   ],
+   "collision_radius": 0,
+   "piece": "block"
+  },
+  {
+   "id": "hedge_end_green",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    128,
+    16,
+    32,
+    32
+   ],
+   "anchor": [
+    16.0,
+    32
+   ],
+   "collision_radius": 0,
+   "piece": "end"
+  },
+  {
+   "id": "hedge_long2_autumn_orange",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    0,
+    128,
+    64,
+    32
+   ],
+   "anchor": [
+    32.0,
+    32
+   ],
+   "collision_radius": 0,
+   "piece": "long2"
+  },
+  {
+   "id": "hedge_cap_a_autumn_orange",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    32,
+    112,
+    16,
+    16
+   ],
+   "anchor": [
+    8.0,
+    16
+   ],
+   "collision_radius": 0,
+   "piece": "cap_a"
+  },
+  {
+   "id": "hedge_cap_b_autumn_orange",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    48,
+    112,
+    16,
+    16
+   ],
+   "anchor": [
+    8.0,
+    16
+   ],
+   "collision_radius": 0,
+   "piece": "cap_b"
+  },
+  {
+   "id": "hedge_post_autumn_orange",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    64,
+    112,
+    16,
+    48
+   ],
+   "anchor": [
+    8.0,
+    48
+   ],
+   "collision_radius": 0,
+   "piece": "post"
+  },
+  {
+   "id": "hedge_frame_autumn_orange",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    80,
+    112,
+    48,
+    48
+   ],
+   "anchor": [
+    24.0,
+    48
+   ],
+   "collision_radius": 0,
+   "piece": "frame"
+  },
+  {
+   "id": "hedge_block_autumn_orange",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    80,
+    160,
+    48,
+    48
+   ],
+   "anchor": [
+    24.0,
+    48
+   ],
+   "collision_radius": 0,
+   "piece": "block"
+  },
+  {
+   "id": "hedge_end_autumn_orange",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "autumn_orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    128,
+    128,
+    32,
+    32
+   ],
+   "anchor": [
+    16.0,
+    32
+   ],
+   "collision_radius": 0,
+   "piece": "end"
+  },
+  {
+   "id": "hedge_long2_yellow",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    0,
+    240,
+    64,
+    32
+   ],
+   "anchor": [
+    32.0,
+    32
+   ],
+   "collision_radius": 0,
+   "piece": "long2"
+  },
+  {
+   "id": "hedge_cap_a_yellow",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    32,
+    224,
+    16,
+    16
+   ],
+   "anchor": [
+    8.0,
+    16
+   ],
+   "collision_radius": 0,
+   "piece": "cap_a"
+  },
+  {
+   "id": "hedge_cap_b_yellow",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    48,
+    224,
+    16,
+    16
+   ],
+   "anchor": [
+    8.0,
+    16
+   ],
+   "collision_radius": 0,
+   "piece": "cap_b"
+  },
+  {
+   "id": "hedge_post_yellow",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    64,
+    224,
+    16,
+    48
+   ],
+   "anchor": [
+    8.0,
+    48
+   ],
+   "collision_radius": 0,
+   "piece": "post"
+  },
+  {
+   "id": "hedge_frame_yellow",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    80,
+    224,
+    48,
+    48
+   ],
+   "anchor": [
+    24.0,
+    48
+   ],
+   "collision_radius": 0,
+   "piece": "frame"
+  },
+  {
+   "id": "hedge_block_yellow",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    80,
+    272,
+    48,
+    48
+   ],
+   "anchor": [
+    24.0,
+    48
+   ],
+   "collision_radius": 0,
+   "piece": "block"
+  },
+  {
+   "id": "hedge_end_yellow",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "yellow",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    128,
+    240,
+    32,
+    32
+   ],
+   "anchor": [
+    16.0,
+    32
+   ],
+   "collision_radius": 0,
+   "piece": "end"
+  },
+  {
+   "id": "hedge_long2_red",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    0,
+    352,
+    64,
+    32
+   ],
+   "anchor": [
+    32.0,
+    32
+   ],
+   "collision_radius": 0,
+   "piece": "long2"
+  },
+  {
+   "id": "hedge_cap_a_red",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    32,
+    336,
+    16,
+    16
+   ],
+   "anchor": [
+    8.0,
+    16
+   ],
+   "collision_radius": 0,
+   "piece": "cap_a"
+  },
+  {
+   "id": "hedge_cap_b_red",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    48,
+    336,
+    16,
+    16
+   ],
+   "anchor": [
+    8.0,
+    16
+   ],
+   "collision_radius": 0,
+   "piece": "cap_b"
+  },
+  {
+   "id": "hedge_post_red",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    64,
+    336,
+    16,
+    48
+   ],
+   "anchor": [
+    8.0,
+    48
+   ],
+   "collision_radius": 0,
+   "piece": "post"
+  },
+  {
+   "id": "hedge_frame_red",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    80,
+    336,
+    48,
+    48
+   ],
+   "anchor": [
+    24.0,
+    48
+   ],
+   "collision_radius": 0,
+   "piece": "frame"
+  },
+  {
+   "id": "hedge_block_red",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    80,
+    384,
+    48,
+    48
+   ],
+   "anchor": [
+    24.0,
+    48
+   ],
+   "collision_radius": 0,
+   "piece": "block"
+  },
+  {
+   "id": "hedge_end_red",
+   "file": "hedges.png",
+   "kind": "hedge",
+   "variant": "red",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    128,
+    352,
+    32,
+    32
+   ],
+   "anchor": [
+    16.0,
+    32
+   ],
+   "collision_radius": 0,
+   "piece": "end"
+  },
+  {
+   "id": "log_orig",
+   "file": "hedges.png",
+   "kind": "log",
+   "variant": "orig",
+   "biome": [
+    "plains",
+    "forest",
+    "autumn",
+    "swamp",
+    "taiga",
+    "rocky"
+   ],
+   "region": [
+    17,
+    65,
+    14,
+    14
+   ],
+   "anchor": [
+    7.0,
+    13
+   ],
+   "collision_radius": 0,
+   "piece": ""
+  },
+  {
+   "id": "stump_orig",
+   "file": "hedges.png",
+   "kind": "stump",
+   "variant": "orig",
+   "biome": [
+    "plains",
+    "forest",
+    "autumn",
+    "swamp",
+    "taiga",
+    "rocky"
+   ],
+   "region": [
+    15,
+    93,
+    18,
+    11
+   ],
+   "anchor": [
+    9.0,
+    10
+   ],
+   "collision_radius": 4,
+   "piece": ""
+  },
+  {
+   "id": "flower_r0c0_pink",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "pink",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    0,
+    0,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c0",
+   "ink": [
+    4,
+    2,
+    11,
+    12
+   ]
+  },
+  {
+   "id": "flower_r0c1_pink",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "pink",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    16,
+    0,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c1",
+   "ink": [
+    7,
+    6,
+    3,
+    4
+   ]
+  },
+  {
+   "id": "flower_r0c2_pink",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "pink",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    32,
+    0,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c2",
+   "ink": [
+    2,
+    3,
+    12,
+    11
+   ]
+  },
+  {
+   "id": "flower_r0c3_pink",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "pink",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    48,
+    0,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c3",
+   "ink": [
+    4,
+    3,
+    9,
+    8
+   ]
+  },
+  {
+   "id": "flower_r1c0_pink",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "pink",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    0,
+    16,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c0",
+   "ink": [
+    2,
+    5,
+    13,
+    10
+   ]
+  },
+  {
+   "id": "flower_r1c1_pink",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "pink",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    16,
+    16,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c1",
+   "ink": [
+    4,
+    2,
+    9,
+    10
+   ]
+  },
+  {
+   "id": "flower_r1c2_pink",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "pink",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    32,
+    16,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c2",
+   "ink": [
+    3,
+    2,
+    11,
+    10
+   ]
+  },
+  {
+   "id": "flower_r1c3_pink",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "pink",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    48,
+    16,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c3",
+   "ink": [
+    2,
+    0,
+    11,
+    15
+   ]
+  },
+  {
+   "id": "flower_r1c4_pink",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "pink",
+   "biome": [
+    "plains",
+    "forest"
+   ],
+   "region": [
+    64,
+    16,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c4",
+   "ink": [
+    2,
+    3,
+    12,
+    10
+   ]
+  },
+  {
+   "id": "flower_r0c0_blue",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "blue",
+   "biome": [
+    "plains",
+    "forest",
+    "taiga"
+   ],
+   "region": [
+    0,
+    32,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c0",
+   "ink": [
+    4,
+    2,
+    11,
+    12
+   ]
+  },
+  {
+   "id": "flower_r0c1_blue",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "blue",
+   "biome": [
+    "plains",
+    "forest",
+    "taiga"
+   ],
+   "region": [
+    16,
+    32,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c1",
+   "ink": [
+    7,
+    6,
+    3,
+    4
+   ]
+  },
+  {
+   "id": "flower_r0c2_blue",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "blue",
+   "biome": [
+    "plains",
+    "forest",
+    "taiga"
+   ],
+   "region": [
+    32,
+    32,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c2",
+   "ink": [
+    2,
+    3,
+    12,
+    11
+   ]
+  },
+  {
+   "id": "flower_r0c3_blue",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "blue",
+   "biome": [
+    "plains",
+    "forest",
+    "taiga"
+   ],
+   "region": [
+    48,
+    32,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c3",
+   "ink": [
+    4,
+    3,
+    9,
+    8
+   ]
+  },
+  {
+   "id": "flower_r1c0_blue",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "blue",
+   "biome": [
+    "plains",
+    "forest",
+    "taiga"
+   ],
+   "region": [
+    0,
+    48,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c0",
+   "ink": [
+    2,
+    5,
+    13,
+    10
+   ]
+  },
+  {
+   "id": "flower_r1c1_blue",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "blue",
+   "biome": [
+    "plains",
+    "forest",
+    "taiga"
+   ],
+   "region": [
+    16,
+    48,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c1",
+   "ink": [
+    4,
+    2,
+    9,
+    10
+   ]
+  },
+  {
+   "id": "flower_r1c2_blue",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "blue",
+   "biome": [
+    "plains",
+    "forest",
+    "taiga"
+   ],
+   "region": [
+    32,
+    48,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c2",
+   "ink": [
+    3,
+    2,
+    11,
+    10
+   ]
+  },
+  {
+   "id": "flower_r1c3_blue",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "blue",
+   "biome": [
+    "plains",
+    "forest",
+    "taiga"
+   ],
+   "region": [
+    48,
+    48,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c3",
+   "ink": [
+    2,
+    0,
+    11,
+    15
+   ]
+  },
+  {
+   "id": "flower_r1c4_blue",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "blue",
+   "biome": [
+    "plains",
+    "forest",
+    "taiga"
+   ],
+   "region": [
+    64,
+    48,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c4",
+   "ink": [
+    2,
+    3,
+    12,
+    10
+   ]
+  },
+  {
+   "id": "flower_r0c0_yellow",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    0,
+    64,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c0",
+   "ink": [
+    4,
+    2,
+    11,
+    12
+   ]
+  },
+  {
+   "id": "flower_r0c1_yellow",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    16,
+    64,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c1",
+   "ink": [
+    7,
+    6,
+    3,
+    4
+   ]
+  },
+  {
+   "id": "flower_r0c2_yellow",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    32,
+    64,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c2",
+   "ink": [
+    2,
+    3,
+    12,
+    11
+   ]
+  },
+  {
+   "id": "flower_r0c3_yellow",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    48,
+    64,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c3",
+   "ink": [
+    4,
+    3,
+    9,
+    8
+   ]
+  },
+  {
+   "id": "flower_r1c0_yellow",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    0,
+    80,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c0",
+   "ink": [
+    2,
+    5,
+    13,
+    10
+   ]
+  },
+  {
+   "id": "flower_r1c1_yellow",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    16,
+    80,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c1",
+   "ink": [
+    4,
+    2,
+    9,
+    10
+   ]
+  },
+  {
+   "id": "flower_r1c2_yellow",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    32,
+    80,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c2",
+   "ink": [
+    3,
+    2,
+    11,
+    10
+   ]
+  },
+  {
+   "id": "flower_r1c3_yellow",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    48,
+    80,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c3",
+   "ink": [
+    2,
+    0,
+    11,
+    15
+   ]
+  },
+  {
+   "id": "flower_r1c4_yellow",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    64,
+    80,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c4",
+   "ink": [
+    2,
+    3,
+    12,
+    10
+   ]
+  },
+  {
+   "id": "flower_r0c0_orange",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    0,
+    96,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c0",
+   "ink": [
+    4,
+    2,
+    11,
+    12
+   ]
+  },
+  {
+   "id": "flower_r0c1_orange",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    16,
+    96,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c1",
+   "ink": [
+    7,
+    6,
+    3,
+    4
+   ]
+  },
+  {
+   "id": "flower_r0c2_orange",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    32,
+    96,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c2",
+   "ink": [
+    2,
+    3,
+    12,
+    11
+   ]
+  },
+  {
+   "id": "flower_r0c3_orange",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    48,
+    96,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c3",
+   "ink": [
+    4,
+    3,
+    9,
+    8
+   ]
+  },
+  {
+   "id": "flower_r1c0_orange",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    0,
+    112,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c0",
+   "ink": [
+    2,
+    5,
+    13,
+    10
+   ]
+  },
+  {
+   "id": "flower_r1c1_orange",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    16,
+    112,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c1",
+   "ink": [
+    4,
+    2,
+    9,
+    10
+   ]
+  },
+  {
+   "id": "flower_r1c2_orange",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    32,
+    112,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c2",
+   "ink": [
+    3,
+    2,
+    11,
+    10
+   ]
+  },
+  {
+   "id": "flower_r1c3_orange",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    48,
+    112,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c3",
+   "ink": [
+    2,
+    0,
+    11,
+    15
+   ]
+  },
+  {
+   "id": "flower_r1c4_orange",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "orange",
+   "biome": [
+    "autumn"
+   ],
+   "region": [
+    64,
+    112,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c4",
+   "ink": [
+    2,
+    3,
+    12,
+    10
+   ]
+  },
+  {
+   "id": "flower_r0c0_mint",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "mint",
+   "biome": [
+    "swamp",
+    "forest"
+   ],
+   "region": [
+    0,
+    128,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c0",
+   "ink": [
+    4,
+    2,
+    11,
+    12
+   ]
+  },
+  {
+   "id": "flower_r0c1_mint",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "mint",
+   "biome": [
+    "swamp",
+    "forest"
+   ],
+   "region": [
+    16,
+    128,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c1",
+   "ink": [
+    7,
+    6,
+    3,
+    4
+   ]
+  },
+  {
+   "id": "flower_r0c2_mint",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "mint",
+   "biome": [
+    "swamp",
+    "forest"
+   ],
+   "region": [
+    32,
+    128,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c2",
+   "ink": [
+    2,
+    3,
+    12,
+    11
+   ]
+  },
+  {
+   "id": "flower_r0c3_mint",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "mint",
+   "biome": [
+    "swamp",
+    "forest"
+   ],
+   "region": [
+    48,
+    128,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c3",
+   "ink": [
+    4,
+    3,
+    9,
+    8
+   ]
+  },
+  {
+   "id": "flower_r1c0_mint",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "mint",
+   "biome": [
+    "swamp",
+    "forest"
+   ],
+   "region": [
+    0,
+    144,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c0",
+   "ink": [
+    2,
+    5,
+    13,
+    10
+   ]
+  },
+  {
+   "id": "flower_r1c1_mint",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "mint",
+   "biome": [
+    "swamp",
+    "forest"
+   ],
+   "region": [
+    16,
+    144,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c1",
+   "ink": [
+    4,
+    2,
+    9,
+    10
+   ]
+  },
+  {
+   "id": "flower_r1c2_mint",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "mint",
+   "biome": [
+    "swamp",
+    "forest"
+   ],
+   "region": [
+    32,
+    144,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c2",
+   "ink": [
+    3,
+    2,
+    11,
+    10
+   ]
+  },
+  {
+   "id": "flower_r1c3_mint",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "mint",
+   "biome": [
+    "swamp",
+    "forest"
+   ],
+   "region": [
+    48,
+    144,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c3",
+   "ink": [
+    2,
+    0,
+    11,
+    15
+   ]
+  },
+  {
+   "id": "flower_r1c4_mint",
+   "file": "flowers.png",
+   "kind": "flower",
+   "variant": "mint",
+   "biome": [
+    "swamp",
+    "forest"
+   ],
+   "region": [
+    64,
+    144,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r1c4",
+   "ink": [
+    2,
+    3,
+    12,
+    10
+   ]
+  },
+  {
+   "id": "tuft_r0c0_green",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    0,
+    0,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c0",
+   "ink": [
+    6,
+    6,
+    8,
+    5
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c1_green",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    16,
+    0,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c1",
+   "ink": [
+    1,
+    4,
+    13,
+    8
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c2_green",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    32,
+    0,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c2",
+   "ink": [
+    4,
+    6,
+    7,
+    5
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c3_green",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    48,
+    0,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c3",
+   "ink": [
+    1,
+    3,
+    12,
+    9
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c4_green",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    64,
+    0,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c4",
+   "ink": [
+    3,
+    8,
+    12,
+    5
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c5_green",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    80,
+    0,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c5",
+   "ink": [
+    4,
+    8,
+    8,
+    3
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c6_green",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    96,
+    0,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c6",
+   "ink": [
+    3,
+    6,
+    12,
+    6
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c0_green",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    0,
+    16,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c0",
+   "ink": [
+    6,
+    6,
+    8,
+    5
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c1_green",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    16,
+    16,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c1",
+   "ink": [
+    1,
+    4,
+    13,
+    8
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c2_green",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    32,
+    16,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c2",
+   "ink": [
+    4,
+    6,
+    7,
+    5
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c3_green",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    48,
+    16,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c3",
+   "ink": [
+    1,
+    3,
+    12,
+    9
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c4_green",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    64,
+    16,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c4",
+   "ink": [
+    3,
+    8,
+    12,
+    5
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c5_green",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    80,
+    16,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c5",
+   "ink": [
+    4,
+    8,
+    8,
+    3
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c6_green",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "green",
+   "biome": [
+    "plains",
+    "forest",
+    "swamp",
+    "rocky"
+   ],
+   "region": [
+    96,
+    16,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c6",
+   "ink": [
+    3,
+    6,
+    12,
+    6
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c0_yellow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    0,
+    32,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c0",
+   "ink": [
+    6,
+    6,
+    8,
+    5
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c1_yellow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    16,
+    32,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c1",
+   "ink": [
+    1,
+    4,
+    13,
+    8
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c2_yellow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    32,
+    32,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c2",
+   "ink": [
+    4,
+    6,
+    7,
+    5
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c3_yellow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    48,
+    32,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c3",
+   "ink": [
+    1,
+    3,
+    12,
+    9
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c4_yellow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    64,
+    32,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c4",
+   "ink": [
+    3,
+    8,
+    12,
+    5
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c5_yellow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    80,
+    32,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c5",
+   "ink": [
+    4,
+    8,
+    8,
+    3
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c6_yellow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    96,
+    32,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c6",
+   "ink": [
+    3,
+    6,
+    12,
+    6
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c0_yellow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    0,
+    48,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c0",
+   "ink": [
+    6,
+    6,
+    8,
+    5
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c1_yellow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    16,
+    48,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c1",
+   "ink": [
+    1,
+    4,
+    13,
+    8
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c2_yellow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    32,
+    48,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c2",
+   "ink": [
+    4,
+    6,
+    7,
+    5
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c3_yellow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    48,
+    48,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c3",
+   "ink": [
+    1,
+    3,
+    12,
+    9
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c4_yellow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    64,
+    48,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c4",
+   "ink": [
+    3,
+    8,
+    12,
+    5
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c5_yellow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    80,
+    48,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c5",
+   "ink": [
+    4,
+    8,
+    8,
+    3
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c6_yellow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "yellow",
+   "biome": [
+    "plains",
+    "autumn"
+   ],
+   "region": [
+    96,
+    48,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c6",
+   "ink": [
+    3,
+    6,
+    12,
+    6
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c0_brown",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "brown",
+   "biome": [
+    "autumn",
+    "rocky",
+    "swamp"
+   ],
+   "region": [
+    0,
+    64,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c0",
+   "ink": [
+    6,
+    6,
+    8,
+    5
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c1_brown",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "brown",
+   "biome": [
+    "autumn",
+    "rocky",
+    "swamp"
+   ],
+   "region": [
+    16,
+    64,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c1",
+   "ink": [
+    1,
+    4,
+    13,
+    8
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c2_brown",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "brown",
+   "biome": [
+    "autumn",
+    "rocky",
+    "swamp"
+   ],
+   "region": [
+    32,
+    64,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c2",
+   "ink": [
+    4,
+    6,
+    7,
+    5
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c3_brown",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "brown",
+   "biome": [
+    "autumn",
+    "rocky",
+    "swamp"
+   ],
+   "region": [
+    48,
+    64,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c3",
+   "ink": [
+    1,
+    3,
+    12,
+    9
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c4_brown",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "brown",
+   "biome": [
+    "autumn",
+    "rocky",
+    "swamp"
+   ],
+   "region": [
+    64,
+    64,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c4",
+   "ink": [
+    3,
+    8,
+    12,
+    5
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c5_brown",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "brown",
+   "biome": [
+    "autumn",
+    "rocky",
+    "swamp"
+   ],
+   "region": [
+    80,
+    64,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c5",
+   "ink": [
+    4,
+    8,
+    8,
+    3
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c6_brown",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "brown",
+   "biome": [
+    "autumn",
+    "rocky",
+    "swamp"
+   ],
+   "region": [
+    96,
+    64,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c6",
+   "ink": [
+    3,
+    6,
+    12,
+    6
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c0_brown",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "brown",
+   "biome": [
+    "autumn",
+    "rocky",
+    "swamp"
+   ],
+   "region": [
+    0,
+    80,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c0",
+   "ink": [
+    6,
+    6,
+    8,
+    5
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c1_brown",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "brown",
+   "biome": [
+    "autumn",
+    "rocky",
+    "swamp"
+   ],
+   "region": [
+    16,
+    80,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c1",
+   "ink": [
+    1,
+    4,
+    13,
+    8
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c2_brown",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "brown",
+   "biome": [
+    "autumn",
+    "rocky",
+    "swamp"
+   ],
+   "region": [
+    32,
+    80,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c2",
+   "ink": [
+    4,
+    6,
+    7,
+    5
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c3_brown",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "brown",
+   "biome": [
+    "autumn",
+    "rocky",
+    "swamp"
+   ],
+   "region": [
+    48,
+    80,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c3",
+   "ink": [
+    1,
+    3,
+    12,
+    9
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c4_brown",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "brown",
+   "biome": [
+    "autumn",
+    "rocky",
+    "swamp"
+   ],
+   "region": [
+    64,
+    80,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c4",
+   "ink": [
+    3,
+    8,
+    12,
+    5
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c5_brown",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "brown",
+   "biome": [
+    "autumn",
+    "rocky",
+    "swamp"
+   ],
+   "region": [
+    80,
+    80,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c5",
+   "ink": [
+    4,
+    8,
+    8,
+    3
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c6_brown",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "brown",
+   "biome": [
+    "autumn",
+    "rocky",
+    "swamp"
+   ],
+   "region": [
+    96,
+    80,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c6",
+   "ink": [
+    3,
+    6,
+    12,
+    6
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c0_snow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "snow",
+   "biome": [
+    "snowy",
+    "taiga"
+   ],
+   "region": [
+    0,
+    96,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c0",
+   "ink": [
+    6,
+    6,
+    8,
+    5
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c1_snow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "snow",
+   "biome": [
+    "snowy",
+    "taiga"
+   ],
+   "region": [
+    16,
+    96,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c1",
+   "ink": [
+    1,
+    4,
+    13,
+    8
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c2_snow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "snow",
+   "biome": [
+    "snowy",
+    "taiga"
+   ],
+   "region": [
+    32,
+    96,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c2",
+   "ink": [
+    4,
+    6,
+    7,
+    5
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c3_snow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "snow",
+   "biome": [
+    "snowy",
+    "taiga"
+   ],
+   "region": [
+    48,
+    96,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c3",
+   "ink": [
+    1,
+    3,
+    12,
+    9
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c4_snow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "snow",
+   "biome": [
+    "snowy",
+    "taiga"
+   ],
+   "region": [
+    64,
+    96,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c4",
+   "ink": [
+    3,
+    8,
+    12,
+    5
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c5_snow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "snow",
+   "biome": [
+    "snowy",
+    "taiga"
+   ],
+   "region": [
+    80,
+    96,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c5",
+   "ink": [
+    4,
+    8,
+    8,
+    3
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c6_snow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "snow",
+   "biome": [
+    "snowy",
+    "taiga"
+   ],
+   "region": [
+    96,
+    96,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c6",
+   "ink": [
+    3,
+    6,
+    12,
+    6
+   ],
+   "on": "light"
+  },
+  {
+   "id": "tuft_r0c0_snow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "snow",
+   "biome": [
+    "snowy",
+    "taiga"
+   ],
+   "region": [
+    0,
+    112,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c0",
+   "ink": [
+    6,
+    6,
+    8,
+    5
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c1_snow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "snow",
+   "biome": [
+    "snowy",
+    "taiga"
+   ],
+   "region": [
+    16,
+    112,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c1",
+   "ink": [
+    1,
+    4,
+    13,
+    8
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c2_snow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "snow",
+   "biome": [
+    "snowy",
+    "taiga"
+   ],
+   "region": [
+    32,
+    112,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c2",
+   "ink": [
+    4,
+    6,
+    7,
+    5
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c3_snow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "snow",
+   "biome": [
+    "snowy",
+    "taiga"
+   ],
+   "region": [
+    48,
+    112,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c3",
+   "ink": [
+    1,
+    3,
+    12,
+    9
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c4_snow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "snow",
+   "biome": [
+    "snowy",
+    "taiga"
+   ],
+   "region": [
+    64,
+    112,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c4",
+   "ink": [
+    3,
+    8,
+    12,
+    5
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c5_snow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "snow",
+   "biome": [
+    "snowy",
+    "taiga"
+   ],
+   "region": [
+    80,
+    112,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c5",
+   "ink": [
+    4,
+    8,
+    8,
+    3
+   ],
+   "on": "dark"
+  },
+  {
+   "id": "tuft_r0c6_snow",
+   "file": "tufts.png",
+   "kind": "tuft",
+   "variant": "snow",
+   "biome": [
+    "snowy",
+    "taiga"
+   ],
+   "region": [
+    96,
+    112,
+    16,
+    16
+   ],
+   "anchor": [
+    8,
+    8
+   ],
+   "collision_radius": 0,
+   "cell": "r0c6",
+   "ink": [
+    3,
+    6,
+    12,
+    6
+   ],
+   "on": "dark"
+  }
+ ],
+ "no_art": {
+  "plains": [
+   "fir",
+   "rock",
+   "bush",
+   "mushroom",
+   "reed"
+  ],
+  "forest": [
+   "fir",
+   "rock",
+   "bush",
+   "mushroom",
+   "reed"
+  ],
+  "autumn": [
+   "fir",
+   "rock",
+   "bush",
+   "mushroom",
+   "reed"
+  ],
+  "taiga": [
+   "oak",
+   "fir",
+   "rock",
+   "bush",
+   "hedge",
+   "mushroom",
+   "reed"
+  ],
+  "swamp": [
+   "fir",
+   "rock",
+   "bush",
+   "hedge",
+   "mushroom",
+   "reed"
+  ],
+  "snowy": [
+   "fir",
+   "rock",
+   "bush",
+   "hedge",
+   "flower",
+   "mushroom",
+   "reed",
+   "stump",
+   "log"
+  ],
+  "rocky": [
+   "fir",
+   "rock",
+   "bush",
+   "hedge",
+   "flower",
+   "mushroom",
+   "reed"
+  ],
+  "beach_sand": [
+   "oak",
+   "fir",
+   "rock",
+   "bush",
+   "hedge",
+   "flower",
+   "tuft",
+   "mushroom",
+   "reed",
+   "stump",
+   "log"
+  ],
+  "beach_gravel": [
+   "oak",
+   "fir",
+   "rock",
+   "bush",
+   "hedge",
+   "flower",
+   "tuft",
+   "mushroom",
+   "reed",
+   "stump",
+   "log"
+  ]
+ },
+ "by_biome": {
+  "plains": {
+   "oak": 10,
+   "hedge": 7,
+   "flower": 27,
+   "tuft": 28,
+   "stump": 1,
+   "log": 1
+  },
+  "forest": {
+   "oak": 10,
+   "hedge": 7,
+   "flower": 27,
+   "tuft": 14,
+   "stump": 1,
+   "log": 1
+  },
+  "autumn": {
+   "oak": 30,
+   "hedge": 21,
+   "flower": 18,
+   "tuft": 28,
+   "stump": 1,
+   "log": 1
+  },
+  "taiga": {
+   "flower": 9,
+   "tuft": 14,
+   "stump": 1,
+   "log": 1
+  },
+  "swamp": {
+   "oak": 10,
+   "flower": 9,
+   "tuft": 28,
+   "stump": 1,
+   "log": 1
+  },
+  "snowy": {
+   "oak": 10,
+   "tuft": 14
+  },
+  "rocky": {
+   "oak": 10,
+   "tuft": 28,
+   "stump": 1,
+   "log": 1
+  },
+  "beach_sand": {},
+  "beach_gravel": {}
+ }
+}
