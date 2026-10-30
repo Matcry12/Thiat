@@ -1,6 +1,7 @@
 extends SceneTree
 # R / F3 Restart reload the arena; the reloaded map must be the same island (map_seed 0 = random, so the rolled seed is carried over once).
 func _init() -> void:
+	OS.set_environment("BOSSFIGHT_TEST_MAP_CELLS", "192")   # small island: this test does not need the full map
 	var a1 = load("res://scenes/arena.tscn").instantiate()
 	root.add_child(a1)
 	await process_frame

@@ -882,6 +882,12 @@ var _streamer: ChunkStreamer
 func _ready() -> void:
 	add_to_group("arena_map")
 	add_to_group("debug")
+	# A test that does not need the full island sets BOSSFIGHT_TEST_MAP_CELLS (e.g. "192") before loading the
+	# arena: a smaller square map builds ~7x faster. Like BOSSFIGHT_TEST_SEED, never set in a normal game.
+	var cells := OS.get_environment("BOSSFIGHT_TEST_MAP_CELLS")
+	if cells.is_valid_int() and int(cells) >= 12:
+		map_cols = int(cells)
+		map_rows = int(cells)
 	_default_exports = _export_values()
 	for k in pending_settings:   # a saved island: same exports as when it was saved (before the first build)
 		if _default_exports.has(k):
