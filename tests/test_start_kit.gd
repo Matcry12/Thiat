@@ -1,5 +1,5 @@
 extends SceneTree
-# W4 start kit: a wooden sword and nothing else; the F3 "Give W3 kit" restores the old kit; the copper tools
+# W4 start kit: a wooden sword, stone axe and stone pickaxe (0048); the F3 "Give W3 kit" restores the old kit; the copper tools
 # are stronger copies; the tint reaches the model; every recipe reads real items.
 const World = preload("res://tests/support/craft_world.gd")
 var _ok := true
@@ -18,14 +18,13 @@ func _init() -> void:
 	await physics_frame
 
 	# --- the start kit ---
-	_check(inv.used_slots() == 1 and inv.slot_item(0) != null and inv.slot_item(0).id == &"wooden_sword", "start kit: one item, the wooden sword, slot 1")
+	_check(inv.used_slots() == 3 and inv.slot_item(0) != null and inv.slot_item(0).id == &"wooden_sword" and inv.count(&"stone_axe") == 1 and inv.count(&"stone_pickaxe") == 1, "start kit: wooden sword (slot 1) + stone axe + stone pickaxe")
 	_check(lo.weapons.size() == 1 and lo.active_weapon() == inv.slot_item(0).weapon and not lo.is_holstered(), "the wooden sword is in hand")
-	var sword := World.item("sword").weapon
 	var wooden := World.item("wooden_sword").weapon
 	var copper := World.item("copper_sword").weapon
-	_check(wooden.damage < sword.damage and sword.damage < copper.damage, "damage: wooden %.0f < sword %.0f < copper %.0f" % [wooden.damage, sword.damage, copper.damage])
-	_check(wooden.model == sword.model and copper.model == sword.model, "the copper and wooden swords reuse the sword model")
-	_check(wooden.model_tint != Color.WHITE and copper.model_tint != Color.WHITE and sword.model_tint == Color.WHITE, "...tinted, the sword is not")
+	_check(wooden.damage < copper.damage, "damage: wooden %.0f < copper %.0f" % [wooden.damage, copper.damage])
+	_check(wooden.model != null and copper.model != null and wooden.model != copper.model, "each sword has its own picture model (0049, no tint needed)")
+	_check(wooden.model_tint == Color.WHITE and copper.model_tint == Color.WHITE, "...pictures are pre-coloured, no tint")
 
 	# --- tools ---
 	var cp := World.item("copper_pickaxe").weapon
@@ -42,16 +41,16 @@ func _init() -> void:
 	lo.rearm()
 	var wv: WeaponVisual = player.get_node("WeaponVisual")
 	_check(wv.get_model() != null and wv.get_model().modulate == wooden.model_tint, "the wooden sword's model is tinted")
-	wv.set_weapon(sword)
-	_check(wv.get_model().modulate == Color.WHITE, "the plain sword's model is not")
+	wv.set_weapon(copper)
+	_check(wv.get_model().modulate == copper.model_tint, "the copper sword's model has its own tint")
 
 	# --- Give W3 kit ---
 	inv.add(World.item("wood"), 5)
 	inv.give_dev_kit()
 	await physics_frame
-	_check(inv.slot_item(0).id == &"sword" and inv.slot_item(1).id == &"bow" and inv.slot_item(2).id == &"stone_axe" and inv.slot_item(3).id == &"stone_pickaxe", "Give W3 kit: sword, bow, axe, pickaxe in slots 1-4")
-	_check(lo.weapons.size() == 2 and lo.active_weapon() == sword and not lo.is_holstered() and lo.selected_slot == 0, "the sword is in hand again")
-	_check(inv.count(&"wood") == 0 and inv.count(&"wooden_sword") == 0, "the kit replaces what was there")
+	_check(inv.slot_item(0).id == &"wooden_sword" and inv.slot_item(1).id == &"bow" and inv.slot_item(2).id == &"stone_axe" and inv.slot_item(3).id == &"stone_pickaxe", "Give W3 kit: wooden sword, bow, axe, pickaxe in slots 1-4")
+	_check(lo.weapons.size() == 2 and lo.active_weapon() == wooden and not lo.is_holstered() and lo.selected_slot == 0, "the wooden sword is in hand again")
+	_check(inv.count(&"wood") == 0 and inv.count(&"copper_sword") == 0, "the kit replaces what was there")
 
 	# --- every recipe reads real items, and is affordable from raw materials ---
 	for r in cr.recipes:

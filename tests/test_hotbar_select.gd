@@ -50,7 +50,7 @@ func _init() -> void:
 	await physics_frame
 
 	# --- the kit ---
-	_check(inv.slot_item(0).id == &"sword" and inv.slot_item(1).id == &"bow" and inv.slot_item(2).id == &"stone_axe" and inv.slot_item(3).id == &"stone_pickaxe", "start kit: sword, bow, axe, pickaxe in slots 1-4")
+	_check(inv.slot_item(0).id == &"wooden_sword" and inv.slot_item(1).id == &"bow" and inv.slot_item(2).id == &"stone_axe" and inv.slot_item(3).id == &"stone_pickaxe", "start kit: sword, bow, axe, pickaxe in slots 1-4")
 	_check(lo.weapons.size() == 2 and lo.active_weapon() == inv.slot_item(0).weapon and lo.selected_slot == 0, "sword in hand, slot 1 selected")
 
 	# --- tool: instant, no cast, no cooldown ---
@@ -108,11 +108,9 @@ func _init() -> void:
 	await _swing(wh)
 	_check(tree.is_broken(), "tree is down after 2 axe swings")
 	var tree2 := _node(arena, "res://data/resource_nodes/tree.tres", spot + Vector2(300, 0))
-	var hits := 0
-	while not tree2.is_broken():
+	for i in 10:
 		tree2.take_gather_hit(fists, player)
-		hits += 1
-	_check(hits == 6, "bare hands need 6 hits for the same tree (%d)" % hits)
+	_check(tree2.hp == tree2.data.max_hp and not tree2.is_broken(), "bare hands do nothing to a tree (decision 0048)")
 	var tree3 := _node(arena, "res://data/resource_nodes/tree.tres", spot + Vector2(400, 0))
 	tree3.take_gather_hit(pick, player)
 	_check(tree3.hp == tree3.data.max_hp - pick.gather_damage, "pickaxe on a tree: no bonus")

@@ -22,6 +22,10 @@ var hitbox: Hitbox            # null for a weapon with no melee hitbox (e.g. a b
 var aim_direction := Vector2.RIGHT
 
 var phase: Phase = Phase.IDLE
+## Side of the current / last swing for a weapon with a SwingMotion (1 first way, -1 reversed, alternate). THE one owner (0050):
+## the Hitbox reads it from here, WeaponVisual is told through player.gd (set_swing_flip). Decided at the start of every swing.
+var swing_flip := 1.0
+var _since_swing := 99.0   ## seconds idle since the last swing ended
 var _phase_time := 0.0
 var _muzzle: Marker2D
 
@@ -53,7 +57,9 @@ func cancel() -> void:
 
 func _physics_process(delta: float) -> void:
 	if phase == Phase.IDLE:
+		_since_swing += delta
 		return
+	_since_swing = 0.0
 	_phase_time += delta
 	_step(delta)
 	match phase:
@@ -62,6 +68,8 @@ func _physics_process(delta: float) -> void:
 				_set_phase(Phase.ACTIVE)
 				_start_active()
 		Phase.ACTIVE:
+			if hitbox and weapon.hit_follows_blade:
+				hitbox.advance_sweep(minf(1.0, _phase_time / maxf(weapon.active, 0.0001)))   # no gaps: every pose between last frame and now
 			if _phase_time >= weapon.active:
 				_set_phase(Phase.RECOVERY)
 				if hitbox:
@@ -82,8 +90,11 @@ func _step(delta: float) -> void:
 		body.move_and_collide(aim_direction * weapon.step_distance * delta / maxf(weapon.windup + weapon.active, 0.001))
 
 func _start_attack() -> void:
+	var m := weapon.swing_motion
+	swing_flip = m.next_flip(swing_flip, _since_swing) if m else 1.0
 	if hitbox:
 		hitbox.weapon = weapon
+		hitbox.swing_flip = swing_flip
 	_set_phase(Phase.WINDUP)
 
 ## behavior == "arc" -> start the melee swing (hitbox turns on for `active`).
@@ -95,7 +106,10 @@ func _start_active() -> void:
 		"arc":
 			if hitbox:
 				hitbox.start_swing()
-				hitbox.sweep_arc()   # the blade snaps, so it hits the whole arc now (decision 0020)
+				if weapon.swing_motion and weapon.hit_follows_blade:
+					hitbox.advance_sweep(0.0)   # progressive (0050): the rest follows each physics frame
+				else:
+					hitbox.sweep_arc()   # the blade snaps, so it hits the whole arc now (decision 0020)
 		"projectile":
 			_spawn_projectile()
 

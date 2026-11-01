@@ -18,19 +18,19 @@ func _init() -> void:
 	var rig: BodyRig = arena.get_node("Player").visual.rig
 	var path := rig.resource_path
 	var original := FileAccess.get_file_as_string(path)
-	var old_back := rig.hand_idle_back
-	panel.apply_value("BodyRig.hand_idle_back", Vector2(23, 7))
+	var old_back: float = rig.slash_scale
+	panel.apply_value("BodyRig.slash_scale", 1.25)
 	_check(panel.overrides.count() == 1 and panel.overrides.tres_count() == 1, "the edit is one override that can go to .tres")
 	_check(FileAccess.get_file_as_string(path) == original, "nothing is written before Write")
 	panel.footer._write.pressed.emit()   # the footer button
 	var saved := FileAccess.get_file_as_string(path)
-	_check(saved.contains("hand_idle_back = Vector2(23, 7)"), "rig file holds the new value")
+	_check(saved.contains("slash_scale = 1.25"), "rig file holds the new value")
 	_check(saved.contains("sprite_frames = ExtResource("), "rig file keeps its sprite frames link")
 	_check(panel.overrides.count() == 0, "written overrides are dropped from the cfg")
-	_check(not panel.is_changed("BodyRig.hand_idle_back"), "the written value is the new startup value (row no longer marked)")
+	_check(not panel.is_changed("BodyRig.slash_scale"), "the written value is the new startup value (row no longer marked)")
 	var f := FileAccess.open(path, FileAccess.WRITE)   # put the repo file back
 	f.store_string(original)
 	f.close()
-	rig.hand_idle_back = old_back
+	rig.slash_scale = old_back
 	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://test_save_rig.cfg"))
 	quit(0 if _ok else 1)

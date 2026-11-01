@@ -61,6 +61,7 @@ func _ready() -> void:
 		var s := Sprite2D.new()
 		s.name = "Icon"
 		s.texture = item.icon
+		s.scale = Vector2.ONE * (_collector.pickup_icon_px if _collector else 16.0) / item.icon.get_height()
 		_visual.add_child(s)
 	_update_look(0.0)
 

@@ -85,7 +85,7 @@ func _ready() -> void:
 	visible = false
 	visibility_changed.connect(func(): if visible and _ready_done: rescan())
 	# Nothing is scanned until F3 opens (or something asks for `settings`) - except when saved edits wait for their objects.
-	# Some nodes overwrite their own @exports a moment after startup (the rig drives the hands), and the arena joins the group last:
+	# Some nodes overwrite their own @exports a moment after startup (the rig drives the body), and the arena joins the group last:
 	# so that scan waits 3 frames.
 	if overrides.count() > 0:
 		for _f in 3:

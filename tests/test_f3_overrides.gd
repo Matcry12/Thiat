@@ -63,20 +63,20 @@ func _init() -> void:
 	_check(F3Overrides.can_write_to_tres(rig), "can_write_to_tres on rig copy")
 	_check(not F3Overrides.can_write_to_tres(rig.duplicate()), "duplicate (no path) cannot")
 	_check(not F3Overrides.can_write_to_tres(d), "plain object cannot")
-	var before_back := rig.hand_idle_back
+	var before_back := rig.body_position
 	var before_scale := rig.visual_scale
-	rig.hand_idle_back = Vector2(23, 7)
+	rig.body_position = Vector2(23, 7)
 	rig.save_note = "runtime only"
 	var o5 := F3Overrides.new(cfg)
-	o5.set_override("Rig", rig, "hand_idle_back", Vector2(23, 7))
+	o5.set_override("Rig", rig, "body_position", Vector2(23, 7))
 	var w := o5.write_to_tres("Rig")
 	_check(w.written == 1 and w.errors.is_empty(), "wrote 1")
 	var saved := FileAccess.get_file_as_string(tmp)
-	_check(saved.contains("hand_idle_back = Vector2(23, 7)"), "file has new value")
+	_check(saved.contains("body_position = Vector2(23, 7)"), "file has new value")
 	_check(saved.contains("sprite_frames = ExtResource("), "sprite_frames link kept")
 	_check(not saved.contains("save_note"), "save_note not written")
 	var back: BodyRig = ResourceLoader.load(tmp, "", ResourceLoader.CACHE_MODE_IGNORE)
-	_check(back.visual_scale == before_scale and back.hand_idle_back == Vector2(23, 7) and back.hand_idle_back != before_back, "only changed prop differs")
+	_check(back.visual_scale == before_scale and back.body_position == Vector2(23, 7) and back.body_position != before_back, "only changed prop differs")
 	_check(o5.count() == 0, "keys dropped after write")
 	# repo file untouched
 	_check(FileAccess.get_file_as_string(src) == orig_text, "repo .tres untouched")

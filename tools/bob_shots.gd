@@ -12,7 +12,7 @@ func _init() -> void:
 	for _f in 20:
 		await process_frame
 	var pos: Vector2 = player.global_position + Vector2(-120, 0)
-	var ids := ["wood", "stone", "copper_ore", "copper_bar", "sword", "stone_axe"]
+	var ids := ["wood", "stone", "copper_ore", "copper_bar", "wooden_sword", "stone_axe"]
 	for i in ids.size():
 		var at := pos + Vector2(i * 36, 20)
 		Pickup.spawn(arena, load("res://data/items/%s.tres" % ids[i]), 1, at, at).scale = Vector2.ONE * 2.0

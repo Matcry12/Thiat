@@ -1,0 +1,31 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://assets/ui/items/copper_sword.png" id="1"]
+[ext_resource type="Script" uid="uid://d0s5saauew0b5" path="res://scripts/components/hitbox.gd" id="2"]
+
+[sub_resource type="RectangleShape2D" id="HitShape"]
+size = Vector2(56, 9.562761)
+
+[node name="SwordModel" type="Node2D"]
+
+; RULE: this scene's origin (0,0) = the grip. Art's `offset` puts the grip pixel of the picture on it; the blade runs along +x.
+[node name="Art" type="Sprite2D" parent="."]
+rotation = 0.7853982
+scale = Vector2(2, 2)
+texture = ExtResource("1")
+texture_filter = 1
+centered = false
+offset = Vector2(-8.5, -22.5)
+
+; Hit shape: from the grip (0) to 56 px (blade tip 48 + 8 margin), centred ON the blade line (y = Tip y), so close enemies are hit.
+[node name="Hitbox" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 4
+script = ExtResource("2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+position = Vector2(28, -1)
+shape = SubResource("HitShape")
+
+[node name="Tip" type="Marker2D" parent="."]
+position = Vector2(49, -1)

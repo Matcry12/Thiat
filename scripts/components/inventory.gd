@@ -10,7 +10,7 @@ signal changed
 const HOTBAR := 9
 const SIZE := 36
 
-@export var start_items: Array[ItemData] = []   ## starting kit, placed in order (v1: a wooden sword; the rest is crafted, decision 0031)
+@export var start_items: Array[ItemData] = []   ## starting kit, placed in order (a wooden sword, stone axe, stone pickaxe; bare hands gather nothing, decision 0048)
 @export var max_hotbar_weapons := 2
 ## Bag moves are refused while a Boss is ENGAGED (decision 0003: "bag is locked in combat").
 @export var lock_in_boss_fight := true
@@ -193,7 +193,7 @@ func give_dev_kit() -> void:
 		_item[i] = null
 		_count[i] = 0
 	_drop_held()
-	for id in ["sword", "bow", "stone_axe", "stone_pickaxe"]:
+	for id in ["wooden_sword", "bow", "stone_axe", "stone_pickaxe"]:
 		add(load("res://data/items/%s.tres" % id), 1)
 	var lo = get_parent().get_node_or_null("Loadout") if get_parent() else null
 	if lo != null and lo.has_method("rearm"):
@@ -352,7 +352,6 @@ func debug_actions() -> Array:
 	return [
 		{"label": "Give axe", "run": func(): add(load("res://data/items/stone_axe.tres"), 1)},
 		{"label": "Give pickaxe", "run": func(): add(load("res://data/items/stone_pickaxe.tres"), 1)},
-		{"label": "Give sword", "run": func(): add(load("res://data/items/sword.tres"), 1)},
 		{"label": "Fill bag", "run": func(): add(load("res://data/items/wood.tres"), 99999)},   # every free slot gets wood; the rest is dropped
 		{"label": "Give W3 kit", "run": give_dev_kit},
 	]

@@ -46,11 +46,10 @@ enum SnapMode { NONE, WORLD_PX, ART_PX }
 @export var squash_frames := PackedInt32Array([0, 3])     ## 0-based run frames where a foot lands
 @export var feet_row := 29.0                              ## art row (from sprite top) of the feet's bottom edge; squash keeps this row still
 @export_group("Character rig (one resource per character)")
-## Body frames + body/feet position + shadow size + weapon/hand/slash visual scale. null = use the scene's own Body as it is.
+## Body frames + body/feet position + shadow size + weapon/slash visual scale. null = use the scene's own Body as it is.
 ## Swapping the character is swapping this one resource (data/body_rigs/*.tres). F3 section "BodyRig" tunes it live.
 @export var rig: BodyRig: set = _set_rig
 @export var weapon_visual_path := NodePath("../WeaponVisual")
-@export var hands_path := NodePath("../Hands")
 @export_group("Directional body (3D-rendered sheets)")
 ## Used automatically when the SpriteFrames has `idle_side` (+ `idle_front` for a real front view) (see assets/characters/player/3d/): animations are
 ## `<idle|run|hit>_<front|side>`, timing is baked into the frames, and the old exports above (fps, code bounce) are skipped.
@@ -212,7 +211,7 @@ func _ready() -> void:
 		_health = get_node_or_null(health_path) as Health
 		if _health:
 			_health.died.connect(_on_died)
-		_apply_rig_siblings.call_deferred()      # WeaponVisual / Hands come later in the tree: wait until they are ready
+		_apply_rig_siblings.call_deferred()      # WeaponVisual comes later in the tree: wait until they are ready
 
 func _has_death() -> bool:
 	var a := _anim()
@@ -264,9 +263,6 @@ func _apply_rig_siblings() -> void:
 	var wv := get_node_or_null(weapon_visual_path)
 	if wv and wv.has_method("apply_rig"):
 		wv.apply_rig(rig)
-	var h := get_node_or_null(hands_path)
-	if h and h.has_method("apply_rig"):
-		h.apply_rig(rig)
 
 func _apply_all() -> void:
 	var b := get_node_or_null("Body") as Sprite2D   ## null for an AnimatedSprite2D: its frames come from SpriteFrames

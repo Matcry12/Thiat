@@ -65,7 +65,7 @@ func _init() -> void:
 	_check(player.dead and rs.deaths == 1 and rs.is_waiting(), "died: dead flag, deaths = 1, respawn timer running")
 	var drops := _drops()
 	_check(_sum(drops, &"wood") == 25 and _sum(drops, &"stone") == 1 and _sum(drops, &"copper_bar") == 10, "all materials dropped (drop_share 1)")
-	_check(_sum(drops, &"sword") + _sum(drops, &"bow") + _sum(drops, &"stone_axe") + _sum(drops, &"stone_pickaxe") == 4, "tools and weapons dropped too")
+	_check(_sum(drops, &"wooden_sword") + _sum(drops, &"bow") + _sum(drops, &"stone_axe") + _sum(drops, &"stone_pickaxe") == 4, "tools and weapons dropped too")
 	var inv_empty := true
 	for i in Inventory.SIZE:
 		inv_empty = inv_empty and inv.slot_item(i) == null
@@ -87,7 +87,7 @@ func _init() -> void:
 		player.global_position = spot + off
 		await _until(func(): return _drops().is_empty(), 0.6)
 	_check(inv.count(&"wood") == 25 and inv.count(&"stone") == 1 and inv.count(&"copper_bar") == 10, "walking back returned every material")
-	_check(inv.count(&"sword") == 1 and inv.count(&"bow") == 1 and inv.count(&"stone_axe") == 1 and inv.count(&"stone_pickaxe") == 1, "and the gear")
+	_check(inv.count(&"wooden_sword") == 1 and inv.count(&"bow") == 1 and inv.count(&"stone_axe") == 1 and inv.count(&"stone_pickaxe") == 1, "and the gear")
 
 	# --- the weapon in hand comes back in hand: no fists, no swap cast ---
 	var lo: Loadout = player.get_node("Loadout")
@@ -113,7 +113,7 @@ func _init() -> void:
 	rs.kill()
 	await physics_frame
 	drops = _drops()
-	_check(_sum(drops, &"wood") == 3 and _sum(drops, &"sword") == 0 and inv.count(&"sword") == 1 and inv.count(&"wood") == 4, "drop_gear off keeps gear; drop_share 0.5 halves materials (floor)")
+	_check(_sum(drops, &"wood") == 3 and _sum(drops, &"wooden_sword") == 0 and inv.count(&"wooden_sword") == 1 and inv.count(&"wood") == 4, "drop_gear off keeps gear; drop_share 0.5 halves materials (floor)")
 	await _until(func(): return not player.dead, 3.0)
 	for p in _drops():
 		p.free()

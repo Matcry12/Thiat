@@ -1,0 +1,1 @@
+Sword slash smear, 4 frames 48x48 (slash_f1..f4.png, slash_sheet.png); palette white #f4fbff to blue #2e6fb0; centre = grip (24,24); swings clockwise, newest/white end at the clockwise end; source draw_slash.py.

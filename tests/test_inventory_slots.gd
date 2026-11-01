@@ -11,7 +11,7 @@ func _check(cond: bool, msg: String) -> void:
 func _init() -> void:
 	var wood: ItemData = load("res://data/items/wood.tres")
 	var stone: ItemData = load("res://data/items/stone.tres")
-	var sword: ItemData = load("res://data/items/sword.tres")
+	var sword: ItemData = load("res://data/items/wooden_sword.tres")
 	var bow: ItemData = load("res://data/items/bow.tres")
 	var axe: ItemData = load("res://data/items/stone_axe.tres")
 	var inv := Inventory.new()
@@ -19,7 +19,7 @@ func _init() -> void:
 
 	# --- stacking ---
 	_check(wood.max_stack == 64 and wood.category == "material", "wood: material, stacks to 64")
-	_check(sword.stack_limit() == 1 and sword.category == "weapon" and sword.weapon != null, "sword: weapon item, stack 1")
+	_check(sword.stack_limit() == 1 and sword.category == "weapon" and sword.weapon != null, "wooden sword: weapon item, stack 1")
 	_check(inv.add(wood, 100) == 0 and inv.count(&"wood") == 100, "100 wood fit")
 	_check(inv.slot_count(Inventory.HOTBAR) == 64 and inv.slot_count(Inventory.HOTBAR + 1) == 36, "wood fills the BAG first: 64 + 36")
 	_check(inv.slot_item(0) == null, "materials do not take hotbar slots while the bag has room")

@@ -32,9 +32,9 @@ func _init() -> void:
 
 	# --- search: pure ---
 	var secs: Array = panel.sections()
-	var hits := F3Search.run(secs, "hand")
+	var hits := F3Search.run(secs, "body_pos")
 	var keys := hits.map(func(h): return h["prop"]["key"])
-	_check(keys.has("BodyRig.hand_idle_front"), "search 'hand' finds BodyRig.hand_idle_front (%d hits)" % hits.size())
+	_check(keys.has("BodyRig.body_position"), "search body_pos finds BodyRig.body_position (%d hits)" % hits.size())
 	var seen_section_hit := false
 	var ordered := true
 	for h in hits:
@@ -49,18 +49,18 @@ func _init() -> void:
 	_check(hb.has("HealthBar") and hb.has("Player Health"), "'health' is a whole word of HealthBar / Player Health")
 
 	# --- search in the dock: a live row, edit its x field ---
-	dock.set_search("hand")
+	dock.set_search("body_pos")
 	await process_frame
 	await process_frame
-	var row: F3PropRow = dock.row_for("BodyRig.hand_idle_front")
+	var row: F3PropRow = dock.row_for("BodyRig.body_position")
 	_check(row != null and row._fields.size() == 2, "the result is a live Vector2 row with two fields")
-	var old_y := rig.hand_idle_front.y
+	var old_y := rig.body_position.y
 	row._fields[0].text = "13.5"
 	row._fields[0].text_submitted.emit("13.5")
-	_check(is_equal_approx(rig.hand_idle_front.x, 13.5) and is_equal_approx(rig.hand_idle_front.y, old_y), "editing x changes the rig, y untouched (%s)" % rig.hand_idle_front)
+	_check(is_equal_approx(rig.body_position.x, 13.5) and is_equal_approx(rig.body_position.y, old_y), "editing x changes the rig, y untouched (%s)" % rig.body_position)
 	_check(row.is_changed() and row._reset.modulate.a == 1.0, "the row shows it changed and offers reset")
 	row._reset.pressed.emit()
-	_check(rig.hand_idle_front == panel.initial_value("BodyRig.hand_idle_front"), "reset arrow restores the startup value")
+	_check(rig.body_position == panel.initial_value("BodyRig.body_position"), "reset arrow restores the startup value")
 
 	# --- number fields on a plain float row (Player.speed) ---
 	dock.set_search("")
@@ -122,12 +122,12 @@ func _init() -> void:
 
 	# --- pins persist ---
 	dock.open_section("Player")   # (opening Map closed the Character category: it is an accordion)
-	dock.toggle_pin("BodyRig.hand_idle_front")
+	dock.toggle_pin("BodyRig.body_position")
 	dock.toggle_pin("Player.speed")
 	await process_frame
 	await process_frame
 	_check(dock.row_for("Player.speed") != null and dock._rows["Player.speed"].size() == 2, "a pinned row also shows in the Pinned block")
-	_check(F3Overrides.new(cfg_path).get_pins() == ["BodyRig.hand_idle_front", "Player.speed"], "pins are in the cfg file")
+	_check(F3Overrides.new(cfg_path).get_pins() == ["BodyRig.body_position", "Player.speed"], "pins are in the cfg file")
 	panel.use_overrides(F3Overrides.new(cfg_path))   # a fresh store from the same file
 	_check(dock._pins.size() == 2, "a fresh load gets them back")
 	DirAccess.remove_absolute(cfg_path)

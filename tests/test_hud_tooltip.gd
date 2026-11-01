@@ -104,7 +104,7 @@ func _init() -> void:
 	boss._set_aggro(Boss.Aggro.IDLE)
 	await process_frame
 	await process_frame
-	_check(tip.visible and tip.shown_text() == "Sword", "boss asleep again: the name is back")
+	_check(tip.visible and tip.shown_text() == inv.slot_item(0).display_name, "boss asleep again: the name is back")
 	sk.tooltip_border_width = 5
 	await process_frame
 	_check((tip._flat.get_theme_stylebox("panel") as StyleBoxFlat).border_width_left == 5, "tooltip border width comes from the skin")

@@ -88,7 +88,7 @@ func _init() -> void:
 	tree.position = far
 	arena.add_child(tree)
 	_check(pl.check_at(far + Vector2(10, 0), fp) == "node", "on a tree: refused")
-	var fists: WeaponData = load("res://data/weapons/fists.tres")
+	var fists: WeaponData = load("res://data/weapons/stone_axe.tres")
 	while not tree.is_broken():
 		tree.take_gather_hit(fists, player)
 	_check(pl.check_at(far, fp) == "pickup", "the wood it dropped lies there: refused (pickup)")

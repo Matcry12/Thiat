@@ -5,13 +5,7 @@
 [sub_resource type="RectangleShape2D" id="HitShape"]
 size = Vector2(18, 14)
 
-[node name="FistsModel" type="Node2D" groups=["free_hands"]]
-
-[node name="HandMain" type="Marker2D" parent="."]
-position = Vector2(16, 3)
-
-[node name="HandOff" type="Marker2D" parent="."]
-position = Vector2(10, -3)
+[node name="FistsModel" type="Node2D"]
 
 [node name="Hitbox" type="Area2D" parent="."]
 collision_layer = 8

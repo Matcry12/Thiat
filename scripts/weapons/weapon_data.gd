@@ -37,6 +37,11 @@ class_name WeaponData
 ## Snap swings (decision 0020): on the first physics frame of ACTIVE the hit
 ## shape is tried at this many angles across the arc. 12 = about 8 deg apart for 90 deg.
 @export var sweep_samples := 12
+## How the swing LOOKS and HITS (grip path, wrist, afterimages; the hit area follows the same path, 0050); null = the old fixed-pivot swing with crescent slash. Decision 0049.
+@export var swing_motion: SwingMotion
+## Only with a swing_motion (0050). false = snap: on the first physics frame of active the hit shape is tried along the WHOLE blade path.
+## true = progressive: each physics frame of active tries the poses between last frame and this one, so a far target is hit only when the blade gets there.
+@export var hit_follows_blade := false
 @export var color := Color.WHITE
 ## Colours the model's picture (copper tools reuse the stone tool's model, tinted). White = as drawn.
 @export var model_tint := Color.WHITE

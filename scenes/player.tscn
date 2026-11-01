@@ -18,7 +18,7 @@
 [ext_resource type="Resource" path="res://data/weapons/fists.tres" id="fists"]
 [ext_resource type="Script" uid="uid://ba6y0wkjj6tcb" path="res://scripts/components/skill_slot.gd" id="20"]
 [ext_resource type="Script" uid="uid://bhkdre3n8h4wt" path="res://scripts/visual/swing_fx.gd" id="21"]
-[ext_resource type="Script" path="res://scripts/visual/hands_visual.gd" id="22"]
+[ext_resource type="Script" path="res://scripts/visual/held_item_visual.gd" id="held_s"]
 [ext_resource type="Script" path="res://scripts/components/knockback.gd" id="kb_script"]
 [ext_resource type="Script" path="res://scripts/visual/run_dust.gd" id="dust_script"]
 [ext_resource type="Script" path="res://scripts/visual/water_fx.gd" id="water_fx_script"]
@@ -27,6 +27,8 @@
 [ext_resource type="Script" path="res://scripts/components/collector.gd" id="col_s"]
 [ext_resource type="Script" path="res://scripts/items/item_data.gd" id="item_s"]
 [ext_resource type="Resource" path="res://data/items/wooden_sword.tres" id="it_sword"]
+[ext_resource type="Resource" path="res://data/items/stone_axe.tres" id="it_axe"]
+[ext_resource type="Resource" path="res://data/items/stone_pickaxe.tres" id="it_pick"]
 [ext_resource type="Script" path="res://scripts/components/crafter.gd" id="crafter_s"]
 [ext_resource type="Script" path="res://scripts/components/placer.gd" id="placer_s"]
 [ext_resource type="Script" path="res://scripts/components/respawner.gd" id="respawner_s"]
@@ -43,9 +45,6 @@ script = ExtResource("1")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2036448946]
 shape = SubResource("BodyShape")
-
-[node name="BackHand" type="Node2D" parent="."]
-position = Vector2(0, -9)
 
 [node name="Visual" type="Node2D" parent="." unique_id=123694702]
 script = ExtResource("2")
@@ -84,11 +83,8 @@ rotation = -1.5707964
 [node name="SwingFx" type="Node2D" parent="WeaponVisual" unique_id=2963882]
 script = ExtResource("21")
 
-[node name="Hands" type="Node2D" parent="." unique_id=1873400221]
-position = Vector2(0, -9)
-script = ExtResource("22")
-fill_color = Color(0.91, 0.584, 0.561, 1)
-outline_color = Color(0, 0, 0, 1)
+[node name="HeldItem" type="Sprite2D" parent="WeaponVisual"]
+script = ExtResource("held_s")
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=186865809]
 collision_layer = 2
@@ -137,7 +133,7 @@ weapon_holder_path = NodePath("../WeaponHolder")
 
 [node name="Inventory" type="Node" parent="."]
 script = ExtResource("inv_s")
-start_items = Array[ExtResource("item_s")]([ExtResource("it_sword")])
+start_items = Array[ExtResource("item_s")]([ExtResource("it_sword"), ExtResource("it_axe"), ExtResource("it_pick")])
 
 [node name="Crafter" type="Node" parent="."]
 script = ExtResource("crafter_s")

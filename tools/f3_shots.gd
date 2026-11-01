@@ -27,10 +27,10 @@ func _init() -> void:
 	panel.use_overrides(F3Overrides.new(cfg))
 	panel.visible = true
 	panel.apply_value("Player.speed", 330.0)          # scene-only override
-	panel.apply_value("BodyRig.hand_radius", 5.5)     # can go to .tres
-	dock.toggle_pin("BodyRig.hand_radius")
+	panel.apply_value("BodyRig.visual_scale", 1.1)     # can go to .tres
+	dock.toggle_pin("BodyRig.visual_scale")
 	dock.toggle_pin("Player.speed")
-	dock.toggle_pin("BodyRig.hand_idle_front")
+	dock.toggle_pin("BodyRig.slash_scale")
 	await _frames(60)
 	await _shot("1_default")
 	dock.collapse_all()

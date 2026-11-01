@@ -4,7 +4,7 @@ extends SceneTree
 # Targets/labels below are the old tuning_panel._ready list, hardcoded.
 const OLD_TARGETS := [
 	"Player", "WeaponVisual", "Visual", "RunDust", "Swimmer", "WaterFx",
-	"BodyRig", "Dodge", "Guard", "GuardVisual", "SwingFx", "Hands",
+	"BodyRig", "Dodge", "Guard", "GuardVisual", "SwingFx",
 	"CoverArc", "Player Health", "Dummy Health", "Attacker", "Debug", "Loadout",
 	"Wooden Sword", "SkillSlot", "Wooden Sword Skill", "Boss", "Boss Health", "Boss Brain",
 	"Boss Visual", "Boss Slam", "Boss Spread", "Boss Charge", "Boss Ring", "Map",
@@ -27,7 +27,7 @@ const OLD_ACTIONS := [
 	"Heal player", "Hurt player 20", "Reset skill cd", "Kill player", "Go to nearest drop", "New map", "Go home", "Go to boss",
 	"Biome map", "Generate", "Phase 2", "-> slam", "-> spread", "-> charge", "-> ring", "Boss passive", "Heal boss",
 	"Test sword hit", "Test parry", "Test player hit", "Test kill FX", "Test boss hit", "Test lunge", "Test charged arrow", "Knockback on/off",
-	"Break nearest node", "Give 10 each", "Clear items", "Give axe", "Give pickaxe", "Give sword", "Fill bag", "Give W3 kit",
+	"Break nearest node", "Give 10 each", "Clear items", "Give axe", "Give pickaxe", "Fill bag", "Give W3 kit",
 	"Give materials (20 each)", "Finish smelting", "Place workbench here", "Place furnace here", "Place anvil here",
 	"Save now", "Load save", "Delete save", "Heal dummy", "Dummy to spot", "Reset stats", "Restart", "Save rig",
 ]
@@ -75,7 +75,7 @@ func _init() -> void:
 			extra.append(k)
 	extra.sort()
 	print("targets: %d old, %d found; new owners: %s" % [OLD_TARGETS.size(), names.size(), extra])
-	if extra != ["Frame", "Pixel Plains", "Run", "Save", "Weapon"]:   # status-only owners that had a block but no section
+	if extra != ["Frame", "HeldItem", "Pixel Plains", "Run", "Save", "Swing Sword Natural", "Weapon"]:   # status-only owners that had a block but no section
 		print("FAIL: unexpected extra names ", extra)
 		ok = false
 	for l in OLD_ACTIONS:
@@ -95,7 +95,7 @@ func _init() -> void:
 	for n in get_nodes_in_group("debug"):
 		if n.has_method("status_text") and str(n.status_text()) != "":
 			status_owners.append(n.debug_name())
-	for s in ["Player", "Weapon", "Dodge", "Guard", "Hands", "Boss", "Map", "HitFx", "Loadout", "Collector", "Inventory", "Crafter", "Respawner", "Save", "Frame", "SkillSlot", "Attacker", "Dummy", "Run"]:
+	for s in ["Player", "Weapon", "Dodge", "Guard", "Boss", "Map", "HitFx", "Loadout", "Collector", "Inventory", "Crafter", "Respawner", "Save", "Frame", "SkillSlot", "Attacker", "Dummy", "Run"]:
 		if not status_owners.has(s):
 			print("FAIL: no status_text from ", s)
 			ok = false

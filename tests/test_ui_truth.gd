@@ -59,7 +59,7 @@ func _init() -> void:
 	win.select_recipe(pick)
 	await _frames(2)
 	_check(not win.craft_enabled() and cr.craftable_count(win.selected_recipe()) == 0, "holding an axe: the pickaxe button is dark (cursor busy)")
-	_check(win.craft_selected(true) and inv.count(&"stone_pickaxe") == 1, "shift + Craft still works (straight into the bag)")
+	_check(win.craft_selected(true) and inv.count(&"stone_pickaxe") == 2, "shift + Craft still works (straight into the bag)")
 	inv.return_held()
 	var wb := _idx(win, &"workbench")
 	win.select_recipe(wb)

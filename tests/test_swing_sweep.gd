@@ -1,5 +1,5 @@
 extends SceneTree
-# Decision 0020: a snapping swing hits everything along its arc on the FIRST
+# Decision 0020 (the weapon WITHOUT a swing_motion; see the sword with one in test_hit_follows_swing.gd): a snapping swing hits everything along its arc on the FIRST
 # physics frame of ACTIVE, once. Targets just inside both ends are hit; one
 # outside the arc is not. Aim right and aim left (the visual mirrors).
 var _holder: WeaponHolder
@@ -14,18 +14,22 @@ func _init():
 	dummy.set_physics_process(false)   # no home return: the test places the dummy itself
 	var hp: Health = dummy.get_node("Health")
 	player.set_physics_process(false)
+	for b in [player, dummy]:   # no shoves: a hit's knockback would move the aim point / target mid-case
+		var kb = b.get_node_or_null("Knockback")
+		if kb: kb.enabled = false
 	_holder = player.get_node("WeaponHolder")
 	var wv: WeaponVisual = player.get_node("WeaponVisual")
+	wv.weapon.swing_motion = null   # 0050: a SwingMotion sword sweeps its blade path (tests/test_hit_follows_swing.gd); this test keeps the old fixed-pivot arc
+	wv.set_weapon(wv.weapon)
 	wv.weapon.step_distance = 0.0   # this test measures sweep geometry from a fixed spot
 	var half := wv.weapon.arc_degrees * 0.5
 	var ok := true
 	# [name, angle from the aim line in the weapon's own frame (deg), expected hits]
 	var cases := [["start side", -half + 5.0, 1], ["end side", half - 5.0, 1],
 			["middle", 0.0, 1], ["outside start", -110.0, 0], ["outside end", 110.0, 0],
-			# The shape sits a little off the blade's centre line (toward +), so past the END
-			# of the arc it still reaches, past the START it does not. A sweep that runs the
-			# wrong way or ignores the left-aim mirror gets one of these two wrong.
-			["past end, far tip", half + 17.0, 1, 58.0], ["past start, far tip", -half - 17.0, 0, 58.0]]
+			# The shape sits ON the blade's centre line now (0050 follow-up; it used to sit 5 px toward +), so past the
+			# END and past the START of the arc both still reach by the same amount (a dummy has a radius).
+			["past end, far tip", half + 17.0, 1, 58.0], ["past start, far tip", -half - 17.0, 1, 58.0]]
 	for aim in [0.0, PI]:
 		wv.set_aim_angle(aim)
 		for cs in cases:

@@ -6,10 +6,9 @@ extends Node2D
 
 const GRASS := "res://assets/map/Floors_Tiles.png"
 const PLAYER_FRAMES := "res://assets/characters/player/3d/player_3d_frames.tres"
-const SWORD := "res://data/weapons/sword.tres"
+const SWORD := "res://data/weapons/wooden_sword.tres"
 const WeaponVisualS := preload("res://scripts/visual/weapon_visual.gd")
 const SwingFxS := preload("res://scripts/visual/swing_fx.gd")
-const HandsS := preload("res://scripts/visual/hands_visual.gd")
 @export var size_px := 18                  # which rendered size to show (14 / 18 / 22)
 @export var base := "res://assets/characters/test_blocky/"
 @export var walk_speed := 90.0
@@ -26,7 +25,6 @@ const HandsS := preload("res://scripts/visual/hands_visual.gd")
 class Actor:
 	var root: Node2D
 	var wv: Node2D
-	var hands: Node2D
 	var fx: Node2D
 	var sprite: Node2D
 	var info := {}
@@ -61,7 +59,7 @@ func _ready() -> void:
 	_actors.append(_make("blocky, no arms\\n(2D hands + sword)", Vector2(0, 0), "noarms", true))
 	_actors.append(_make("current player\\n(3D body)", Vector2(150, 0), "", true))
 
-func _make(title: String, off: Vector2, variant: String, with_hands: bool) -> Actor:
+func _make(title: String, off: Vector2, variant: String, _with_hands: bool) -> Actor:
 	var a := Actor.new()
 	a.root = Node2D.new()
 	a.root.position = _c + off + Vector2(-half, -half)
@@ -104,14 +102,6 @@ func _make(title: String, off: Vector2, variant: String, with_hands: bool) -> Ac
 	a.fx.bind_model(a.wv.get_model())
 	var hb = a.wv.get_model().get_node_or_null("Hitbox")
 	if hb: hb.set("weapon", _weapon)
-	if with_hands:
-		a.hands = HandsS.new()
-		a.hands.position = a.wv.position
-		a.hands.fill_color = Color(0.91, 0.584, 0.561, 1)
-		a.hands.outline_color = Color(0.227, 0.063, 0.125, 1)
-		a.root.add_child(a.hands)
-		a.wv.model_changed.connect(a.hands.bind_model)
-		a.hands.bind_model(a.wv.get_model())
 	a.label = Label.new()
 	a.label.text = title.replace("\\n", "\n")
 	a.label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -158,7 +148,6 @@ func _drive_weapon(a: Actor, delta: float, allowed: bool) -> void:
 	var origin := a.root.global_position + Vector2(0, a.wv.position.y)
 	var ang := Vector2(cos(a.aim_t), sin(a.aim_t)).angle()
 	a.wv.set_aim_angle(ang)
-	if a.hands: a.hands.set_aim_angle(ang)
 	a.phase_t += delta
 	var next := a.phase
 	match a.phase:

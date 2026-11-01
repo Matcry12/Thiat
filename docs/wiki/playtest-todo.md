@@ -86,7 +86,7 @@ You start with a wooden sword only. Press `F3` and use `Give W3 kit` if you want
 - [ ] Axe on a tree: 2 hits. Hands: 6 hits. Is the axe too strong or too weak? (F3 → `Tool stone_axe`, `Node tree` → `tool_bonus`)
 - [ ] Axe on copper: "clink". Pickaxe on copper: it breaks. Is it clear why?
 - [ ] `Tab` or `I`: the bag opens under the hotbar. Pick up a stack, put it down, right click for half, shift click to send it to the hotbar.
-- [ ] Try to put a 3rd weapon in the hotbar (F3 → `Give sword`, then move it). It must not go in.
+- [ ] Try to put a 3rd weapon in the hotbar (F3 → `Give W3 kit`, then move a sword in). It must not go in.
 - [ ] Close the bag while holding a stack: the stack goes back.
 - [ ] Click on the bag: you should not swing your weapon.
 - [ ] Walk to the boss until it wakes up: the bag closes and says it is locked.

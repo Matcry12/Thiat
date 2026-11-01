@@ -30,7 +30,7 @@ func _init() -> void:
 	tree.position = player.global_position + Vector2(40, 0)
 	arena.add_child(tree)
 	await physics_frame
-	var fists: WeaponData = load("res://data/weapons/fists.tres")
+	var fists: WeaponData = load("res://data/weapons/stone_axe.tres")
 	while not tree.is_broken():
 		tree.take_gather_hit(fists, player)
 	await physics_frame
@@ -92,7 +92,7 @@ func _water_edge() -> void:
 		arena.add_child(tree)
 		await physics_frame
 		while not tree.is_broken():
-			tree.take_gather_hit(load("res://data/weapons/fists.tres"), player)
+			tree.take_gather_hit(load("res://data/weapons/stone_axe.tres"), player)
 		tree.queue_free()
 	for i in 40:
 		await physics_frame

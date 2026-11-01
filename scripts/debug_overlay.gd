@@ -117,11 +117,19 @@ func _on_draw() -> void:
 	# only shows mid-swing, but a bow's range matters BEFORE you shoot).
 	_draw_projectile_range(weapon_holder)
 	_draw_skill_reach(weapon_holder)
+	_draw_picture_fit()
 	for hb in get_tree().get_nodes_in_group("hitbox"):
 		if (hb as Hitbox).is_active():
 			for pose in (hb as Hitbox).sweep_poses:   # the arc a snapping swing covered
 				_draw_shape(pose[0], pose[1], Color(1.0, 0.3, 0.3, 0.3), 1.0)
-			_draw_hitbox_outline(hb)
+			var hbx := hb as Hitbox
+			if hbx.weapon != null and hbx.weapon.swing_motion != null:
+				# 0050: the node's own shape sits on the old pivot and deals no damage; the last swept pose is the live hit area
+				if not hbx.sweep_poses.is_empty():
+					var lp: Array = hbx.sweep_poses[hbx.sweep_poses.size() - 1]
+					_draw_shape(lp[0], lp[1], Color(1.0, 0.2, 0.2, 0.9), 2.0)
+			else:
+				_draw_hitbox_outline(hb)
 
 	# Knockback: an orange line from where the body stood to where the shove sends it, for 0.6 s after a hit.
 	for kb in get_tree().get_nodes_in_group("knockback"):
@@ -236,6 +244,20 @@ func _draw_hurtbox_outline(hurtbox: Hurtbox) -> void:
 ## So the outline can never promise reach the box does not have.
 ## Dim line from the Muzzle along the aim, exactly projectile_range long: where
 ## an arrow can reach if nothing stops it. Nothing drawn for melee weapons.
+## Weapon picture fit (0049): cross = the grip (model origin = where the hand holds it), dot = the blade tip (`Tip` marker).
+## If the cross is not on the handle or the dot not on the blade end, the picture is misplaced in the model scene.
+func _draw_picture_fit() -> void:
+	var wv := _player.get_node_or_null("WeaponVisual") as WeaponVisual
+	var d: Dictionary = wv.picture_grip_tip() if wv else {}
+	if d.is_empty():
+		return
+	var g: Vector2 = d["grip"]
+	var c := Color(0.2, 1.0, 1.0)
+	_draw_layer.draw_line(g + Vector2(-5, 0), g + Vector2(5, 0), c, 1.5)
+	_draw_layer.draw_line(g + Vector2(0, -5), g + Vector2(0, 5), c, 1.5)
+	if d.has("tip"):
+		_draw_layer.draw_circle(d["tip"], 3.0, Color(1.0, 0.3, 1.0))
+
 func _draw_projectile_range(weapon_holder: WeaponHolder) -> void:
 	var weapon: WeaponData = weapon_holder.weapon
 	if weapon == null or weapon.behavior != "projectile":
@@ -274,8 +296,15 @@ func _draw_swing_range(weapon_holder: WeaponHolder) -> void:
 	var reach := _hitbox_reach(weapon_holder.hitbox)
 	if reach <= 0.0:
 		return
-	var poly := SectorShape.build_sector_polygon(weapon.arc_degrees, reach, 0.0, 20)
 	var xform := pivot.global_transform
+	if weapon.swing_motion != null:
+		# 0050: the real swept area of the blade path (not the old wedge). Aim line only; the red hit shapes are drawn from sweep_poses.
+		_draw_swept_outline(weapon_holder.hitbox)
+		var o: Vector2 = xform.origin
+		_draw_layer.draw_line(o, xform * Vector2(reach * 1.15, 0.0), Color(1, 0.9, 0.2, 0.9), 1.5)
+		_draw_layer.draw_circle(o, 3.0, Color(1, 0.9, 0.2, 0.9))
+		return
+	var poly := SectorShape.build_sector_polygon(weapon.arc_degrees, reach, 0.0, 20)
 	var points := PackedVector2Array()
 	for p in poly:
 		points.append(xform * p)
@@ -294,6 +323,24 @@ func _draw_swing_range(weapon_holder: WeaponHolder) -> void:
 	var half := deg_to_rad(weapon.arc_degrees) * 0.5
 	for edge in [-half, half]:
 		_draw_layer.draw_line(origin, xform * (Vector2.RIGHT.rotated(edge) * reach), Color(1, 1, 1, 0.35), 1.0)
+
+## White outline of everything the whole blade path can hit (SwingMotion weapons): the hit shape merged over the full active path.
+func _draw_swept_outline(hitbox: Hitbox) -> void:
+	var area: Array = []
+	for pose in hitbox.motion_poses(0.0, 1.0, 48):
+		var outline: PackedVector2Array = pose[1] * Hitbox.shape_outline(pose[0])
+		if outline.size() < 3:
+			continue
+		if area.is_empty():
+			area = [outline]
+			continue
+		var res := Geometry2D.merge_polygons(area[0], outline)
+		if res.size() > 0:
+			area = res
+	for poly in area:
+		var pts := PackedVector2Array(poly)
+		pts.append(pts[0])
+		_draw_layer.draw_polyline(pts, Color(1, 1, 1, 0.55), 1.5)
 
 ## Furthest point of the hitbox's shape from the swing pivot. This is the
 ## weapon's reach — increase it by making the BOX bigger, not by typing a number.

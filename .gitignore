@@ -20,3 +20,7 @@ logs/
 .claude/eval-runs/
 .claude/eval-harness/
 *.blend1
+
+# Art test byproducts: raw recorder frames (re-made by tools/swing_video.gd), Godot imports
+tools/art_tests/**/f_*.png
+tools/art_tests/**/*.import

@@ -15,7 +15,7 @@ extends CharacterBody2D
 # delete the weapon with it (same trap as the shadow).
 @onready var weapon_visual: WeaponVisual = $WeaponVisual
 @onready var swing_fx: SwingFx = $WeaponVisual/SwingFx
-@onready var hands: HandsVisual = $Hands
+@onready var held_item: HeldItemVisual = $WeaponVisual/HeldItem
 @onready var weapon_holder: WeaponHolder = $WeaponHolder
 @onready var health: Health = $Health
 @onready var dodge: Dodge = $Dodge
@@ -60,14 +60,10 @@ func _ready() -> void:
 	weapon_holder.bind_model(weapon_visual.get_model())
 	weapon_visual.model_changed.connect(swing_fx.bind_model)
 	swing_fx.bind_model(weapon_visual.get_model())
-	weapon_visual.model_changed.connect(hands.bind_model)
-	hands.bind_model(weapon_visual.get_model())
-	skill_slot.skill_state_changed.connect(func(st: String): hands.set_drawing(st == "charge"))
 	guard.state_changed.connect(guard_visual.on_guard_state)
 	guard.tank_changed.connect(func(_c: float, _m: float): guard_visual.set_tank_fill(guard.tank_fraction()))
 	# Block pose: the sword rises while guarding (decision 0015).
 	guard.state_changed.connect(func(st: String): weapon_visual.set_guarding(st == "parry" or st == "block"))
-	guard.state_changed.connect(func(st: String): hands.set_guarding(st == "parry" or st == "block"))
 	guard.parried.connect(func(_source: Node): guard_visual.on_parry_success())
 	guard.broke.connect(guard_visual.on_break)
 	loadout.swap_finished.connect(_on_swap_finished)
@@ -83,7 +79,6 @@ func _on_died() -> void:
 	skill_slot.cancel()
 	velocity = Vector2.ZERO
 	visual.set_move_state("idle")
-	hands.set_move_state("idle")
 
 ## Wakes up after a death (Respawner): full hp, inputs back. The caller moves the body.
 func respawn() -> void:
@@ -112,7 +107,6 @@ func _physics_process(delta: float) -> void:
 	if new_move_state != _move_state:
 		_move_state = new_move_state
 		visual.set_move_state(_move_state)
-		hands.set_move_state(_move_state)
 
 	if aim_override != Vector2.ZERO:
 		aim_direction = aim_override.normalized()
@@ -121,11 +115,10 @@ func _physics_process(delta: float) -> void:
 	if aim_direction == Vector2.ZERO:
 		aim_direction = Vector2.RIGHT
 	visual.set_facing(aim_direction)
-	hands.set_facing_left(visual.is_facing_left())
 	# 2.5D: the body stays upright, only the aim indicator/weapon turn (decision 0009).
 	visual.set_aim_angle(aim_direction.angle())
 	weapon_visual.set_aim_angle(aim_direction.angle())
-	hands.set_aim_angle(aim_direction.angle())
+	held_item.set_item(_held_item_data())
 	weapon_holder.aim_direction = aim_direction
 	skill_slot.aim_direction = aim_direction
 	guard.aim_direction = aim_direction
@@ -219,12 +212,14 @@ func _dock_hovered() -> bool:
 
 func _on_weapon_state_changed(state: String) -> void:
 	visual.set_weapon_state(state)
+	weapon_visual.set_swing_flip(weapon_holder.swing_flip)   # the holder decides the swing side, the picture follows (0050)
 	weapon_visual.on_weapon_state(state)
 	swing_fx.on_weapon_state(state)
-	hands.set_weapon_state(state)
-	# A bow's wind-up is its draw: the off hand pulls back (the piercing charge does the same via the skill).
-	if weapon_holder.weapon and weapon_holder.weapon.behavior == "projectile":
-		hands.set_drawing(state == "windup")
+
+## The item in the hand if it is not a weapon / tool (HeldItem decides what shows); the Loadout owns which slot is selected.
+func _held_item_data() -> ItemData:
+	var inv := get_node_or_null("Inventory") as Inventory
+	return inv.slot_item(loadout.selected_slot) if inv and not loadout.is_casting() else null
 
 func _on_swap_finished(w: WeaponData) -> void:
 	skill_slot.cancel()   # defensive: swaps are refused while a skill runs
@@ -247,7 +242,8 @@ func debug_children() -> Array:
 		{"name": "RunDust", "object": get_node_or_null("Visual/RunDust")},
 		{"name": "Swimmer", "object": swimmer},
 		{"name": "WaterFx", "object": get_node_or_null("Visual/WaterFx")},
-		{"name": "BodyRig", "object": visual.get("rig")},   # per-character body / weapon / hand fit (decision 0028)
+		{"name": "BodyRig", "object": visual.get("rig")},   # per-character body / weapon fit (decision 0028)
+		{"name": "HeldItem", "object": held_item},
 		{"name": "GuardVisual", "object": guard_visual, "cat": "Combat"},
 		{"name": "SwingFx", "object": swing_fx, "cat": "Combat"},
 		{"name": "CoverArc", "object": guard_visual.get_node_or_null("CoverArc"), "cat": "Combat"},
@@ -257,6 +253,8 @@ func debug_children() -> Array:
 	for w in loadout.weapons:
 		if w:
 			out.append({"name": w.debug_name(), "object": w, "cat": "Combat"})
+			if w.swing_motion:
+				out.append({"name": w.swing_motion.debug_name(), "object": w.swing_motion, "cat": "Combat"})
 			out.append({"name": w.debug_name() + " Skill", "object": skill_slot.skill_for(w), "cat": "Combat"})
 	out.append({"name": "Fists", "object": loadout.unarmed, "cat": "Combat"})
 	out.append({"name": "Knockback " + name, "object": get_node_or_null("Knockback"), "cat": "Combat"})
@@ -286,7 +284,7 @@ func status_text() -> String:
 		lines.append(water)
 	return "\n".join(lines)
 
-## F3 "Save rig": writes the live BodyRig (hand pose, sway, sizes...) back into its own .tres, so an F3 tune stays in the game.
+## F3 "Save rig": writes the live BodyRig (sizes, offsets...) back into its own .tres, so an F3 tune stays in the game.
 func _debug_save_rig() -> void:
 	var r: BodyRig = visual.rig
 	var err := ResourceSaver.save(r, r.resource_path)

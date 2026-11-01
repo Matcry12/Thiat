@@ -16,6 +16,7 @@ func _init():
 	_fx = player.get_node("WeaponVisual/SwingFx")
 	var wv = player.get_node("WeaponVisual")
 	var ok := true
+	wv.weapon.swing_motion.crescent_on = true   # this test is about the crescent (0049: the natural swing turns it off)
 
 	wv.set_aim_angle(0.0)
 	_holder.try_attack()

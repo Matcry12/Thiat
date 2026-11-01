@@ -1,17 +1,16 @@
 extends Node2D
 ## Round 4 of the "3D -> pixel sprite" test. Standalone: the game's own scripts/scenes are only INSTANCED, never edited.
 ## Hybrid = 3D-rendered BODY (3 rows: S front, E 3/4 front [flip for W], N back) + the game's real 2D hands/weapon
-## (WeaponVisual + SwingFx + HandsVisual, wired exactly like scenes/player.tscn / player.gd).
+## (WeaponVisual + SwingFx, wired exactly like scenes/player.tscn / player.gd).
 ## Next to it: the REAL player sprite with the SAME weapon nodes, aiming and swinging in sync.
 ##   user args:  --static   frozen idle pose, camera 4x, used for hybrid_compare_4x.png
 
 const GRASS := "res://assets/map/Floors_Tiles.png"
 const PLAYER_FRAMES := "res://assets/characters/player/player_frames.tres"
 const SHEETS := "res://assets/characters/player/3d/"
-const SWORD := "res://data/weapons/sword.tres"
+const SWORD := "res://data/weapons/wooden_sword.tres"
 const WeaponVisualS := preload("res://scripts/visual/weapon_visual.gd")
 const SwingFxS := preload("res://scripts/visual/swing_fx.gd")
-const HandsS := preload("res://scripts/visual/hands_visual.gd")
 @export var zoom := 2.0
 @export var walk_speed := 90.0
 @export var sprite_scale := 2.0
@@ -25,7 +24,6 @@ const HandsS := preload("res://scripts/visual/hands_visual.gd")
 class Actor:
 	var root: Node2D
 	var wv: Node2D
-	var hands: Node2D
 	var fx: Node2D
 	var aim_t := 0.0
 	var phase := "idle"
@@ -115,17 +113,10 @@ func _make_actor(at: Vector2) -> Actor:
 	a.fx.name = "SwingFx"
 	a.wv.add_child(a.fx)
 	a.root.add_child(a.wv)
-	a.hands = HandsS.new()
-	a.hands.position = Vector2(0, -9)
-	a.hands.fill_color = Color(0.91, 0.584, 0.561, 1)
-	a.hands.outline_color = Color(0.227, 0.063, 0.125, 1)
-	a.root.add_child(a.hands)
 	a.fx.set_weapon(_weapon)
 	a.wv.set_weapon(_weapon)
 	a.wv.model_changed.connect(a.fx.bind_model)
 	a.fx.bind_model(a.wv.get_model())
-	a.wv.model_changed.connect(a.hands.bind_model)
-	a.hands.bind_model(a.wv.get_model())
 	# SwingFx draws the crescent from Hitbox.arc_poses(), which needs hitbox.weapon (WeaponHolder normally sets it).
 	var hb = a.wv.get_model().get_node_or_null("Hitbox")
 	if hb: hb.set("weapon", _weapon)
@@ -182,7 +173,6 @@ func _drive(a: Actor, delta: float, swinging_allowed: bool) -> void:
 	var target := a.root.global_position + Vector2(0, -9) + Vector2(cos(a.aim_t), sin(a.aim_t)) * aim_radius
 	var ang := (target - (a.root.global_position + Vector2(0, -9))).angle()
 	a.wv.set_aim_angle(ang)
-	a.hands.set_aim_angle(ang)
 	a.phase_t += delta
 	var next := a.phase
 	match a.phase:
@@ -214,7 +204,7 @@ func _process(delta: float) -> void:
 			_hy.aim_t = 0.3; _rp.aim_t = 0.3
 		_clock += delta
 		for a in [_hy, _rp]:
-			a.wv.set_aim_angle(0.3); a.hands.set_aim_angle(0.3)
+			a.wv.set_aim_angle(0.3)
 		_twin.frame = 0
 		queue_redraw()
 		if _clock > 0.2: get_tree().quit()

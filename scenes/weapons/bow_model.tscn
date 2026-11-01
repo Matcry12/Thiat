@@ -11,8 +11,3 @@ texture = ExtResource("1")
 [node name="Muzzle" type="Marker2D" parent="."]
 position = Vector2(28, 0)
 
-[node name="HandMain" type="Marker2D" parent="."]
-position = Vector2(23, 0)
-
-[node name="HandOff" type="Marker2D" parent="."]
-position = Vector2(12, 0)

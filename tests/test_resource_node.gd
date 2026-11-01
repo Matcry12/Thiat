@@ -17,7 +17,7 @@ func _node(arena: Node, path: String, at: Vector2) -> ResourceNode:
 func _swing(wh: WeaponHolder) -> void:
 	wh.aim_direction = Vector2.RIGHT
 	wh.try_attack()
-	for i in 30:
+	for i in 50:
 		await physics_frame
 
 func _init() -> void:
@@ -41,16 +41,17 @@ func _init() -> void:
 	await _swing(wh)
 	_check(tree.hp == tree.data.max_hp, "sword does not chop (hp %.0f)" % tree.hp)
 
-	lo.toggle_hands()
+	lo.select(1)   # the start-kit stone axe (bare fists gather nothing, decision 0048)
 	await physics_frame
+	var axe_hit: float = lo.active_weapon().gather_damage * (tree.data.tool_bonus if lo.active_weapon().tool_kind == tree.data.preferred_tool else 1.0)
 	await _swing(wh)
-	_check(tree.hp == tree.data.max_hp - 1.0, "one punch = one gather hit, not one per polled frame")
+	_check(is_equal_approx(tree.hp, tree.data.max_hp - axe_hit), "one swing = one gather hit, not one per polled frame")
 	_check(fx_seen.has(&"chop"), "chop hit feel fired")
 	var hits := 1
 	while not tree.is_broken() and hits < 20:
 		await _swing(wh)
 		hits += 1
-	_check(tree.is_broken() and hits == int(tree.data.max_hp), "tree breaks after max_hp punches (%d)" % hits)
+	_check(tree.is_broken() and hits == ceili(tree.data.max_hp / axe_hit), "tree breaks after max_hp / axe hit swings (%d)" % hits)
 	_check(fx_seen.has(&"node_break"), "break hit feel fired")
 	await physics_frame
 	_check(not is_instance_valid(tree) or tree.get_node("CollisionShape2D").disabled, "a broken tree no longer blocks")

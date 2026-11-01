@@ -8,6 +8,7 @@ extends Node
 @export var inventory_path: NodePath = ^"../Inventory"
 @export var pickup_hop_time := 0.35   ## read by Pickup
 @export var pickup_size := 7.0   ## placeholder diamond, read by Pickup
+@export var pickup_icon_px := 16.0   ## icon height on the ground in world px, whatever the icon file size (16 or 32)
 @export_group("Loose item look")
 @export var bob_height := 3.0   ## px the icon floats up (0 = still)
 @export var bob_period := 2.0   ## seconds for one float

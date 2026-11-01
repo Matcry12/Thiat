@@ -28,11 +28,12 @@ func _init():
 	var hp_before: float = health.hp
 
 	holder.try_attack()
-	for i in 40:                                                      # covers windup+active+recovery
+	var w = player.get_node("Loadout").active_weapon()
+	for i in ceili((w.windup + w.active + w.recovery) * 60.0) + 6:     # whole swing + margin, from the weapon's own timings
 		await physics_frame
 
 	var dealt: float = hp_before - health.hp
-	var expected := 20.0                                              # 30 dmg - 20 armor*0.5
+	var expected: float = player.get_node("Loadout").active_weapon().damage - 10.0   # weapon dmg - 20 armor*0.5
 	print("hp %.0f -> %.0f  (dealt %.1f, expected %.1f once)" % [hp_before, health.hp, dealt, expected])
 	print("phase back to idle: ", holder.phase == 0)
 	var ok: bool = is_equal_approx(dealt, expected) and holder.phase == 0

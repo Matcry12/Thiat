@@ -70,7 +70,7 @@ func on_weapon_state(state: String) -> void:
 	if now == _active:
 		return
 	_active = now
-	if now:
+	if now and not (_weapon.swing_motion and not _weapon.swing_motion.crescent_on):   # a SwingMotion draws its own afterimages (0049)
 		_spawn_slash()
 
 func _is_arc() -> bool:

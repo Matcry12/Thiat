@@ -53,7 +53,7 @@ func _init() -> void:
 	var st := placer.place_free(World.item("workbench"))
 	_check(st != null, "a workbench stands near the player")
 	_check(cr.station_ids_in_range() == [&"workbench"] and cr.visible_recipes().has(pick) and not cr.visible_recipes().has(_recipe(cr, "copper_sword")), "workbench in range: its recipes show, the anvil's do not")
-	_check(cr.craft(pick) and inv.count(&"stone_pickaxe") == 1 and inv.count(&"stone") == 14 and inv.count(&"wood") == 11, "stone pickaxe: 4 wood + 6 stone taken, 1 pickaxe given")
+	_check(cr.craft(pick) and inv.count(&"stone_pickaxe") == 2 and inv.count(&"stone") == 14 and inv.count(&"wood") == 11, "stone pickaxe: 4 wood + 6 stone taken, 1 pickaxe given")
 	player.global_position += Vector2(st.get_node("CraftStation").craft_radius + 40.0, 0)
 	_check(cr.station_ids_in_range().is_empty() and not cr.visible_recipes().has(pick) and not cr.can_craft(pick), "walked out of the radius: the recipe is gone")
 	player.global_position -= Vector2(st.get_node("CraftStation").craft_radius + 40.0, 0)

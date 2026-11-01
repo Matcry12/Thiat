@@ -1,7 +1,7 @@
 extends SceneTree
 # F3 at start: saved Map edits are in before the map's FIRST build (one build, not two), the startup toast shows with F3 closed,
 # an edit for a section that appears later (a weapon picked up) is applied when it appears, opening a big section is quick,
-# and the rig-driven Hands numbers are not Hands rows (BodyRig owns them).
+# and there are no Hands rows.
 var _ok := true
 
 func _check(cond: bool, msg: String) -> void:
@@ -69,8 +69,8 @@ func _init() -> void:
 	panel.rescan()
 	_check((Time.get_ticks_usec() - t0) < 20000, "rescan with nothing changed: %d us" % (Time.get_ticks_usec() - t0))
 
-	# 5. Hands: the rig owns those numbers
-	_check(not panel.settings.has("Hands.hand_radius") and not panel.settings.has("Hands.idle_front") and panel.settings.has("BodyRig.hand_radius"), "hand numbers are BodyRig rows only")
+	# 5. no Hands section any more (decision 0048); HeldItem numbers are rows
+	_check(not panel.settings.has("Hands.hand_radius") and panel.settings.has("HeldItem.icon_scale"), "no hand rows; HeldItem.icon_scale is a row")
 
 	TuningPanel.test_cfg_path = ""
 	TuningPanel.test_force = false
