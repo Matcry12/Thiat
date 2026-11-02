@@ -25,9 +25,10 @@ Default bias: **delegate the doing, keep the deciding.**
 | Job | Model | Why |
 |---|---|---|
 | Plan a slice, split it into tasks, decide design | Opus (main loop) | Deciding is where mistakes cost most |
-| Build a slice / feature, write tests, refactor | Sonnet 5.5 agent | Normal coding; tested and judged after |
-| Judge Sonnet's work (rule 2.4) | Opus agent, fresh context | A weak judge hides bugs; nobody sees them until playtest |
-| Judge work Opus did itself | Sonnet 5.5 agent | Different eyes matter more than strength |
+| Design question, "what should this be?" | `design-panel` skill: 5 `design-*` Sonnet agents in parallel, Opus merges | The user is new to design; several views beat one ([0051](docs/decision/0051-agent-team.md)) |
+| Build a slice / feature, write tests, refactor | `godot-builder` (Sonnet 5.5), several in parallel by file (`build-slice` skill) | Normal coding; tested and judged after |
+| Judge Sonnet's work (rule 2.4) | `slice-judge` (Opus), fresh context, one per builder as it lands | A weak judge hides bugs; nobody sees them until playtest |
+| Judge work Opus did itself | `slice-judge` with `model: sonnet` | Different eyes matter more than strength |
 | Hard bug (flaky, timing, "can't reproduce") | Opus agent | Opus 5.5 was 2x faster on our debug test; both fixed it |
 | Lookups, file sweeps, blind grading, mechanical edits | Haiku agent | Cheap and enough |
 | Explain to the user | Opus (main loop) | It holds the conversation |
@@ -164,8 +165,9 @@ resolved.
 **Read before design or code work**
 - [docs/wiki/design-pillars.md](docs/wiki/design-pillars.md) — the combat/boss/item system.
 - [docs/wiki/prototype-v0.md](docs/wiki/prototype-v0.md) — v0 scope, architecture, debug/tuning tools.
-- [docs/decision/](docs/decision/) — 0001..0038. Settled; supersede with a new record, never ignore.
+- [docs/decision/](docs/decision/) — 0001..0051. Settled; supersede with a new record, never ignore.
 - [docs/reference/godot/](docs/reference/godot/) — Godot 4 combat patterns, juice recipes, RL notes.
+- [docs/reference/godot/engine-versions/](docs/reference/godot/engine-versions/) — Godot 4.4–4.7 API changes (breaking, deprecated). Check before using an API that may be newer than 4.3.
 - UI work: [docs/design/DESIGN.md](docs/design/DESIGN.md) (style "Island Workshop", decision 0043). Apply it;
   new looks are designed in the web mockup `tools/ui_mock/` first (shots: `tools/ui_mock/shots.py`).
 - Pixel art (items, icons, props, ore rocks): the `pixel-artist` agent ([.claude/agents/pixel-artist.md](.claude/agents/pixel-artist.md))
