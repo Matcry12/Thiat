@@ -113,6 +113,7 @@ func _on_draw() -> void:
 	#            blade. Only alive for `active` (0.1s), far too brief on its own.
 	if weapon_holder.phase != WeaponHolder.Phase.IDLE:
 		_draw_swing_range(weapon_holder)
+		_draw_tool_target(weapon_holder)
 	# A ranged weapon's reach, drawn all the time it is held (the sword's wedge
 	# only shows mid-swing, but a bow's range matters BEFORE you shoot).
 	_draw_projectile_range(weapon_holder)
@@ -323,6 +324,21 @@ func _draw_swing_range(weapon_holder: WeaponHolder) -> void:
 	var half := deg_to_rad(weapon.arc_degrees) * 0.5
 	for edge in [-half, half]:
 		_draw_layer.draw_line(origin, xform * (Vector2.RIGHT.rotated(edge) * reach), Color(1, 1, 1, 0.35), 1.0)
+
+## Tool target hit (WeaponData.tool_target_reach): orange reach ring + cone edges around the real aim, and a ring on the node that would get the hit.
+func _draw_tool_target(wh: WeaponHolder) -> void:
+	if wh.weapon == null or wh.weapon.tool_target_reach <= 0.0:
+		return
+	var c := Color(1.0, 0.55, 0.1, 0.8)
+	var o := _player.global_position
+	var half := deg_to_rad(wh.weapon.tool_target_cone_deg) * 0.5
+	_draw_layer.draw_arc(o, wh.weapon.tool_target_reach, wh.aim_direction.angle() - half, wh.aim_direction.angle() + half, 20, Color(c, 0.4), 1.0)
+	for e in [-half, half]:
+		_draw_layer.draw_line(o, o + wh.aim_direction.rotated(e) * wh.weapon.tool_target_reach, Color(c, 0.4), 1.0)
+	var t: ResourceNode = wh.tool_target if wh.phase != WeaponHolder.Phase.IDLE else wh.find_tool_target()
+	if is_instance_valid(t):
+		_draw_ground_circle(t.global_position, t.data.radius + t.data.hurtbox_pad + 3.0, c, 2.5)
+		_draw_layer.draw_line(o, t.global_position, c, 1.0)
 
 ## White outline of everything the whole blade path can hit (SwingMotion weapons): the hit shape merged over the full active path.
 func _draw_swept_outline(hitbox: Hitbox) -> void:

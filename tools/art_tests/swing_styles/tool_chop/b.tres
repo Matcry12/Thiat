@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="SwingMotion" format=3]
+
+[ext_resource type="Script" path="res://scripts/visual/swing_motion.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+back_grip = Vector2(-6, -28)
+windup_ctrl = Vector2(-10, -16)
+front_grip = Vector2(18, -10)
+end_grip = Vector2(26, 8)
+recovery_ctrl = Vector2(14, 4)
+screen_offset = Vector2(0, 8)
+windup_angle_pad = 80.0
+end_angle_pad = 0.0
+wrist_lag_power = 2.6
+overshoot_deg = 10.0
+alternate = false
+slash_on = true
+ribbon_tail_deg = 130.0
+ribbon_tail_taper_deg = 50.0
+ribbon_inner = 0.35

@@ -18,6 +18,10 @@ extends Resource
 @export var aim_bias_deg := 0.0                    ## turns the whole swing picture back toward its START side, so the slash centres on the mouse (the hand ends to the side)
 @export var screen_offset := Vector2.ZERO          ## SCREEN px (y+ = lower), not aim frame: shifts the whole sword picture, any aim
 @export var top_lift_px := 0.0                     ## SCREEN px: grip rises by this * (how far the blade points up on screen, 0..1), any aim. Picture + slash + hit path (one shared function)
+@export_group("Side chop")
+@export var side_only := false                     ## tools: the picture + hit path aim only RIGHT or LEFT (never up / down), so the tool always rises over the head and lands on screen. Off = follows the aim (sword)
+@export_range(0.0, 60.0, 1.0) var side_tilt_max_deg := 0.0   ## the snapped side aim may lean toward the real aim by up to this much (0 = flat side chop)
+@export_range(0.0, 89.0, 1.0) var side_deadzone_deg := 12.0  ## aiming within this many degrees of straight up / down keeps the last side (no flicker)
 @export_group("Blade angle")
 @export var windup_angle_pad := 10.0               ## blade goes this far BEHIND the start of the arc
 @export var end_angle_pad := 12.0                  ## ...and this far PAST the end of the arc
@@ -76,6 +80,17 @@ extends Resource
 @export var slash_freeze_after_active := true      ## after active the slash stays where the swing ended (off: follows the blade back)
 @export_group("Old crescent")
 @export var crescent_on := false                   ## the old SwingFx crescent slash
+
+## Side chop: the aim the picture + hit path really use. `last_side` = 1 right / -1 left (kept near straight up / down). Returns [angle rad, side].
+func side_aim(angle: float, last_side: float, locked := false) -> Array:
+	var side := last_side
+	var cx := cos(angle)
+	if not locked and absf(cx) > sin(deg_to_rad(side_deadzone_deg)):
+		side = signf(cx)
+	var base := 0.0 if side > 0.0 else PI
+	var w := angle - base
+	var tilt := clampf(atan2(sin(w), absf(cos(w))), -deg_to_rad(side_tilt_max_deg), deg_to_rad(side_tilt_max_deg))   # folded: an aim on the opposite side (side locked) eases to 0, no +max/-max jump
+	return [base + tilt, side]
 
 func head_deg(frame: int) -> float:
 	return [slash_head_f1_deg, slash_head_f2_deg, slash_head_f3_deg, slash_head_f4_deg][frame]

@@ -42,8 +42,10 @@ func _run(wv: WeaponVisual, hb: Hitbox, aim: float, since := 0.1) -> Dictionary:
 func _init():
 	for p in ["wooden_sword", "copper_sword"]:
 		_check(load("res://data/weapons/%s.tres" % p).swing_motion != null, "%s has a SwingMotion" % p)
-	for p in ["bow", "copper_axe", "stone_pickaxe", "fists"]:
+	for p in ["bow", "fists"]:
 		_check(load("res://data/weapons/%s.tres" % p).swing_motion == null, "%s has none (unchanged)" % p)
+	for p in ["stone_axe", "copper_axe", "stone_pickaxe", "copper_pickaxe"]:   # tools: shared side chop (0050 addendum)
+		_check(load("res://data/weapons/%s.tres" % p).swing_motion == load("res://data/swing_motions/tool_chop.tres"), "%s uses tool_chop" % p)
 	var player = load("res://scenes/player.tscn").instantiate()
 	root.add_child(player)
 	await process_frame

@@ -388,6 +388,7 @@ characters (Gemini + hand-cleaned); kept the egg placeholder, 32x30, plus 2 hand
    Log NS2 (drawn slash P3: `SwingSlash` on the live grip, frozen after active, sword active 0.13 / recovery 0.24): built by Sonnet 5.5 agent · judge: pending · user: pending.
    Log NS3 (hit area follows the swing: `SwingMotion.swing_path` shared by picture + `Hitbox`, holder owns the side, `hit_follows_blade`, [0050](../decision/0050-hitbox-follows-swing.md)): built by Sonnet 5.5 agent · judge: pending · user: pending.
    Log NS4 (slash = ribbon built from the real blade path, `SwingRibbon`; sword `top_lift_px` 40, a/b demo motions deleted): built by Sonnet 5.5 agent - judge (Opus, 6 rounds): size jump, wrong frame switch, flat tail, broken anchor E/F found + fixed - user: flat tail, trail sliding with the sword, arrow head; fixed with C + D + G, approved.
+   Log NS5 (tools: shared `tool_chop` side-chop motion + real axe / pickaxe models + tool target hit, [0050 addendum](../decision/0050-hitbox-follows-swing.md)): built by Sonnet 5.5 agent - judge: pending - user: pending.
 
 ## 6. Done when
 

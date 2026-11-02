@@ -42,6 +42,15 @@ class_name WeaponData
 ## Only with a swing_motion (0050). false = snap: on the first physics frame of active the hit shape is tried along the WHOLE blade path.
 ## true = progressive: each physics frame of active tries the poses between last frame and this one, so a far target is hit only when the blade gets there.
 @export var hit_follows_blade := false
+@export_group("Tool target")
+## Tools only (tool_kind set). On the first frame of active, the nearest gatherable node this far from the user (px, edge of the node) AND inside the cone around the REAL aim gets the hit,
+## even if the picture lands beside it (0050 addendum). 0 = off (the blade alone decides). The node is hit once per swing; the blade skips it.
+@export var tool_target_reach := 0.0
+## Full width of the cone around the real aim (degrees) a node must be inside.
+@export_range(10.0, 360.0, 1.0) var tool_target_cone_deg := 70.0
+## When the target hit lands, as a share of the active phase (0 = first frame, 1 = last). Set so the hit number drops on the frame the tool reaches the node.
+@export_range(0.0, 1.0, 0.05) var tool_target_hit_t := 0.6
+@export_group("")
 @export var color := Color.WHITE
 ## Colours the model's picture (copper tools reuse the stone tool's model, tinted). White = as drawn.
 @export var model_tint := Color.WHITE

@@ -275,7 +275,15 @@ func _sync_editor_preview_weapon() -> void:
 func _half_arc() -> float:
 	return deg_to_rad(weapon.arc_degrees) * 0.5 if weapon else 0.0
 
+var _side := 1.0   ## side chop (SwingMotion.side_only): 1 right, -1 left
+
 func set_aim_angle(angle: float) -> void:
+	var m := weapon.swing_motion if weapon else null
+	if m and m.side_only:   # picture AND Hitbox read this node's transform, so snapping here snaps both
+		var swinging := _phase == "windup" or _phase == "active" or _phase == "recovery"
+		var sa: Array = m.side_aim(angle, _side, swinging)   # the side never flips mid-swing
+		_side = sa[1]
+		angle = sa[0]
 	aim_angle = angle
 	rotation = angle
 	# Soul Knight style: aiming left MIRRORS the weapon instead of turning it
@@ -446,4 +454,5 @@ func picture_grip_tip() -> Dictionary:
 func status_text() -> String:
 	if _motion == null:
 		return "swing: %s  motion: none (old pivot swing)" % _phase
-	return "swing: %s  dir: %s  hits: %s  grip: (%.0f, %.0f)  ghosts: %d  slash: %s %s" % [_phase, "first" if _flip > 0.0 else "reversed", "follow blade" if weapon and weapon.hit_follows_blade else "snap", _art_grip.x, _art_grip.y, ghosts.count(), _motion.slash_mode, ribbon.status() if _motion.slash_mode == "ribbon" else slash.status()]
+	var side := ("  side: %s tilt %.0f" % ["right" if _side > 0.0 else "left", rad_to_deg(wrapf(aim_angle - (0.0 if _side > 0.0 else PI), -PI, PI))]) if _motion.side_only else ""
+	return "swing: %s  dir: %s  hits: %s  grip: (%.0f, %.0f)  ghosts: %d  slash: %s %s" % [_phase, "first" if _flip > 0.0 else "reversed", "follow blade" if weapon and weapon.hit_follows_blade else "snap", _art_grip.x, _art_grip.y, ghosts.count(), _motion.slash_mode, ribbon.status() if _motion.slash_mode == "ribbon" else slash.status()] + side

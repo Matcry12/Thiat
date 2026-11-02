@@ -177,6 +177,13 @@ func _warn_once(msg: String) -> void:
 		_warned = true
 		push_warning("Hitbox %s: %s" % [get_path(), msg])
 
+## Tool target hit (WeaponHolder picks the node): one gather hit, counted in this swing so the blade cannot hit it again.
+func hit_gather_target(node: ResourceNode) -> void:
+	if not _active or weapon == null or node in _hit_this_swing:
+		return
+	_hit_this_swing.append(node)
+	node.take_gather_hit(weapon, owner)
+
 func _physics_process(_delta: float) -> void:
 	if not _active or weapon == null or weapon.swing_motion != null:   # a SwingMotion weapon hits ONLY through the sweep (0050), not the old pivot shape
 		return

@@ -28,6 +28,8 @@ var swing_flip := 1.0
 var _since_swing := 99.0   ## seconds idle since the last swing ended
 var _phase_time := 0.0
 var _muzzle: Marker2D
+var _tool_hit_done := false
+var tool_target: ResourceNode   ## tool swing (WeaponData.tool_target_reach): the node picked at the start of this swing, hit once when active begins; for F3 / F1
 
 ## Called whenever the equipped weapon's model changes (WeaponVisual.model_changed).
 ## Finds the model's optional `Hitbox` / `Muzzle` children — either may be null.
@@ -68,6 +70,7 @@ func _physics_process(delta: float) -> void:
 				_set_phase(Phase.ACTIVE)
 				_start_active()
 		Phase.ACTIVE:
+			_tool_target_tick(_phase_time >= weapon.active)
 			if hitbox and weapon.hit_follows_blade:
 				hitbox.advance_sweep(minf(1.0, _phase_time / maxf(weapon.active, 0.0001)))   # no gaps: every pose between last frame and now
 			if _phase_time >= weapon.active:
@@ -78,6 +81,27 @@ func _physics_process(delta: float) -> void:
 			if _phase_time >= weapon.recovery:
 				_set_phase(Phase.IDLE)
 
+## Tool target hit (0050 addendum): the unbroken ResourceNode a tool swing aimed at `aim` would hit, or null. Reach is from the user to the node's edge;
+## the node must be inside the cone around the REAL aim. A node that likes this tool wins over a closer one that does not, then the nearest.
+func find_tool_target() -> ResourceNode:
+	var me := get_parent() as Node2D
+	if weapon == null or me == null or weapon.tool_target_reach <= 0.0 or weapon.tool_kind == &"":
+		return null
+	var best: ResourceNode
+	var best_key := Vector2(2.0, INF)
+	for n: ResourceNode in get_tree().get_nodes_in_group("resource_node"):
+		if n.is_broken():
+			continue
+		var to := n.global_position - me.global_position
+		var edge := to.length() - n.data.radius - n.data.hurtbox_pad
+		if edge > weapon.tool_target_reach or (to != Vector2.ZERO and absf(aim_direction.angle_to(to)) > deg_to_rad(weapon.tool_target_cone_deg) * 0.5):
+			continue
+		var key := Vector2(0.0 if n.data.preferred_tool == weapon.tool_kind else 1.0, edge)
+		if key.x < best_key.x or (key.x == best_key.x and key.y < best_key.y):
+			best = n
+			best_key = key
+	return best
+
 ## Swing step: a melee swing leans forward `step_distance` px over windup + active. move_and_collide, so it
 ## never pushes the user into a wall or a body. Dodge/guard/skills cancel the swing first, so they never overlap.
 func _step(delta: float) -> void:
@@ -87,14 +111,29 @@ func _step(delta: float) -> void:
 		return
 	var body := get_parent() as CharacterBody2D
 	if body:
-		body.move_and_collide(aim_direction * weapon.step_distance * delta / maxf(weapon.windup + weapon.active, 0.001))
+		var dir := aim_direction
+		if is_instance_valid(tool_target):   # a tool leans toward the node it will hit, not along the (snapped) picture
+			dir = (tool_target.global_position - body.global_position).normalized()
+		body.move_and_collide(dir * weapon.step_distance * delta / maxf(weapon.windup + weapon.active, 0.001))
+
+## Tool target hit: fires ONCE when the share of active passed reaches WeaponData.tool_target_hit_t (or when active ends, whichever is first), so the number drops when the tool lands, not while it is still raised.
+func _tool_target_tick(ending: bool) -> void:
+	if _tool_hit_done or hitbox == null:
+		return
+	if not ending and _phase_time < weapon.active * weapon.tool_target_hit_t:
+		return
+	_tool_hit_done = true
+	if is_instance_valid(tool_target):
+		hitbox.hit_gather_target(tool_target)
 
 func _start_attack() -> void:
+	_tool_hit_done = false
 	var m := weapon.swing_motion
 	swing_flip = m.next_flip(swing_flip, _since_swing) if m else 1.0
 	if hitbox:
 		hitbox.weapon = weapon
 		hitbox.swing_flip = swing_flip
+	tool_target = find_tool_target() if weapon.behavior == "arc" else null
 	_set_phase(Phase.WINDUP)
 
 ## behavior == "arc" -> start the melee swing (hitbox turns on for `active`).
@@ -106,6 +145,7 @@ func _start_active() -> void:
 		"arc":
 			if hitbox:
 				hitbox.start_swing()
+				_tool_target_tick(false)
 				if weapon.swing_motion and weapon.hit_follows_blade:
 					hitbox.advance_sweep(0.0)   # progressive (0050): the rest follows each physics frame
 				else:
@@ -131,6 +171,8 @@ func _spawn_projectile() -> void:
 
 func _set_phase(new_phase: Phase) -> void:
 	phase = new_phase
+	if new_phase == Phase.IDLE:
+		tool_target = null
 	_phase_time = 0.0
 	state_changed.emit(Phase.keys()[phase].to_lower())
 
@@ -158,4 +200,8 @@ func status_text() -> String:
 			Phase.WINDUP: dur = weapon.windup
 			Phase.ACTIVE: dur = weapon.active
 			Phase.RECOVERY: dur = weapon.recovery
-	return "%s\nphase: %s  left: %.2fs" % [wname, Phase.keys()[phase].to_lower(), maxf(0.0, dur - _phase_time)]
+	var tgt := ""
+	if weapon != null and weapon.tool_target_reach > 0.0:
+		var t: ResourceNode = tool_target if phase != Phase.IDLE else find_tool_target()
+		tgt = "\ntool target: %s" % ("none" if not is_instance_valid(t) else "%s  %.0f px" % [t.data.display_name, t.global_position.distance_to((get_parent() as Node2D).global_position)])
+	return "%s\nphase: %s  left: %.2fs%s" % [wname, Phase.keys()[phase].to_lower(), maxf(0.0, dur - _phase_time), tgt]

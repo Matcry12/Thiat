@@ -146,5 +146,7 @@ func _draw() -> void:
 			continue
 		ub = minf(ub, 1.0)
 		_quad[0] = _inner[i]; _quad[1] = _inner[i + 1]; _quad[2] = _outer[i + 1]; _quad[3] = _outer[i]
+		if absf((_quad[2] - _quad[0]).cross(_quad[3] - _quad[1])) < 0.01:
+			continue            # zero area (needle tail, or a sliver): Godot cannot triangulate it
 		_uvs[0] = Vector2(ub, _v[i]); _uvs[1] = Vector2(ua, _v[i + 1]); _uvs[2] = Vector2(ua, 1.0); _uvs[3] = Vector2(ub, 1.0)
 		draw_polygon(_quad, _cols, _uvs, _tex)
