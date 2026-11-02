@@ -30,7 +30,8 @@ Default bias: **delegate the doing, keep the deciding.**
 | Judge Sonnet's work (rule 2.4) | `slice-judge` (Opus), fresh context, one per builder as it lands | A weak judge hides bugs; nobody sees them until playtest |
 | Judge work Opus did itself | `slice-judge` with `model: sonnet` | Different eyes matter more than strength |
 | Hard bug (flaky, timing, "can't reproduce") | Opus agent | Opus 5.5 was 2x faster on our debug test; both fixed it |
-| Lookups, file sweeps, blind grading, mechanical edits | Haiku agent | Cheap and enough |
+| Exact steps + an auto-check (`--check-only`, tests), text only: renames across files, same `@export` / F3 line in N scripts, test scaffolds from written cases, N items / recipes from a table, doc table updates | DeepSeek flash (`ds`, `deepseek:deepseek` skill; thinking is always on, `--effort` does nothing); fails twice -> Sonnet | ~1/50 of Sonnet's cost; Sonnet decides once, `ds` fills each row in parallel |
+| Lookups, file sweeps, blind grading, mechanical edits with no check, anything with pictures | Haiku agent | Cheap and enough |
 | Explain to the user | Opus (main loop) | It holds the conversation |
 
 **Escalate, don't retry blind:** if a Sonnet agent fails the same task twice (tests red, or the
