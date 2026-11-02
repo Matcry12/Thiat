@@ -17,3 +17,6 @@ Hands that hit but gather nothing were a loophole around tools. Facing the mouse
 
 ## Addendum - tools chop in every direction
 The user found the side chop (0050 addendum) could not swing down at a tree or rock below. `data/swing_motions/tool_chop.tres` now has `side_only = false`: axe and pickaxe swing toward the mouse like the sword, the picture and hit path still share one transform, and the tool target hit is unchanged. The `side_*` knobs stay on `SwingMotion` (F3) to switch it back.
+
+## Addendum - held item hidden when idle
+Like Tinkerlands, the held weapon / tool / item (`WeaponVisual`, incl. `HeldItem`) is shown only while the player faces the mouse: in use and `face_mouse_hold` s after. `Player.hide_idle_held` (default true, F3) switches it off. Combat is unaffected (the Hitbox is an Area2D, visibility does not change it); the Placer ghost stays visible for aiming a placement.

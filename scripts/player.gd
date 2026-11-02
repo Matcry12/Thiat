@@ -43,6 +43,8 @@ var _move_dir := Vector2.ZERO
 var _action_used := false   # set by an attack / place / interact press this frame
 ## Seconds the body keeps facing the mouse after the last weapon / tool / place action (decision 0052); then it faces the move direction.
 @export var face_mouse_hold := 3.0
+## true = the held weapon / tool / item is hidden outside that mouse-facing time (shown while in use).
+@export var hide_idle_held := true
 var _face_mouse_left := 0.0
 var _body_facing := Vector2.RIGHT
 
@@ -142,6 +144,8 @@ func _physics_process(delta: float) -> void:
 	visual.set_aim_angle(_body_facing.angle())
 	weapon_visual.set_aim_angle(_body_facing.angle())
 	held_item.set_item(_held_item_data())
+	# Tinkerlands style (0052): the held weapon / tool / item shows only while facing the mouse, i.e. in use + face_mouse_hold after.
+	weapon_visual.visible = not hide_idle_held or _face_mouse_left > 0.0
 	weapon_holder.aim_direction = aim_direction
 	skill_slot.aim_direction = aim_direction
 	guard.aim_direction = aim_direction

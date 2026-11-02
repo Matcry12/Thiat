@@ -47,9 +47,11 @@ func _init() -> void:
 	Input.action_release("attack")
 	_check(player.visual.is_facing_left(), "attack: faces the mouse (left)")
 	_check(player.status_text().contains("facing src: mouse"), "status: facing src mouse")
+	_check(player.weapon_visual.visible, "in use: held weapon shown")
 	# hold elapses while still moving right
 	await _frames(90)
 	_check(not player.visual.is_facing_left(), "after face_mouse_hold: faces move dir again")
+	_check(not player.weapon_visual.visible, "after face_mouse_hold: held weapon hidden")
 	# walking straight down keeps the last side and a flat pose (left / right only)
 	Input.action_release("move_right")
 	Input.action_press("move_down")
