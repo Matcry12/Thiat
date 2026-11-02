@@ -7,7 +7,7 @@ extends CharacterBody2D
 @export var speed := 260.0
 ## Seconds of no scrolling before the wheel's hotbar slot is selected.
 @export var wheel_settle := 0.12
-## Holding attack with a tool or bare hands keeps gathering (weapons stay one click per swing, 0036).
+## Holding attack with a tool keeps gathering (weapons stay one click per swing, 0036).
 @export var hold_to_gather := true
 
 @onready var visual: ActorVisual = $Visual
@@ -40,6 +40,11 @@ var _wheel_slot := -1
 var _wheel_left := 0.0
 var _move_state := "idle"
 var _move_dir := Vector2.ZERO
+var _action_used := false   # set by an attack / place / interact press this frame
+## Seconds the body keeps facing the mouse after the last weapon / tool / place action (decision 0052); then it faces the move direction.
+@export var face_mouse_hold := 3.0
+var _face_mouse_left := 0.0
+var _body_facing := Vector2.RIGHT
 
 func _ready() -> void:
 	add_to_group("player")   # trees fade when the player stands behind them
@@ -85,6 +90,7 @@ func respawn() -> void:
 	dead = false
 	health.revive()
 	guard.reset()
+	_face_mouse_left = 0.0
 	velocity = Vector2.ZERO
 
 func _physics_process(delta: float) -> void:
@@ -114,10 +120,27 @@ func _physics_process(delta: float) -> void:
 		aim_direction = (get_global_mouse_position() - global_position).normalized()
 	if aim_direction == Vector2.ZERO:
 		aim_direction = Vector2.RIGHT
-	visual.set_facing(aim_direction)
+	# Body facing (decision 0052): movement direction, except `face_mouse_hold` s after any action. Aim / weapon still follow the mouse.
+	var acting := weapon_holder.phase != WeaponHolder.Phase.IDLE or guard.is_guarding() or skill_slot.is_active() or _action_used
+	_action_used = false
+	if acting:
+		_face_mouse_left = face_mouse_hold
+	else:
+		_face_mouse_left = maxf(0.0, _face_mouse_left - delta)
+	# Body: left / right only. Pose: the full mouse aim while held, else flat left / right (up / down input keeps the last side).
+	if _face_mouse_left > 0.0:
+		_body_facing = aim_direction
+	else:
+		var x := input_dir.x if absf(input_dir.x) > 0.001 else _body_facing.x
+		if absf(x) > 0.001:   # straight up / down aim keeps the last side
+			_body_facing = Vector2.LEFT if x < 0.0 else Vector2.RIGHT
+		else:
+			_body_facing = Vector2.LEFT if visual.is_facing_left() else Vector2.RIGHT
+	visual.set_facing(Vector2(_body_facing.x, 0.0))
 	# 2.5D: the body stays upright, only the aim indicator/weapon turn (decision 0009).
-	visual.set_aim_angle(aim_direction.angle())
-	weapon_visual.set_aim_angle(aim_direction.angle())
+	# The pose follows the body facing; hit / shot direction (holder, skill, guard) stays on the mouse. While acting the two are equal.
+	visual.set_aim_angle(_body_facing.angle())
+	weapon_visual.set_aim_angle(_body_facing.angle())
 	held_item.set_item(_held_item_data())
 	weapon_holder.aim_direction = aim_direction
 	skill_slot.aim_direction = aim_direction
@@ -130,13 +153,15 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var attack_in := Input.is_action_just_pressed("attack") \
-			or (hold_to_gather and not dodge.is_dashing() and loadout.is_holstered() and not placer.is_holding() and Input.is_action_pressed("attack"))
+			or (hold_to_gather and not dodge.is_dashing() and loadout.is_holstered() and loadout.can_attack() and not placer.is_holding() and Input.is_action_pressed("attack"))
 	if attack_in and guard.can_attack() and not loadout.is_casting() \
 			and not skill_slot.is_active() and not mouse_over_ui():
 		# A station in the selected slot: the click puts it down instead of swinging (decision 0031).
 		if placer.is_holding():
+			_action_used = true
 			placer.try_place()
-		else:
+		elif loadout.can_attack():   # bare hands never attack (decision 0052)
+			_action_used = true
 			weapon_holder.try_attack()
 
 	# E skill. Refused while guarding, dashing, casting a swap, mid-swing; the
@@ -256,7 +281,6 @@ func debug_children() -> Array:
 			if w.swing_motion:
 				out.append({"name": w.swing_motion.debug_name(), "object": w.swing_motion, "cat": "Combat"})
 			out.append({"name": w.debug_name() + " Skill", "object": skill_slot.skill_for(w), "cat": "Combat"})
-	out.append({"name": "Fists", "object": loadout.unarmed, "cat": "Combat"})
 	out.append({"name": "Knockback " + name, "object": get_node_or_null("Knockback"), "cat": "Combat"})
 	return out.filter(func(c): return c["object"] != null)
 
@@ -274,8 +298,9 @@ func debug_actions() -> Array:
 func status_text() -> String:
 	var lines: Array[String] = []
 	lines.append("pos: (%d, %d)" % [roundi(global_position.x), roundi(global_position.y)])
-	lines.append("vel: %.0f  state: %s  facing: %s" % [velocity.length(), "run" if velocity.length() > 1.0 else "idle", "left" if aim_direction.x < 0.0 else "right"])
+	lines.append("vel: %.0f  state: %s  facing: %s" % [velocity.length(), "run" if velocity.length() > 1.0 else "idle", "left" if _body_facing.x < 0.0 else "right"])
 	lines.append("aim: %.0f deg" % rad_to_deg(aim_direction.angle()))
+	lines.append("facing src: %s" % ("mouse %.2fs" % _face_mouse_left if _face_mouse_left > 0.0 else "move"))
 	lines.append("hp: %.0f/%.0f  shield: %.0f/%.0f" % [health.hp, health.max_hp, health.shield, health.shield_max])
 	if visual.has_method("status_text"):
 		lines.append(visual.status_text())

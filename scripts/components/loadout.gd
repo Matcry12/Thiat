@@ -186,6 +186,10 @@ func select_instant(slot: int) -> void:
 func is_holstered() -> bool:
 	return _holstered
 
+## False with bare hands (empty slot, material, placeable): attack input is ignored (decision 0052). A held tool still swings.
+func can_attack() -> bool:
+	return not _holstered or _held_tool != null
+
 func toggle_hands() -> bool:
 	# Not mid-swing / mid-draw: cancelling would skip the recovery for free (0003).
 	if unarmed == null or _casting or (_weapon_holder and _weapon_holder.phase != WeaponHolder.Phase.IDLE):

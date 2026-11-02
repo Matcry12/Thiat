@@ -1439,6 +1439,7 @@ func rect_on_land(rect: Rect2) -> bool:
 
 
 ## MapGen.WaterKind at a world position: NONE on dry land, SHALLOW in a river / lake / coast shallows (walkable), OCEAN beyond (blocks).
+## Follows the drawn ground: the shore's sand is drawn a few pixels into its water cells, and a point on that sand is dry.
 func water_kind_at(pos: Vector2) -> int:
 	if result == null or result.shallow.is_empty():
 		return MapGen.WaterKind.NONE
@@ -1447,6 +1448,9 @@ func water_kind_at(pos: Vector2) -> int:
 		return MapGen.WaterKind.OCEAN
 	var i := c.y * result.cols + c.x
 	if result.land[i] == 1:
+		return MapGen.WaterKind.NONE
+	if style != null and style.pixel_plains != null and not result.ground.is_empty() \
+			and PixelPlainsBaker.drawn_land_at(result, style.pixel_plains, Vector2i((pos / float(style.pixel_scale)).floor())):
 		return MapGen.WaterKind.NONE
 	return MapGen.WaterKind.SHALLOW if result.shallow[i] == 1 else MapGen.WaterKind.OCEAN
 
