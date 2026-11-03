@@ -24,6 +24,7 @@ signal hit_fx(hit_type: StringName)
 @export var recoil_on := true
 @export var sparks_on := true
 @export var numbers_on := true
+@export var reaction_on := true
 ## Recoil shape: share of the jolt spent going out (the rest is the spring back), and the ease strength of the return.
 @export_range(0.01, 0.99) var recoil_out_fraction := 0.25
 @export_range(0.5, 5.0, 0.02, "or_greater", "or_less") var recoil_ease := 2.0
@@ -37,9 +38,10 @@ var sound := HitSound.new()
 var shake := CameraShake.new()
 var sparks := HitSparks.new()
 var numbers := DamageNumbers.new()
+var node_fx := NodeReactionFx.new()
 var last_hit: StringName = &"-"
 ## How many times each layer has played (F3 + tests): {flash, stop, sound, shake, recoil, sparks, numbers}.
-var layer_counts := {"flash": 0, "stop": 0, "sound": 0, "shake": 0, "recoil": 0, "sparks": 0, "numbers": 0}
+var layer_counts := {"flash": 0, "stop": 0, "sound": 0, "shake": 0, "recoil": 0, "sparks": 0, "numbers": 0, "reaction": 0}
 
 var _by_type := {}
 var _shake_frame := -1
@@ -53,8 +55,9 @@ var _dummy: Node
 func _ready() -> void:
 	add_to_group("hit_fx")
 	add_to_group("debug")
-	for n in [stop, sound, shake, sparks, numbers]:
+	for n in [stop, sound, shake, sparks, numbers, node_fx]:
 		add_child(n)
+	node_fx.name = "NodeReaction"
 	sparks.name = "HitSparks"
 	numbers.name = "DamageNumbers"
 	stop.name = "HitStop"
@@ -131,7 +134,7 @@ func fire(hit_type: StringName, victim: Node, source: Node, info := {}) -> void:
 		stop.request(p.stop_frames, p.slowmo_scale, p.slowmo_time)
 		layer_counts["stop"] += 1
 	if sound_on and p.sound:
-		sound.play(p.sound, p.volume_db, p.pitch)
+		sound.play(p.sound, p.volume_db, p.pitch + p.pitch_gain * (1.0 - float(info.get("hp_fraction", 1.0))))
 		layer_counts["sound"] += 1
 	var dir: Vector2 = info.get("direction", _dir_between(source, victim))
 	if recoil_on and p.recoil_px > 0.0:
@@ -147,6 +150,9 @@ func fire(hit_type: StringName, victim: Node, source: Node, info := {}) -> void:
 	if sparks_on and p.spark_count > 0 and victim is Node2D:
 		sparks.burst(_hit_point(victim, dir), dir, p.spark_count, p.spark_speed, p.spark_life, p.spark_color, p.spark_size)
 		layer_counts["sparks"] += 1
+	if reaction_on and p.reaction != &"" and victim is Node2D:
+		if node_fx.react(p.reaction, victim, dir, info.get("hp_fraction", 1.0), p):
+			layer_counts["reaction"] += 1
 	if numbers_on and p.number_size > 0 and victim is Node2D:
 		numbers.pop(victim, info.get("amount", test_amount), p.number_text, p.number_size, p.number_color)
 		layer_counts["numbers"] += 1
@@ -187,6 +193,9 @@ func test_hit(kind: StringName) -> void:
 		&"lunge": fire(&"lunge", _dummy, _player)
 		&"charged_arrow": fire(&"charged_arrow", _boss if _boss else _dummy, _player)
 
+func _test_origin() -> Vector2:
+	return (_player as Node2D).global_position if _player is Node2D else Vector2.ZERO
+
 func status_text() -> String:
 	return "trauma: %.2f  offset: (%.1f, %.1f)\nhit-stop: %df left%s\nlast hit: %s  sounds: %d\nsparks: %d live (pool %d)  numbers: %d live (pool %d, merged %d)\nrecoil: %d  layers: %s" % [
 		shake.trauma, shake.offset.x, shake.offset.y, stop.frames_left(), "  (on)" if stop.is_active() else "",
@@ -204,7 +213,7 @@ func debug_category() -> String:
 func debug_children() -> Array:
 	var out: Array = [
 		{"name": "HitStop", "object": stop}, {"name": "CameraShake", "object": shake}, {"name": "HitSound", "object": sound},
-		{"name": "HitSparks", "object": sparks}, {"name": "DamageNumbers", "object": numbers},
+		{"name": "NodeReaction", "object": node_fx}, {"name": "HitSparks", "object": sparks}, {"name": "DamageNumbers", "object": numbers},
 	]
 	for prof in profile_list():   # one section per hit type (its .tres numbers)
 		out.append({"name": "Hit " + String(prof.hit_type), "object": prof})
@@ -215,6 +224,8 @@ func debug_actions() -> Array:
 	for t in [["Test sword hit", &"sword"], ["Test parry", &"parry"], ["Test player hit", &"player_hit"], ["Test kill FX", &"kill"],
 			["Test boss hit", &"boss_sword"], ["Test lunge", &"lunge"], ["Test charged arrow", &"charged_arrow"]]:
 		acts.append({"label": t[0], "run": test_hit.bind(t[1])})
+	acts.append({"label": "Test node hit", "run": func(): node_fx.test(&"chop", _test_origin(), _by_type)})
+	acts.append({"label": "Test node pop", "run": func(): node_fx.test(&"pop", _test_origin(), _by_type)})
 	# Knockback is gameplay (movement), not an effect: this switch is separate from the Hit FX ones.
 	acts.append({"label": "Knockback on/off", "toggle": func(): return get_tree().get_nodes_in_group("knockback").all(func(k): return k.enabled),
 		"run": func():

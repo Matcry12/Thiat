@@ -75,10 +75,11 @@ func status_text() -> String:
 	var counts := []
 	for id in inv.items():
 		counts.append("%s %d" % [id, inv.count(id)])
-	return "%s  gather_damage %.1f  tool_power %d\nlast hit: %s\nitems: %s  on ground: %d\n(density changes apply on New map)" % [
+	return "%s  gather_damage %.1f  tool_power %d\nlast hit: %s\nreaction: %s\nitems: %s  on ground: %d\n(density changes apply on New map)" % [
 		"HOLSTERED" if loadout.is_holstered() else "armed",
 		w.gather_damage if w else 0.0, w.tool_power if w else 0,
 		last_gather if last_gather != "" else "-",
+		(get_tree().get_first_node_in_group("node_reaction_fx") as NodeReactionFx).last_text if get_tree().get_first_node_in_group("node_reaction_fx") else "-",
 		", ".join(counts) if counts else "none",
 		get_tree().get_nodes_in_group("pickup").size()]
 

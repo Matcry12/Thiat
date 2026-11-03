@@ -26,7 +26,6 @@ func _ready() -> void:
 	collision_mask = 0
 	(get_node("CollisionShape2D").shape as CircleShape2D).radius = data.radius
 	(get_node("Hurtbox/CollisionShape2D").shape as CircleShape2D).radius = data.radius + data.hurtbox_pad
-	_hit_fx = get_tree().get_first_node_in_group("hit_fx")
 	get_node("Visual").show_variant(data, variant)
 
 func is_broken() -> bool:
@@ -54,6 +53,7 @@ func take_gather_hit(weapon: WeaponData, source: Node2D) -> bool:
 	var bonus := data.tool_bonus if preferred else 1.0
 	hp = maxf(hp - weapon.gather_damage * bonus, 0.0)
 	_note_hit()
+	info["hp_fraction"] = hp / data.max_hp   # the hit feel scales with it (bigger as the node nears its break)
 	_fx(data.hit_type, source, info)
 	if is_broken():
 		_break(source)
@@ -77,11 +77,13 @@ func _note_hit() -> void:   # for the F3 [Gather] line
 		col.last_gather = status_text()
 
 func _fx(type: StringName, source: Node, info: Dictionary) -> void:
+	if _hit_fx == null:   # looked up late: map nodes are built before HitFx joins its group
+		_hit_fx = get_tree().get_first_node_in_group("hit_fx")
 	if _hit_fx:
 		_hit_fx.fire(type, self, source, info)
 
 func _break(source: Node) -> void:
-	_fx(data.break_type, source, {"source": source})
+	_fx(data.break_type, source, {"source": source, "hp_fraction": 0.0, "direction": (global_position - source.global_position).normalized()})
 	get_node("CollisionShape2D").set_deferred("disabled", true)
 	get_node("Hurtbox").set_deferred("monitorable", false)
 	broken.emit(self)
@@ -89,7 +91,7 @@ func _break(source: Node) -> void:
 	if data.remains_region.has_area():
 		get_node("Visual").show_remains(data)
 	else:
-		queue_free()
+		get_node("Visual").vanish()
 
 func _drop() -> void:
 	if _no_drop():

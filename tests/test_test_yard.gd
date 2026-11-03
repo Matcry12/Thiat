@@ -52,12 +52,17 @@ func _init() -> void:
 		var node := m.nearest_node(id, m.home_point())
 		var tool := axe if String(id).begins_with("tree") else pick
 		var guard := 0
+		var rc: int = arena.get_node("HitFx").layer_counts["reaction"]
 		while not node.is_broken() and guard < 200:
 			node.take_gather_hit(tool, player)
 			guard += 1
 		broke_all = broke_all and node.is_broken()
 		_check(node.is_broken(), "%s breaks in %d hits" % [id, guard])
+		_check(arena.get_node("HitFx").layer_counts["reaction"] > rc, "%s: sway / pop reaction played" % id)
 	await process_frame
+	# map nodes are built before HitFx joins its group: a chop must still reach it (sound + tree reaction)
+	var fx: HitFx = arena.get_node("HitFx")
+	_check(fx.layer_counts["sound"] > 0 and fx.layer_counts["reaction"] > 0, "chops in the yard fire hit FX")
 	_check(get_nodes_in_group("pickup").size() > 0, "breaking drops pickups")
 	_check(y.nodes_alive() == want.size() - ids.size(), "status counts %d alive" % y.nodes_alive())
 

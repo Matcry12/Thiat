@@ -25,6 +25,18 @@ class_name HitFxProfile
 @export_range(-30.0, 12.0, 0.2, "or_greater", "or_less") var volume_db := 0.0
 ## Base pitch; HitSound adds a random +/- on top.
 @export_range(0.3, 2.0, 0.01, "or_greater", "or_less") var pitch := 1.0
+## Extra pitch when the node is nearly broken: pitch + pitch_gain * (1 - hp fraction). 0 = off. Only for hits that report `hp_fraction`.
+@export_range(0.0, 1.0, 0.01, "or_greater", "or_less") var pitch_gain := 0.0
+@export_group("Reaction (nodes)")
+## Visual reaction of a gatherable node (tree, rock, copper): "chop" (sway + chips + leaves) or "pop" (scale up, burst, stump).
+## Every node's hit profile (chop, mine, ...) and break profile (tree_break, node_break, ...) carries one; a new node kind copies them. Empty = none.
+@export var reaction: StringName = &""
+## Sway size for this kind (1 = tree; rocks are short and stiff).
+@export_range(0.0, 3.0, 0.05, "or_greater", "or_less") var sway_scale := 1.0
+## Share of the crown leaves / dust bits (1 = tree; 0 = none). They take the colours sampled from the picture.
+@export_range(0.0, 3.0, 0.05, "or_greater", "or_less") var leaf_scale := 1.0
+## true = the chips take the picture's own colours (stone), false = the wood chip colours.
+@export var picture_chips := false
 @export_group("Knockback (gameplay, read by Knockback, not by HitFx)")
 ## Shove in px on the one who was hit, if it has a Knockback component. Bosses have none.
 ## For block: how far the player slides back.

@@ -23,3 +23,4 @@ remains_region = Rect2(153, 210, 15, 14)
 fade_when_behind = true
 color = Color(0.2, 0.5, 0.5, 1)
 hit_type = &"chop"
+break_type = &"tree_break"

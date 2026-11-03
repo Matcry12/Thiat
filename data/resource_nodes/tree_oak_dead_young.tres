@@ -22,3 +22,4 @@ anchors = PackedVector2Array(14, 46, 14, 45)
 fade_when_behind = true
 color = Color(0.4, 0.33, 0.25, 1)
 hit_type = &"chop"
+break_type = &"tree_break"

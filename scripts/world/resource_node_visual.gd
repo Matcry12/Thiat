@@ -19,7 +19,21 @@ func show_variant(d: ResourceNodeData, v: int) -> void:
 	var all := d.all_regions()
 	_set_region(body, all[v % all.size()], _d.anchor_for(v % all.size()))
 
+## Nothing stays after the break: let the pop play out, then free the node (immediately if no pop runs).
+func vanish() -> void:
+	var rn := get_parent()
+	var r := get_node_or_null("Reaction") as NodeHitReaction
+	if r and r.defer_remains(rn.queue_free):
+		return
+	rn.queue_free()
+
 func show_remains(d: ResourceNodeData) -> void:
+	var r := get_node_or_null("Reaction") as NodeHitReaction
+	if r and r.defer_remains(_show_remains_now.bind(d)):
+		return   # a pop is running: it swaps in the stump when it ends
+	_show_remains_now(d)
+
+func _show_remains_now(d: ResourceNodeData) -> void:
 	_set_region(get_node("Body"), d.remains_region, Vector2(d.remains_region.size.x * 0.5, d.remains_region.size.y))
 	if d.remains_texture != null:
 		get_node("Body").texture = d.remains_texture
@@ -46,7 +60,9 @@ func _process(_delta: float) -> void:
 		_player = get_tree().get_first_node_in_group("player")
 		if _player == null:
 			return
-	var rect := Rect2(global_position + body.offset * body.scale.y - body.region_rect.size * body.scale * 0.5 + Vector2(0, 0), body.region_rect.size * body.scale)
+	var rr := get_node_or_null("Reaction") as NodeHitReaction
+	var sc: Vector2 = rr.rest_scale() if rr else body.scale
+	var rect := Rect2(global_position + body.offset * sc.y - body.region_rect.size * sc * 0.5, body.region_rect.size * sc)
 	var covers: bool = rect.has_point(_player.global_position) and _player.global_position.y < global_position.y
 	body_alpha(_d.fade_alpha if covers else 1.0)
 

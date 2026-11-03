@@ -52,7 +52,7 @@ func _init() -> void:
 		await _swing(wh)
 		hits += 1
 	_check(tree.is_broken() and hits == ceili(tree.data.max_hp / axe_hit), "tree breaks after max_hp / axe hit swings (%d)" % hits)
-	_check(fx_seen.has(&"node_break"), "break hit feel fired")
+	_check(fx_seen.has(&"tree_break"), "break hit feel fired")
 	await physics_frame
 	_check(not is_instance_valid(tree) or tree.get_node("CollisionShape2D").disabled, "a broken tree no longer blocks")
 

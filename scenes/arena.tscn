@@ -36,6 +36,7 @@
 [ext_resource type="Resource" path="res://data/hit_fx/mine.tres" id="hf_mine"]
 [ext_resource type="Resource" path="res://data/hit_fx/clink.tres" id="hf_clink"]
 [ext_resource type="Resource" path="res://data/hit_fx/node_break.tres" id="hf_node_break"]
+[ext_resource type="Resource" path="res://data/hit_fx/tree_break.tres" id="hf_tree_break"]
 
 [sub_resource type="RectangleShape2D" id="ZoneShape"]
 size = Vector2(880, 460)
@@ -103,7 +104,7 @@ script = ExtResource("hf_script")
 player_path = NodePath("../Player")
 boss_path = NodePath("../Boss")
 dummy_path = NodePath("../Dummy")
-profiles = Array[ExtResource("hfp_script")]([ExtResource("hf_sword"), ExtResource("hf_sword_boss"), ExtResource("hf_lunge"), ExtResource("hf_arrow"), ExtResource("hf_charged_arrow"), ExtResource("hf_parry"), ExtResource("hf_block"), ExtResource("hf_player_hit"), ExtResource("hf_phase_change"), ExtResource("hf_kill"), ExtResource("hf_chop"), ExtResource("hf_mine"), ExtResource("hf_clink"), ExtResource("hf_node_break")])
+profiles = Array[ExtResource("hfp_script")]([ExtResource("hf_sword"), ExtResource("hf_sword_boss"), ExtResource("hf_lunge"), ExtResource("hf_arrow"), ExtResource("hf_charged_arrow"), ExtResource("hf_parry"), ExtResource("hf_block"), ExtResource("hf_player_hit"), ExtResource("hf_phase_change"), ExtResource("hf_kill"), ExtResource("hf_chop"), ExtResource("hf_mine"), ExtResource("hf_clink"), ExtResource("hf_node_break"), ExtResource("hf_tree_break")])
 
 [node name="DebugOverlay" type="CanvasLayer" parent="." unique_id=1487825587]
 script = ExtResource("3")

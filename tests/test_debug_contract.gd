@@ -75,7 +75,7 @@ func _init() -> void:
 			extra.append(k)
 	extra.sort()
 	print("targets: %d old, %d found; new owners: %s" % [OLD_TARGETS.size(), names.size(), extra])
-	if extra != ["EnemySpawner", "Frame", "HeldItem", "Item gel", "Pixel Plains", "Run", "Save", "Swing Sword Natural", "Weapon"]:   # status-only owners that had a block but no section
+	if extra != ["EnemySpawner", "Frame", "HeldItem", "Hit tree_break", "Item gel", "NodeReaction", "Pixel Plains", "Run", "Save", "Swing Sword Natural", "Weapon"]:   # status-only owners that had a block but no section
 		print("FAIL: unexpected extra names ", extra)
 		ok = false
 	for l in OLD_ACTIONS:
