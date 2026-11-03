@@ -34,11 +34,11 @@ func _digest(r: MapGen.Result) -> Array:
 
 func _init() -> void:
 	var style: MapStyle = load("res://data/maps/grass.tres")
-	# re-pinned for v5: copper off (copper_per_100 0, copper_near_home_cells 0): rocks + props digests; before: v3 water in MapGen.Params (fewer / bigger lakes + rivers, no ponds, water_min_cells): land, biome, area, ground, nodes, props;
+	# re-pinned for 2x tree_tries (trees + props digests); before: v5: copper off (copper_per_100 0, copper_near_home_cells 0): rocks + props digests; before: v3 water in MapGen.Params (fewer / bigger lakes + rivers, no ponds, water_min_cells): land, biome, area, ground, nodes, props;
 	# before: v4 rocks off in the data (rock_per_block / rock_nodes_per_100 0, rock density_boss 0): rocks + props digests; before: one ground per colour (0047: every river / lake shore = sand, rocky without dirt clumps, gravel beach = sand: ground + props digests);
 	# before: the copper rock look + fewer swamp reeds (rocks digest: copper has regions, plain rocks show grey looks; props digest: reeds); before: 0038 step 4 (per-biome trees, rock groups, deco passes, stone / dirt ground: the area, ground, rocks, trees and props changed on purpose);
 	# earlier pin: water v2 (big rivers, big lakes + ponds, snow shore), before that step 3
-	var pins := {11: [158471966, 2511943546, 616593949, 2941611565, 3903971691, 1996640988, 503334258], 7: [3474702120, 3702374245, 3299497395, 4129484834, 3969305605, 1255554466, 3659515891]}
+	var pins := {11: [158471966, 2511943546, 616593949, 2941611565, 3903971691, 154562740, 548033731], 7: [3474702120, 3702374245, 3299497395, 4129484834, 3969305605, 257603024, 1415754846]}
 	for sd in pins:
 		var got := _digest(MapGen.generate(style, _params(), sd))
 		print("digest seed %d = %s" % [sd, got])
