@@ -17,6 +17,7 @@ drop_item = ExtResource("2")
 drop_min = 3
 drop_max = 4
 radius = 6.0
+hurtbox_pad = 14.0
 texture = ExtResource("3")
 regions = Array[Rect2]([Rect2(99, 432, 42, 43), Rect2(243, 432, 42, 43), Rect2(99, 496, 42, 43), Rect2(243, 496, 42, 43)])
 anchors = PackedVector2Array(21, 40, 21, 40, 21, 40, 21, 40)

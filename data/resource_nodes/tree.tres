@@ -15,6 +15,7 @@ drop_item = ExtResource("2")
 drop_min = 2
 drop_max = 4
 radius = 14.0
+hurtbox_pad = 14.0
 density_forest = 2.5
 density_boss = 0.6
 texture = ExtResource("3")
