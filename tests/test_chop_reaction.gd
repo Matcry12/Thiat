@@ -109,5 +109,39 @@ func _init() -> void:
 	_check(rock.is_broken() and is_instance_valid(rock) and rr.is_popping(), "rock break pops before it is freed")
 	await create_timer(0.5).timeout
 	_check(not is_instance_valid(rock), "rock gone after the pop")
+	# stations: a wrong tool wobbles (nothing taken), a pickaxe pops it and then frees it
+	var bench: Station = load("res://scenes/stations/workbench.tscn").instantiate()
+	bench.position = player.global_position + Vector2(-120, 160)
+	arena.add_child(bench)
+	await physics_frame
+	var br: NodeHitReaction = bench.get_node("Visual/Reaction")
+	var bart: Sprite2D = bench.get_node("Visual/Art")
+	var bpos := bart.position
+	var rc2: int = fx.layer_counts["reaction"]
+	var sw_sound: int = fx.sound.play_count
+	w.tool_kind = &"axe"
+	bench.take_gather_hit(w, player)
+	await process_frame
+	await process_frame
+	_check(fx.layer_counts["reaction"] == rc2 + 1 and br.is_swaying() and is_instance_valid(bench) and not bench.is_broken(), "wrong tool: station wobbles, stays")
+	_check(fx.sound.play_count > sw_sound, "wrong tool: knock sound")
+	await create_timer(1.0).timeout
+	_check(bart.position == bpos and bart.skew == 0.0, "station picture back at rest")
+	var fur: Station = load("res://scenes/stations/furnace.tscn").instantiate()
+	fur.position = bench.position + Vector2(100, 0)
+	arena.add_child(fur)
+	await physics_frame
+	w.tool_kind = &"pickaxe"
+	fur.take_gather_hit(w, player)
+	await process_frame
+	await process_frame
+	await process_frame
+	var fr: NodeHitReaction = fur.get_node("Visual/Reaction")
+	_check(fur.is_broken() and is_instance_valid(fur) and fr.is_popping(), "pickaxe: station pops before it is freed")
+	_check(fx.node_fx.live_count() > 0, "station chips alive")
+	await create_timer(0.5).timeout
+	_check(not is_instance_valid(fur), "station freed after the pop")
+	fx.node_fx.test(&"chop", bench.position + Vector2(-30, 0), fx._by_type)
+	_check(fx.node_fx.last_text.begins_with("chop"), "F3 test button reaches a station")
 	print("PASS" if _ok else "FAILED")
 	quit(0 if _ok else 1)

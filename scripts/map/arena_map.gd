@@ -1207,7 +1207,7 @@ func _clear_stations() -> void:
 			st.remove_from_group("station")
 			st.queue_free()
 			continue
-		st.pick_up(inv)
+		st.pick_up(inv, true)
 
 
 ## tools/run_tests.sh sets BOSSFIGHT_TEST_SEED so tests get the same island every run.

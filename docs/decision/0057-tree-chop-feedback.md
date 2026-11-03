@@ -15,3 +15,4 @@ The video let the user choose by feel before building. Keeping the reaction in i
 ## Consequences
 New hit kinds (rocks, copper) can reuse `reaction` with their own chip colours. Any CC0 sound drops into a profile with no code change.
 Done (user request): rocks and copper use the same reaction (profiles `mine` and `node_break`: `reaction`, `sway_scale` 0.4, `leaf_scale` 0.5 dust, `picture_chips` = grey chips) with stone sounds (`stone_hit.tres`, `stone_break.tres`); a node with no stump waits for the pop before it is freed.
+Stations (workbench, furnace, anvil) use it too: a wrong tool wobbles with a dull knock (`station_knock_wood|stone`), a pickaxe pops it with a burst of chips in its own colours (`station_pickup_wood|stone`) and the node is freed after the pop; the inventory gain happens at once as before.

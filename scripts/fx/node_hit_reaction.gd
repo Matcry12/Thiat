@@ -11,9 +11,12 @@ class Impulse:
 	var damping := 5.5
 	var attack := 0.03
 
+## The picture node next to this one (a tree's "Body", a station's "Art").
+@export var body_name: StringName = &"Body"
 var _impulses: Array[Impulse] = []
 var _settle := 0.7
 var _base_scale := Vector2.ZERO
+var _base_pos := Vector2.ZERO
 var _skew := 0.0
 var _pop_k := 0.0
 var _pop_up := 0.1
@@ -27,11 +30,12 @@ func _ready() -> void:
 	set_process(false)
 
 func _body() -> Sprite2D:
-	return get_parent().get_node_or_null("Body") as Sprite2D
+	return get_parent().get_node_or_null(NodePath(body_name)) as Sprite2D
 
-func _foot_y() -> float:
-	var rn := get_parent().get_parent() as ResourceNode
-	return rn.data.radius if rn and rn.data else 0.0
+## The foot pixel the picture bends / grows around, in Visual coordinates. The owner (tree, rock, station) says where it is.
+func _foot() -> Vector2:
+	var o := get_parent().get_parent()
+	return o.foot_local() if o and o.has_method("foot_local") else Vector2.ZERO
 
 ## Scale without the pop (the fade-behind test uses it so the pop cannot flicker the fade).
 func rest_scale() -> Vector2:
@@ -80,6 +84,7 @@ func _start() -> void:
 		return
 	if _base_scale == Vector2.ZERO:
 		_base_scale = b.scale
+		_base_pos = b.position
 	set_process(true)
 
 func _process(delta: float) -> void:
@@ -113,23 +118,28 @@ func _process(delta: float) -> void:
 
 ## Skew + scale about the foot: the foot pixel stays where it is, the top moves most.
 func _apply(b: Sprite2D) -> void:
-	var f := _foot_y()
+	var f := _foot()
 	var k := 1.0 + _pop_k
 	b.scale = _base_scale * k
 	b.skew = _skew
-	b.position = Vector2(k * sin(_skew), 1.0 - k * cos(_skew)) * f
+	# new = foot + S * (old - foot), S = k * [[1, -sin s], [0, cos s]] (what Node2D scale + skew do)
+	var d := _base_pos - f
+	b.position = f + k * Vector2(d.x - sin(_skew) * d.y, cos(_skew) * d.y)
 
 ## Visible size of the picture in world px (crown placement).
 func picture_size() -> Vector2:
 	var b := _body()
-	return b.region_rect.size * b.scale if b and b.region_enabled else Vector2(32, 48)
+	if b == null or b.texture == null:
+		return Vector2(32, 48)
+	return (b.region_rect.size if b.region_enabled else b.texture.get_size()) * b.scale
 
 ## The crown's main colours, sampled from the top of the picture (cached per texture + rect).
 func crown_colors(min_brightness := 0.0) -> PackedColorArray:
 	var b := _body()
-	if b == null or b.texture == null or not b.region_enabled:
+	if b == null or b.texture == null:
 		return PackedColorArray([Color(0.39, 0.67, 0.25)])
-	var key := "%d_%s_%.2f" % [b.texture.get_instance_id(), b.region_rect, min_brightness]
+	var rect := b.region_rect if b.region_enabled else Rect2(Vector2.ZERO, b.texture.get_size())   # an AtlasTexture's image is already cut out
+	var key := "%d_%s_%.2f" % [b.texture.get_instance_id(), rect, min_brightness]
 	if _palette_cache.has(key):
 		return _palette_cache[key]
 	var out := PackedColorArray()
@@ -137,7 +147,7 @@ func crown_colors(min_brightness := 0.0) -> PackedColorArray:
 	if img != null:
 		if img.is_compressed():
 			img.decompress()
-		var r := b.region_rect
+		var r := rect
 		var counts := {}
 		var y := int(r.position.y)
 		while y < int(r.position.y + r.size.y * 0.55):

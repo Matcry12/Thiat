@@ -28,6 +28,10 @@ func _ready() -> void:
 	(get_node("Hurtbox/CollisionShape2D").shape as CircleShape2D).radius = data.radius + data.hurtbox_pad
 	get_node("Visual").show_variant(data, variant)
 
+## Where the picture's foot is, in Visual coordinates (NodeHitReaction bends / grows the picture around it).
+func foot_local() -> Vector2:
+	return Vector2(0, data.radius)
+
 func is_broken() -> bool:
 	return hp <= 0.0
 

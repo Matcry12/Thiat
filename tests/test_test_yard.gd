@@ -59,6 +59,11 @@ func _init() -> void:
 		broke_all = broke_all and node.is_broken()
 		_check(node.is_broken(), "%s breaks in %d hits" % [id, guard])
 		_check(arena.get_node("HitFx").layer_counts["reaction"] > rc, "%s: sway / pop reaction played" % id)
+	var st: Station = get_nodes_in_group("station").filter(func(n): return not n.is_broken()).front() if not get_nodes_in_group("station").is_empty() else null
+	if st:
+		var rc_st: int = arena.get_node("HitFx").layer_counts["reaction"]
+		var axe_hit := st.take_gather_hit(axe, player)
+		_check(not axe_hit and arena.get_node("HitFx").layer_counts["reaction"] == rc_st + 1, "yard: wrong tool on a station fires the knock reaction")
 	await process_frame
 	# map nodes are built before HitFx joins its group: a chop must still reach it (sound + tree reaction)
 	var fx: HitFx = arena.get_node("HitFx")

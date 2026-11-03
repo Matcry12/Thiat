@@ -1,9 +1,11 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/station.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/components/hurtbox.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/world/craft_station.gd" id="3"]
 [ext_resource type="Texture2D" path="res://assets/stations/workbench.png" id="4"]
+
+[ext_resource type="Script" path="res://scripts/fx/node_hit_reaction.gd" id="reaction"]
 
 [sub_resource type="RectangleShape2D" id="Body"]
 resource_local_to_scene = true
@@ -17,6 +19,8 @@ size = Vector2(72, 44)
 collision_layer = 1
 collision_mask = 0
 script = ExtResource("1")
+knock_type = &"station_knock_wood"
+pickup_type = &"station_pickup_wood"
 art = ExtResource("4")
 art_region = Rect2(0, 84, 32, 28)
 color = Color(0.6, 0.42, 0.25, 1)
@@ -42,3 +46,7 @@ station_id = &"workbench"
 
 [node name="Placeholder" type="ColorRect" parent="Visual"]
 mouse_filter = 2
+
+[node name="Reaction" type="Node" parent="Visual"]
+script = ExtResource("reaction")
+body_name = &"Art"

@@ -143,7 +143,7 @@ func _chop(r: NodeHitReaction, victim: Node2D, dir: Vector2, hp_fraction: float,
 	r.sway(sgn * sway_deg * strength * (prof.sway_scale if prof else 1.0), sway_freq, sway_damping, sway_attack, sway_settle)
 	var foot := _foot(victim)
 	var d := dir if dir != Vector2.ZERO else Vector2.RIGHT
-	var chips := roundi(lerpf(chips_min, chips_max, k))
+	var chips := roundi(lerpf(chips_min, chips_max, k) * (prof.chip_scale if prof else 1.0))
 	var leaves := roundi(lerpf(leaves_min, leaves_max, k) * (prof.leaf_scale if prof else 1.0))
 	var cols := r.crown_colors(crown_min_brightness)
 	var chip_cols := cols if prof and prof.picture_chips else chip_colors
@@ -178,8 +178,7 @@ func _pop(r: NodeHitReaction, victim: Node2D, prof: HitFxProfile) -> void:
 
 ## Bottom of the trunk (the foot) in world px.
 func _foot(victim: Node2D) -> Vector2:
-	var rn := victim as ResourceNode
-	return victim.global_position + Vector2(0, rn.data.radius if rn and rn.data else 0.0)
+	return victim.global_position + (victim.foot_local() if victim.has_method("foot_local") else Vector2.ZERO)
 
 func _slot() -> Bit:
 	if _pool.size() < max_bits:
@@ -264,21 +263,24 @@ func _draw() -> void:
 			p.y -= b.z
 		draw_rect(Rect2((p - b.size * 0.5).round(), b.size), c)
 
-## F3 buttons: effects only on the nearest unbroken node of any kind, no HP change. `Test node hit` steps the hp fraction
-## down on each press. `profiles` = HitFx's profiles by hit_type (so a rock uses its own mine / node_break numbers).
+## F3 buttons: effects only on the nearest unbroken tree / rock / copper / station, no HP change. `Test node hit` steps the hp
+## fraction down on each press. `profiles` = HitFx's profiles by hit_type (a node uses its own numbers).
 func test(kind: StringName, from: Vector2, profiles: Dictionary = {}) -> void:
-	var best: ResourceNode
-	for n: ResourceNode in get_tree().get_nodes_in_group("resource_node"):
-		if n.is_broken() or n.get_node_or_null("Visual/Reaction") == null:
-			continue
-		if best == null or n.global_position.distance_to(from) < best.global_position.distance_to(from):
-			best = n
+	var best: Node2D
+	for g in [&"resource_node", &"station"]:
+		for n: Node2D in get_tree().get_nodes_in_group(g):
+			if (n.has_method("is_broken") and n.is_broken()) or n.get_node_or_null("Visual/Reaction") == null:
+				continue
+			if best == null or n.global_position.distance_to(from) < best.global_position.distance_to(from):
+				best = n
 	if best == null:
 		last_text = "test: no node around"
 		return
 	var dir := (best.global_position - from).normalized()
+	var hit_t: StringName = best.data.hit_type if best is ResourceNode else best.knock_type
+	var break_t: StringName = best.data.break_type if best is ResourceNode else best.pickup_type
 	if kind == &"pop":
-		react(&"pop", best, dir, 0.0, profiles.get(best.data.break_type))
+		react(&"pop", best, dir, 0.0, profiles.get(break_t))
 	else:
 		_test_frac = 1.0 if _test_frac <= 0.25 else _test_frac - 0.25
-		react(&"chop", best, dir, _test_frac, profiles.get(best.data.hit_type))
+		react(&"chop", best, dir, _test_frac, profiles.get(hit_t))

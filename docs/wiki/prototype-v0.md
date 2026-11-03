@@ -85,7 +85,7 @@ Test yard (0056, debug builds): title button `Test yard` starts the normal arena
   Slice log: built by Sonnet (godot-builder); Opus judge found 5 (dead `cells` slider, stations into the bag on rebuild, Reset deleted placed stations, Delete save not gated, button only greyed in release), all fixed in one round; user playtest 2026-11-03: good.
 
 Node hit feedback (0057): trees, rocks, copper sway from the foot, throw chips + leaves/dust, grow per hit, pop on break; real Kenney CC0 wood / stone sounds; no white flash. Picked from a $0 demo video (`tools/demo/chop_fx/chop_fx_demo.py`).
-  Slice log: built by Sonnet (godot-builder); Opus judge round 1 found 6 (debug-contract red, stump lean after pop, rocks lost flash, fade rect, colour-sample hitch, hardcoded numbers), round 2 (rocks) 3 (outline-black chips, no-op test, F3 buttons trees only), all fixed; user found no FX in game at all = map nodes cached a null HitFx (old bug, fixed by Opus); user playtest: pending.
+  Slice log: built by Sonnet (godot-builder); Opus judge round 1 found 6 (debug-contract red, stump lean after pop, rocks lost flash, fade rect, colour-sample hitch, hardcoded numbers), round 2 (rocks) 3 (outline-black chips, no-op test, F3 buttons trees only), all fixed; user found no FX in game at all = map nodes cached a null HitFx (old bug, fixed by Opus); user then found stations missing (furnace...) → round 3 added stations (wobble + knock on wrong tool, pop on pickup); judge found 3 (New map pop spam, dead swing in lockout, crafter saw picked station), fixed; a builder test hung 1 h (bare godot, no timeout); user playtest: pending.
 
 Rules:
 - **Never a sprite-vs-hitbox mismatch.** If an attack looks like it should hit, it hits.

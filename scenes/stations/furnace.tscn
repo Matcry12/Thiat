@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/station.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/components/hurtbox.gd" id="2"]
@@ -6,6 +6,8 @@
 [ext_resource type="Texture2D" path="res://assets/stations/furnace.png" id="4"]
 [ext_resource type="Script" path="res://scripts/world/furnace.gd" id="5"]
 [ext_resource type="Script" path="res://scripts/world/furnace_cue.gd" id="6"]
+
+[ext_resource type="Script" path="res://scripts/fx/node_hit_reaction.gd" id="reaction"]
 
 [sub_resource type="RectangleShape2D" id="Body"]
 resource_local_to_scene = true
@@ -50,3 +52,7 @@ script = ExtResource("6")
 
 [node name="Furnace" type="Node" parent="."]
 script = ExtResource("5")
+
+[node name="Reaction" type="Node" parent="Visual"]
+script = ExtResource("reaction")
+body_name = &"Art"

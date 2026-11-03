@@ -178,6 +178,7 @@ func _init() -> void:
 	_check(wb.take_gather_hit(pickaxe, player) and far_one.take_gather_hit(pickaxe, player), "a pickaxe hit picks it up (two stations in one swing)")
 	await process_frame
 	await process_frame
+	await create_timer(0.5).timeout   # a picked-up station pops first, then it is freed
 	var gone := 0
 	for st in [wb, far_one]:
 		gone += 0 if is_instance_valid(st) else 1
@@ -188,6 +189,7 @@ func _init() -> void:
 	_check(left.take_gather_hit(pickaxe, player), "after the lockout the next one can be taken")
 	await process_frame
 	await process_frame
+	await create_timer(0.4).timeout   # the pop plays before the node is freed
 	_check(not is_instance_valid(wb) and not is_instance_valid(far_one) and inv.count(&"workbench") == 2 and inv.count(&"anvil") == 1, "both are back in the inventory (workbench %d, anvil %d)" % [inv.count(&"workbench"), inv.count(&"anvil")])
 
 	# --- pick_up(null) keeps the station and its contents ---
@@ -207,6 +209,7 @@ func _init() -> void:
 	_check(keep.take_gather_hit(pickaxe, player), "after a freed station's hit the next pickaxe hit still registers")
 	await process_frame
 	await process_frame
+	await create_timer(0.4).timeout   # the pop plays before the node is freed
 	_check(not is_instance_valid(keep) and inv.count(&"furnace") >= 1, "...and picks it up (the furnace is back)")
 
 	# --- the real swing: the pickaxe in hand, a station in reach (the hit source is the weapon model, not the player) ---
@@ -256,6 +259,7 @@ func _init() -> void:
 	m.rebuild(true)
 	await physics_frame
 	await physics_frame
+	await create_timer(0.4).timeout   # the pop plays before the node is freed
 	_check(not is_instance_valid(s1) and not is_instance_valid(s2) and get_nodes_in_group("station").is_empty(), "New map: no station is left standing")
 	_check(inv.count(&"furnace") + _ground(&"furnace") == fur_before + n_f and inv.count(&"workbench") + _ground(&"workbench") == wb_before + n_w and inv.count(&"copper_ore") + _ground(&"copper_ore") == ore_before + 2, "...their items and the furnace's ore came back (inventory or dropped at the player): f %d/%d wb %d/%d ore %d/%d" % [inv.count(&"furnace") + _ground(&"furnace"), fur_before + n_f, inv.count(&"workbench") + _ground(&"workbench"), wb_before + n_w, inv.count(&"copper_ore") + _ground(&"copper_ore"), ore_before + 2])
 	quit(0 if _ok else 1)

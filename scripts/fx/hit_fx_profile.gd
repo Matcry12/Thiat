@@ -35,6 +35,8 @@ class_name HitFxProfile
 @export_range(0.0, 3.0, 0.05, "or_greater", "or_less") var sway_scale := 1.0
 ## Share of the crown leaves / dust bits (1 = tree; 0 = none). They take the colours sampled from the picture.
 @export_range(0.0, 3.0, 0.05, "or_greater", "or_less") var leaf_scale := 1.0
+## Share of the chips on a hit (1 = tree; 0 = none, e.g. a wrong-tool knock on a station).
+@export_range(0.0, 3.0, 0.05, "or_greater", "or_less") var chip_scale := 1.0
 ## true = the chips take the picture's own colours (stone), false = the wood chip colours.
 @export var picture_chips := false
 @export_group("Knockback (gameplay, read by Knockback, not by HitFx)")

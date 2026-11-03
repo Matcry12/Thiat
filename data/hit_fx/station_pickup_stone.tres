@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="HitFxProfile" format=3]
+
+[ext_resource type="Script" path="res://scripts/fx/hit_fx_profile.gd" id="1"]
+[ext_resource type="AudioStream" path="res://assets/audio/stone_break.tres" id="2"]
+
+[resource]
+script = ExtResource("1")
+hit_type = &"station_pickup_stone"
+stop_frames = 1
+slowmo_scale = 1.0
+slowmo_time = 0.0
+flash_time = 0.0
+flash_color = Color(1, 1, 1, 1)
+flash_who = 0
+shake = 0.1
+sound = ExtResource("2")
+volume_db = 0
+pitch = 1.0
+reaction = &"pop"
+leaf_scale = 0.5
+picture_chips = true
+knockback = 0
+recoil_px = 0.0
+recoil_time = 0.1
+recoil_who = 0
+spark_count = 0
+spark_speed = 180.0
+spark_life = 0.18
+spark_size = 2.0
+spark_color = Color(0.55, 0.38, 0.2, 1)
+number_size = 0
+number_color = Color(1, 1, 1, 1)
+number_text = ""
