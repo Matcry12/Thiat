@@ -423,7 +423,7 @@ static func _compose(c: Cache, key: Vector4i) -> Dictionary:
 			abuf[p * 4] = 3
 			has_anim = true
 	var out := {"img": Image.create_from_data(t, t, false, Image.FORMAT_RGBA8, buf), "anim": Image.create_from_data(t, t, false, Image.FORMAT_RGBA8, abuf),
-		"has_anim": has_anim, "cands": cands, "ok": ok}
+		"has_anim": has_anim, "cands": cands, "ok": ok, "land": land}
 	c.composed[key] = out
 	return out
 
@@ -537,6 +537,28 @@ static func bake_region(res: MapGen.Result, pp: PixelPlainsGround, ci0: int, cj0
 			for qd in 4:   # a pair the pack lacks, or 3 materials: each quarter = its own cell's plain quarter
 				img.blit_rect(_quarter(c, pp.quarter_of(m4[qd] - 1)), q_rect, dst + Vector2i((qd & 1) * h, (qd >> 1) * h))
 	return {"ground": img, "foam": anim, "anim": true, "tile": t}
+
+
+## True where the picture shows ground (not water) at art pixel `a` (world px / pixel_scale; the dual grid starts half a tile up-left).
+## The pack's shapes draw the upper ground a few pixels over the lower cell, so a shore's sand reaches into its water cells:
+## this asks the same corner tile bake_region() draws, pixel for pixel (ArenaMap.water_kind_at uses it).
+static func drawn_land_at(res: MapGen.Result, pp: PixelPlainsGround, a: Vector2i) -> bool:
+	var t := pp.tile_size
+	var h := t / 2
+	var tile := Vector2i(floori(float(a.x + h) / t), floori(float(a.y + h) / t))   # corner of cells tile - 1 .. tile
+	var cells := cell_materials(res, pp, tile.x, tile.y, 1, 1)   # NW NE SW SE, material + 1 (0 = water)
+	var wet := 0
+	for qd in 4:
+		wet += 1 if cells[qd] == 0 else 0
+	if wet == 0 or wet == 4:
+		return wet == 0
+	var lvls := cell_levels(res, pp, tile.x, tile.y, 1, 1)
+	var key := Vector4i(0, 0, 0, 0)
+	for qd in 4:
+		key[qd] = (PixelPlainsGround.mi(cells[qd] - 1) << 4) | lvls[qd]
+	var land: PackedByteArray = _compose(_cache(pp), key)["land"]
+	var l := a + Vector2i(h, h) - tile * t
+	return land[l.y * t + l.x] == 1
 
 
 ## Share of dirt / light / dark / sand / snow among the land cells (F3 status), in percent.

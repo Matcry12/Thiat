@@ -12,7 +12,7 @@ const OLD_TARGETS := [
 	"Biome plains", "Biome forest", "Biome autumn", "Biome taiga", "Biome snowy", "Biome rocky",
 	"Biome swamp", "Biome beach (sand)", "Biome beach (gravel)", "Collector", "Node tree", "Node rock",
 	"Node copper", "Node tree_oak_sapling", "Node tree_oak_young", "Node tree_oak_small", "Node tree_oak_mature", "Node tree_oak_old",
-	"Node tree_fir_sapling", "Node tree_fir_young", "Node tree_fir_small", "Node tree_fir_mature", "Node tree_fir_old", "Fists",
+	"Node tree_fir_sapling", "Node tree_fir_young", "Node tree_fir_small", "Node tree_fir_mature", "Node tree_fir_old",
 	"Inventory", "Tool copper_axe", "Item copper_bar", "Item copper_ore", "Tool copper_pickaxe", "Item stone",
 	"Tool stone_axe", "Tool stone_pickaxe", "Item wood", "Respawner", "Crafter", "Recipe workbench",
 	"Recipe stone_pickaxe", "Recipe stone_axe", "Recipe bow", "Recipe furnace", "Recipe anvil", "Recipe copper_sword",

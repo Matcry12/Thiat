@@ -23,5 +23,5 @@ ribbon_tail_deg = 130.0
 ribbon_tail_taper_deg = 50.0
 ribbon_inner = 0.35
 ribbon_textures = [ExtResource("r1"), ExtResource("r2"), ExtResource("r3"), ExtResource("r3")]
-side_only = true
+side_only = false
 side_tilt_max_deg = 35.0
