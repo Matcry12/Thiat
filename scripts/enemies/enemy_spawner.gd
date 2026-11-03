@@ -278,7 +278,10 @@ func _despawn_far(dt: float) -> void:
 	var p := _player()
 	if p == null:
 		return
-	for e: Enemy in _holder.get_children():
+	for c in _holder.get_children():   # slime drops (Pickup) land here too: Enemy._drop spawns into its parent
+		var e := c as Enemy
+		if e == null:
+			continue
 		if e.state != Enemy.State.IDLE or e.returning:
 			continue
 		if e.has_meta(&"resident_chunk"):   # a resident stays while its chunk is loaded, leaves when it unloads
