@@ -139,6 +139,7 @@ Debug keys (keep this table current):
 | `/` | Focus the F3 dock's search field (only while F3 is open; never auto-focused). While any text field has focus the game keys are paused. Not a debug key |
 | `Esc` | Pause menu (Resume / Settings / Save & quit). Order: F3 text field / search focused -> leave it (the dock handles it first); settings page -> back; open bag / crafting window -> close it; else pause or resume (W8, 0040). Not a debug key. F3 `[Frame]` status shows paused + volume / shake / fullscreen |
 | `R` | Retry — only after the boss was defeated (not a debug key). Player death no longer shows it: you respawn at home (W6, 0039) |
+| Title `Test yard` | Dev builds only (0056): the normal game on a tiny flat fixed map (`TestYard.cells`, default 64) with every Pixel Plains tree (season x age), rocks, copper, 3 stations, dummy, slime near home; no save, no natural spawning, boss off the map. F3 `[Test yard]` status (size, nodes alive / total, stations, slimes, last reset) + `Reset yard` (regrow, respawn, re-reads the layout exports). Not a debug key |
 
 **When adding any feature, the same slice must also:**
 

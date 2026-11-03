@@ -174,6 +174,8 @@ class Params:
 	var clearing_per_cells := 1600.0  ## one forest clearing per this many forest-biome cells
 	var clearing_r_min := 3.0         ## cells
 	var clearing_r_max := 5.0
+	var yard := false                 ## Test yard (decision 0056): all land, one Plains biome, no water/vegetation, the nodes are exactly `yard_nodes`
+	var yard_nodes: Array[Dictionary] = []   ## {id: StringName (ResourceNodeData id), pos: Vector2 (collision circle centre)}
 	var tree_home_clear := 4          ## no tree this many cells around home
 	var tree_jitter := 0.35           ## trunk wanders this far (cells) from its cell centre, each axis; overlapping trunks are dropped
 
@@ -365,6 +367,16 @@ static func _shape_island(res: Result, p: Params) -> void:
 	res.land.resize(n)
 	res.area.resize(n)
 	res.area.fill(Area.FOREST)
+	if p.yard:
+		res.land.fill(1)
+		res.walk_land = res.land
+		res.biome.resize(n)
+		res.biome.fill(Biome.PLAINS)
+		res.f.resize(n)
+		res.temp.resize(n)
+		res.humid.resize(n)
+		res.rough.resize(n)
+		return
 	if not p.island_on:
 		res.land.fill(1)
 		res.walk_land = res.land
@@ -1779,6 +1791,9 @@ static func _place_trees(res: Result, style: MapStyle, p: Params, kinds: Diction
 ## Trees, rocks and copper. Boss land: each kind at its `density_boss`. Elsewhere (0038 step 4) per biome: lone rocks and copper by
 ## BiomeData.rock_nodes_per_100 / copper_per_100, rock groups (their middle pieces are mineable rocks), then the aged trees.
 static func _place_nodes(res: Result, style: MapStyle, p: Params) -> void:
+	if p.yard:
+		_place_yard_nodes(res, style, p)
+		return
 	var t := Time.get_ticks_usec()
 	make_veg_lists(res, p)
 	var boss_cells := PackedInt32Array()
@@ -1827,6 +1842,20 @@ static func _place_nodes(res: Result, style: MapStyle, p: Params) -> void:
 		t = _lap(res, "nodes.trees", t)
 		_repair_reach(res, p, tree_kinds.values())
 		t = _lap(res, "nodes.repair2", t)
+	_assign_looks(res, style, p)
+
+
+## Test yard: exactly the listed nodes, nothing random. Same obstacle dicts as the island, so chunks/chop/mine are the real code.
+static func _place_yard_nodes(res: Result, style: MapStyle, p: Params) -> void:
+	var widest := 0.0
+	for k in style.resource_nodes:
+		widest = maxf(widest, k.radius)
+	res.obstacle_bucket = 2.0 * widest + p.obstacle_min_spacing
+	for n in p.yard_nodes:
+		for ki in style.resource_nodes.size():
+			if style.resource_nodes[ki].id == n["id"]:
+				_add_obstacle(res, {"region": 0, "pos": n["pos"], "radius": style.resource_nodes[ki].radius, "node": ki})
+				break
 	_assign_looks(res, style, p)
 
 

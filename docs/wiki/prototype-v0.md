@@ -81,6 +81,9 @@ On top of that, v0 ships a **debug overlay** (`F1` toggles, on by default in v0)
 
 `F3` opens the live tuning panel (see 1c). `F2` is slow motion.
 
+Test yard (0056, debug builds): title button `Test yard` starts the normal arena on a small flat map with every tree kind, rocks, copper, the 3 stations, a dummy and a slime; F3 `[Test yard]` + `Reset yard`; never saves.
+  Slice log: built by Sonnet (godot-builder); Opus judge found 5 (dead `cells` slider, stations into the bag on rebuild, Reset deleted placed stations, Delete save not gated, button only greyed in release), all fixed in one round; user playtest 2026-11-03: good.
+
 Rules:
 - **Never a sprite-vs-hitbox mismatch.** If an attack looks like it should hit, it hits.
   When tuning says otherwise, change the shape, not a hidden offset.

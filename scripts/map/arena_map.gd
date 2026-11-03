@@ -890,7 +890,14 @@ func _ready() -> void:
 	# A test that does not need the full island sets BOSSFIGHT_TEST_MAP_CELLS (e.g. "192") before loading the
 	# arena: a smaller square map builds ~7x faster. Like BOSSFIGHT_TEST_SEED, never set in a normal game.
 	var cells := OS.get_environment("BOSSFIGHT_TEST_MAP_CELLS")
-	if cells.is_valid_int() and int(cells) >= 12:
+	if yard_mode:
+		yard = TestYard.new()
+		yard.name = "TestYard"
+		yard.map = self
+		get_parent().add_child.call_deferred(yard)   # after the arena's own children are ready (player, spawner, inventory)
+		map_cols = yard.cells
+		map_rows = yard.cells
+	elif cells.is_valid_int() and int(cells) >= 12:
 		map_cols = int(cells)
 		map_rows = int(cells)
 	_default_exports = _export_values()
@@ -1043,6 +1050,9 @@ func save_value(prop: String) -> Variant:
 static var retry_seed := 0
 ## W9: settings of a saved island, applied once in the next ArenaMap._ready (name -> var_to_str value).
 static var pending_settings := {}
+## Test yard (decision 0056): the title's "Test yard" button sets it; the next arena builds the small flat yard (TestYard) instead of the island.
+static var yard_mode := false
+var yard: TestYard   ## only in a yard run
 
 
 static func reload_keeping_seed(tree: SceneTree) -> void:
@@ -1193,6 +1203,10 @@ func _clear_stations() -> void:
 	var player := get_node_or_null(player_path)
 	var inv := player.get_node_or_null("Inventory") as Inventory if player else null
 	for st: Station in get_tree().get_nodes_in_group("station"):
+		if st.has_meta(&"yard"):   # the test yard's own stations are re-made, never refunded (0056)
+			st.remove_from_group("station")
+			st.queue_free()
+			continue
 		st.pick_up(inv)
 
 
@@ -1408,6 +1422,12 @@ func make_params() -> MapGen.Params:
 	p.camp_radius = camp_radius
 	p.dirt_patches = dirt_patches
 	p.dirt_patch_size = dirt_patch_size
+	if yard != null:
+		p.yard = true
+		p.yard_nodes = yard.node_list(_player_spawn)
+		p.water_on = false
+		p.veg_on = false
+		p.legacy_tiles = false
 	p.zone = _zone
 	p.spawns = _spawns
 	p.player_spawn = _player_spawn
@@ -1482,7 +1502,7 @@ func in_corridor_rect(rect: Rect2) -> bool:
 ## flood. The base grid is built once per island (cached); one check is one flood (`last_walk_check_ms`).
 ## False when there was no walk to protect to begin with.
 func blocks_boss_path(rects: Array[Rect2]) -> bool:
-	if result == null:
+	if result == null or yard != null:
 		return false
 	var p := make_params()
 	_warm_walk_grid(p)
@@ -1497,7 +1517,7 @@ func blocks_boss_path(rects: Array[Rect2]) -> bool:
 ## The base walk grid of this island (kept from generate, only the rocks are cleared) and whether home reaches the boss at all. Built right after
 ## generate, so the first station placement is one flood, not a 0.4 s grid build.
 func _warm_walk_grid(p: MapGen.Params) -> void:
-	if _walk_for == result or result == null:
+	if _walk_for == result or result == null or yard != null:   # the yard has no boss path to protect
 		return
 	_walk_for = result
 	_walk_grid = MapGen.walk_grid(p, result.obstacles, result.walk_land, result.walk_base)
@@ -1666,6 +1686,9 @@ func map_size() -> Vector2:
 func layout() -> Dictionary:
 	var size := map_size()
 	var zsize := Vector2(zone_width, zone_height)
+	if yard != null:   # the boss zone is far off the map: nothing engages
+		var away := Vector2(-20000.0, -20000.0)
+		return {"zone": Rect2(away, zsize), "boss": away + zsize * 0.5, "player": size * 0.5, "dummy": size * 0.5 + yard.dummy_offset}
 	var c := Vector2(size.x * zone_x, size.y * zone_y)
 	var pad := cell_px()   # keep the zone off the walls
 	c.x = clampf(c.x, minf(pad + zsize.x * 0.5, size.x * 0.5), maxf(size.x - pad - zsize.x * 0.5, size.x * 0.5))

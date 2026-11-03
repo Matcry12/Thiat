@@ -22,7 +22,7 @@ var last_save_unix := 0
 var _countdown := 0.0
 
 static func io_enabled() -> bool:
-	return force_io or OS.get_environment("BOSSFIGHT_TEST_SEED") == ""
+	return force_io or (OS.get_environment("BOSSFIGHT_TEST_SEED") == "" and not ArenaMap.yard_mode)   # the test yard never saves (0056)
 
 # ------------------------------------------------------------------ file
 
@@ -293,5 +293,7 @@ func debug_actions() -> Array:
 				return
 			SaveGame.begin_load(d)
 			get_tree().reload_current_scene()},
-		{"label": "Delete save", "danger": true, "run": SaveGame.delete_save},
+		{"label": "Delete save", "danger": true, "run": func():
+			if io_enabled():   # the test yard must not delete the real island save
+				SaveGame.delete_save()},
 	]
