@@ -1,5 +1,5 @@
 extends SceneTree
-# Decision 0052: bare hands never attack; the body faces the move direction, the mouse for face_mouse_hold s after an action.
+# Decision 0055: bare hands never attack; the body faces the move direction, the mouse for face_mouse_hold s after an action.
 const World = preload("res://tests/support/craft_world.gd")
 var _ok := true
 

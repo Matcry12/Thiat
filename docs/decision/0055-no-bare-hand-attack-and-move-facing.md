@@ -1,4 +1,4 @@
-# 0052 - No bare-hand attack, body faces movement
+# 0055 - No bare-hand attack, body faces movement
 
 ## Context
 Empty hands (empty slot, material, placeable) still punched (fists.tres, damage 6) even though they gather 0 (0048). The body always faced the mouse, even when just walking.

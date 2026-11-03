@@ -41,7 +41,7 @@ var _wheel_left := 0.0
 var _move_state := "idle"
 var _move_dir := Vector2.ZERO
 var _action_used := false   # set by an attack / place / interact press this frame
-## Seconds the body keeps facing the mouse after the last weapon / tool / place action (decision 0052); then it faces the move direction.
+## Seconds the body keeps facing the mouse after the last weapon / tool / place action (decision 0055); then it faces the move direction.
 @export var face_mouse_hold := 3.0
 ## true = the held weapon / tool / item is hidden outside that mouse-facing time (shown while in use).
 @export var hide_idle_held := true
@@ -122,7 +122,7 @@ func _physics_process(delta: float) -> void:
 		aim_direction = (get_global_mouse_position() - global_position).normalized()
 	if aim_direction == Vector2.ZERO:
 		aim_direction = Vector2.RIGHT
-	# Body facing (decision 0052): movement direction, except `face_mouse_hold` s after any action. Aim / weapon still follow the mouse.
+	# Body facing (decision 0055): movement direction, except `face_mouse_hold` s after any action. Aim / weapon still follow the mouse.
 	var acting := weapon_holder.phase != WeaponHolder.Phase.IDLE or guard.is_guarding() or skill_slot.is_active() or _action_used
 	_action_used = false
 	if acting:
@@ -144,7 +144,7 @@ func _physics_process(delta: float) -> void:
 	visual.set_aim_angle(_body_facing.angle())
 	weapon_visual.set_aim_angle(_body_facing.angle())
 	held_item.set_item(_held_item_data())
-	# Tinkerlands style (0052): the held weapon / tool / item shows only while facing the mouse, i.e. in use + face_mouse_hold after.
+	# Tinkerlands style (0055): the held weapon / tool / item shows only while facing the mouse, i.e. in use + face_mouse_hold after.
 	weapon_visual.visible = not hide_idle_held or _face_mouse_left > 0.0
 	weapon_holder.aim_direction = aim_direction
 	skill_slot.aim_direction = aim_direction
@@ -164,7 +164,7 @@ func _physics_process(delta: float) -> void:
 		if placer.is_holding():
 			_action_used = true
 			placer.try_place()
-		elif loadout.can_attack():   # bare hands never attack (decision 0052)
+		elif loadout.can_attack():   # bare hands never attack (decision 0055)
 			_action_used = true
 			weapon_holder.try_attack()
 
