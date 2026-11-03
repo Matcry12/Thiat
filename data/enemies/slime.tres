@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/enemies/enemy_drop.gd" id="2"]
+[ext_resource type="Resource" path="res://data/items/gel.tres" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/slime.tscn" id="4"]
+[ext_resource type="SpriteFrames" path="res://data/enemies/slime_frames.tres" id="5"]
+[ext_resource type="Resource" path="res://data/enemies/slime_visual.tres" id="6"]
+
+[sub_resource type="Resource" id="GelDrop"]
+script = ExtResource("2")
+item = ExtResource("3")
+min_count = 1
+max_count = 3
+chance = 1.0
+
+[resource]
+script = ExtResource("1")
+id = &"slime"
+display_name = "Slime"
+max_hp = 40.0
+move_speed = 45.0
+contact_damage = 10.0
+body_radius = 10.0
+hurtbox_radius = 16.0
+contact_radius = 20.0
+drops = Array[ExtResource("2")]([SubResource("GelDrop")])
+rate_forest = 1.0
+rate_plains = 1.0
+rate_taiga = 0.6
+rate_autumn = 0.6
+pack_min = 1
+pack_max = 2
+scene = ExtResource("4")
+sprite_frames = ExtResource("5")
+visual = ExtResource("6")

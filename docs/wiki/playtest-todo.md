@@ -3,6 +3,20 @@
 Things built but **not yet played by you**. Tick them off (or write what felt wrong) when you play.
 Newest slice at the top. Run the game, press `F3` for the test buttons.
 
+## W5 - slimes (built, not played)
+
+- [ ] Walk out from home into the forest. Do slimes show up at a pace that feels natural (about 1 group a minute)? Too many / too few: `F3` -> `EnemySpawner` -> `base_chance`.
+- [ ] `F1`: faint green squares = slime spots. Walk into one: is there already a small group living there? Does it feel like a "slime meadow" you could come back to?
+- [ ] Do you ever see a slime pop in on screen? (It should only appear off-screen.)
+- [ ] A slime squashes and turns yellow on top before it jumps. Can you see it coming and dodge (`Space`)? Warning time: `Enemy slime data` -> `hop_windup`.
+- [ ] Hit it with the sword: flash, push back, numbers, gel pops out and flies to you.
+- [ ] Walk far away while one chases you: it gives up and walks home.
+- [ ] Draw order: a slime behind a tree is hidden by the leaves; behind you, it is behind your body; the sword is always over the slime.
+- [ ] Other biomes: swamp (dark slimes, more), beach (yellow, rare), snow (blue, rare, tough), rocky (grey, rare, tough). `F3` -> `Go to boss` / walk there.
+- [ ] Never near home or your stations; none while the boss fight is on.
+- [ ] The boss is now a plain red circle (old art removed). Can you still read its attacks?
+- [ ] `F3` -> `Spawn slime pack here`, `Kill all enemies`, `Spawner on/off` work.
+
 ## W9 - save and load (built, not played)
 
 - [ ] Play a while: chop a tree, place a furnace with ore in it, die once so a bag lies on the ground. Press `Esc`, then `Save & quit`.

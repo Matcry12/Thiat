@@ -12,7 +12,6 @@
 [ext_resource type="Script" path="res://scripts/boss/charge_attack.gd" id="10"]
 [ext_resource type="Script" path="res://scripts/boss/ring_attack.gd" id="11"]
 [ext_resource type="PackedScene" path="res://scenes/projectiles/boss_bolt.tscn" id="12"]
-[ext_resource type="SpriteFrames" path="res://assets/characters/tiny_rpg/orc_frames.tres" id="13"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/shadow.png" id="14"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
@@ -42,7 +41,6 @@ shape = SubResource("BodyShape")
 
 [node name="Visual" type="Node2D" parent="."]
 script = ExtResource("2")
-body_frames = ExtResource("13")
 
 [node name="Shadow" type="Sprite2D" parent="Visual"]
 z_index = -1

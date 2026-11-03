@@ -53,8 +53,8 @@ func _init() -> void:
 	_check(o2.count() == 0 and F3Overrides.new(cfg).count() == 0, "clear_all persists")
 
 	# write_to_tres on a copy of a real rig
-	var src := "res://data/body_rigs/tiny_soldier.tres"
-	var tmp := "user://tiny_copy.tres"
+	var src := "res://data/body_rigs/pixel_plains.tres"
+	var tmp := "user://rig_copy.tres"
 	var orig_text := FileAccess.get_file_as_string(src)
 	var f := FileAccess.open(tmp, FileAccess.WRITE)
 	f.store_string(orig_text)

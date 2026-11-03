@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/characters/slime/gel.png" id="icon"]
+
+[resource]
+script = ExtResource("1")
+id = &"gel"
+icon = ExtResource("icon")
+display_name = "Gel"
+color = Color(0.42, 0.82, 0.38, 1)

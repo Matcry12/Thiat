@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="EnemyVisualData" format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_visual_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+tint = Color(0.62,0.7,0.42,1)
+pixel_scale = 2
+size_scale = 1.1

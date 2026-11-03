@@ -78,6 +78,12 @@ func _ready() -> void:
 		_boss.phase_changed.connect(func(ph: int): if ph >= 2: fire(&"phase_change", _boss, null))
 		_boss.defeated.connect(func(): fire(&"kill", _boss, null))
 
+## A late actor (a spawned enemy) joins the hit effects like the dummy.
+func register_actor(actor: Node) -> void:
+	var h := actor.get_node_or_null("Health") as Health
+	if h and not h.hit_taken.is_connected(_on_hit_taken):
+		h.hit_taken.connect(_on_hit_taken)
+
 func profile_list() -> Array:
 	return _by_type.values()
 

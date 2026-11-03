@@ -79,6 +79,7 @@ func _is_arc() -> bool:
 func _new_blocks() -> Blocks:
 	var b := Blocks.new()
 	b.top_level = true
+	b.z_index = (get_parent() as Node2D).z_index   # top_level drops the inherited z: copy the weapon layer
 	b.px = pixel_size
 	b.dim = pixel_dim
 	b.steps = fade_steps

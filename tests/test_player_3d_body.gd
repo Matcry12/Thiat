@@ -34,9 +34,15 @@ func _init():
 	await process_frame
 	await process_frame
 	check("respawn: back to idle", body.animation == &"idle" and not vis.status_text().contains("DEAD"))
-	vis.rig = load("res://data/body_rigs/tiny_soldier.tres")
+	var side_rig := BodyRig.new()          # side-only set: idle_side / run_side / hit_side, no front clips
+	var side_f := SpriteFrames.new()
+	for an in [&"idle_side", &"run_side", &"hit_side"]:
+		side_f.add_animation(an)
+		side_f.add_frame(an, f.get_frame_texture(&"idle", 0))
+	side_rig.sprite_frames = side_f
+	vis.rig = side_rig
 	vis.set_facing(Vector2.DOWN)
-	check("side-only set (tiny soldier): player ships it as a rig, facing down plays idle_side", vis.is_directional() and not body.sprite_frames.has_animation(&"idle_front") and body.animation == &"idle_side")
+	check("side-only set: facing down plays idle_side", vis.is_directional() and not body.sprite_frames.has_animation(&"idle_front") and body.animation == &"idle_side")
 	vis.rig = load("res://data/body_rigs/blocky.tres")           # the rest of this test is about the full directional set
 	check("blocky rig: directional with a front view", vis.is_directional() and body.sprite_frames.has_animation(&"run_front"))
 	check("body position/scale come from the rig (feet on the origin)", body.scale == vis.rig.body_scale and body.position == vis.rig.body_position)

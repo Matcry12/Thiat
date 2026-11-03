@@ -50,6 +50,14 @@ var weapon: WeaponData: set = _set_weapon
 @export var guard_lower_time := 0.12
 @export var guard_ease := 0.4        ## below 1 = snap into the guard
 
+## Draw layer of the blade, held item and slash, above the y-sorted actors (z 0), so a slime just south of the player never covers the swing.
+## The player's body sits at 0, so the weapon is over the body too (it always was: it is drawn after it).
+@export var weapon_z := 1: set = _set_weapon_z
+
+func _set_weapon_z(v: int) -> void:
+	weapon_z = v
+	z_index = v
+
 ## Tick this in the EDITOR to see the weapon's guard pose instead of its rest
 ## pose, then edit Guard Angle / Forward / Side on the weapon's data and watch it
 ## move. Editor-only: the running game ignores it.

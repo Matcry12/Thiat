@@ -180,6 +180,10 @@ resolved.
   Map art lives in `assets/map/pixel_plains/`. Map art changed → update `assets/map/pixel_plains/README.md` in the same change.
 
 **How we work** ([0007](docs/decision/0007-working-agreement.md))
+- **Algorithm first, then build.** Before building any game system (spawning, loot, AI, progression, world gen), study how
+  the reference games solve it (Minecraft, Terraria, the ones in [0001](docs/decision/0001-design-reference-games.md)), write
+  the algorithm down in `docs/wiki/<system>-algorithm.md` (sources table + our rules + tuning), get the user's OK, then build
+  to that page. Never build a system just to "match" a request. Example: [enemy-spawning-algorithm.md](docs/wiki/enemy-spawning-algorithm.md).
 - Vertical slices, one question each, playtested by the user before the next slice starts.
 - Every feel number is an `@export` (live-tunable via `F3` panel / Remote inspector). Never hardcode one.
 - Debug keys: `F1` hitboxes + timing (boss attack areas, charge lane, FightZone, rocks), `F2` 0.25x slow-mo, `F3` tuning panel (+ boss trigger buttons).

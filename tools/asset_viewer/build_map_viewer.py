@@ -28,7 +28,6 @@ LIBRARY_GLOBS = [
 PACKS = {  # third_party folder -> (creator, pack, license); see assets/third_party/README.md
     "pixel_crawler": ("Anokolisa", "Pixel Crawler 2.11", "credit not required, no resale"),
     "serene_village": ("LimeZu", "Serene Village 16x16", "CC BY 4.0, credit required"),
-    "tiny_rpg": ("zerie", "Tiny RPG", "no redistribution"),
 }
 OWN = ("Own", "Project placeholder", "ours")
 # Edited copies a file hash cannot trace back (docs/wiki/credits.md).

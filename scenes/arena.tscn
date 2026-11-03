@@ -4,6 +4,13 @@
 [ext_resource type="PackedScene" uid="uid://b2crj03ik0dka" path="res://scenes/dummy.tscn" id="2"]
 [ext_resource type="Script" uid="uid://bv2w05208846v" path="res://scripts/debug_overlay.gd" id="3"]
 [ext_resource type="Script" path="res://scripts/arena.gd" id="arena_s"]
+[ext_resource type="Script" path="res://scripts/enemies/enemy_spawner.gd" id="spawner_s"]
+[ext_resource type="Resource" path="res://data/enemies/slime.tres" id="slime_d"]
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="slime_cls"]
+[ext_resource type="Resource" path="res://data/enemies/swamp_slime.tres" id="swamp_slime_d"]
+[ext_resource type="Resource" path="res://data/enemies/sand_slime.tres" id="sand_slime_d"]
+[ext_resource type="Resource" path="res://data/enemies/ice_slime.tres" id="ice_slime_d"]
+[ext_resource type="Resource" path="res://data/enemies/rock_slime.tres" id="rock_slime_d"]
 [ext_resource type="Script" uid="uid://d1skviyhs5c7r" path="res://scripts/debug/tuning_panel.gd" id="4"]
 [ext_resource type="Script" uid="uid://bjng3ujrudrq1" path="res://scripts/hud.gd" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/boss.tscn" id="6"]
@@ -133,6 +140,11 @@ script = ExtResource("pause_s")
 [node name="EndScreen" type="CanvasLayer" parent="."]
 script = ExtResource("7")
 boss_path = NodePath("../Boss")
+
+[node name="EnemySpawner" type="Node2D" parent="."]
+y_sort_enabled = true
+script = ExtResource("spawner_s")
+enemy_types = Array[ExtResource("slime_cls")]([ExtResource("slime_d"), ExtResource("swamp_slime_d"), ExtResource("sand_slime_d"), ExtResource("ice_slime_d"), ExtResource("rock_slime_d")])
 
 [node name="SaveGame" type="Node" parent="."]
 script = ExtResource("save_s")
