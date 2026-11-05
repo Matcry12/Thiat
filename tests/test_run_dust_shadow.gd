@@ -11,6 +11,23 @@ func _pose(vis: SpriteActorVisual, body: AnimatedSprite2D, ph: float) -> void:
 	body.frame_progress = ph - floorf(ph)
 	vis._process(0.0)
 
+## The player as shipped (Pixel Plains, 4 run frames): up on 0 and 2, a foot lands on 1 and 3.
+func _shipped_run_tests(vis: SpriteActorVisual, body: AnimatedSprite2D) -> void:
+	var sh := vis.get_node("Shadow") as Sprite2D
+	var rest_scale := sh.scale
+	var landings := [0]
+	vis.landed.connect(func(): landings[0] += 1)
+	vis.set_move_state("run")
+	body.pause()
+	check("shipped: run has 4 frames", body.sprite_frames.get_frame_count(&"run") == 4)
+	for f in 4:
+		_pose(vis, body, float(f))
+		check("shipped: frame %d shadow %s" % [f, "smaller" if f % 2 == 0 else "full"], (sh.scale.x < rest_scale.x) == (f % 2 == 0))
+	_pose(vis, body, 0.0)
+	_pose(vis, body, 1.0)
+	check("shipped: a foot lands on frames 1 and 3 (cycle + frame 1 again = 3)", landings[0] == 3)
+	vis.set_move_state("idle")
+
 func _init():
 	var arena = load("res://scenes/arena.tscn").instantiate()
 	root.add_child(arena)
@@ -20,9 +37,12 @@ func _init():
 	player.set_physics_process(false)
 	var vis: SpriteActorVisual = player.get_node("Visual")
 	var body := vis.get_node("Body") as AnimatedSprite2D
-	# This test covers the OLD drawn-art path (plain idle/run + code bounce). The player ships the 3D body sheets now;
+	_shipped_run_tests(vis, body)
+	# The rest covers the OLD drawn-art path (plain idle/run + code bounce). The player ships Pixel Plains now;
 	# swapping the SpriteFrames resource back is all it takes (tests/test_player_3d_body.gd covers the new set).
 	vis.rig = load("res://data/body_rigs/drawn_art.tres")   # the old character is one resource swap (rig = frames + body position + weapon fit)
+	vis.bounce_mode = SpriteActorVisual.BounceMode.SMOOTH   # player.tscn tunes the bounce for the 4-frame Pixel Plains run: put the drawn-art values back
+	vis.bounce_offsets = PackedFloat32Array([0, 1, 0, 0, 1, 0])
 	vis.set_move_state("idle")
 	var sh := vis.get_node("Shadow") as Sprite2D
 	var dust = vis.get_node("RunDust")
