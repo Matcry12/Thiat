@@ -60,9 +60,8 @@ at its altar and beat it. Beating it wins the game. One run: **20–30 minutes**
 
 - **Stations are placed in the world** by the player (one simple "place this here" action on a grid;
   this is *not* a building system). You craft when standing near a station.
-- **Inventory:** the hotbar becomes ~9 slots; a bag opens with `Tab`/`I`. Old rule stays
-  ([0003](../decision/0003-loadout-and-swapping.md)): max 2 weapons in the hotbar, swap cast + cooldown;
-  tools, potions and materials fill the rest. Bag is locked during the boss fight.
+- **Inventory:** the hotbar becomes ~9 slots; a bag opens with `Tab`/`I`. Weapons, tools, potions and materials
+  go in any mix, and every swap is instant ([0058](../decision/0058-free-weapon-swap-no-weapon-limit.md)). Bag is locked during the boss fight.
 - **Everything is data:** `ItemData` and `RecipeData` resources (like `WeaponData`). Boss 2 = new rows.
 
 ## 6. Enemies

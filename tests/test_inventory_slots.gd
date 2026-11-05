@@ -42,22 +42,23 @@ func _init() -> void:
 	await process_frame
 	_check(kit.slot_item(0) == sword and kit.slot_item(1) == bow and kit.slot_item(2) == axe, "start kit lands in slots 0, 1, 2")
 
-	# --- max 2 weapons in the hotbar ---
+	# --- any number of weapons in the hotbar ---
 	var spare: ItemData = sword
-	_check(kit.add(spare, 1) == 0, "a 3rd weapon still fits...")
-	var in_bar := false
+	_check(kit.add(spare, 1) == 0 and kit.slot_item(3) == spare, "a 3rd weapon goes to the hotbar")
+	for i in 5:
+		kit.add(bow, 1)
+	var wcount := 0
 	for i in Inventory.HOTBAR:
-		if kit.slot_item(i) == spare and i > 0:
-			in_bar = true
-	_check(not in_bar and kit.hotbar_weapon_count() == 2, "...but only in the bag, never the hotbar")
-	_check(kit.slot_item(Inventory.HOTBAR) == spare, "...at the first bag slot")
-	kit.click_slot(Inventory.HOTBAR)    # pick the 3rd weapon up
-	_check(kit.held_item == spare and not kit.click_slot(5), "cannot place a 3rd weapon on an empty hotbar slot")
-	_check(not kit.click_slot(2) and kit.slot_item(2) == axe, "cannot swap a 3rd weapon in over a tool either")
-	_check(kit.click_slot(1) and kit.held_item == bow and kit.slot_item(1) == spare, "swapping weapon for weapon is fine (still 2)")
-	_check(kit.hotbar_weapon_count() == 2, "still 2 weapons in the hotbar")
+		wcount += 1 if kit.slot_item(i) != null and kit.slot_item(i).category == "weapon" else 0
+	_check(wcount == 8 and kit.slot_item(8) == bow, "weapons fill the hotbar (8 weapons + axe)")
+	kit.add(bow, 1)
+	_check(kit.slot_item(Inventory.HOTBAR) == bow, "a full hotbar overflows to the first bag slot")
+	kit.click_slot(Inventory.HOTBAR)    # pick the overflow weapon up
+	_check(kit.held_item == bow and kit.click_slot(8) and kit.held_item == bow, "a weapon can be put on a hotbar slot over another weapon")
+	_check(kit.click_slot(2) and kit.held_item == axe and kit.slot_item(2) == bow, "...and over a tool")
 	kit.return_held()
 	_check(kit.held_item == null, "return_held empties the cursor")
+	_check(kit.add(sword, 1) == 0 and kit.used_slots() == 11, "no weapon is lost")
 
 	# --- clicks ---
 	var c := Inventory.new()
@@ -94,6 +95,6 @@ func _init() -> void:
 	# --- clear keeps tools ---
 	kit.add(wood, 5)
 	kit.clear()
-	_check(kit.count(&"wood") == 0 and kit.slot_item(2) == axe, "clear() removes materials, keeps tools and weapons")
+	_check(kit.count(&"wood") == 0 and kit.count(axe.id) == 1 and kit.slot_item(2) == bow, "clear() removes materials, keeps tools and weapons")
 	print("PASS" if _ok else "FAIL")
 	quit(0 if _ok else 1)

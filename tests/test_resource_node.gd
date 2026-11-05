@@ -127,13 +127,13 @@ func _init() -> void:
 	var small := _node(arena, "res://data/resource_nodes/tree.tres", spot + Vector2(400, 0))
 	_check((big.get_node("CollisionShape2D").shape as CircleShape2D).radius == 40.0 and (small.get_node("CollisionShape2D").shape as CircleShape2D).radius == 14.0, "two nodes keep their own radius")
 
-	# I3: toggling hands mid-swing is refused (no free recovery cancel).
-	lo.toggle_hands()   # back to the sword
+	# I3: switching mid-swing is refused (no free recovery cancel).
+	lo.select(lo.weapon_slot(0))   # back to the sword
 	await physics_frame
-	var holstered := lo.is_holstered()
+	var held_slot := lo.selected_slot
 	wh.aim_direction = Vector2.RIGHT
 	wh.try_attack()
 	await physics_frame
-	_check(wh.phase != WeaponHolder.Phase.IDLE and not lo.toggle_hands() and lo.is_holstered() == holstered and wh.phase != WeaponHolder.Phase.IDLE, "toggle_hands refused mid-swing, state unchanged")
+	_check(wh.phase != WeaponHolder.Phase.IDLE and not lo.select(1 if held_slot != 1 else 2) and lo.selected_slot == held_slot and wh.phase != WeaponHolder.Phase.IDLE, "select refused mid-swing, state unchanged")
 	print("PASS" if _ok else "FAIL")
 	quit(0 if _ok else 1)

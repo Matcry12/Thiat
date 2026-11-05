@@ -56,41 +56,35 @@ func _init() -> void:
 	lone.return_held()
 	_check(lone.count(&"wood") + (lone.held_count if lone.held_item else 0) == 36 * 64, "no player to drop at: the stack stays on the cursor, nothing deleted")
 
-	# --- 2. no 3rd weapon via shift click while holding ---
+	# --- 2. a 3rd weapon sits in the hotbar; shift click moves it out and back ---
 	inv.clear()
 	for p in get_nodes_in_group("pickup"):
 		p.free()
-	inv.add(sword, 1)    # a spare sword in the bag
+	inv.add(sword, 1)
 	var spare := -1
-	for i in range(Inventory.HOTBAR, Inventory.SIZE):
+	for i in range(2, Inventory.HOTBAR):
 		if inv.slot_item(i) == sword:
 			spare = i
-	_check(spare >= 0 and inv.hotbar_weapon_count() == 2, "spare sword in the bag")
+	_check(spare >= 0 and lo.weapons.size() == 3, "a 3rd sword lands in the hotbar (%d weapons)" % lo.weapons.size())
 	inv.click_slot(0)    # hold the hotbar sword
 	_check(not inv.shift_move(spare), "shift click is refused while a stack is held")
 	hud.bag().toggle()
 	hud.bag().close()
-	_check(inv.hotbar_weapon_count() == 2, "after closing: still 2 weapons in the hotbar (%d)" % inv.hotbar_weapon_count())
+	_check(lo.weapons.size() == 3 and inv.slot_item(0) == sword, "after closing: the held sword is back, 3 weapons")
+	_check(inv.shift_move(spare) and inv.slot_item(spare) == null and lo.weapons.size() == 2, "shift click sends it to the bag")
+	var in_bag := -1
+	for i in range(Inventory.HOTBAR, Inventory.SIZE):
+		if inv.slot_item(i) == sword:
+			in_bag = i
+	_check(inv.shift_move(in_bag) and lo.weapons.size() == 3, "shift click from the bag puts it in the hotbar again")
 
-	# --- 3. the free way back is only to the stowed weapon ---
-	lo.swap_cast = 0.2
-	lo._cooldown_left = 0.0
+	# --- 3. every switch is instant ---
 	await physics_frame
 	lo.select(0)
-	for i in 40:
-		await physics_frame
-	lo._cooldown_left = 0.0
 	_check(lo.active_weapon() == sword.weapon and lo.select(3) and lo.active_weapon() == inv.slot_item(3).weapon, "pickaxe in hand, sword put away")
-	var sword_slot := -1
-	for i in Inventory.HOTBAR:
-		if inv.slot_item(i) == sword:
-			sword_slot = i
 	boss.aggro = Boss.Aggro.IDLE   # (the physics frames above let it re-engage)
-	_check(inv.shift_move(sword_slot), "the put-away sword goes to the bag")
-	_check(lo.select(1) and lo.is_casting(), "the bow now costs a cast: it is not the weapon that was put away")
-	for i in 40:
-		await physics_frame
-	_check(lo.cooldown_left() > 0.0 or not lo.is_casting(), "...and charges its cooldown")
+	_check(lo.select(1) and lo.active_weapon() == inv.slot_item(1).weapon, "the bow comes at once")
+	_check(lo.select(0) and lo.active_weapon() == sword.weapon, "and the sword back at once")
 
 	# --- 4. ItemSlot: layout belongs to the scene, styles are built once ---
 	var slot: ItemSlot = load("res://scenes/ui/item_slot.tscn").instantiate()

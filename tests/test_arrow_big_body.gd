@@ -23,9 +23,7 @@ func _init():
 	var h1: Health = d1.get_node("Health")
 	var h2: Health = d2.get_node("Health")
 	await _frames(5)
-	loadout.swap_cast = 0.05
-	loadout.try_swap(1)
-	await _wait_until(func(): return not loadout.is_casting(), 2.0)
+	loadout.select(loadout.weapon_slot(1))
 	var bow: WeaponData = loadout.active_weapon()
 	player.global_position = d1.global_position - Vector2(200, 0)
 	player.aim_override = d1.global_position - player.global_position

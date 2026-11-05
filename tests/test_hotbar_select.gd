@@ -1,6 +1,5 @@
 extends SceneTree
-# W3: selecting hotbar slots. Tool / empty slot = instant (no cast, no cooldown); weapon <-> weapon keeps
-# the decision 0003 cast + cooldown; real key input; bag lock while the boss is engaged; tool bonus.
+# W3: selecting hotbar slots. Every switch is instant (weapon, tool, empty); real key input; bag lock while the boss is engaged; tool bonus.
 const ClassicArena = preload("res://tests/support/classic_arena.gd")
 var _ok := true
 
@@ -45,8 +44,6 @@ func _init() -> void:
 	var hud: HUD = arena.get_node("HUD")
 	player.aim_override = Vector2.RIGHT
 	player.global_position += Vector2(0, 160)
-	lo.swap_cast = 0.2
-	lo.swap_cooldown = 0.5
 	await physics_frame
 
 	# --- the kit ---
@@ -54,30 +51,22 @@ func _init() -> void:
 	_check(lo.weapons.size() == 2 and lo.active_weapon() == inv.slot_item(0).weapon and lo.selected_slot == 0, "sword in hand, slot 1 selected")
 
 	# --- tool: instant, no cast, no cooldown ---
-	_check(lo.select(2) and not lo.is_casting() and lo.cooldown_left() == 0.0, "axe: switches at once, no cast, no cooldown")
+	_check(lo.select(2), "axe: switches at once")
 	_check(lo.active_weapon() == inv.slot_item(2).weapon and wh.weapon == lo.active_weapon() and lo.selected_slot == 2, "axe is the holder's weapon, slot 3 selected")
 	_check(lo.select(3) and lo.active_weapon() == inv.slot_item(3).weapon, "tool to tool is instant too")
 	_check(lo.select(7) and lo.active_weapon() == lo.unarmed and lo.selected_slot == 7, "empty slot = bare hands, at once")
-	_check(lo.select(0) and not lo.is_casting() and lo.cooldown_left() == 0.0 and lo.active_weapon() == inv.slot_item(0).weapon, "back to the last weapon: instant, free")
+	_check(lo.select(0) and lo.active_weapon() == inv.slot_item(0).weapon, "back to the sword: instant")
 
-	# --- weapon <-> weapon: cast + cooldown ---
-	_check(lo.select(1) and lo.is_casting(), "sword -> bow starts a swap cast")
-	lo.swap_cooldown = 5.0
-	var n0 := 0
-	while lo.is_casting() and n0 < 100:
-		await physics_frame
-		n0 += 1
-	_check(not lo.is_casting() and lo.active_weapon() == inv.slot_item(1).weapon and lo.selected_slot == 1 and lo.cooldown_left() > 0.0, "bow arrives after the cast, cooldown running")
-	_check(lo.select(2) and lo.active_weapon() == inv.slot_item(2).weapon, "tool switch is allowed during the swap cooldown")
-	_check(lo.select(1) and not lo.is_casting(), "back to the bow (the last weapon) is instant even during the cooldown")
-	_check(not lo.select(0), "...but the OTHER weapon is refused until the cooldown ends")
-	lo._cooldown_left = 0.0
+	# --- weapon <-> weapon: instant ---
+	_check(lo.select(1) and lo.active_weapon() == inv.slot_item(1).weapon and wh.weapon == lo.active_weapon() and lo.selected_slot == 1, "sword -> bow at once")
+	_check(lo.select(0) and lo.active_weapon() == inv.slot_item(0).weapon and lo.select(1), "and back, no wait, no cooldown")
+	_check(not lo.select(1), "selecting the slot already in hand is refused")
 
 	# --- real keys through player.gd ---
 	await _tap("slot_3")
 	_check(lo.active_weapon() == inv.slot_item(2).weapon, "key 3 selects the axe")
 	await _tap("slot_1")
-	_check(lo.selected_slot == 0 or lo.is_casting(), "key 1 goes back toward the sword")
+	_check(lo.selected_slot == 0, "key 1 goes back to the sword")
 	for i in 60:
 		await physics_frame
 	await _tap("slot_9")
@@ -90,10 +79,10 @@ func _init() -> void:
 	ev.pressed = true
 	for k in 2:
 		player._unhandled_input(ev)
-	_check(lo.selected_slot == 0, "wheel does not select (and start a swap cast) on the way")
-	for i in 30:
-		await physics_frame
-	_check(lo.selected_slot == 2 and lo.active_weapon() == inv.slot_item(2).weapon, "after the settle time the wheel lands on slot 3 (2 clicks down from 1)")
+	_check(lo.selected_slot == 0 and player.pending_slot() == 2, "wheel steps are pending, nothing selected yet")
+	await physics_frame
+	await physics_frame
+	_check(lo.selected_slot == 2 and lo.active_weapon() == inv.slot_item(2).weapon and player.pending_slot() == -1, "next frame the wheel lands on slot 3 (2 clicks down from 1)")
 
 	# --- tool bonus on real nodes ---
 	var axe: WeaponData = inv.slot_item(2).weapon
@@ -155,8 +144,10 @@ func _init() -> void:
 	_check(bag.is_open(), "boss gone: opens again")
 	bag.close()
 
-	# --- the 3rd weapon cannot sit in the hotbar ---
+	# --- a 3rd weapon goes to the hotbar and can be selected ---
 	inv.add(inv.slot_item(0), 1)
-	_check(inv.hotbar_weapon_count() == 2 and lo.weapons.size() == 2, "a 3rd sword goes to the bag; Loadout still has 2 weapons")
+	var third := lo.weapon_slot(2)
+	_check(third >= 0 and third < Inventory.HOTBAR and lo.weapons.size() == 3, "a 3rd sword lands in the hotbar; Loadout has 3 weapons")
+	_check(lo.select(third) and lo.selected_slot == third, "...and is selectable")
 	print("PASS" if _ok else "FAIL")
 	quit(0 if _ok else 1)

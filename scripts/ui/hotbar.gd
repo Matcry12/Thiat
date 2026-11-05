@@ -11,7 +11,6 @@ const SLOT_SCENE := preload("res://scenes/ui/item_slot.tscn")
 
 @export var skin: InventorySkin
 @export var icon_tilt_degrees := -45.0
-@export var cast_color := Color(1, 1, 1, 0.4)
 ## Pixels between slots; -1 = framed hotbar: `art_gap` art px, otherwise the skin's slot_gap (the bag's copy sets its own).
 @export var gap_override := -1
 ## The HUD hotbar sits on the carved panel (hotbar_panel, real size); the copy inside the bag window does not.
@@ -22,7 +21,6 @@ var framed := false
 @export var panel_w := 223
 @export var panel_h := 44
 @export var panel_pad := 8                   ## transparent pad around the panel box inside hotbar_panel.png
-@export var cooldown_color := Color(0, 0, 0, 0.6)
 
 var _loadout: Loadout
 var _inv: Inventory
@@ -30,14 +28,10 @@ var interactive := false   ## set by the bag panel while it is open
 var _slots: Array[ItemSlot] = []
 var _row: HBoxContainer
 var _pad: MarginContainer
-var _cast_to := -1
 
 func bind(l: Loadout, inv: Inventory) -> void:
 	_loadout = l
 	_inv = inv
-	l.swap_started.connect(func(i: int): _cast_to = i)
-	l.swap_finished.connect(func(_w): _cast_to = -1)
-	l.swap_cancelled.connect(func(): _cast_to = -1)
 
 func slots() -> Array[ItemSlot]:
 	return _slots
@@ -94,14 +88,9 @@ func _process(_delta: float) -> void:
 			custom_minimum_size = bs.size
 			_pad.custom_minimum_size = bs.size
 		queue_redraw()
-	var active := _loadout.active_index()
-	var cd := _loadout.cooldown_left()
-	var cd_frac := clampf(cd / maxf(_loadout.swap_cooldown, 0.001), 0.0, 1.0)
-	var cast_frac := clampf(1.0 - _loadout.cast_left() / maxf(_loadout.swap_cast, 0.001), 0.0, 1.0)
 	var owner_node := _loadout.get_parent()
 	var pending: int = owner_node.pending_slot() if owner_node.has_method("pending_slot") else -1
 	var shown := pending if pending >= 0 else _loadout.selected_slot
-	var casting_slot := _loadout.weapon_slot(_cast_to)
 	for i in _slots.size():
 		var s := _slots[i]
 		s.skin = sk
@@ -109,10 +98,6 @@ func _process(_delta: float) -> void:
 		s.set_item(_inv.slot_item(i), _inv.slot_count(i))
 		s.mouse_filter = Control.MOUSE_FILTER_STOP if interactive else Control.MOUSE_FILTER_IGNORE
 		s.selected = i == shown
-		s.cast_progress = cast_frac if (_loadout.is_casting() and i == casting_slot) else 0.0
-		# Shade the weapon slots that cannot be swapped to yet: every weapon except the last one drawn.
-		var is_weapon := s.item != null and s.item.category == "weapon"
-		s.cooldown_frac = cd_frac if (cd > 0.0 and is_weapon and _loadout.weapon_slot(active) != i) else 0.0
 		s.refresh()
 
 func _gap(sk: InventorySkin) -> int:

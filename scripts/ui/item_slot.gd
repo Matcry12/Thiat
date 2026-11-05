@@ -37,8 +37,6 @@ var key_text := ""
 var selected := false
 var hovered := false
 var locked := false
-var cast_progress := 0.0      ## 0..1 fill while swapping to this slot's weapon
-var cooldown_frac := 0.0      ## 0..1 shade while the swap cooldown runs
 var tip_override := ""        ## hover name for slots that hold no item (the ability slots)
 var icon_tilt_degrees := -45.0
 ## Island Workshop look (skin parts): icon top in art px inside the 22 px slot (hotbar / bag 4, book 3).
@@ -144,7 +142,7 @@ func apply_skin() -> void:
 	$SelectedFrame.offset_right = skin.selected_grow
 	$SelectedFrame.offset_bottom = skin.selected_grow
 	var inset := float(skin.icon_inset)
-	for n in [$Icon, $CastFill, $CooldownShade, $Hover, $Backdrop]:
+	for n in [$Icon, $Hover, $Backdrop]:
 		n.offset_left = inset
 		n.offset_top = inset
 		n.offset_right = -inset
@@ -187,7 +185,7 @@ func _apply_art() -> void:
 		$Icon.offset_top = 0
 		$Icon.offset_right = 0
 		$Icon.offset_bottom = 0
-	for n in [$CastFill, $CooldownShade, $Hover, $Backdrop]:
+	for n in [$Hover, $Backdrop]:
 		n.offset_left = 0
 		n.offset_top = 0
 		n.offset_right = 0
@@ -232,10 +230,6 @@ func refresh() -> void:
 	$Icon.pivot_offset = $Icon.size * 0.5
 	$Icon.rotation = _tilt
 	$Icon.scale = Vector2.ONE * (0.75 if _tilt != 0.0 else 1.0)
-	$CastFill.visible = cast_progress > 0.0
-	$CastFill.anchor_top = 1.0 - cast_progress
-	$CooldownShade.visible = cooldown_frac > 0.0
-	$CooldownShade.anchor_bottom = cooldown_frac
 	$Hover.visible = hovered and mouse_filter != Control.MOUSE_FILTER_IGNORE and not art
 	if art:
 		_refresh_frame()

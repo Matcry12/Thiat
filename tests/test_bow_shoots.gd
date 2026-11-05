@@ -20,9 +20,7 @@ func _init():
 		if n.global_position.distance_to(dummy.global_position) < 500.0:
 			n.free()
 
-	loadout.swap_cast = 0.05   # shorten so the test does not sit waiting
-	loadout.try_swap(1)
-	await _wait_until(func(): return not loadout.is_casting(), 2.0)
+	loadout.select(loadout.weapon_slot(1))
 	var bow: WeaponData = loadout.active_weapon()
 	var equipped: bool = weapon_holder.weapon == bow
 	print("bow equipped: %s" % equipped)

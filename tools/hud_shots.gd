@@ -1,7 +1,7 @@
 extends SceneTree
 ## Full-screen HUD screenshots of the real arena (decision 0030):
 ##   xvfb-run -a godot --rendering-driver opengl3 --resolution 1152x648 --script tools/hud_shots.gd -- <out_dir>
-## Saves hud_layout.png (boss asleep: no boss bar), hud_swap_cooldown.png, hud_bag_open.png, hud_tooltip.png,
+## Saves hud_layout.png (boss asleep: no boss bar), hud_bag_open.png, hud_tooltip.png,
 ## hud_f3_open.png, hud_boss_phase2.png (boss awake, phase 2, bottom centre), hud_boss_phase2_f3.png.
 var _out := ""
 
@@ -25,11 +25,6 @@ func _init() -> void:
 	hp.hp = hp.max_hp * 0.7
 	await _frames(40)
 	await _shot("hud_layout")
-	lo.try_swap(1)
-	while lo.is_casting():
-		await physics_frame
-	await _frames(40)
-	await _shot("hud_swap_cooldown")
 	hud.bag().toggle()
 	await _frames(10)
 	await _shot("hud_bag_open")

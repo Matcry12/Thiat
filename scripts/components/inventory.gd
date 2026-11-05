@@ -1,8 +1,7 @@
 class_name Inventory
 extends Node
 ## What the player carries (v1 §5, decision 0029): 36 slots. Slots 0-8 are the hotbar, 9-35 the bag.
-## A slot = one ItemData + a count. Stacks to `ItemData.stack_limit()`. The hotbar holds at most
-## `max_hotbar_weapons` weapons (decision 0003): a 3rd one can only live in the bag.
+## A slot = one ItemData + a count. Stacks to `ItemData.stack_limit()`. Any slot may hold a weapon.
 ## Pure data + rules: the bag panel, hotbar and Loadout all read it; none of them own any item.
 
 signal changed
@@ -11,7 +10,6 @@ const HOTBAR := 9
 const SIZE := 36
 
 @export var start_items: Array[ItemData] = []   ## starting kit, placed in order (a wooden sword, stone axe, stone pickaxe; bare hands gather nothing, decision 0048)
-@export var max_hotbar_weapons := 2
 ## Bag moves are refused while a Boss is ENGAGED (decision 0003: "bag is locked in combat").
 @export var lock_in_boss_fight := true
 
@@ -66,13 +64,6 @@ func used_slots() -> int:
 		n += 1 if _item[i] != null else 0
 	return n
 
-func hotbar_weapon_count(except := -1) -> int:
-	var n := 0
-	for i in HOTBAR:
-		if i != except and _item[i] != null and _item[i].category == "weapon":
-			n += 1
-	return n
-
 ## Boss fight in progress: the bag may not be rearranged.
 func locked() -> bool:
 	if not lock_in_boss_fight or not is_inside_tree():
@@ -81,10 +72,6 @@ func locked() -> bool:
 		if b.get("aggro") == Boss.Aggro.ENGAGED:
 			return true
 	return false
-
-## May `it` sit in slot `i` (the max-weapons rule)?
-func can_place(i: int, it: ItemData) -> bool:
-	return i >= HOTBAR or it.category != "weapon" or hotbar_weapon_count(i) < max_hotbar_weapons
 
 # ------------------------------------------------------------------ adding
 
@@ -125,7 +112,7 @@ func _insert(it: ItemData, amount: int, slots: Array, commit := true) -> int:
 	for s in slots:
 		if left <= 0:
 			break
-		if _item[s] == null and s != _held_from and not used_empty.has(s) and can_place(s, it):
+		if _item[s] == null and s != _held_from and not used_empty.has(s):
 			var put := mini(limit, left)
 			left -= put
 			used_empty[s] = true
@@ -251,8 +238,6 @@ func click_slot(i: int, half := false) -> bool:
 		_held_from = i
 		_put(i, it, n - take)
 	elif it == null:
-		if not can_place(i, held_item):
-			return false
 		_put(i, held_item, held_count)
 		_drop_held()
 	elif it.id == held_item.id:
@@ -262,8 +247,6 @@ func click_slot(i: int, half := false) -> bool:
 		if held_count <= 0:
 			_drop_held()
 	else:
-		if not can_place(i, held_item):
-			return false
 		var old_it := it
 		var old_n := n
 		_put(i, held_item, held_count)
@@ -276,7 +259,7 @@ func click_slot(i: int, half := false) -> bool:
 ## Shift click: moves the whole stack between hotbar and bag. What does not fit stays where it was.
 func shift_move(i: int) -> bool:
 	if locked() or held_item != null or i < 0 or i >= SIZE or _item[i] == null:
-		return false   # not while a stack is on the cursor: it could slip a 3rd weapon into the hotbar
+		return false
 	var it := _item[i]
 	var n := _count[i]
 	var target := range(HOTBAR, SIZE) if i < HOTBAR else range(0, HOTBAR)
@@ -299,7 +282,7 @@ func return_held() -> void:
 	var n := held_count
 	var from := _held_from
 	_drop_held()
-	if from >= 0 and can_place(from, it) and (_item[from] == null or _item[from].id == it.id):
+	if from >= 0 and (_item[from] == null or _item[from].id == it.id):
 		var put := mini(it.stack_limit() - _count[from], n)
 		_put(from, it, _count[from] + put)
 		n -= put
@@ -365,10 +348,10 @@ func status_text() -> String:
 	var bag_panel := get_tree().get_first_node_in_group("bag_panel") as BagPanel
 	var bag := "locked (boss engaged)" if locked() else ("open" if bag_panel and bag_panel.is_open() else "closed")
 	var held := "%s x%d" % [held_item.display_name, held_count] if held_item else "-"
-	return "slot %d: %s  hands: %s%s\nslots used %d/%d  hotbar weapons %d/%d\nbag: %s  cursor: %s" % [
+	return "slot %d: %s  hands: %s\nslots used %d/%d\nbag: %s  cursor: %s" % [
 		loadout.selected_slot + 1, it.display_name if it else "(empty)",
-		w.item_name() if w else "-", " (swap casting)" if loadout.is_casting() else "",
-		used_slots(), SIZE, hotbar_weapon_count(), max_hotbar_weapons,
+		w.item_name() if w else "-",
+		used_slots(), SIZE,
 		bag, held]
 
 ## F3: puts `amount` of every material into the bag.

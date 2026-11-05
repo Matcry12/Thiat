@@ -52,7 +52,7 @@ func try_use(weapon: WeaponData, aim: Vector2) -> bool:
 	return true
 
 ## Cancels a running skill and refunds its cooldown (a cancelled skill did not
-## happen — same as cancel_swap charging nothing). No-op when idle.
+## happen). No-op when idle.
 func cancel() -> void:
 	if not is_active():
 		return

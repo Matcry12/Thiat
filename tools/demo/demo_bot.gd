@@ -367,8 +367,8 @@ func _run_guard() -> void:
 	await _wait(2.5)
 	get_tree().quit()
 
-## Slice 3a: sword + bow, gated by a cast + cooldown. Question: is the 5s swap
-## cooldown interesting or annoying?
+## Slice 3a: sword + bow, instant swap (no cast, no cooldown). Question: is the
+## Is it too strong?
 func _run_weapons() -> void:
 	var health := func(): return _dummy.get_node("Health") as Health
 
@@ -387,10 +387,9 @@ func _run_weapons() -> void:
 	print("[demo]   sword dealt %.1f damage" % (before - health.call().hp))
 	await _wait(0.8)
 
-	_say("PRESS 2 — SWAP TO BOW", "a %.1fs cast — you can't attack while it runs" % _loadout.swap_cast)
+	_say("PRESS 2 — SWAP TO BOW", "instant, no cast")
 	await _tap("slot_2")
-	while _loadout.is_casting():
-		await get_tree().physics_frame
+	await _wait(0.1)
 	print("[demo]   swap finished: active weapon %s" % _loadout.active_weapon().resource_path.get_file())
 	await _wait(0.4)
 
@@ -415,23 +414,9 @@ func _run_weapons() -> void:
 	print("[demo]   arrow dealt %.1f damage" % (before2 - health.call().hp))
 	await _wait(0.8)
 
-	_say("PRESS 1 — TOO SOON", "swap is on a %.1fs cooldown — the press does nothing" % _loadout.swap_cooldown)
-	var index_before := _loadout.active_index()
+	_say("PRESS 1 — SWAP BACK", "instant")
 	await _tap("slot_1")
 	await _wait(0.1)
-	var refused: bool = _loadout.active_index() == index_before and not _loadout.is_casting()
-	print("[demo]   refused: %s (cooldown left %.2fs)" % [refused, _loadout.cooldown_left()])
-	await _wait(1.4)
-
-	_say("COOLDOWN CLEARS", "now the swap works")
-	while _loadout.cooldown_left() > 0.0:
-		await get_tree().physics_frame
-	await _wait(0.3)
-
-	_say("PRESS 1 — SWAP BACK", "%.1fs cast again" % _loadout.swap_cast)
-	await _tap("slot_1")
-	while _loadout.is_casting():
-		await get_tree().physics_frame
 	print("[demo]   swap finished: active weapon %s" % _loadout.active_weapon().resource_path.get_file())
 	await _wait(0.4)
 
@@ -446,7 +431,7 @@ func _run_weapons() -> void:
 	print("[demo]   sword dealt %.1f damage" % (before3 - health.call().hp))
 	await _wait(1.0)
 
-	_say("THE QUESTION", "is the 5s swap cooldown interesting, or just annoying?")
+	_say("THE QUESTION", "is instant swapping too strong?")
 	await _wait(2.5)
 	get_tree().quit()
 
@@ -542,9 +527,9 @@ func _run_skills() -> void:
 	await _wait(1.4)
 
 	# 3. Swap to bow.
-	_say("PRESS 2 — SWAP TO BOW", "%.1fs cast" % _loadout.swap_cast)
+	_say("PRESS 2 — SWAP TO BOW", "instant")
 	await _tap("slot_2")
-	await _until(func(): return not _loadout.is_casting(), 3.0)
+	await _wait(0.1)
 	var bow: WeaponData = _loadout.active_weapon()
 	print("[demo]   active %s | sword skill left %.1fs | bow skill left %.1fs" % [bow.resource_path.get_file(), slot.cooldown_left(sword), slot.cooldown_left(bow)])
 	_say("BOW: E READY. SWORD E: %.1fs LEFT" % slot.cooldown_left(sword), "each weapon keeps its own cooldown (bow E ready: %s)" % (slot.cooldown_left(bow) <= 0.0))
@@ -905,7 +890,7 @@ func _fight(secs: float, bow: bool, until_dead := false) -> void:
 					move = dir
 		_hold_vec(move)
 		var reach := 480.0 if bow else 88.0
-		if next_atk <= 0.0 and dist < reach and lock <= 0.0 and not _loadout.is_casting():
+		if next_atk <= 0.0 and dist < reach and lock <= 0.0:
 			next_atk = 0.7 if bow else 0.6
 			_tap("attack")
 	_hold_vec(Vector2.ZERO)
@@ -1002,7 +987,7 @@ func _run_showcase() -> void:
 	await _walk_near(_boss, 215.0, 3.0)
 	_say("Swap to the bow")
 	await _tap("slot_2")
-	await _until(func(): return not _loadout.is_casting(), 3.0)
+	await _wait(0.1)
 	create_tween().tween_property(cam, "zoom", Vector2(1.3, 1.3), 0.7)
 	await _wait(0.9)
 	_say("E: charged piercing shot (watch the back hand)")
@@ -1081,7 +1066,7 @@ func _run_hands() -> void:
 	await _wait(0.8)
 	_say("Swap to the bow")
 	await _tap("slot_2")
-	await _until(func(): return not _loadout.is_casting(), 3.0)
+	await _wait(0.1)
 	await _wait(0.5)
 	_say("Bow draw: the back hand pulls")
 	Engine.time_scale = 0.5
@@ -1147,7 +1132,7 @@ func _run_hitfeel() -> void:
 
 	await _walk_near(_boss, 215.0, 3.0)
 	await _tap("slot_2")
-	await _until(func(): return not _loadout.is_casting(), 3.0)
+	await _wait(0.1)
 	_say("Charged arrow")
 	await _tap("skill")
 	await _wait(1.3)
@@ -1187,7 +1172,7 @@ func _run_hitfeel2() -> void:
 
 	await _walk_near(_boss, 215.0, 4.0)
 	await _tap("slot_2")
-	await _until(func(): return not _loadout.is_casting(), 3.0)
+	await _wait(0.1)
 	_say("Charged arrow")
 	await _tap("skill")
 	await _wait(1.6)
@@ -1244,7 +1229,7 @@ func _run_charanim() -> void:
 	await _swings(3, 0.55)
 	_say("Swap to the bow")
 	await _tap("slot_2")
-	await _until(func(): return not _loadout.is_casting(), 3.0)
+	await _wait(0.1)
 	await _wait(0.3)
 	_say("Charged shot")
 	await _tap("skill")
@@ -1334,7 +1319,7 @@ func _run_blocky() -> void:
 		await _swings(2, 0.55)
 	_say("Bow")
 	await _tap("slot_2")
-	await _until(func(): return not _loadout.is_casting(), 3.0)
+	await _wait(0.1)
 	_player.aim_override = Vector2.RIGHT
 	await _wait(0.3)
 	await _swings(2, 0.7)
@@ -1342,7 +1327,7 @@ func _run_blocky() -> void:
 	await _wait(0.2)
 	await _swings(1, 0.7)
 	await _tap("slot_1")
-	await _until(func(): return not _loadout.is_casting(), 3.0)
+	await _wait(0.1)
 	cam.zoom = Vector2(2, 2)
 	var tree := _nearest_node(&"tree", m.home_point())
 	_player.global_position = tree.global_position + Vector2(-44, 0)
@@ -1447,7 +1432,7 @@ func _run_rundust() -> void:
 	await _wait(0.5)
 	get_tree().quit()
 
-## Top-right HUD: life bar trail, hotbar swap cast + cooldown.
+## Top-right HUD: life bar trail, hotbar.
 ## FPS=60 tools/demo/record.sh hud_hotbar --scenario=hud --seed=21
 func _run_hud() -> void:
 	_arena.get_node("Boss").passive = true
@@ -1464,8 +1449,7 @@ func _run_hud() -> void:
 	await _wait(2.0)
 	_say("Swap to the bow: slot 2 fills while casting")
 	await _tap("slot_2")
-	while _loadout.is_casting():
-		await get_tree().physics_frame
+	await _wait(0.1)
 	_say("Swap cooldown: slot 1 is shaded with seconds left")
 	await _wait(5.5)
 	_say("Cooldown over: swap back")
@@ -1585,7 +1569,7 @@ func _run_w3_inventory() -> void:
 	await _wait(1.0)
 	_say("Hotbar: sword 1, bow 2, axe 3, pickaxe 4", "keys 1-9 or the mouse wheel")
 	await _wait(2.0)
-	_say("Press 3: the axe", "a tool switches at once: no swap cast")
+	_say("Press 3: the axe", "every slot switches at once")
 	await _tap("slot_3")
 	await _wait(1.0)
 	_say("Chop the tree: 2 hits", "axe hits 3 times harder than hands")

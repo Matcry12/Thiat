@@ -88,11 +88,7 @@ func _update_label() -> void:
 	var guard: Guard = _player.get_node_or_null("Guard")
 	var guard_state: String = Guard.State.keys()[guard.state].to_lower() if guard else "n/a"
 	var tank_text: String = "%.0f/%.0f" % [guard.tank, guard.tank_max] if guard else "n/a"
-	var loadout: Loadout = _player.get_node_or_null("Loadout")
-	var swap_text := ""
-	if loadout and loadout.is_casting():
-		swap_text = "\nswapping: %.2fs" % loadout.cast_left()
-	_label.text = "weapon: %s\nlast damage: %.1f\nguard: %s  tank: %s%s" % [weapon_state, last_damage, guard_state, tank_text, swap_text]
+	_label.text = "weapon: %s\nlast damage: %.1f\nguard: %s  tank: %s" % [weapon_state, last_damage, guard_state, tank_text]
 
 func _on_draw() -> void:
 	if not enabled:
