@@ -22,6 +22,10 @@ class_name BodyRig
 ## Scales the slash crescent (SwingFx). The crescent is drawn from the real hitbox shape, so values below 1 show LESS than the real reach:
 ## set 1.0 to see the true hit area, or = visual_scale to match the smaller sword.
 @export_range(0.2, 2.0, 0.01) var slash_scale := 1.0: set = _set_slash_scale
+## Soft edges: the weapon picture is turned as one solid image, its pixel borders blended over `soft_edge_width` screen pixels (no saw-tooth).
+## Off = plain nearest pixels. Art files are untouched.
+@export var soft_edges := true: set = _set_soft_edges
+@export_range(0.1, 3.0, 0.05) var soft_edge_width := 1.0: set = _set_soft_edge_width
 ## (WeaponVisual stays at the actor's gameplay pivot: the hitbox and muzzle hang off it, so it is NOT a per-character value.)
 
 @export_group("Run cycle frames (directional / side-only sets)")
@@ -53,6 +57,12 @@ func _set_visual_scale(v: float) -> void:
 	emit_changed()
 func _set_slash_scale(v: float) -> void:
 	slash_scale = v
+	emit_changed()
+func _set_soft_edges(v: bool) -> void:
+	soft_edges = v
+	emit_changed()
+func _set_soft_edge_width(v: float) -> void:
+	soft_edge_width = v
 	emit_changed()
 ## Last F3 `Save rig` result (not saved into the file).
 var save_note := ""
