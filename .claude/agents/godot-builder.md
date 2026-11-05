@@ -36,7 +36,9 @@ node with its `unique_id=`, never edit `.godot/`, `*.import`, `*.uid`.
 ## Prove it before you report
 1. `godot --headless --check-only --script <file>` for every changed `.gd` (a hook also runs it).
 2. Write or update a test in `tests/` for the new logic. Run `tools/run_tests.sh --changed`
-   (or name your tests). Set `BOSSFIGHT_TEST_MAP_CELLS=192` if you do not need the whole island.
+   (or name your tests). Do not run the full suite: the main loop runs it once before commit. Read a
+   failure in `.godot/test_logs/`; rerun with `--failed`. If your test needs the whole island, add it to
+   `REAL_MAP` in `tools/run_tests.sh`, or report it if you do not own that file.
 3. `godot --headless --quit` boots without new errors.
 
 ## Report (short)

@@ -7,6 +7,8 @@ description: Build a planned BossFight slice fast - split it into tasks by file 
 
 Main loop (Opus) plans, splits and reports. It does not write the code.
 
+A small change (1-3 code files, no new system, CLAUDE.md rule 2.4) does not use this skill: do it directly, run the Quick tests, report.
+
 ## 1. Split (main loop)
 - One line of intent to the user first (CLAUDE.md global rule), then go unless they object.
 - Cut the slice into tasks. Each task: goal, **files it owns** (no file in two tasks), what done
@@ -33,7 +35,7 @@ Do not wait for the other builders.
 - Stop review rounds when the findings become small; let the playtest decide.
 
 ## 5. Finish
-- `tools/run_tests.sh` (full suite) once, after all pieces are in.
+- `tools/run_tests.sh` (full suite) once, after all pieces are in, in the background. A failure: read `.godot/test_logs/`, fix, then `--failed` and `--changed`. A fix in shared code gets one more full run.
 - Screenshots if anything visual changed (an Opus/Claude agent looks at them).
 - Report to the user in B1 English: what changed in the game, test result, what the judges found
   (including "nothing"), what must be playtested.
