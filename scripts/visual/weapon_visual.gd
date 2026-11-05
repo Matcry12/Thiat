@@ -81,12 +81,35 @@ func apply_rig(r: BodyRig) -> void:
 	if _guarding:
 		_pivot_pos = _guard_offset()
 
+const SOFT_SHADER := preload("res://scripts/visual/soft_pixel.gdshader")
+var _soft_mat: ShaderMaterial
+
+func soft_on() -> bool:
+	return rig != null and rig.soft_edges
+
+## Soft edges (BodyRig): the same material on the model's Art, the SwingArt copy and the ghosts. Off = no material, as before.
+func _apply_soft() -> void:
+	if _soft_mat == null:
+		_soft_mat = ShaderMaterial.new()
+		_soft_mat.shader = SOFT_SHADER
+	_soft_mat.set_shader_parameter(&"edge_width", rig.soft_edge_width if rig else 1.0)
+	var mat: Material = _soft_mat if soft_on() else null
+	var art := _model.get_node_or_null("Art") as CanvasItem if _model else null
+	if art:
+		art.material = mat
+	if _swing_art:
+		for c in _swing_art.get_children():
+			(c as CanvasItem).material = mat
+	if ghosts:
+		ghosts.set_soft(mat)
+
 func visual_scale() -> float:
 	return rig.visual_scale if rig else 1.0
 
 ## Scales the model's picture about the grip (model origin). Everything that is GAMEPLAY (an Area2D hitbox, a Muzzle,
 ## any other Marker2D) gets the inverse scale, so its WORLD transform is exactly what it was at scale 1.
 func _apply_model_scale() -> void:
+	_apply_soft()
 	if _model == null:
 		return
 	var s := visual_scale()
@@ -240,6 +263,7 @@ func _setup_swing_art() -> void:
 	_tip = tip.position if tip else Vector2.ZERO
 	ghosts.bind_art(ghost_src, _motion, tip.position if tip else Vector2.ZERO)
 	ghosts.modulate = weapon.model_tint
+	_apply_soft()
 
 func _rest_angle() -> float:
 	return weapon.rest_angle_degrees if weapon else -45.0
@@ -461,6 +485,6 @@ func picture_grip_tip() -> Dictionary:
 
 func status_text() -> String:
 	if _motion == null:
-		return "swing: %s  motion: none (old pivot swing)" % _phase
+		return "soft: %s  swing: %s  motion: none (old pivot swing)" % ["on" if soft_on() else "off", _phase]
 	var side := ("  side: %s tilt %.0f" % ["right" if _side > 0.0 else "left", rad_to_deg(wrapf(aim_angle - (0.0 if _side > 0.0 else PI), -PI, PI))]) if _motion.side_only else ""
-	return "swing: %s  dir: %s  hits: %s  grip: (%.0f, %.0f)  ghosts: %d  slash: %s %s" % [_phase, "first" if _flip > 0.0 else "reversed", "follow blade" if weapon and weapon.hit_follows_blade else "snap", _art_grip.x, _art_grip.y, ghosts.count(), _motion.slash_mode, ribbon.status() if _motion.slash_mode == "ribbon" else slash.status()] + side
+	return "soft: %s  swing: %s  dir: %s  hits: %s  grip: (%.0f, %.0f)  ghosts: %d  slash: %s %s" % ["on" if soft_on() else "off", _phase, "first" if _flip > 0.0 else "reversed", "follow blade" if weapon and weapon.hit_follows_blade else "snap", _art_grip.x, _art_grip.y, ghosts.count(), _motion.slash_mode, ribbon.status() if _motion.slash_mode == "ribbon" else slash.status()] + side

@@ -13,6 +13,7 @@ var _poses: Array[Transform2D] = []
 var _live := Transform2D.IDENTITY
 var _since := 0.0
 var _mat: ShaderMaterial
+var _soft_mat: ShaderMaterial
 
 func bind_art(art: Node2D, motion: SwingMotion, tip := Vector2.ZERO) -> void:
 	if is_instance_valid(_src):
@@ -28,6 +29,19 @@ func bind_art(art: Node2D, motion: SwingMotion, tip := Vector2.ZERO) -> void:
 		for c in [_src] + _src.find_children("*", "CanvasItem"):
 			(c as CanvasItem).material = _mat
 	clear()
+
+## Soft edges (BodyRig): `soft` is the soft_pixel material (or null = the plain silhouette). Ghosts are always pure silhouettes (amount 1).
+func set_soft(soft: ShaderMaterial) -> void:
+	var m: Material = _mat
+	if soft:
+		_soft_mat = soft.duplicate() as ShaderMaterial
+		m = _soft_mat
+	if _src:
+		for c in [_src] + _src.find_children("*", "CanvasItem"):
+			(c as CanvasItem).material = m
+	for h in get_children():
+		for c in h.find_children("*", "CanvasItem", true, false):
+			(c as CanvasItem).material = m
 
 func _exit_tree() -> void:
 	if is_instance_valid(_src):
@@ -58,6 +72,9 @@ func record(pose: Transform2D, recording: bool, dt: float) -> void:
 	_live = pose
 	_mat.set_shader_parameter("tint", _motion.ghost_color)
 	_mat.set_shader_parameter("amount", _motion.ghost_white)
+	if _soft_mat:
+		_soft_mat.set_shader_parameter(&"tint", _motion.ghost_color)
+		_soft_mat.set_shader_parameter(&"amount", _motion.ghost_white)
 	_sync_nodes()
 	queue_redraw()
 

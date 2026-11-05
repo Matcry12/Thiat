@@ -390,6 +390,7 @@ characters (Gemini + hand-cleaned); kept the egg placeholder, 32x30, plus 2 hand
    Log NS4 (slash = ribbon built from the real blade path, `SwingRibbon`; sword `top_lift_px` 40, a/b demo motions deleted): built by Sonnet 5.5 agent - judge (Opus, 6 rounds): size jump, wrong frame switch, flat tail, broken anchor E/F found + fixed - user: flat tail, trail sliding with the sword, arrow head; fixed with C + D + G, approved.
    Log NS5 (tools: shared `tool_chop` side-chop motion + real axe / pickaxe models + tool target hit, [0050 addendum](../decision/0050-hitbox-follows-swing.md)): built by Sonnet 5.5 agent - judge: pending - user: pending.
    Log PF (player fixes: water look reads the drawn shore pixel; bare hands cannot attack + body faces move dir, mouse for `face_mouse_hold` after an action, [0055](../decision/0055-no-bare-hand-attack-and-move-facing.md)): water built by Opus 5.5 agent, judge (Sonnet) found nothing; hands + facing built by Sonnet 5.5 agent, judge (Opus): weapon pose still followed the mouse, stale `facing` status line, dodge without input could dash backwards - fixed - user: pending.
+   Log SE (soft edges on turned weapon pictures, `BodyRig.soft_edges`, [0059](../decision/0059-soft-edge-weapon-turning.md)): built by Sonnet 5.5 agent, colour fix by Opus - judge (Opus): art darkened, ghost colour changed, both fixed; re-judge (Sonnet): nothing - user: kept it after trying it.
 
 ## 6. Done when
 
