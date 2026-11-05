@@ -20,11 +20,22 @@ func _init():
 	player.set_physics_process(false)
 	var vis: SpriteActorVisual = player.get_node("Visual")
 	var body := vis.get_node("Body") as AnimatedSprite2D
+	var sh := vis.get_node("Shadow") as Sprite2D
+	# The player as shipped (Pixel Plains, 4-frame run: frames 0 and 2 are "up").
+	vis.set_move_state("run")
+	body.pause()
+	_pose(vis, body, 0.0)
+	check("shipped player: up frame shrinks the shadow", is_equal_approx(sh.scale.x, vis._shadow_rest_scale.x * vis.shadow_min_scale))
+	_pose(vis, body, 1.0)
+	check("shipped player: down frame = full shadow", sh.scale == vis._shadow_rest_scale)
+	vis.set_move_state("idle")
 	# This test covers the OLD drawn-art path (plain idle/run + code bounce). The player ships the 3D body sheets now;
 	# swapping the SpriteFrames resource back is all it takes (tests/test_player_3d_body.gd covers the new set).
 	vis.rig = load("res://data/body_rigs/drawn_art.tres")   # the old character is one resource swap (rig = frames + body position + weapon fit)
+	# player.tscn tunes the bounce for the 4-frame Pixel Plains run; the 6-frame old art uses the script's own defaults.
+	vis.bounce_mode = SpriteActorVisual.BounceMode.SMOOTH
+	vis.bounce_offsets = PackedFloat32Array([0, 1, 0, 0, 1, 0])
 	vis.set_move_state("idle")
-	var sh := vis.get_node("Shadow") as Sprite2D
 	var dust = vis.get_node("RunDust")
 	var rest_scale := sh.scale
 	var rest_alpha := sh.modulate.a

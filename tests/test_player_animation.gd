@@ -19,6 +19,9 @@ func _init():
 	# This test covers the OLD drawn-art path (plain idle/run + code bounce). The player ships the 3D body sheets now;
 	# swapping the SpriteFrames resource back is all it takes (tests/test_player_3d_body.gd covers the new set).
 	vis.rig = load("res://data/body_rigs/drawn_art.tres")   # the old character is one resource swap (rig = frames + body position + weapon fit)
+	# player.tscn tunes the bounce for the 4-frame Pixel Plains run; the 6-frame old art uses the script's own defaults.
+	vis.bounce_mode = SpriteActorVisual.BounceMode.SMOOTH
+	vis.bounce_offsets = PackedFloat32Array([0, 1, 0, 0, 1, 0])
 	vis.set_move_state("idle")
 	check("Body is an AnimatedSprite2D", body != null)
 	check("frame counts: idle 2, run 6", body.sprite_frames.get_frame_count(&"idle") == 2 and body.sprite_frames.get_frame_count(&"run") == 6)
