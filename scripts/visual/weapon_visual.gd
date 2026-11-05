@@ -87,7 +87,7 @@ var _soft_mat: ShaderMaterial
 func soft_on() -> bool:
 	return rig != null and rig.soft_edges
 
-## Soft edges (BodyRig): the same material on the model's Art, the SwingArt copy and the ghosts. Off = no material, as before.
+## Soft edges (BodyRig): the same material on everything held: the model's Art, the SwingArt copy, the ghosts, the held item icon. Off = no material, as before.
 func _apply_soft() -> void:
 	if _soft_mat == null:
 		_soft_mat = ShaderMaterial.new()
@@ -102,6 +102,9 @@ func _apply_soft() -> void:
 			(c as CanvasItem).material = mat
 	if ghosts:
 		ghosts.set_soft(mat)
+	var held := get_node_or_null("HeldItem") as CanvasItem
+	if held:
+		held.material = mat
 
 func visual_scale() -> float:
 	return rig.visual_scale if rig else 1.0

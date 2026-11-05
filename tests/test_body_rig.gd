@@ -89,12 +89,15 @@ func _init():
 	check("soft on: Art has the soft material", art.material is ShaderMaterial)
 	check("soft on: SwingArt copy has it", swing_art.get_child_count() == 0 or (swing_art.get_child(0) as CanvasItem).material == art.material)
 	check("soft on: status says so", wv.status_text().begins_with("soft: on"))
+	var held := wv.get_node("HeldItem") as CanvasItem
+	check("soft on: held item icon has it", held.material == art.material)
 	blocky.soft_edge_width = 2.0
 	check("soft_edge_width reaches the shader live", is_equal_approx(float(art.material.get_shader_parameter(&"edge_width")), 2.0))
 	blocky.soft_edges = false
 	check("soft off: Art material cleared", art.material == null)
 	check("soft off: SwingArt copy cleared", swing_art.get_child_count() == 0 or (swing_art.get_child(0) as CanvasItem).material == null)
 	check("soft off: status says so", wv.status_text().begins_with("soft: off"))
+	check("soft off: held item icon cleared", held.material == null)
 	check("soft toggle: hitbox world transform identical", _same(snap_on, _gameplay_snapshot(wv.get_model())))
 	blocky.soft_edges = true
 	wv.set_weapon(loadout.weapons[loadout.weapons.size() - 1] if loadout.weapons.size() > 1 else loadout.weapons[0])

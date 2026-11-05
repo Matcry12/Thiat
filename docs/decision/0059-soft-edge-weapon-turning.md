@@ -5,7 +5,7 @@ Weapon pictures turn to any aim angle. With nearest sampling at 2 screen pixels 
 
 ## Decision
 - Pictures still turn freely, but a shader (`scripts/visual/soft_pixel.gdshader`) keeps each art pixel a solid square and blends only its border over about one screen pixel.
-- It covers the model's Art, the SwingArt copy and the swing ghosts. Held item icons do not turn with the aim, so they do not use it.
+- It covers everything the player holds: the model's Art (weapons, tools, bow), the SwingArt copy, the swing ghosts and the held item icon (materials, placeables).
 - `BodyRig.soft_edges` (default on) and `soft_edge_width` are the two F3 values. Off gives the old nearest look.
 - Art files, weapon size and hit areas do not change.
 
