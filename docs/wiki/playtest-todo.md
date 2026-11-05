@@ -94,9 +94,9 @@ You start with a wooden sword only. Press `F3` and use `Give W3 kit` if you want
 
 - [ ] Keys `1` to `4`: sword, bow, axe, pickaxe. Does the hotbar show them clearly? (Tools are plain coloured squares with a letter for now.)
 - [ ] Press `3` (axe) or `4` (pickaxe): the switch is instant. Press `1` or `2`: weapon to weapon still has the cast and cooldown.
-- [ ] From the axe, press `1`: your sword comes back at once. Then press `2`: that one is a normal swap.
+- [ ] From the axe, press `1`: your sword comes back at once. Then press `2`: also at once.
 - [ ] Press `5` to `9` (empty slots): bare hands, same as the old key `3`.
-- [ ] Mouse wheel: it waits a moment before it selects. Too slow? (F3 → `Player` → `wheel_settle`.)
+- [ ] Mouse wheel: it selects at once, with no wait.
 - [ ] Axe on a tree: 2 hits. Hands: 6 hits. Is the axe too strong or too weak? (F3 → `Tool stone_axe`, `Node tree` → `tool_bonus`)
 - [ ] Axe on copper: "clink". Pickaxe on copper: it breaks. Is it clear why?
 - [ ] `Tab` or `I`: the bag opens under the hotbar. Pick up a stack, put it down, right click for half, shift click to send it to the hotbar.
@@ -110,7 +110,7 @@ You start with a wooden sword only. Press `F3` and use `Give W3 kit` if you want
 ## W2 — trees and rocks
 
 - [ ] Press `3`: your weapon goes away, bare hands. Press `3` again: the same weapon is back at once.
-- [ ] Hands → press `2` (the other weapon): it should be a normal swap (cast + cooldown), not free.
+- [ ] Hands → press `2` (the other weapon): it should switch at once.
 - [ ] Punch a tree: does it shake, do chips fly, does it feel good? About 6 punches to break — too many / too few?
 - [ ] Wood and stone fly to you when you walk near. Is the magnet range right? (F3 → `Collector`)
 - [ ] The counter under the hotbar goes up.

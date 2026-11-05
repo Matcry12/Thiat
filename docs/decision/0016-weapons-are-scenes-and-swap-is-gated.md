@@ -1,5 +1,7 @@
 # 0016 — Each weapon is its own scene; swapping is gated
 
+> **"The swap" section superseded by [0058](0058-free-weapon-swap-no-weapon-limit.md):** weapon swap is instant, no limit. Weapons as scenes still stand.
+
 **Date:** 2026-09-28
 **Builds on:** [0003](0003-loadout-and-swapping.md) (the loadout rules), [0011](0011-hitbox-lives-on-the-weapon.md)
 (the hitbox lives on the weapon), [0012](0012-weapon-behaviours.md) (behaviours), and

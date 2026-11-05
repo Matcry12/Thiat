@@ -26,7 +26,6 @@ constrain the moment-to-moment fight.
 - **Dodge** ([decision 0004](../decision/0004-dodge.md)): baseline ability, always available,
   gated by a **cooldown, not stamina**. Not a Souls-style roll economy.
   - Starting values, tune: **0.3s i-frames**, ~2.5 tile burst, **2s cooldown**, HUD-visible.
-  - Cancels a weapon swap in progress (the swap fails, per [0003](../decision/0003-loadout-and-swapping.md)).
   - Gear tunes it (shorter cooldown, longer i-frames, extra charge); never grants or removes it.
   - Boss pacing is authored against this: two unavoidable hits inside 2s are unfair by construction.
 - **Parry / block** ([0006](../decision/0006-controls-and-parry.md), revised by
@@ -43,7 +42,7 @@ constrain the moment-to-moment fight.
   - An RL boss may bait it with feints — that is intended pressure, and the reason this is a window
     and not a hold-block (which a policy would simply learn to ignore).
 - **Controls** (PC): WASD move, mouse aim, LMB attack, `Q` dodge, `E` weapon skill, `F` parry,
-  `1`/`2` weapons, `3`-`9` items.
+  `1`-`9` hotbar (weapons, tools, items).
 - **Mobility items** (teleport rod, dash gem, grapple) are separate hotbar items — longer range,
   longer cooldown, **no i-frames**. They must stay clearly distinct from dodge or they replace it.
 - **Melee**: swing-arc hitbox (not raycast), windup + recovery gate attack speed.
@@ -61,7 +60,7 @@ constrain the moment-to-moment fight.
   pattern) so it stays crowd control against trash rather than a way to cheese a hard fight.
 - **Buffs/debuffs**: consumables and accessories grant damage%/crit/attack-speed; status effects
   (burn/poison/slow) are a separate DoT/utility axis outside the base damage formula.
-- **Cooldown HUD**: dodge, weapon swap, armor swap and healing must all show their timer. A gated
+- **Cooldown HUD**: dodge, armor swap and healing must all show their timer. A gated
   action with no visible timer reads as a broken game, not as a rule — doubly so when an RL boss is
   timing its punishes around those windows.
 - **Combat state**: flagged while dealing/taking hostile damage, drops after a few seconds idle.
@@ -98,12 +97,12 @@ What an RL-driven boss must still obey:
 - Gear tiers are boss-gated.
   - A boss kill drops the material/unlock for the next tier, not a grind quota.
   - No player XP/levels — power comes entirely from gear + accessories, so progression is boss-order, not playtime.
-- **Hotbar & swapping** ([decision 0003](../decision/0003-loadout-and-swapping.md)): Minecraft-style ~9-slot hotbar; max 2 weapons, rest are items (potions, mobility tools, throwables).
-  - Two knobs, both apply (Terraria potion-sickness pattern): a **swap cast** (vulnerable, interruptible) and a **swap cooldown** (can't swap back).
-  - Starting values, tune: **weapon 0.6s cast / 5s cooldown** (dodge cancels the cast); **armor 1.5s cast / 10s cooldown**; **healing potion 30s** personal cooldown.
+- **Hotbar & swapping** ([decision 0003](../decision/0003-loadout-and-swapping.md)): Minecraft-style ~9-slot hotbar; weapons, tools and items (potions, mobility tools, throwables) in any mix ([0058](../decision/0058-free-weapon-swap-no-weapon-limit.md)).
+  - Weapon swap is instant and free (0058). Armor keeps two knobs (Terraria potion-sickness pattern): a **swap cast** (vulnerable, interruptible) and a **swap cooldown** (can't swap back).
+  - Starting values, tune: **armor 1.5s cast / 10s cooldown**; **healing potion 30s** personal cooldown.
   - Bag locked, potions otherwise free. All cooldowns must be visible on the HUD.
   - Bag is locked in combat — only hotbar contents exist during a fight.
-  - Skills come from the equipped weapon, so 2 weapons = 2 kits; switching between them is a skill expression, not a menu.
+  - Skills come from the equipped weapon, so each weapon is a kit with its own skill cooldown; switching between them is a skill expression, not a menu.
 - Accessories/loadout slots are a separate axis from weapon/armor.
   - Build identity (mobility set, tank set, crit set) comes from stacking accessories independently of class/weapon choice.
   - Target slot count, starting value, tune: 5-7 accessory slots alongside weapon + armor, mirroring Terraria's 7+.

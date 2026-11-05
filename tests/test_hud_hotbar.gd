@@ -1,5 +1,5 @@
 extends SceneTree
-# Top-right HUD (decision 0024): life bar follows Health, trail lags then catches up; hotbar has 9 slots (W3), highlight follows the selected slot, cast fill during a swap, cooldown shade after it, item name.
+# Top-right HUD (decision 0024): life bar follows Health, trail lags then catches up; hotbar has 9 slots (W3), highlight follows the selected slot, item name.
 var _ok := true
 func check(name: String, cond: bool) -> void:
 	print("%s: %s" % [name, "ok" if cond else "FAIL"])
@@ -63,22 +63,9 @@ func _init():
 	check("icon fallback found (model art)", hb.slots()[0].has_picture())
 	check("tool shows its icon (no letter, no word)", hb.slots()[2].item == inv.slot_item(2) and hb.slots()[2].has_picture() and inv.slot_item(2).icon != null)
 	check("empty slot shows nothing", hb.slots()[8].item == null)
-	check("no cast overlay at rest", hb.slots()[1].cast_progress == 0.0 and hb.slots()[1].cooldown_frac == 0.0)
-
-	check("swap starts", lo.try_swap(1))
-	hb._process(0.016)
-	check("target slot shows cast progress", hb.slots()[1].cast_progress >= 0.0 and hb._cast_to == 1)
-	await create_timer(lo.swap_cast * 0.5).timeout
-	hb._process(0.016)
-	check("cast fill grows while casting", lo.is_casting() and hb.slots()[1].cast_progress > 0.0 and hb.slots()[0].cast_progress == 0.0)
-	while lo.is_casting():
-		await physics_frame
+	check("select weapon slot 2 is instant", lo.select(1))
 	hb._process(0.016)
 	check("highlight moved to slot 1", hb.slots()[1].selected and not hb.slots()[0].selected)
-	check("cooldown shade on the other WEAPON slot only", hb.slots()[0].cooldown_frac > 0.9 and hb.slots()[1].cooldown_frac == 0.0 and hb.slots()[2].cooldown_frac == 0.0)
-	lo._cooldown_left = 0.0
-	hb._process(0.016)
-	check("shade gone when cooldown ends", hb.slots()[0].cooldown_frac == 0.0)
 
 	# --- tool selected: highlight + name follow ---
 	lo.select(2)

@@ -109,7 +109,7 @@ const CATS=['Character','Combat','Boss','World','Items','FX & Hit','UI'];
 const SEC=[];
 function S(cat,name,props,o={}){SEC.push({cat,name,props:props.map(a=>({n:a[0],t:a[1],v:clone(a[2]),d:clone(a[2]),min:a[3],max:a[4],o:a[5]||{}})),file:o.file||null,heavyObj:o.heavy})}
 function clone(x){return Array.isArray(x)?x.slice():x}
-S('Character','Player',[['speed','f',220,50,600],['wheel_settle','f',0.15,0,1],['hold_to_gather','b',true]]);
+S('Character','Player',[['speed','f',220,50,600],['hold_to_gather','b',true]]);
 S('Character','Visual',[['shadow_on','b',true,0,0,{g:'Shadow'}],['shadow_min_scale','f',0.6,0,1,{g:'Shadow'}],['shadow_min_alpha','f',0.3,0,1,{g:'Shadow'}],
  ['front_half_angle_deg','f',55,10,90,{g:'Directional body'}],['facing_hysteresis_deg','f',8,0,30,{g:'Directional body'}],['landing_frames','i',2,0,8,{g:'Directional body'}],['lift_frames','i',2,0,8,{g:'Directional body'}],['hit_time_scale','f',1,0.2,3,{g:'Directional body'}],['flip_deadzone','f',0.15,0,1,{g:'Directional body'}],['directional_lift_px','f',2,0,10,{g:'Directional body'}]]);
 S('Character','BodyRig',[['visual_scale','f',1,0.2,3],['slash_scale','f',1,0.2,3],['weapon_pivot_offset','v2',[4,-2],-40,40],['hand_radius','f',4.5,1,12],['hand_rest_x','f',9,-20,20],['hand_rest_y','f',3,-20,20],
@@ -119,7 +119,7 @@ S('Character','Hands',[['relax_blend_time','f',0.12,0,1],['sway_ease_time','f',0
 S('Character','Swimmer',[['water_speed_scale','f',0.6,0.05,1.5]]);
 S('Character','Collector',[['magnet_radius','f',70,10,200],['magnet_speed','f',260,50,800],['pickup_radius','f',18,4,60],['scatter_radius','f',24,0,80]]);
 S('Character','Respawner',[['respawn_delay','f',3,0,10],['drop_share','f',0.5,0,1],['drop_gear','b',true],['despawn_time','f',300,10,900],['max_per_pickup','i',8,1,30,{g:'Spray'}],['pop_height','f',16,0,60,{g:'Spray'}],['pop_time','f',0.4,0.05,1.5,{g:'Spray'}]]);
-S('Character','Inventory',[['max_hotbar_weapons','i',2,1,9],['lock_in_boss_fight','b',true]]);
+S('Character','Inventory',[['lock_in_boss_fight','b',true]]);
 S('Combat','wooden_sword',[['windup','f',0.12,0,1],['active','f',0.1,0,1],['recovery','f',0.2,0,1],['damage','f',12,0,100],['arc_degrees','f',110,10,360],['reach','f',46,10,200],['step_distance','f',12,0,60]],{file:'data/weapons/wooden_sword.tres'});
 S('Combat','Dodge',[['duration','f',0.25,0.05,1],['cooldown','f',0.9,0,5],['distance','f',90,10,300]]);
 S('Combat','Guard',[['tank_max','f',60,0,300],['cover_arc','f',140,10,360],['tank_regen','f',8,0,50]]);

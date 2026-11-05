@@ -51,7 +51,9 @@ func _init() -> void:
 	inv.give_dev_kit()
 	inv.add(World.item("wood"), 7)
 	inv.add(World.item("copper_ore"), 5)
-	lo.select(2)   # the axe
+	inv.add(World.item("copper_sword"), 1)
+	inv.add(World.item("copper_sword"), 1)   # 4 hotbar weapons
+	lo.select(5)   # the 4th weapon
 	var home := m.home_point()
 	var furnace_st := World.station(arena, "furnace", home + Vector2(150, 80))
 	var f := furnace_st.furnace()
@@ -124,7 +126,7 @@ func _init() -> void:
 	var inv2: Inventory = p2.get_node("Inventory")
 	_check(m2.current_seed == seed_a, "same island seed")
 	_check(inv2.to_array() == inv_before, "inventory slot for slot")
-	_check(p2.get_node("Loadout").selected_slot == 2, "selected slot")
+	_check(p2.get_node("Loadout").selected_slot == 5 and p2.get_node("Loadout").weapons.size() == 4 and p2.get_node("Loadout").active_weapon() == inv2.slot_item(5).weapon, "selected slot, 4 hotbar weapons back")
 	_check(p2.global_position.distance_to(home + Vector2(60, 40)) < 1.0 and is_equal_approx(p2.get_node("Health").hp, 40.0), "position and hp")
 	_check(p2.get_node("Respawner").deaths == 2 and arena2.get_node("SaveGame").play_time >= 123.0, "deaths and play time")
 	_check(m2.chunks_per_frame == 3, "a changed map export came back")
@@ -142,13 +144,13 @@ func _init() -> void:
 	var n := m2._streamer.node_of(far) as ResourceNode
 	_check(n == null or n.is_broken(), "the gathered node is a stump / gone when its chunk loads")
 
-	# --- a loaded second weapon starts no swap cast ---
+	# --- a loaded second weapon is in hand at once ---
 	var lo2: Loadout = p2.get_node("Loadout")
 	inv2.give_dev_kit()   # sword slot 0, bow slot 1
 	var sg2: SaveGame = arena2.get_node("SaveGame")
 	lo2.rearm()
 	lo2.select_instant(1)
-	_check(not lo2.is_casting() and lo2.active_weapon() == inv2.slot_item(1).weapon and lo2.selected_slot == 1, "select_instant: bow in hand at once, no cast")
+	_check(lo2.active_weapon() == inv2.slot_item(1).weapon and lo2.selected_slot == 1, "select_instant: bow in hand at once")
 
 	# --- win -> save allowed, boss_defeated written ---
 	var boss2: Boss = arena2.get_node("Boss")

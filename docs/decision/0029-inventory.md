@@ -1,5 +1,7 @@
 # 0029 — Inventory: slots, hotbar selection, tools
 
+> **Max 2 weapons, the swap cost and the wheel wait superseded by [0058](0058-free-weapon-swap-no-weapon-limit.md).** The rest still stands.
+
 **Date:** 2026-10-09 · **Slice:** W3
 
 ## Context

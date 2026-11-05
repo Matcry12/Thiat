@@ -5,8 +5,6 @@ extends CharacterBody2D
 ## for internals (decision 0005, 0010).
 
 @export var speed := 260.0
-## Seconds of no scrolling before the wheel's hotbar slot is selected.
-@export var wheel_settle := 0.12
 ## Holding attack with a tool keeps gathering (weapons stay one click per swing, 0036).
 @export var hold_to_gather := true
 
@@ -36,8 +34,7 @@ var aim_override := Vector2.ZERO
 ## True from Health.died until Respawner wakes the player: every input is ignored. Code-owned, so not an @export.
 var dead := false
 var _parry_down := false   # the key went down and has not been seen up yet
-var _wheel_slot := -1
-var _wheel_left := 0.0
+var _pending_slot := -1   # key / wheel choice waiting for the swing, guard, dash or skill to end
 var _move_state := "idle"
 var _move_dir := Vector2.ZERO
 var _action_used := false   # set by an attack / place / interact press this frame
@@ -80,6 +77,7 @@ func _on_died() -> void:
 	if dead:
 		return
 	dead = true
+	_pending_slot = -1
 	weapon_holder.cancel()
 	guard.release()
 	dodge.cancel()
@@ -157,8 +155,8 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var attack_in := Input.is_action_just_pressed("attack") \
-			or (hold_to_gather and not dodge.is_dashing() and loadout.is_holstered() and loadout.can_attack() and not placer.is_holding() and Input.is_action_pressed("attack"))
-	if attack_in and guard.can_attack() and not loadout.is_casting() \
+			or (hold_to_gather and _pending_slot < 0 and not dodge.is_dashing() and loadout.is_holstered() and loadout.can_attack() and not placer.is_holding() and Input.is_action_pressed("attack"))
+	if attack_in and guard.can_attack() \
 			and not skill_slot.is_active() and not mouse_over_ui():
 		# A station in the selected slot: the click puts it down instead of swinging (decision 0031).
 		if placer.is_holding():
@@ -168,10 +166,10 @@ func _physics_process(delta: float) -> void:
 			_action_used = true
 			weapon_holder.try_attack()
 
-	# E skill. Refused while guarding, dashing, casting a swap, mid-swing; the
+	# E skill. Refused while guarding, dashing, mid-swing; the
 	# slot itself refuses a second skill or one on cooldown.
 	if Input.is_action_just_pressed("skill") and not guard.is_guarding() and not dodge.is_dashing() \
-			and not loadout.is_casting() and weapon_holder.phase == WeaponHolder.Phase.IDLE:
+			and weapon_holder.phase == WeaponHolder.Phase.IDLE:
 		skill_slot.try_use(loadout.active_weapon(), aim_direction)
 
 	# Dodge and guard are refused while a body-moving skill (the 0.15 s lunge)
@@ -179,53 +177,39 @@ func _physics_process(delta: float) -> void:
 	# body, so a dodge/guard that fires cancels it (cooldown refunded).
 	var body_free := not skill_slot.moves_body()
 	if Input.is_action_just_pressed("dodge") and body_free:
-		# Only a dodge that actually FIRES cancels the swap — a dodge refused
-		# by its own cooldown must not cancel a cast that would otherwise
-		# have kept going (decision: a failed press is a no-op, not a cancel).
 		if dodge.try_dodge(_move_dir, aim_direction):
-			loadout.cancel_swap()
 			skill_slot.cancel()
 
 	if Input.is_action_just_pressed("parry"):
 		_parry_down = true
 		if body_free and guard.try_guard():
-			loadout.cancel_swap()
 			skill_slot.cancel()
 	elif _parry_down and not Input.is_action_pressed("parry"):   # not just_released: a release during a pause must not leave the guard held
 		_parry_down = false
 		guard.release()
 
-	# Weapon swap is vulnerable, like an attack (decision 0003) — refused
-	# while guarding or dashing, same as the attack gate above. Loadout stays
-	# input-agnostic; the gate lives here, next to the other input gates.
-	# Hotbar select (keys 1-9, wheel). Same gates as before: a swap is vulnerable, so it is refused
-	# while guarding, dashing or using a skill. Loadout decides swap (weapon) vs instant (tool / hands).
+	# Hotbar select (keys 1-9, wheel): remembered in _pending_slot and applied once nothing is in the way
+	# (guard, dash, skill, swing), so a press during a swing is not eaten and never skips its recovery.
+	for n in Inventory.HOTBAR:
+		if Input.is_action_just_pressed("slot_%d" % (n + 1)):
+			_pending_slot = n
 	var can_select := not guard.is_guarding() and not dodge.is_dashing() and not skill_slot.is_active()
-	if can_select:
-		for n in Inventory.HOTBAR:
-			if Input.is_action_just_pressed("slot_%d" % (n + 1)):
-				loadout.select(n)
-		if _wheel_slot >= 0:
-			_wheel_left -= delta
-			if _wheel_left <= 0.0:
-				loadout.select(_wheel_slot)
-				_wheel_slot = -1
+	if _pending_slot >= 0 and can_select and weapon_holder.phase == WeaponHolder.Phase.IDLE:
+		loadout.select(_pending_slot)
+		_pending_slot = -1
 
 func _unhandled_input(event: InputEvent) -> void:
-	# Wheel moves a cursor over the hotbar; the slot is only selected after `wheel_settle` seconds of
-	# calm, so scrolling past the bow does not start a swap cast on the way to the axe.
 	if dead or not event is InputEventMouseButton or not event.pressed or _dock_hovered():
 		return   # (over the F3 dock the wheel scrolls its list, never the hotbar)
 	var step := -1 if event.button_index == MOUSE_BUTTON_WHEEL_UP else (1 if event.button_index == MOUSE_BUTTON_WHEEL_DOWN else 0)
 	if step == 0:
 		return
-	var from := _wheel_slot if _wheel_slot >= 0 else loadout.selected_slot
-	_wheel_slot = posmod(from + step, Inventory.HOTBAR)
-	_wheel_left = wheel_settle
+	var from := _pending_slot if _pending_slot >= 0 else loadout.selected_slot
+	_pending_slot = posmod(from + step, Inventory.HOTBAR)
 
-## Slot the wheel is moving to (-1 = none); the hotbar highlights it before it is selected.
+## Slot chosen but not yet in hand (-1 = none); the hotbar highlights it at once.
 func pending_slot() -> int:
-	return _wheel_slot
+	return _pending_slot
 
 ## True while the bag panel is open and the mouse is over it (or over the hotbar it makes clickable).
 func mouse_over_ui() -> bool:
@@ -248,10 +232,10 @@ func _on_weapon_state_changed(state: String) -> void:
 ## The item in the hand if it is not a weapon / tool (HeldItem decides what shows); the Loadout owns which slot is selected.
 func _held_item_data() -> ItemData:
 	var inv := get_node_or_null("Inventory") as Inventory
-	return inv.slot_item(loadout.selected_slot) if inv and not loadout.is_casting() else null
+	return inv.slot_item(loadout.selected_slot) if inv else null
 
 func _on_swap_finished(w: WeaponData) -> void:
-	skill_slot.cancel()   # defensive: swaps are refused while a skill runs
+	skill_slot.cancel()   # defensive: switches are refused while a skill runs
 	weapon_holder.weapon = w
 	swing_fx.set_weapon(w)
 	weapon_visual.set_weapon(w)   # emits model_changed -> weapon_holder.bind_model
@@ -301,6 +285,7 @@ func debug_actions() -> Array:
 
 func status_text() -> String:
 	var lines: Array[String] = []
+	lines.append("pending slot: %s" % (str(_pending_slot + 1) if _pending_slot >= 0 else "-"))
 	lines.append("pos: (%d, %d)" % [roundi(global_position.x), roundi(global_position.y)])
 	lines.append("vel: %.0f  state: %s  facing: %s" % [velocity.length(), "run" if velocity.length() > 1.0 else "idle", "left" if _body_facing.x < 0.0 else "right"])
 	lines.append("aim: %.0f deg" % rad_to_deg(aim_direction.angle()))

@@ -11,12 +11,12 @@ Placeholder art is circles/rectangles drawn in code — deliberately, permanentl
 **Settled decisions (do not re-litigate without a superseding record):**
 - Reference games: Necesse = combat feel, Terraria = bosses/items, Soul Knight = support [0001]
 - PC first, mobile deferred; mouse aim, no auto-aim [0002]
-- Minecraft-style hotbar, max 2 weapons; weapon swap 0.6s cast / 5s cd, armor 1.5s / 10s cd,
+- Minecraft-style hotbar, any number of weapons, weapon swap instant [0058]; armor 1.5s / 10s cd,
   heal potion 30s; bag locked in combat [0003]
 - Dodge is baseline, cooldown-gated not stamina: 0.3s i-frames, 2s cd [0004]
 - Weapons are DATA (`WeaponData` Resource + ~3 behavior scripts); composition over inheritance;
   boss asks a swappable `Brain.choose_action(state)` [0005]
-- Controls: WASD / mouse / LMB attack / `Q` dodge / `E` weapon skill / `F` parry / 1-2 weapons.
+- Controls: WASD / mouse / LMB attack / `Q` dodge / `E` weapon skill / `F` parry / 1-9 hotbar.
   Parry is a 0.25s timing window (not a hold-block): success = negate + stagger 0.8s + 25% shield;
   miss = take the hit + 0.5s recovery. Not every attack is parryable (purple tell) [0006]
 - Vertical slices, playtest-gated [0007]
