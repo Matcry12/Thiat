@@ -163,7 +163,9 @@ func _build_ui(player: Node) -> void:
 				_crafter.craft_to_cursor(r))   # click: onto the cursor, then put it in a slot
 		_win.rebuilt.connect(func():   # recipe icons are rebuilt when the stations in range change
 			for s in _win.recipe_slots():
-				_tooltip.watch(s, func(): return _win.recipe_tip(s), func(): return _win.recipe_ingredients(s)))
+				_tooltip.watch(s, func(): return _win.recipe_tip(s), func(): return _win.recipe_ingredients(s))
+			for s in _win.catalog_slots():   # the optional Items tab: name + kind, no ingredients
+				_tooltip.watch(s, s.tip_text))
 		_win.furnace_input_clicked.connect(func(shift: bool):
 			var f := _win.current_furnace()
 			if f and shift:

@@ -307,7 +307,7 @@ let hits=[],hover=null,mouseDown=false;
 const bg=new Image();bg.src='bg.png';
 function backdrop(){if(bg.naturalWidth)ctx.drawImage(bg,0,0,W,H);}
 function shade(a){rect(0,0,W,H,[26,14,20],a);}
-const state={screen:'title',vol:1.0,shake:0.5,full:false,rec:0,qty:1,drag:null,tip:null};
+const state={screen:'title',vol:1.0,shake:0.5,full:false,rec:0,items:false,qty:1,drag:null,tip:null};
 const HOT=['wooden_sword','axe','pickaxe','wood'];
 function hotbar(x,y){
   panel(x-8,y-11,9*23+16,44);brackets(x-8,y-11,9*23+16,44);
@@ -385,16 +385,19 @@ const RECIPES=[
 ];
 const can=r=>r.need.every(([,n,have])=>have>=n*state.qty)&&!r.lock;
 const BAG={0:['wood',37],1:['stone',12],2:['copper_ore',3]};
+// Test yard Items tab: a 4th side tab. 24 slots a page (same 6 x 4 grid as Recipes); > 24 items = a `< 1/2 >` pager on the right page.
+const CATALOG=['bow','wooden_sword','copper_sword','sword','axe','pickaxe','copper_axe','copper_pickaxe','hammer','copper_bar','pickaxe','wood','stone','copper_ore','copper_bar','hand','axe','bow','wood','stone','sword','hand','hammer','pickaxe','wood','stone','bow','axe','copper_ore','copper_bar'];
+const CAT_NOTE=['Click: full stack.','Right click: one.'];
 function drawBook(){
   backdrop();hudLayer(false,{hotbar:false});shade(0.5);
   const bw=330,bh=136,bx=Math.round((W-bw)/2),by=14;
-  const tabs=['hammer','copper_bar','sword'];
-  const tab=i=>{const tx=bx-22,ty=by+12+i*24,on=i===0;
+  const tabs=['hammer','copper_bar','sword','bow'],act=state.items?3:0;
+  const tab=i=>{const tx=bx-22,ty=by+12+i*24,on=i===act;
     if(on){rbox(tx,ty,26,22,OUT,2);rbox(tx+1,ty+1,24,20,PAPER,2);rect(tx+3,ty+1,22,1,PAPER_L);rect(bx-1,ty+1,9,20,PAPER);rect(tx+1,ty+7,2,8,GOLDTXT);}
     else{framed(tx,ty,26,22,OUT,COVER_L,1);rect(tx+1,ty+1,24,1,[170,104,78]);rect(tx+1,ty+20,24,1,COVER_D);grain(tx+2,ty+14,22,5,hs('tab'+i),COVER_D,2,false);}
     icon(tx+4,ty+3,tabs[i],false,0,on?0:0.75);
     hits.push({id:'tab'+i,x:tx,y:ty,w:26,h:22,tip:[['Crafting','Furnace','Anvil'][i]]});};
-  tab(1);tab(2); // tucked behind the cover
+  [0,1,2,3].filter(i=>i!==act).forEach(tab); // tucked behind the cover
   organicBox(bx,by,bw,bh,hs('cover'));rect(bx+2,by+1,bw-4,2,COVER_L);rect(bx+2,by+bh-3,bw-4,2,COVER_D);
   rect(bx+2,by+3,bw-4,1,COVER_L);rect(bx+2,by+bh-5,bw-4,1,COVER_D);
   grain(bx+8,by+bh-4,bw-16,3,hs('cgrain'),COVER_D,5);
@@ -411,19 +414,22 @@ function drawBook(){
   for(let j=by+3;j<by+bh-3;j++){const d=sdx(j),spx=spx0+d;if(d)rect(spx0,j,d,1,OUT);put(spx,j,OUT);put(spx+3,j,OUT);const ph=(j+d)%4<2;put(spx+1,j,ph?ROPE_L:ROPE_D);put(spx+2,j,ph?ROPE_D:ROPE_L);}
   [by+3,by+Math.round(bh/2)-2,by+bh-8].forEach(ky=>sprite(spx0-1+sdx(ky+2),ky,"KKKKK|KohoK|KqoqK|KoqoK|KKKKK"));
   brackets(bx,by,bw,bh);
-  tab(0); // active tab joins the page
+  tab(act); // active tab joins the page
   // left page: recipe grid
   const lx=bx+12,ly=by+10;
-  icon(lx-1,ly-4,'hammer');text(lx+16,ly+1,'Recipes',CREAM,{bold:true,outline:OUT});
-  RECIPES.forEach((r,i)=>{const sx=lx+(i%6)*24,sy=ly+16+Math.floor(i/6)*24,id='r'+i;
-    slot(sx,sy,22,state.rec===i?'pick':(hover===id?'hover':''));icon(sx+3,sy+3,r.i,!can(r));
-    if(r.lock)sprite(sx+15,sy+15,".KKKK.|K....K|KKKKKK|KBLBBK|KBKBBK|KKKKKK");
-    hits.push({id,x:sx,y:sy,w:22,h:22,tip:[r.n,can(r)?'Ready to craft':(r.lock||'Missing items')]});});
-  for(let i=RECIPES.length;i<24;i++){const sx=lx+(i%6)*24,sy=ly+16+Math.floor(i/6)*24;slot(sx,sy,22);}
+  icon(lx-1,ly-4,state.items?'bow':'hammer');text(lx+16,ly+1,state.items?'Items':'Recipes',CREAM,{bold:true,outline:OUT});
+  (state.items?CATALOG.slice(0,24).map((n,i)=>({n:n.replace('_',' ').replace(/^./,m=>m.toUpperCase()),i:n,t:'Weapon'})):RECIPES).forEach((r,i)=>{const sx=lx+(i%6)*24,sy=ly+16+Math.floor(i/6)*24,id='r'+i;
+    slot(sx,sy,22,state.rec===i?'pick':(hover===id?'hover':''));icon(sx+3,sy+3,r.i,!state.items&&!can(r));
+    if(!state.items&&r.lock)sprite(sx+15,sy+15,".KKKK.|K....K|KKKKKK|KBLBBK|KBKBBK|KKKKKK");
+    hits.push({id,x:sx,y:sy,w:22,h:22,tip:[r.n,state.items?r.t:(can(r)?'Ready to craft':(r.lock||'Missing items'))]});});
+  for(let i=(state.items?24:RECIPES.length);i<24;i++){const sx=lx+(i%6)*24,sy=ly+16+Math.floor(i/6)*24;slot(sx,sy,22);}
   // right page: the chosen recipe
-  const r=RECIPES[state.rec],rx=bx+bw/2+8,ry=by+10;
+  const r=state.items?{n:'Wooden sword',i:'wooden_sword',t:'Weapon'}:RECIPES[state.rec],rx=bx+bw/2+8,ry=by+10;
   slot(rx,ry,22,'sel');icon(rx+3,ry+3,r.i);
   text(rx+28,ry+2,r.n,CREAM,{bold:true,outline:OUT});text(rx+28,ry+13,r.t,GOLDTXT,{outline:OUT});
+  if(state.items){CAT_NOTE.forEach((l,k)=>text(rx,ry+30+k*11,l,LINE));
+    const sy=ry+98;button(rx,sy,14,16,'<','minus');framed(rx+17,sy,22,18,OUT,SLOT,1);ctext(rx+28,sy+5,'1/2',CREAM,{outline:OUT,bold:true});button(rx+42,sy,14,16,'>','plus');}
+  else{
   const wh=4+r.need.length*23+(r.lock?14:0);well(rx,ry+26,pw-18,wh);
   r.need.forEach(([n,q,have],i)=>{const sy=ry+28+i*23;slot(rx+4,sy,22);icon(rx+7,sy+3,n);
     const ok=have>=q*state.qty;text(rx+31,sy+8,`${have}/${q*state.qty}`,ok?OKG:HP_L,{outline:OUT,bold:true});});
@@ -433,6 +439,7 @@ function drawBook(){
   button(rx,sy,14,16,'<','minus');framed(rx+17,sy,22,18,OUT,SLOT,1);ctext(rx+28,sy+5,String(state.qty),CREAM,{outline:OUT,bold:true});button(rx+42,sy,14,16,'>','plus');
   if(can(r))button(rx+64,sy,pw-82,16,'Craft','craft',{icon:'hammer'});
   else{rbox(rx+64,sy+2,pw-82,16,OUT,2);framed(rx+64,sy,pw-82,16,OUT,PAGE,2);sprite(rx+70,sy+5,".KKKK.|K....K|KKKKKK|KBLBBK|KBKBBK|KKKKKK");ctext(rx+64+(pw-82)/2+6,sy+4,'Craft',MUTED,{bold:true,outline:LINE});}
+  }
   // bag panel under the book
   const gw=9*23+15,gx=Math.round((W-gw)/2),gy=by+bh+6,gh=124;
   panel(gx,gy,gw,gh);brackets(gx,gy,gw,gh);

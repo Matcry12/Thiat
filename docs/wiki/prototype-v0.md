@@ -81,7 +81,7 @@ On top of that, v0 ships a **debug overlay** (`F1` toggles, on by default in v0)
 
 `F3` opens the live tuning panel (see 1c). `F2` is slow motion.
 
-Test yard (0056, debug builds): title button `Test yard` starts the normal arena on a small flat map with every tree kind, rocks, copper, the 3 stations, a dummy and a slime; F3 `[Test yard]` + `Reset yard`; never saves.
+Test yard (0056, debug builds): title button `Test yard` starts the normal arena on a small flat map with every tree kind, rocks, copper, the 3 stations, a dummy and a slime; F3 `[Test yard]` + `Reset yard`; never saves. Item picker: the book's `Items` tab lists every item in `data/items`; click = into the inventory.
   Slice log: built by Sonnet (godot-builder); Opus judge found 5 (dead `cells` slider, stations into the bag on rebuild, Reset deleted placed stations, Delete save not gated, button only greyed in release), all fixed in one round; user playtest 2026-11-03: good.
 
 Node hit feedback (0057): trees, rocks, copper sway from the foot, throw chips + leaves/dust, grow per hit, pop on break; real Kenney CC0 wood / stone sounds; no white flash. Picked from a $0 demo video (`tools/demo/chop_fx/chop_fx_demo.py`).
@@ -396,6 +396,7 @@ characters (Gemini + hand-cleaned); kept the egg placeholder, 32x30, plus 2 hand
    Log NS4 (slash = ribbon built from the real blade path, `SwingRibbon`; sword `top_lift_px` 40, a/b demo motions deleted): built by Sonnet 5.5 agent - judge (Opus, 6 rounds): size jump, wrong frame switch, flat tail, broken anchor E/F found + fixed - user: flat tail, trail sliding with the sword, arrow head; fixed with C + D + G, approved.
    Log NS5 (tools: shared `tool_chop` side-chop motion + real axe / pickaxe models + tool target hit, [0050 addendum](../decision/0050-hitbox-follows-swing.md)): built by Sonnet 5.5 agent - judge: pending - user: pending.
    Log PF (player fixes: water look reads the drawn shore pixel; bare hands cannot attack + body faces move dir, mouse for `face_mouse_hold` after an action, [0055](../decision/0055-no-bare-hand-attack-and-move-facing.md)): water built by Opus 5.5 agent, judge (Sonnet) found nothing; hands + facing built by Sonnet 5.5 agent, judge (Opus): weapon pose still followed the mouse, stale `facing` status line, dodge without input could dash backwards - fixed - user: pending.
+   Log IP (Test yard item picker + `sword1` item, [0056](../decision/0056-test-yard.md)): built by Sonnet 5.5 agent - judge (Opus) on the first side panel: covered the book with F3 open, tooltip line missing, a test check that could not fail; fixed - user: side panel looked unlike the book, so it became a book tab - judge (Opus) on the tab: icons rebuilt every frame, no hover name on the tab, 2 weak test checks; fixed; look scores 7 (side panel), 7, 8 (tab + chest icon).
 
 ## 6. Done when
 

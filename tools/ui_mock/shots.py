@@ -15,6 +15,7 @@ SHOTS = [
     ("pause", "go('pause'); hover='res'; draw();"),
     ("settings", "go('settings'); hover='vol'; state.full=true; draw();"),
     ("book", "go('book'); hover='b0'; state.tip=[300,190,['Wood','Material  x37']]; draw();"),
+    ("book_picker", "go('book'); state.items=true; state.rec=1; hover='r1'; state.tip=[300,190,['Wooden sword','Weapon']]; draw(); state.items=false;"),
     ("book_locked", "go('book'); state.rec=4; draw();"),
     ("parts", "go('parts');"),
 ]

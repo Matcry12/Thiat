@@ -14,6 +14,7 @@ signal furnace_input_clicked(shift: bool)
 signal furnace_output_clicked(shift: bool)
 signal rebuilt   ## the recipe icons are new (the HUD registers their hover names)
 signal recipe_chosen(recipe: RecipeData)
+signal catalog_clicked(item: ItemData, button: int)   ## a click on an icon of the optional Items tab (left = full stack, right = one: the answerer decides)
 
 const SLOT_SCENE := preload("res://scenes/ui/item_slot.tscn")
 const GRID_COLS := 6
@@ -35,6 +36,11 @@ const GRID_ROWS := 4
 ## Ingredient row height in the well, art px (a 16 px icon + 2).
 @export var row_step_art := 18
 @export_group("Text")
+## Items tab (only with a catalog): left page title and the note under the chosen item.
+@export var items_title := "Items"
+## Picture for the Items tab and its page title; empty = the first catalog item's own picture.
+@export var items_tab_icon: Texture2D
+@export var items_note := "Click: full stack.\nRight click: one."
 ## Description text in the readable default font instead of the pixel one.
 @export var clean_desc := false   ## (the pixel font reads better on the book page; this is only a toggle)
 ## One line under each item name in the book (data, by item id); a missing id falls back to its category.
@@ -42,7 +48,8 @@ const GRID_ROWS := 4
 	"workbench": "Craft tools and gear.", "furnace": "Melt ore into metal.", "anvil": "Forge strong tools.",
 	"stone_axe": "Chops trees faster.", "stone_pickaxe": "Breaks rocks and ore.", "bow": "Shoot from far away.",
 	"copper_bar": "Melt ore into metal.", "wooden_sword": "A simple blade.", "copper_axe": "Strong and sharp.",
-	"copper_pickaxe": "Digs deeper veins.", "copper_sword": "A keen copper blade.",
+	"copper_pickaxe": "Digs deeper veins.", "copper_sword": "A keen copper blade.", "sword1": "A light, quick blade.",
+		"wood": "Cut from trees.", "stone": "Chipped from rocks.", "copper_ore": "Smelt it in a furnace.", "gel": "Dropped by slimes.",
 }
 @export var category_blurbs := {
 	"material": "A raw material.", "tool": "Helps you gather.", "weapon": "Use it in a fight.", "placeable": "Place it in the world.",
@@ -116,6 +123,12 @@ var _f_note: Label
 var _f_in_label: Label
 var _f_out_label: Label
 var _tab_anvil: ItemSlot
+var _tab_items: ItemSlot   ## 4th tab, only while a catalog is set
+var catalog: Array[ItemData] = []   ## optional list of items to hand out (set_catalog); empty = no Items tab
+var _cat_slots: Array[ItemSlot] = []
+var _cat_page := 0
+var _cat_sel: ItemData
+var _cat_sig := ""
 var _hint: TextureRect
 var _hint_tint: ColorRect
 var _recipe_slots: Array[ItemSlot] = []
@@ -173,8 +186,43 @@ func shown_recipes() -> Array[RecipeData]:
 func marker() -> ItemSlot:
 	return _marker
 
+## Give the book an Items tab listing `list` (24 icons a page, same grid as the recipes). An empty list takes the tab away.
+func set_catalog(list: Array[ItemData]) -> void:
+	catalog = list
+	_cat_page = 0
+	_cat_sel = list[0] if not list.is_empty() else null
+	_cat_sig = ""
+	if list.is_empty() and _tab == "items":
+		_tab = "craft"
+
+func catalog_slots() -> Array[ItemSlot]:
+	return _cat_slots
+
+func catalog_pages() -> int:
+	return maxi(ceili(catalog.size() / float(GRID_COLS * GRID_ROWS)), 1)
+
+func catalog_page() -> int:
+	return _cat_page
+
+func set_catalog_page(i: int) -> void:
+	_cat_page = clampi(i, 0, catalog_pages() - 1)
+
+func catalog_selected() -> ItemData:
+	return _cat_sel
+
+## The side tab that opens the Items page (null picture-wise while no catalog is set).
+func items_tab() -> ItemSlot:
+	return _tab_items
+
+## How many side tabs show now (3, or 4 with a catalog).
+func tab_count() -> int:
+	return 3 + (1 if not catalog.is_empty() else 0)
+
+func select_tab(name: String) -> void:
+	_tab = name
+
 func tab_slots() -> Array[ItemSlot]:
-	return [_tab_craft, _tab_furnace]
+	return [_tab_craft, _tab_furnace, _tab_items]   # the Items tab is hidden (no hover) until a catalog is set
 
 func current_tab() -> String:
 	return _tab
@@ -226,7 +274,7 @@ func _ready() -> void:
 	_book.name = "Book"
 	_book.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_frame.add_child(_book)
-	for i in 2:   # tabs tucked BEHIND the cover
+	for i in 3:   # tabs tucked BEHIND the cover
 		var t := TextureRect.new()
 		t.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		t.stretch_mode = TextureRect.STRETCH_KEEP
@@ -322,7 +370,11 @@ func _ready() -> void:
 	_minus = Button.new()
 	_minus.text = "<"
 	_minus.focus_mode = Control.FOCUS_NONE
-	_minus.pressed.connect(func(): _qty = maxi(_qty - 1, 1))
+	_minus.pressed.connect(func():
+		if _tab == "items":
+			set_catalog_page(_cat_page - 1)
+		else:
+			_qty = maxi(_qty - 1, 1))
 	_steps.add_child(_minus)
 	_qty_box = NinePatchRect.new()
 	_qty_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -333,7 +385,11 @@ func _ready() -> void:
 	_plus = Button.new()
 	_plus.text = ">"
 	_plus.focus_mode = Control.FOCUS_NONE
-	_plus.pressed.connect(func(): _qty = mini(_qty + 1, qty_max))
+	_plus.pressed.connect(func():
+		if _tab == "items":
+			set_catalog_page(_cat_page + 1)
+		else:
+			_qty = mini(_qty + 1, qty_max))
 	_steps.add_child(_plus)
 	_craft_btn = Button.new()
 	_craft_btn.text = "Craft"
@@ -365,6 +421,8 @@ func _ready() -> void:
 	_book.add_child(_tab_furnace)
 	_tab_anvil = _icon_slot(2, true)
 	_book.add_child(_tab_anvil)
+	_tab_items = _icon_slot(3, true)
+	_book.add_child(_tab_items)
 
 	# --- bag + hotbar copy (the bag is the existing BagPanel)
 	_bag = BagPanel.new()
@@ -408,7 +466,7 @@ func _icon_slot(idx: int, clickable: bool) -> ItemSlot:
 	if clickable:
 		s.slot_clicked.connect(func(i: int, b: int, _sh: bool):
 			if b == MOUSE_BUTTON_LEFT:
-				_tab = ["craft", "furnace", "anvil"][i])
+				_tab = ["craft", "furnace", "anvil", "items"][i])
 	return s
 
 # ------------------------------------------------------------------ skin / layout
@@ -453,9 +511,9 @@ func _apply_skin() -> void:
 	PixelArt.set_pic(_cover, sk.book_cover_tex, S)
 	_cover.position = Vector2(-8, -8) * S   # the picture has an 8 px pad round the box
 	PixelArt.set_pic(_tab_active, sk.book_tab_active_tex, S)
-	for i in 2:
-		PixelArt.set_pic(_tab_idle[i], sk.book_tab_idle_1_tex if i == 0 else sk.book_tab_idle_2_tex, S)
-	for s in [_marker, _tab_craft, _tab_furnace, _tab_anvil, _f_in, _f_out, _sel_slot]:
+	for i in 3:   # only two idle pictures exist: the third tab reuses the first
+		PixelArt.set_pic(_tab_idle[i], sk.book_tab_idle_2_tex if i == 1 else sk.book_tab_idle_1_tex, S)
+	for s in [_marker, _tab_craft, _tab_furnace, _tab_anvil, _tab_items, _f_in, _f_out, _sel_slot]:
 		_set_skin(s, sk, 0)
 	_sel_slot.frame_override = sk.slot_sel_tex
 	# left page
@@ -536,6 +594,7 @@ func _apply_skin() -> void:
 	_hint_tint.visible = sk.lock_texture == null
 	_hint_tint.color = sk.lock_hint_color
 	_signature = ""   # rebuild the recipe icons with the new look
+	_cat_sig = ""
 	_panel_sig = ""
 
 func _style_desc(sk: InventorySkin) -> void:
@@ -569,7 +628,11 @@ func _process(delta: float) -> void:
 	_furnace_page.visible = _tab == "furnace"
 	for e in _empties:
 		e.visible = _tab != "furnace"
-	if _tab != "furnace":
+	if _tab == "items":
+		_update_catalog(sk)
+	elif _tab != "furnace":
+		if not _cat_slots.is_empty():
+			_clear_catalog()
 		_update_craft(sk, delta)
 	else:
 		_update_furnace(sk)
@@ -587,19 +650,25 @@ func _update_tabs(sk: InventorySkin) -> void:
 	if sig != _stations_sig:   # the stations around you changed: open on the nearest one's tab
 		_stations_sig = sig
 		var nearest := _crafter.nearest_station_any()
-		_tab = "craft"
-		if nearest != null and nearest.station_id == &"furnace":
-			_tab = "furnace"
-		elif nearest != null and nearest.station_id == &"anvil":
-			_tab = "anvil"
+		if _tab != "items":   # the Items tab is chosen by hand: a station coming or going never moves you off it
+			_tab = "craft"
+			if nearest != null and nearest.station_id == &"furnace":
+				_tab = "furnace"
+			elif nearest != null and nearest.station_id == &"anvil":
+				_tab = "anvil"
 	if (_tab == "furnace" and _furnace == null) or (_tab == "anvil" and not anvil_near):
 		_tab = "craft"
 	# three side tabs, always: Craft, Furnace, Anvil. A station that is not near is dimmed and cannot be clicked.
 	var tabs := [_tab_craft, _tab_furnace, _tab_anvil]
 	var names := ["craft", "furnace", "anvil"]
 	var avail := [true, _furnace != null, anvil_near]
+	if not catalog.is_empty():   # the optional 4th tab (Test yard): always available
+		tabs.append(_tab_items)
+		names.append("items")
+		avail.append(true)
+	_tab_items.visible = not catalog.is_empty()
 	var idle_i := 0
-	for i in 3:
+	for i in tabs.size():
 		var s: ItemSlot = tabs[i]
 		var ty := 12 + 24 * i
 		var active: bool = _tab == names[i]
@@ -614,7 +683,7 @@ func _update_tabs(sk: InventorySkin) -> void:
 			_at(_tab_idle[idle_i], -22, ty)
 			idle_i += 1
 	_tab_active.visible = true
-	for i in 2:
+	for i in 3:
 		_tab_idle[i].visible = i < idle_i
 	_tab_craft.set_picture(sk.craft_tab_icon, sk.tab_color)
 	_tab_craft.tip_override = "Crafting"
@@ -630,12 +699,18 @@ func _update_tabs(sk: InventorySkin) -> void:
 	else:
 		_tab_anvil.set_picture(null, Color(0.45, 0.45, 0.5))
 	_tab_anvil.tip_override = "Anvil"
+	if not catalog.is_empty():
+		_items_icon(_tab_items, sk)
+		_tab_items.tip_override = items_title
 	var near := _crafter.nearest_station()
 	var mi := _crafter.station_item(&"furnace") if _tab == "furnace" else (_crafter.station_item(near.station_id) if near != null else null)
 	_marker.set_picture(sk.craft_tab_icon, sk.tab_color)   # the small hammer; the name says which station
 	_marker.tip_override = mi.display_name if mi else "Hand"
+	if _tab == "items" and not catalog.is_empty():
+		_items_icon(_marker, sk)
+		_marker.tip_override = items_title
 	_marker.visible = _furnace == null   # with a furnace tab the header drops the icon
-	_title.text = "Furnace" if _tab == "furnace" else ("Anvil" if _tab == "anvil" else "Recipes")
+	_title.text = "Furnace" if _tab == "furnace" else ("Anvil" if _tab == "anvil" else (items_title if _tab == "items" else "Recipes"))
 	_title.position.x = (32 if _furnace == null else 12) * S
 	# a cue on the Furnace tab while it works (smelting or output ready)
 	var busy := _furnace != null and (_furnace.is_running() or _furnace.out_count > 0)
@@ -643,6 +718,8 @@ func _update_tabs(sk: InventorySkin) -> void:
 	_tab_furnace.modulate = Color.WHITE.lerp(sk.furnace_tab_glow_color, pulse) if busy else Color.WHITE
 	for s in tabs + [_marker]:
 		s.refresh()
+	if catalog.is_empty():
+		_tab_items.visible = false
 
 func _update_craft(sk: InventorySkin, delta: float) -> void:
 	var list := _crafter.listed_recipes()
@@ -730,7 +807,7 @@ func _can_craft_qty(r: RecipeData, straight := false) -> bool:
 
 ## The Craft button: asks for `quantity()` crafts of the chosen recipe. Refused (nothing asked) when it is not lit.
 func craft_selected(straight: bool) -> bool:
-	if _sel == null or not _can_craft_qty(_sel, straight):
+	if _tab == "items" or _sel == null or not _can_craft_qty(_sel, straight):
 		return false
 	for i in _qty:
 		craft_requested.emit(_sel, straight)
@@ -745,7 +822,7 @@ func _update_chosen(sk: InventorySkin) -> void:
 	var r := _sel
 	_right.visible = r != null
 	_f_note.visible = false
-	for n in [_well, _ing, _steps]:
+	for n in [_well, _ing, _steps, _minus, _plus, _qty_box, _craft_btn]:
 		n.visible = true
 	if r == null:
 		return
@@ -768,7 +845,7 @@ func _build_chosen(r: RecipeData, sk: InventorySkin, S: int) -> void:
 	_sel_slot.set_item(r.result, r.result_count)
 	_sel_slot.refresh()
 	_set_name(r.result.display_name)
-	_type.text = "Station" if r.result.category == "placeable" else r.result.category.capitalize()
+	_type.text = _kind_name(r.result)
 	for c in _ing.get_children():
 		_ing.remove_child(c)
 		c.queue_free()
@@ -813,6 +890,88 @@ func _build_chosen(r: RecipeData, sk: InventorySkin, S: int) -> void:
 	PixelArt.style_label(_makes, sk, "body", sk.pal_line, false)   # muted, on the subtitle line beside the type
 	_makes.visible = true
 	_text_at(_makes, 201 + PixelArt.text_w(_type.text, sk, "body") / S + 8, 23)
+
+## The Items tab picture on `slot`: `items_tab_icon`, else the first catalog item's own picture.
+func _items_icon(slot: ItemSlot, sk: InventorySkin) -> void:
+	if items_tab_icon != null:
+		slot.set_picture(items_tab_icon, sk.tab_color)
+	else:
+		slot.set_item(catalog[0], 1)
+
+func _kind_name(it: ItemData) -> String:
+	return "Station" if it.category == "placeable" else it.category.capitalize()
+
+## Items tab: the grid shows page `_cat_page` of the catalog in the recipe grid's places; the right page shows the chosen item.
+func _update_catalog(sk: InventorySkin) -> void:
+	var S := sk.art_scale
+	_cat_page = clampi(_cat_page, 0, catalog_pages() - 1)
+	var sig := "%d|%d" % [_cat_page, catalog.size()]
+	if sig != _cat_sig or _cat_slots.is_empty() and not catalog.is_empty():
+		_clear_catalog()
+		_cat_sig = sig
+		_signature = ""   # the recipe icons come back when you return to Craft
+		for s in _recipe_slots:
+			_grid_box.remove_child(s)
+			s.queue_free()
+		_recipe_slots.clear()
+		_recipes = []
+		var per := GRID_COLS * GRID_ROWS
+		for i in mini(per, catalog.size() - _cat_page * per):
+			var s: ItemSlot = SLOT_SCENE.instantiate()
+			s.index = i
+			s.icon_top_art = 3
+			s.skin = sk
+			s.set_item(catalog[_cat_page * per + i], 1)
+			s.slot_clicked.connect(_catalog_clicked)
+			_grid_box.add_child(s)
+			s.position = Vector2(12 + 24 * (i % GRID_COLS), 26 + 24 * (i / GRID_COLS)) * S
+			_cat_slots.append(s)
+		rebuilt.emit()
+	for s in _cat_slots:
+		s.selected = s.item == _cat_sel
+		s.refresh()
+	_panel_sig = ""   # the recipe widgets are rebuilt when the tab changes back
+	_right.visible = _cat_sel != null
+	for n in [_well, _ing, _banner, _f_note, _craft_btn]:
+		n.visible = false
+	if _cat_sel == null:
+		return
+	_sel_slot.set_item(_cat_sel, 1)
+	_sel_slot.refresh()
+	_set_name(_cat_sel.display_name)
+	_type.text = _kind_name(_cat_sel)
+	var blurb := String(blurbs.get(String(_cat_sel.id), category_blurbs.get(_cat_sel.category, "")))
+	_desc.text = (blurb + "\n\n" + items_note) if blurb != "" else items_note
+	_style_desc(sk)
+	_desc.visible = true
+	_text_at(_desc, 173, 38)   # where the Recipes page puts its description (no ingredient well here)
+	_desc.size = Vector2(139 * S, 0)
+	_makes.visible = _cat_sel.stack_limit() > 1   # beside the kind, like "makes N": the stack size
+	if _makes.visible:
+		_makes.text = "Stack %d" % _cat_sel.stack_limit()
+		PixelArt.style_label(_makes, sk, "body", sk.pal_line, false)
+		_text_at(_makes, 201 + PixelArt.text_w(_type.text, sk, "body") / S + 8, 23)
+	var pages := catalog_pages()
+	for n in [_steps, _minus, _plus, _qty_box]:   # the stepper row becomes a page pager only when there is more than one page
+		n.visible = pages > 1
+	_qty_label.text = "%d/%d" % [_cat_page + 1, pages]
+	_minus.disabled = _cat_page <= 0
+	_plus.disabled = _cat_page >= pages - 1
+
+func _clear_catalog() -> void:
+	for s in _cat_slots:
+		_grid_box.remove_child(s)
+		s.queue_free()
+	_cat_slots.clear()
+	_cat_sig = ""
+
+func _catalog_clicked(idx: int, b: int, _sh: bool) -> void:
+	var k := _cat_page * GRID_COLS * GRID_ROWS + idx
+	if k < 0 or k >= catalog.size():
+		return
+	_cat_sel = catalog[k]
+	if b == MOUSE_BUTTON_LEFT or b == MOUSE_BUTTON_RIGHT:
+		catalog_clicked.emit(_cat_sel, b)
 
 ## The item name, cut with ".." so it stays inside the book page.
 func _set_name(n: String) -> void:

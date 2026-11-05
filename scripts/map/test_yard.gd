@@ -3,7 +3,7 @@ extends Node
 ## Test yard (decision 0056): dev-only. The title's "Test yard" button starts the normal arena on a small flat map (ArenaMap.yard_mode)
 ## with one of each testable thing laid out round home. ArenaMap owns the map side (MapGen `yard`: all land, one Plains biome, no water,
 ## no vegetation, nodes = node_list()); this node lays the list out, puts the stations, dummy and slime down and gives the F3 line + Reset.
-## Trees / rocks are real MapGen obstacles, so chop / mine / chunks behave exactly like the island.
+## It also adds the ItemPicker (every item, click = into the bag) as the crafting book's Items tab. Trees / rocks are real MapGen obstacles, so chop / mine / chunks behave exactly like the island.
 
 @export_range(32, 256, 1) var cells := 64   ## map size in cells (square)
 @export var dummy_offset := Vector2(240.0, -60.0)   ## from home; read by ArenaMap.layout
@@ -20,6 +20,7 @@ extends Node
 @export var give_kit := true   ## sword, bow, axe, pickaxe at the start (Inventory.give_dev_kit)
 
 var map: ArenaMap
+var picker: ItemPicker
 var last_reset := "never"
 var _spawner: EnemySpawner
 var _slime: Node2D
@@ -33,6 +34,12 @@ func _ready() -> void:
 		var inv := get_parent().get_node_or_null("Player/Inventory") as Inventory
 		if inv != null:
 			inv.give_dev_kit()
+	var hud := get_parent().get_node_or_null("HUD") as HUD
+	var pinv := get_parent().get_node_or_null("Player/Inventory") as Inventory
+	if hud != null and pinv != null and hud.craft_window() != null:   # the item picker (its only maker): every item, click = into the bag
+		picker = ItemPicker.new()
+		picker.bind(hud, pinv)
+		add_child(picker)
 	map.rebuilt.connect(_populate)
 	_populate()
 

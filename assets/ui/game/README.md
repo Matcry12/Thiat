@@ -47,7 +47,7 @@ Dim `dim_alpha_pause`. The HUD hotbar is hidden while these are open.
   ingredient slots `slot_idle` at well +(4, 2+23*i), `have/need` bold (`pal_okg` / `pal_hp_l`) at slot +(28,8); `lock_banner` (nine-patch, 12 tall, `padlock` at +2,+2, CREAM text at +12);
   description + "Makes N" body `pal_line`. Stepper y=108: `button_small_*` at (173,108) and (215,108) (14 wide), `qty_box` 22x18 at (190,108), Craft `button_small_*` 75 wide at (237,108) (hammer icon + bold text);
   cannot craft: `craft_disabled` + `padlock` at +6,+5 + `pal_muted` text with `pal_line` outline.
-- Tabs (left of the book, 26x22, step 24 from y=12, x=-22): `book_tab_active` (31 wide, in FRONT of the cover), `book_tab_idle_1`, `book_tab_idle_2` (BEHIND the cover); icon 16 px at +4,+3 (idle at alpha 0.75).
+- Tabs (left of the book, 26x22, step 24 from y=12, x=-22): `book_tab_active` (31 wide, in FRONT of the cover), `book_tab_idle_1`, `book_tab_idle_2` (BEHIND the cover); icon 16 px at +4,+3 (idle at alpha 0.75). Tab icons: `items_tab_icon.png` (16x16, open chest = all items; source `tools/art_tests/items_tab_icon/draw.py`), hammer = `assets/ui/placeholder/hammer.png`.
 - Slot states: craftable = full icon; missing items = icon at `missing_icon_alpha` (the mock also greys it); locked by station = faded icon + `padlock` at slot (15,15).
 - Bag: `bag_panel` (222x124 at art (177,156)); slots at (8+23*c, 12+23*r), 3x9; `divider_line` (tile, 2 rows) at (8,83), 206 wide; hotbar copy row of `slot_*` at (8+23*c, 90).
   The HUD hotbar hides while the book is open.
