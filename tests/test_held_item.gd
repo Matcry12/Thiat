@@ -38,7 +38,7 @@ func _init() -> void:
 			lo.select(s)
 	await physics_frame
 	await physics_frame
-	_check(held.visible and held.texture == World.item("wood").icon, "holding wood: HeldItem shows the wood icon")
+	_check(held.visible and held.texture == ItemIcon.crop(World.item("wood").icon), "holding wood: HeldItem shows the wood icon")
 	player.weapon_visual.set_aim_angle(PI)   # aim left mirrors WeaponVisual (scale.y = -1)
 	held._process(0.0)
 	_check(held.global_transform.determinant() > 0.0 and held.global_transform.y.y > 0.0, "aiming left: icon upright, not flipped")
@@ -47,7 +47,7 @@ func _init() -> void:
 			lo.select(s)
 	await physics_frame
 	await physics_frame
-	_check(held.visible and held.texture == World.item("workbench").icon, "holding a workbench: HeldItem shows its icon")
+	_check(held.visible and held.texture == ItemIcon.crop(World.item("workbench").icon), "holding a workbench: HeldItem shows its icon")
 	lo.select(0)
 	await physics_frame
 	await physics_frame

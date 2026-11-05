@@ -52,6 +52,13 @@ var _count_col := Color(-1, -1, -1, -1)   ## last font colour set on $Count (ref
 var color_tint := Color(0, 0, 0, 0)
 var _picture: Texture2D
 var _tilt := 0.0
+var _fit := false   ## the picture is an item icon: crop it to its visible pixels and centre those in the box (ItemIcon). Symbols and the tilted model keep the full box.
+var _box := Vector4.ZERO   ## the icon box as offsets from the slot corners (left, top, right, bottom); set by the apply functions
+var _placed_pic: Texture2D   ## what _place_icon() last placed, so refresh() (every frame) only re-places on a change
+var _placed_px := 0.0
+var _slot_px := 0.0   ## square side the apply functions set (custom_minimum_size only reaches `size` a frame later, so the icon never reads `size`)
+var _placed_box := Vector4.ZERO
+var _placed_fit := false
 
 func _ready() -> void:
 	_padlock = TextureRect.new()
@@ -88,6 +95,7 @@ func set_picture(tex: Texture2D, fallback: Color) -> void:
 	count = 0
 	weapon = null
 	_picture = tex
+	_fit = false
 	_tilt = 0.0
 	color_tint = fallback
 
@@ -101,13 +109,16 @@ func set_item(it: ItemData, n: int) -> void:
 	count = n
 	weapon = it.weapon if it else null
 	_picture = null
+	_fit = false
 	_tilt = 0.0
 	color_tint = Color(0, 0, 0, 0)
 	if it != null:
 		if it.icon:
 			_picture = it.icon
+			_fit = true
 		elif weapon != null and weapon.icon:
 			_picture = weapon.icon
+			_fit = true
 		elif weapon != null and weapon.model:
 			var m := weapon.model.instantiate()   # never added to the tree: only read, then freed
 			var art := m.get_node_or_null("Art") as Sprite2D
@@ -129,11 +140,13 @@ func apply_skin() -> void:
 		return
 	_frame_src = null   # the skin / scale may have changed: pick the frame copy again
 	_count_col = Color(-1, -1, -1, -1)
+	refresh.call_deferred()   # some slots only refresh when rebuilt: a live F3 edit must still reach them
 	if PixelArt.art_mode(skin):
 		_apply_art()
 		return
 	var sz := size_override if size_override > 0 else skin.slot_size
 	custom_minimum_size = Vector2(sz, sz)
+	_slot_px = sz
 	_padlock.visible = false
 	_nine($Frame, frame_override if frame_override != null else skin.slot_texture, skin.slot_patch_margin, skin.frame_color, skin.frame_border)
 	_nine($SelectedFrame, skin.slot_selected_texture, skin.selected_patch_margin, Color(0, 0, 0, 0), skin.selected_border)
@@ -142,7 +155,8 @@ func apply_skin() -> void:
 	$SelectedFrame.offset_right = skin.selected_grow
 	$SelectedFrame.offset_bottom = skin.selected_grow
 	var inset := float(skin.icon_inset)
-	for n in [$Icon, $Hover, $Backdrop]:
+	_box = Vector4(inset, inset, -inset, -inset)
+	for n in [$Hover, $Backdrop]:
 		n.offset_left = inset
 		n.offset_top = inset
 		n.offset_right = -inset
@@ -164,6 +178,7 @@ func _apply_art() -> void:
 	var S := skin.art_scale
 	var sz := size_override if size_override > 0 else 22 * S
 	custom_minimum_size = Vector2(sz, sz)
+	_slot_px = sz
 	var pad := float(S) * (sz / (22.0 * S))   # the 1 px pad of the picture
 	$Frame.patch_margin_left = 0
 	$Frame.patch_margin_top = 0
@@ -176,15 +191,9 @@ func _apply_art() -> void:
 	$Frame/Placeholder.visible = false
 	$SelectedFrame.visible = false
 	var k := sz / (22.0 * S)
-	$Icon.offset_left = 3 * S * k
-	$Icon.offset_top = icon_top_art * S * k
-	$Icon.offset_right = -3 * S * k
-	$Icon.offset_bottom = -(22 - icon_top_art - 16) * S * k
+	_box = Vector4(3 * S * k, icon_top_art * S * k, -3 * S * k, -(22 - icon_top_art - 16) * S * k)
 	if bare and sz < 22 * S:   # an icon on its own (tooltip ingredients): it fills the whole square
-		$Icon.offset_left = 0
-		$Icon.offset_top = 0
-		$Icon.offset_right = 0
-		$Icon.offset_bottom = 0
+		_box = Vector4.ZERO
 	for n in [$Hover, $Backdrop]:
 		n.offset_left = 0
 		n.offset_top = 0
@@ -225,7 +234,8 @@ func refresh() -> void:
 	$Backdrop.color = backdrop
 	$Tint.visible = color_tint.a > 0.0 and _picture == null
 	$Tint.color = color_tint
-	$Icon.texture = _picture
+	if _picture != _placed_pic or _fit != _placed_fit or _slot_px != _placed_px or _box != _placed_box:
+		_place_icon()
 	$Icon.visible = _picture != null
 	$Icon.pivot_offset = $Icon.size * 0.5
 	$Icon.rotation = _tilt
@@ -242,6 +252,37 @@ func refresh() -> void:
 		_set_count_color(count_tint if count_tint.a > 0.0 else skin.count_color)
 	$KeyLabel.text = key_text
 	$LockOverlay.visible = locked
+
+## Picture + rectangle of $Icon. An item icon is cropped to its visible pixels and centred in the box, at the scale
+## its whole file would have. Anything else fills the box as it is.
+func _place_icon() -> void:
+	_placed_pic = _picture
+	_placed_fit = _fit
+	_placed_px = _slot_px
+	_placed_box = _box
+	var ic: TextureRect = $Icon
+	var tex: Texture2D = ItemIcon.crop(_picture) if _fit else _picture
+	ic.texture = tex
+	if tex == null or not _fit or skin == null:
+		ic.anchor_right = 1.0   # full-rect anchors + box offsets
+		ic.anchor_bottom = 1.0
+		ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		ic.offset_left = _box.x
+		ic.offset_top = _box.y
+		ic.offset_right = _box.z
+		ic.offset_bottom = _box.w
+		return
+	var box := Vector2(_slot_px - _box.x + _box.z, _slot_px - _box.y + _box.w)
+	var sc := minf(box.x / _picture.get_width(), box.y / _picture.get_height())   # the whole file fits the box, as always: only the position changes
+	var px := (tex.get_size() * sc).round()
+	var pos := (Vector2(_box.x, _box.y) + (box - px) * 0.5).round()
+	ic.anchor_right = 0.0   # top-left anchors: the rect is absolute, right from the first frame whatever `size` is
+	ic.anchor_bottom = 0.0
+	ic.stretch_mode = TextureRect.STRETCH_SCALE
+	ic.offset_left = pos.x
+	ic.offset_top = pos.y
+	ic.offset_right = pos.x + px.x
+	ic.offset_bottom = pos.y + px.y
 
 func _set_count_color(c: Color) -> void:
 	if c != _count_col:

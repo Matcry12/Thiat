@@ -156,7 +156,7 @@ All sizes are in art pixels (×2 on screen).
 | Pick | Chosen recipe or selected hotbar slot: 2-px `BRZ_L` frame + 4 bronze corner dots |
 | Sel | Darker `RIM` fill with an `OUT` border (the recipe icon on the detail page) |
 
-- **Icons:** 16 px, at +3,+3 (hotbar/bag +3,+4).
+- **Icons:** a 16 art px box at +3,+3 (hotbar/bag +3,+4). The visible pixels are centred in the box automatically (decision 0060).
 - **Key number:** `SMALL` font at top-left +2,+2 (`OUT` when selected, else `LINE`).
 - **Stack count:** `SMALL` font, `CREAM` + `OUT`, bottom-right, inset 3 px.
 - **Craftable:** full icon. **Missing items:** icon at 0.4 alpha, grey. **Locked by station:** faded icon plus a 6x6 padlock bottom-right.

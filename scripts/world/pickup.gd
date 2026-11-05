@@ -60,7 +60,7 @@ func _ready() -> void:
 	if _visual.has_icon:
 		var s := Sprite2D.new()
 		s.name = "Icon"
-		s.texture = item.icon
+		s.texture = ItemIcon.crop(item.icon)   # the visible pixels sit on the pickup's centre
 		s.scale = Vector2.ONE * (_collector.pickup_icon_px if _collector else 16.0) / item.icon.get_height()
 		_visual.add_child(s)
 	_update_look(0.0)
