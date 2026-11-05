@@ -1,6 +1,6 @@
 # Item icons (demo, until the artist's set arrives)
 
-32x32 icons, drawn 1:1 in the bag slot (16 art px x art_scale 2). On the ground `Collector.pickup_icon_px` sizes them.
+32x32 icons, drawn 1:1 in the bag slot (16 art px x art_scale 2); a 16 px file is drawn 2x. The visible pixels are found and centred automatically (decision 0060), so margins do not matter; for the full icon size draw about 22-28 px visible. On the ground `Collector.pickup_icon_px` sizes them. Source PNGs stay unedited.
 
 | File | Source |
 |---|---|

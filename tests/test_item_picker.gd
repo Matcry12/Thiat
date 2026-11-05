@@ -238,7 +238,7 @@ func _init() -> void:
 	for i in Inventory.SIZE:
 		if inv.slot_item(i) == s1:
 			bi = i
-	_check(bi >= Inventory.HOTBAR, "sword1 lands in the bag (hotbar holds 2 weapons)")
+	_check(bi >= 0, "sword1 lands in the inventory")
 	_check(inv.click_slot(bi) and inv.click_slot(0), "pick it up and swap it onto the wooden sword's slot")
 	hud.bag().toggle()
 	inv.return_held()

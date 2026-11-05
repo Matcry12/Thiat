@@ -26,7 +26,7 @@ func set_item(item: ItemData) -> void:
 		return
 	_item = item
 	var show_it := item != null and item.category in ["material", "placeable"] and item.icon != null
-	texture = item.icon if show_it else null
+	texture = ItemIcon.crop(item.icon) if show_it else null
 	visible = show_it
 
 func _process(_delta: float) -> void:
