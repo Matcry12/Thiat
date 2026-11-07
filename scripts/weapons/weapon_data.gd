@@ -42,6 +42,22 @@ class_name WeaponData
 ## Only with a swing_motion (0050). false = snap: on the first physics frame of active the hit shape is tried along the WHOLE blade path.
 ## true = progressive: each physics frame of active tries the poses between last frame and this one, so a far target is hit only when the blade gets there.
 @export var hit_follows_blade := false
+@export_group("Hit area from picture")
+## Live: every setter emits `changed`, WeaponVisual refits the held model at once (F3 edits show up without a swap).
+## true = when the model is built, the Hitbox rectangle is measured from the Art picture (0061). false = keep the scene's hand-set shape and Tip.
+@export var hit_auto_fit := true: set = _set_fit_auto
+## Added past the farthest visible pixel along the blade (px). 8 reproduces the old hand values.
+@export var hit_tip_margin := 8.0: set = _set_fit_tip
+## Added to the blade's median thickness (px). A crossguard does not widen it.
+@export var hit_width_margin := 2.5: set = _set_fit_width
+## The hit area is never thinner than this (px).
+@export var hit_min_width := 9.0: set = _set_fit_min
+## A picture pixel counts as visible when its alpha is above this (0..1). Keeps one stray faint pixel from stretching the reach.
+@export_range(0.0, 1.0, 0.01) var hit_alpha_min := 0.5: set = _set_fit_alpha
+## When the measured blade centre line is further than this (px) from the shape's line (y), the status says OFF AXIS and a warning is logged once.
+## The picture's offset / rotation (grip + angle) are still set per picture; length and width are automatic.
+@export var hit_axis_warn_px := 4.0: set = _set_fit_axis
+@export_group("")
 @export_group("Tool target")
 ## Tools only (tool_kind set). On the first frame of active, the nearest gatherable node this far from the user (px, edge of the node) AND inside the cone around the REAL aim gets the hit,
 ## even if the picture lands beside it (0050 addendum). 0 = off (the blade alone decides). The node is hit once per swing; the blade skips it.
@@ -89,3 +105,23 @@ func item_name() -> String:
 ## F3 section name: the file name, capitalised ("Wooden Sword"); "Weapon" for an unsaved one.
 func debug_name() -> String:
 	return "Weapon" if resource_path == "" else resource_path.get_file().get_basename().capitalize()
+
+
+func _set_fit_auto(v: bool) -> void:
+	hit_auto_fit = v
+	emit_changed()
+func _set_fit_tip(v: float) -> void:
+	hit_tip_margin = v
+	emit_changed()
+func _set_fit_width(v: float) -> void:
+	hit_width_margin = v
+	emit_changed()
+func _set_fit_min(v: float) -> void:
+	hit_min_width = v
+	emit_changed()
+func _set_fit_alpha(v: float) -> void:
+	hit_alpha_min = v
+	emit_changed()
+func _set_fit_axis(v: float) -> void:
+	hit_axis_warn_px = v
+	emit_changed()

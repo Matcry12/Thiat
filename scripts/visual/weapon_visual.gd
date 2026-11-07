@@ -68,6 +68,7 @@ func _set_weapon_z(v: int) -> void:
 @onready var _swing_pivot: Node2D = get_node_or_null("SwingPivot")
 
 var _model: Node2D
+var _hit_status := "hit: manual"   ## F3: hit: auto LxW tip T | manual (0061)
 ## The character's rig (set by SpriteActorVisual): weapon visual scale. Null = the old big body (scale 1).
 var rig: BodyRig
 
@@ -81,6 +82,7 @@ func apply_rig(r: BodyRig) -> void:
 	if _guarding:
 		_pivot_pos = _guard_offset()
 
+const Fit := preload("res://scripts/weapons/weapon_hit_fit.gd")
 const SOFT_SHADER := preload("res://scripts/visual/soft_pixel.gdshader")
 var _soft_mat: ShaderMaterial
 
@@ -193,7 +195,11 @@ func set_weapon(data: WeaponData) -> void:
 	weapon = data
 
 func _set_weapon(v: WeaponData) -> void:
+	if weapon and weapon.changed.is_connected(_refit_hit):
+		weapon.changed.disconnect(_refit_hit)
 	weapon = v
+	if weapon and not weapon.changed.is_connected(_refit_hit):
+		weapon.changed.connect(_refit_hit)   # F3 edits of the hit_* numbers apply to the held model at once (0061)
 	_rebuild_model()
 	_apply_all()
 	if not Engine.is_editor_hint():
@@ -225,7 +231,19 @@ func _retarget_pose_to_new_weapon() -> void:
 func get_model() -> Node2D:
 	return _model
 
+## The weapon's hit_* numbers changed (F3 / override): measure again, put the shape + Tip back in place, redo the Tip-driven effects.
+func _refit_hit() -> void:
+	if _model == null or weapon == null:
+		return
+	_hit_status = Fit.apply(_model, weapon)
+	_apply_model_scale()
+	var art := _model.get_node_or_null("Art") as CanvasItem
+	if art and _motion != null:
+		art.visible = true   # _setup_swing_art copies it again and hides it
+	_setup_swing_art()
+
 func _rebuild_model() -> void:
+	_hit_status = "hit: -"
 	if _swing_pivot == null:
 		_swing_pivot = get_node_or_null("SwingPivot")
 	if _model:
@@ -235,6 +253,7 @@ func _rebuild_model() -> void:
 		_model = weapon.model.instantiate()
 		_model.modulate = weapon.model_tint   # copper tools reuse a model, tinted (decision 0031)
 		_swing_pivot.add_child(_model)
+		_hit_status = Fit.apply(_model, weapon)   # before _apply_model_scale caches the node positions
 		_apply_model_scale()      # before model_changed: the hitbox / muzzle are already back at their real world transform
 	_setup_swing_art()
 	model_changed.emit(_model)
@@ -488,6 +507,6 @@ func picture_grip_tip() -> Dictionary:
 
 func status_text() -> String:
 	if _motion == null:
-		return "soft: %s  swing: %s  motion: none (old pivot swing)" % ["on" if soft_on() else "off", _phase]
+		return "soft: %s  swing: %s  motion: none (old pivot swing)  %s" % ["on" if soft_on() else "off", _phase, _hit_status]
 	var side := ("  side: %s tilt %.0f" % ["right" if _side > 0.0 else "left", rad_to_deg(wrapf(aim_angle - (0.0 if _side > 0.0 else PI), -PI, PI))]) if _motion.side_only else ""
-	return "soft: %s  swing: %s  dir: %s  hits: %s  grip: (%.0f, %.0f)  ghosts: %d  slash: %s %s" % ["on" if soft_on() else "off", _phase, "first" if _flip > 0.0 else "reversed", "follow blade" if weapon and weapon.hit_follows_blade else "snap", _art_grip.x, _art_grip.y, ghosts.count(), _motion.slash_mode, ribbon.status() if _motion.slash_mode == "ribbon" else slash.status()] + side
+	return "soft: %s  swing: %s  dir: %s  hits: %s  grip: (%.0f, %.0f)  ghosts: %d  slash: %s %s" % ["on" if soft_on() else "off", _phase, "first" if _flip > 0.0 else "reversed", "follow blade" if weapon and weapon.hit_follows_blade else "snap", _art_grip.x, _art_grip.y, ghosts.count(), _motion.slash_mode, ribbon.status() if _motion.slash_mode == "ribbon" else slash.status()] + side + "  " + _hit_status

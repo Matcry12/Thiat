@@ -10,18 +10,18 @@ const ClassicArena = preload("res://tests/support/classic_arena.gd")
 const EXPECTED := {
 	"right": {
 		"blade_pos": Vector2(417.63, 315.244), "blade_rot": 1.221730, "blade_scale_y": 1.339816,
-		"hit_pos": Vector2(435.3114, 302.4234), "hit_rot": -0.349066, "hit_scale_y": 1.0,
+		"hit_pos": Vector2(435.3505, 302.4092), "hit_rot": -0.349066, "hit_scale_y": 1.0,
 	},
 	"up-left": {
 		"blade_pos": Vector2(400.6038, 308.1916), "blade_rot": 2.705260, "blade_scale_y": -1.339816,
-		"hit_pos": Vector2(397.1667, 286.6234), "hit_rot": -2.007129, "hit_scale_y": -1.0,
+		"hit_pos": Vector2(397.1491, 286.5857), "hit_rot": -2.007129, "hit_scale_y": -1.0,
 	},
 	"down": {
 		"blade_pos": Vector2(412.244, 320.63), "blade_rot": 0.349066, "blade_scale_y": -1.339816,
-		"hit_pos": Vector2(399.4234, 338.3114), "hit_rot": 1.919862, "hit_scale_y": -1.0,
+		"hit_pos": Vector2(399.4092, 338.3505), "hit_rot": 1.919862, "hit_scale_y": -1.0,
 	},
 }
-const EXPECTED_SHAPE_SIZE := Vector2(56, 9.562761)   # 0050 follow-up: grip (0) .. 56 px, centred on the blade line (was 44 wide at (43.7, 5.3))
+const EXPECTED_SHAPE_SIZE := Vector2(56.08326, 9.5)   # 0061: measured from the picture (tip 48.083 + 8 margin; median thickness 7 + 2.5), was hand-set 56 x 9.562761
 const POS_TOL := 0.01
 const ROT_TOL := 0.001
 
