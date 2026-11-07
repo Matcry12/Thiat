@@ -23,7 +23,8 @@ decision records the change touches. For any API you are unsure of in 4.7:
    feel number hardcoded instead of `@export`? Named by shape instead of role?
 5. **Test mode**: new state in F3, new area in F1, a trigger button where needed.
 6. **Tests**: do they test the behaviour or just that code runs? Run them:
-   `tools/run_tests.sh <the tests>` and report the result.
+   `tools/run_tests.sh <the tests>` and report the result. Not the full suite. Only `--real-map` if the
+   change could depend on the island size. Red tests in `KNOWN_RED` are not this change's fault.
 7. **Files**: did it touch files outside its brief? Loose files in the root?
 
 ## Report

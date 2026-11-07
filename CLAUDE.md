@@ -15,7 +15,7 @@ Before starting any task, ask this **first**:
   - `sonnet` — standard implementation, drafts, refactors, multi-file edits.
   - `opus` — planning, architecture, review/critique only. **Not the doer.**
 - **Do it yourself** only for: trivial single edits, one command, a quick answer,
-  or config in `.claude/**` / `CLAUDE.md` / `docs/**`.
+  a small change (rule 2.4), or config in `.claude/**` / `CLAUDE.md` / `docs/**`.
 
 Default bias: **delegate the doing, keep the deciding.**
 
@@ -49,7 +49,9 @@ Never report a task as done on assumption. Before any "it works" claim:
 2. **Run it** if it can be run (build, test, execute, lint).
 3. **Test the user's steps too.** If the report tells the user to set something in the editor, load
    the scene headless and confirm that value actually reaches the running game.
-4. **Get a second judge.** After any non-trivial change, spawn a reviewer agent with **fresh context,
+4. **Get a second judge**, unless the change is small: 1-3 code files, no new system, not save format,
+   map generation or shared combat code ([0058](docs/decision/0058-test-levels-by-change-size.md)). A small
+   change needs no builder and no judge: Quick tests, then report. After any bigger change, spawn a reviewer agent with **fresh context,
    on a different model than the one that did the work** (Opus wrote it → Sonnet judges; Sonnet
    wrote it → Opus judges). Give it the request, the diff, and this file. It judges: does the change
    do what was asked, does it break a rule here (one owner, build for replacement, test mode), and
@@ -192,10 +194,15 @@ resolved.
 **Verify (rule 2, made concrete)**
 - GDScript change → `godot --headless --check-only --script <file>` (the PostToolUse hook runs this
   automatically and blocks on parse errors); `godot --headless --quit` to boot the project.
-- Tests: `tools/run_tests.sh` = full suite, 8 at a time (`-j N`), slowest 15 printed at the end. Fix rounds:
-  `tools/run_tests.sh --changed` (tests tied to files changed vs main) or `tools/run_tests.sh tests/test_x.gd ...`.
-  Full suite once before commit. Each test gets its own `user://` and `--fixed-fps 60`, so parallel runs (and other
-  worktrees) never clash. A test that does not need the whole island sets `BOSSFIGHT_TEST_MAP_CELLS=192` first.
+- Tests ([testing-algorithm.md](docs/wiki/testing-algorithm.md)). Quick, every fix round: `tools/run_tests.sh --changed`
+  (tests naming the changed files + the real-arena smoke test) or `tools/run_tests.sh tests/test_x.gd ...`. Full, once just
+  before commit, in the background (a hook enforces it): `tools/run_tests.sh` (8 at a time, `-j N`, slowest 15 printed).
+  Never run it again to read a failure: `.godot/test_logs/last.txt` has the output. After a fix: `--failed`, then `--changed`
+  (a fix can break a test that passed); a fix in shared code gets one more Full. Tests use a 192-cell map unless on the
+  `REAL_MAP` list in `run_tests.sh` (a new test that needs its own map size goes there; `--real-map` = the runner sets no small
+  map, a test can still set its own). `KNOWN_RED` tests run and show but do not fail the run. Each test gets its own
+  `user://` and `--fixed-fps 60`, so parallel runs (and other worktrees) never clash.
+- Run a test script through `run_tests.sh` or with `timeout 60 godot ...` (the same hook blocks a bare `godot --script`).
 - Python change → `pytest rl/` and a short smoke run of the env.
 - Gameplay feel (hit timing, dodge windows) can't be verified headless — say so, ask the user to playtest.
 
