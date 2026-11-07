@@ -1,11 +1,11 @@
 [gd_resource type="SpriteFrames" format=3]
 
-[ext_resource type="Texture2D" path="res://assets/characters/slime/idle.png" id="idle"]
-[ext_resource type="Texture2D" path="res://assets/characters/slime/windup.png" id="windup"]
-[ext_resource type="Texture2D" path="res://assets/characters/slime/hop.png" id="hop"]
-[ext_resource type="Texture2D" path="res://assets/characters/slime/land.png" id="land"]
-[ext_resource type="Texture2D" path="res://assets/characters/slime/hit.png" id="hit"]
-[ext_resource type="Texture2D" path="res://assets/characters/slime/die.png" id="die"]
+[ext_resource type="Texture2D" path="res://assets/game/characters/slime/idle.png" id="idle"]
+[ext_resource type="Texture2D" path="res://assets/game/characters/slime/windup.png" id="windup"]
+[ext_resource type="Texture2D" path="res://assets/game/characters/slime/hop.png" id="hop"]
+[ext_resource type="Texture2D" path="res://assets/game/characters/slime/land.png" id="land"]
+[ext_resource type="Texture2D" path="res://assets/game/characters/slime/hit.png" id="hit"]
+[ext_resource type="Texture2D" path="res://assets/game/characters/slime/die.png" id="die"]
 
 [sub_resource type="AtlasTexture" id="idle_0"]
 atlas = ExtResource("idle")

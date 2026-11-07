@@ -1,6 +1,6 @@
 class_name F3Theme
 extends RefCounted
-## The ONE place that builds the F3 "Island Workshop" look: names the baked parts (assets/ui/f3/slices.json; PixelArt does the
+## The ONE place that builds the F3 "Island Workshop" look: names the baked parts (assets/dev/ui/f3/slices.json; PixelArt does the
 ## nearest upscale + 9-slice) and returns a Theme with type variations. Widgets only set `theme_type_variation`.
 ## Swap the look = change the PNGs / this file. Nothing else in scripts/debug/f3 knows a part name or a colour of the art.
 ##
@@ -8,7 +8,7 @@ extends RefCounted
 ## F3Block F3Icon (Button) | F3Field F3FieldPending F3Search (LineEdit) | F3Toggle (CheckBox) | F3Slider (HSlider) |
 ## F3Dock F3Note (PanelContainer) | F3Name F3Dim F3Small F3Group F3Hint F3Banner F3Paper F3PaperDim F3Stale F3Gold (Label)
 
-const DIR := PixelArt.F3
+const DIR := "res://assets/dev/ui/f3/"
 static var _box := {}
 
 

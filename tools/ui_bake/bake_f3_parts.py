@@ -1,13 +1,13 @@
 """Deterministic $0 bake of the F3 dock parts. Run from repo root:  python3 tools/ui_bake/bake_f3_parts.py
 Serves the repo on 127.0.0.1 (free port), opens tools/ui_bake/f3_parts.html in headless Chromium, writes
-assets/ui/f3/<part>.png + slices.json and tools/f3_mock/game_shots/parts_sheet.png. Same input -> same bytes.
+assets/dev/ui/f3/<part>.png + slices.json and tools/f3_mock/game_shots/parts_sheet.png. Same input -> same bytes.
 """
 import base64, json, socket, subprocess, sys, time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / "assets/ui/f3"
+OUT = ROOT / "assets/dev/ui/f3"
 SHEET = ROOT / "tools/f3_mock/game_shots/parts_sheet.png"
 
 s = socket.socket(); s.bind(("127.0.0.1", 0)); port = s.getsockname()[1]; s.close()

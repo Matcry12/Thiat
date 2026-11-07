@@ -77,6 +77,7 @@ create a proper one first, then place it. **Root stays clean** — no stray file
 - `docs/wiki/` — durable knowledge, how-things-work notes.
 - `docs/decision/` — decision records, `NNNN-<slug>.md`: Context / Decision / Why / Consequences. Write one whenever a choice changes how the project is built (the decision-detector hook reminds you).
 - `docs/reference/` — external material (PDFs, playbooks, specs).
+- `assets/` — only `game/` (ships), `dev/` (F3 / demos), `source/` (packs, originals; `.gdignore`), `retired/` (unused; `.gdignore`). New art: pick by role, unused files go to `retired/`, never delete ([assets/README.md](assets/README.md), 0063, `tests/test_asset_rules.gd`).
 
 ## 5. Build for replacement, never for the placeholder
 
@@ -180,7 +181,7 @@ resolved.
 - Map / world work: [docs/wiki/world-gen-plan.md](docs/wiki/world-gen-plan.md) and
   [docs/wiki/vegetation-rules.md](docs/wiki/vegetation-rules.md). Any new look gets a $0 preview picture first
   (`tools/asset_viewer/*.py`) that the user approves before it is built.
-  Map art lives in `assets/map/pixel_plains/`. Map art changed → update `assets/map/pixel_plains/README.md` in the same change.
+  Map art lives in `assets/game/map/pixel_plains/`. Map art changed → update `assets/game/map/pixel_plains/README.md` in the same change.
 
 **How we work** ([0007](docs/decision/0007-working-agreement.md))
 - **Algorithm first, then build.** Before building any game system (spawning, loot, AI, progression, world gen), study how

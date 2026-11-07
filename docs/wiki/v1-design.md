@@ -121,7 +121,7 @@ island plays differently with a different seed.
 
 ## 12. Art the user is drawing / finding
 
-Already in Pixel Crawler (`assets/third_party/pixel_crawler/`): Workbench, Furnace, Anvil, Bonfire,
+Already in Pixel Crawler (`assets/source/third_party/pixel_crawler/`): Workbench, Furnace, Anvil, Bonfire,
 Trees, Rocks, Resources, Tools, Water tiles, Orc/Skeleton mobs. Still needed (by slice): see the table
 above. Until art exists, each slice ships with a placeholder that has the **same interface**
 (CLAUDE.md §5) — dropping the art in is a swap, never a rewrite.

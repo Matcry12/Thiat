@@ -158,13 +158,13 @@ fills.
 | port_hud | 6 | HP and boss fills are flat single-colour slabs (mock: light top gloss band + darker bottom); hotbar numbers small |
 | port_hud_p2 | 5 | Phase-2 orange is a flat slab too and clashes with the warm frame; same small numbers |
 
-**Root cause found:** `assets/ui/game/hp_fill.png` and `boss_fill.png` are baked as ONE flat colour (every row
+**Root cause found:** `assets/game/ui/skin/hp_fill.png` and `boss_fill.png` are baked as ONE flat colour (every row
 (222,52,52) / (150,66,206)). The gloss was lost in the bake, so no code can bring it back, and phase 2 (a modulate
 tint) is flat for the same reason.
 
 ### Fix list (ranked, max 8)
 
-1. **Re-bake the fills with shading** (owner: ui-bake, `tools/ui_bake/` -> `assets/ui/game/hp_fill.png`,
+1. **Re-bake the fills with shading** (owner: ui-bake, `tools/ui_bake/` -> `assets/game/ui/skin/hp_fill.png`,
    `boss_fill.png`, `hp_trail.png`). Bake as a light/neutral ramp (top 1-2 art px highlight, body, bottom 2 art px
    shade, like the mock) and tint it with `modulate` in code, so the purple, the orange phase 2 and the low-HP pulse all
    keep the gloss. Check by printing one column of pixels: it must not be one colour.

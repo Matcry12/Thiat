@@ -38,7 +38,7 @@ def hole_tiles(x, y, w, h):
 
 def main(out_path):
     random.seed(4)
-    sheet = Image.open(ROOT / "assets/map/Floors_Tiles.png").convert("RGBA")
+    sheet = Image.open(ROOT / "assets/game/map/Floors_Tiles.png").convert("RGBA")
     tile = lambda c: sheet.crop((c[0] * S, c[1] * S, c[0] * S + S, c[1] * S + S))
     W, H = 36, 20
     img = Image.new("RGBA", (W * S, H * S))

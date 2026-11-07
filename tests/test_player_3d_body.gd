@@ -1,5 +1,5 @@
 extends SceneTree
-# The player's body is the 3D-rendered directional set (assets/characters/player/3d/): front when facing mostly down,
+# The player's body is the 3D-rendered directional set (assets/game/characters/player/3d/): front when facing mostly down,
 # side (flipped for left) otherwise, UP keeps the side (no back sprite); run/hit have their own animations; the OLD
 # drawn art still loads and works by swapping the SpriteFrames resource only.
 var _ok := true
@@ -43,7 +43,7 @@ func _init():
 	vis.rig = side_rig
 	vis.set_facing(Vector2.DOWN)
 	check("side-only set: facing down plays idle_side", vis.is_directional() and not body.sprite_frames.has_animation(&"idle_front") and body.animation == &"idle_side")
-	vis.rig = load("res://data/body_rigs/blocky.tres")           # the rest of this test is about the full directional set
+	vis.rig = load("res://data/dev/body_rigs/blocky.tres")           # the rest of this test is about the full directional set
 	check("blocky rig: directional with a front view", vis.is_directional() and body.sprite_frames.has_animation(&"run_front"))
 	check("body position/scale come from the rig (feet on the origin)", body.scale == vis.rig.body_scale and body.position == vis.rig.body_position)
 
@@ -130,13 +130,13 @@ func _init():
 	vis.rig = load("res://data/body_rigs/soft_body.tres")
 	vis.set_facing(Vector2.DOWN)
 	check("soft 3D body rig: directional again, position/scale from its rig", vis.is_directional() and body.position == Vector2(0, -19) and body.sprite_frames.has_animation(&"run_front"))
-	vis.rig = load("res://data/body_rigs/drawn_art.tres")
+	vis.rig = load("res://data/dev/body_rigs/drawn_art.tres")
 	vis.set_move_state("run")
 	check("old drawn art rig: not directional, plain run plays", not vis.is_directional() and body.animation == &"run" and body.position == Vector2(0, -19))
 	vis.set_facing(Vector2.LEFT)
 	check("old art: left = flip_h", body.flip_h)
 	vis.set_facing(Vector2.DOWN)
 	check("old art: facing down keeps the last flip", body.flip_h)
-	vis.rig = load("res://data/body_rigs/blocky.tres")
+	vis.rig = load("res://data/dev/body_rigs/blocky.tres")
 	check("back to blocky", vis.is_directional() and vis.rig.display_name.begins_with("blocky"))
 	quit(0 if _ok else 1)

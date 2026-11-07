@@ -24,7 +24,7 @@ HOW THE PACK IS DRAWN (found by zooming, verified pixel-for-pixel below)
 from PIL import Image
 import os
 
-PK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets", "third_party", "pixel_plains") + "/"
+PK = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "assets", "source", "third_party", "pixel_plains") + "/"
 SHEET = Image.open(PK + "New Basic Tiles Free.png").convert("RGBA")
 GREY = (150, 150, 150, 255)
 NW, NE, SW, SE = 1, 2, 4, 8

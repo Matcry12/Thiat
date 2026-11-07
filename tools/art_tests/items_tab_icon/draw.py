@@ -33,8 +33,8 @@ def build():
                 o.putpixel((x,y),PAL['O']+(255,))
     return o
 if __name__=="__main__":
-    im=build(); im.save("assets/ui/game/items_tab_icon.png")
-    S=10; names=["assets/ui/placeholder/hammer.png","assets/ui/game/items_tab_icon.png"]
+    im=build(); im.save("assets/game/ui/skin/items_tab_icon.png")
+    S=10; names=["assets/game/ui/placeholder/hammer.png","assets/game/ui/skin/items_tab_icon.png"]
     sheet=Image.new("RGBA",(16*S*len(names)+S*(len(names)+1),16*S+2*S),(90,110,90,255))
     for i,n in enumerate(names):
         t=Image.open(n).convert("RGBA").resize((16*S,16*S),Image.NEAREST)

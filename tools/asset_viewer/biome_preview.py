@@ -125,7 +125,7 @@ def n_tries(rng, rate, area):
 def main(seed0):
     seed, f, share = pick_seed(seed0)
     R, sp = load_sprites()
-    veg = Image.open(ROOT / "assets/map/Vegetation.png").convert("RGBA")
+    veg = Image.open(ROOT / "assets/game/map/Vegetation.png").convert("RGBA")
     mush = [veg.crop(bbox(veg, c, 21, c + 1, 22)) for c in range(8)]
     cat = json.load(open(ROOT / "data/maps/tree_catalog.json"))
     sheets = {}
@@ -343,7 +343,7 @@ def main(seed0):
 
     # ---- render
     gr = streams["ground"]
-    sh = Image.open(ROOT / "assets/map/Floors_Tiles.png").convert("RGBA")
+    sh = Image.open(ROOT / "assets/game/map/Floors_Tiles.png").convert("RGBA")
     img = Image.new("RGBA", (W * S, H * S))
     for y in range(H):
         for x in range(W):

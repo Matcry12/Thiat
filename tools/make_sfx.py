@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Generates the hit-feel sound effects as 16-bit mono WAVs (jsfxr-style: noise + sine/square, envelope, low-pass).
 Everything is synthesised here from maths, so the files are original and CC0. Placeholders: replace any file in
-assets/audio/ with a real sound; data/hit_fx/*.tres point at the file names, nothing else changes.
+assets/game/audio/ with a real sound; data/hit_fx/*.tres point at the file names, nothing else changes.
 Run: python3 tools/make_sfx.py"""
 import math, random, struct, wave, pathlib
 
 RATE = 22050
-OUT = pathlib.Path(__file__).resolve().parent.parent / "assets" / "audio"
+OUT = pathlib.Path(__file__).resolve().parent.parent / "assets" / "game" / "audio"
 
 
 def synth(dur, freq=(440, 440), kind="sine", noise=0.0, attack=0.003, decay=6.0, lp=0.5, partials=(1.0,), seed=1):

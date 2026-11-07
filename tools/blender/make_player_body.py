@@ -31,7 +31,7 @@ def mat(name, light, shadow):
     m.use_backface_culling = False
     return m
 
-# sRGB bytes sampled from assets/characters/player/*  -> (light, shadow). Shared with render_twin.py.
+# sRGB bytes sampled from assets/game/characters/player/*  -> (light, shadow). Shared with render_twin.py.
 PAL = {
     "skin": ((233, 148, 141), (205, 104, 112)),
     "pants": ((64, 80, 129), (38, 52, 91)),

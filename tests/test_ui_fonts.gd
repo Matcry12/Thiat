@@ -1,5 +1,5 @@
 extends SceneTree
-# Island Workshop fonts (assets/ui/fonts, baked by tools/ui_bake/bake_fonts.py): advances / heights match the
+# Island Workshop fonts (assets/game/ui/fonts, baked by tools/ui_bake/bake_fonts.py): advances / heights match the
 # glyph tables, 2x is an exact integer scale, outline ring exists. Run: godot --headless --script tests/test_ui_fonts.gd
 var _ok := true
 

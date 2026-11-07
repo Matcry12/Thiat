@@ -7,7 +7,7 @@ import os, sys, math, subprocess, json, tempfile, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
-OUT = os.path.join(ROOT, "assets", "characters", "test_blocky")
+OUT = os.path.join(ROOT, "assets", "dev", "characters", "test_blocky")
 CELL = 32
 PITCH = 80
 YAW = 25
@@ -166,8 +166,8 @@ def size_compare(infos):
         for v, rowi in (("S", 0), ("E", 1)):
             im = Image.open(os.path.join(OUT, f"s{size}_arms", "idle.png")).crop((0, rowi * CELL, CELL, (rowi + 1) * CELL))
             items.append((f"{size}px {v}", im))
-    items.append(("player 3D body (now)", Image.open(os.path.join(ROOT, "assets/characters/player/3d/idle.png")).crop((0, 0, 48, 48))))
-    items.append(("old drawn player", Image.open(os.path.join(ROOT, "assets/characters/player/idle/idle_1.png")).convert("RGBA")))
+    items.append(("player 3D body (now)", Image.open(os.path.join(ROOT, "assets/game/characters/player/3d/idle.png")).crop((0, 0, 48, 48))))
+    items.append(("old drawn player", Image.open(os.path.join(ROOT, "assets/dev/characters/player/idle/idle_1.png")).convert("RGBA")))
     S, pad = 4, 14
     boxes = []
     for label, im in items:

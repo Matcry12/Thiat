@@ -95,7 +95,7 @@ def sprite(img, rect):
 
 def load_sprites():
     A = lambda p: Image.open(ROOT / p).convert("RGBA")
-    veg, rocks = A("assets/map/Vegetation.png"), A("assets/map/Rocks.png")
+    veg, rocks = A("assets/game/map/Vegetation.png"), A("assets/game/map/Rocks.png")
     R = {}
     R["bush"] = [bbox(veg, 0, a, 3, b) for a, b in [(0, 2), (2, 4), (4, 6), (6, 9)]]
     R["tuft"] = [r for r in (bbox(veg, c, row, c + 1, row + 1) for row in (9, 10, 11) for c in range(12)
@@ -269,7 +269,7 @@ def place(rng, d, R_TREE):
 
 def render(items, d, sp, tinted):
     img = Image.new("RGBA", (W * S, H * S))
-    sheet = Image.open(ROOT / "assets/map/Floors_Tiles.png").convert("RGBA")
+    sheet = Image.open(ROOT / "assets/game/map/Floors_Tiles.png").convert("RGBA")
     rng = random.Random(1)
     for y in range(H):
         for x in range(W):

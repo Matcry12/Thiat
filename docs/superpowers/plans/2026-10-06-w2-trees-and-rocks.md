@@ -25,7 +25,7 @@ what you carry. Copper rocks exist but are too hard: "clink", no damage.
 - 0003: max 2 weapons; swapping weapons keeps its cast and cooldown. The holster toggle must never let you change weapon without paying the swap.
 - Collision bits (hitbox.gd:12-15): 1 world, 2 player hurtbox, 4 enemy hurtbox, 8 player hitbox, 16 enemy hitbox. **New: 32 = gatherable.**
 - CLAUDE.md §5: art lives in `.tres` (`ResourceNodeData`, `ItemData`) or `Visual` nodes. Placeholder look when no art. §7: every number `@export`, shown in F3; new state in F3 status; F1 draws new areas; on-demand triggers.
-- Never edit `.godot/`, `*.import`, `*.uid`, or `assets/third_party/` (copy art to `assets/` first). New `.png` under `assets/` → run `godot --headless --import` and commit the `.png.import` (the repo tracks them).
+- Never edit `.godot/`, `*.import`, `*.uid`, or `assets/source/third_party/` (copy art to `assets/` first). New `.png` under `assets/` → run `godot --headless --import` and commit the `.png.import` (the repo tracks them).
 - Full suite stays green: `tools/run_tests.sh` → `0 failing`; `godot --headless --quit` boots clean; island rebuild stays under 2000 ms at 200 x 120.
 
 ## Review Focus
@@ -169,7 +169,7 @@ func clear() -> void:
 - wood: `id = &"wood"`, `display_name = "Wood"`, `color = Color(0.55, 0.36, 0.2)`
 - stone: `id = &"stone"`, `display_name = "Stone"`, `color = Color(0.6, 0.6, 0.62)`
 - copper_ore: `id = &"copper_ore"`, `display_name = "Copper ore"`, `color = Color(0.85, 0.5, 0.3)`
-- Icons: open `assets/third_party/pixel_crawler/Environment/Props/Static/Resources.png` with the Read tool. If it holds clear log / stone / ore pictures, copy the png to `assets/items/resources.png`, run `godot --headless --import`, and give each item an `AtlasTexture` sub-resource (`atlas` = that png, `region` = the picture). Otherwise leave `icon` empty.
+- Icons: open `assets/source/third_party/pixel_crawler/Environment/Props/Static/Resources.png` with the Read tool. If it holds clear log / stone / ore pictures, copy the png to `assets/items/resources.png`, run `godot --headless --import`, and give each item an `AtlasTexture` sub-resource (`atlas` = that png, `region` = the picture). Otherwise leave `icon` empty.
 
 `weapon_data.gd` — add near `damage`:
 
@@ -472,8 +472,8 @@ func status_text() -> String:
 | rock | 8 | 0 | stone 2–3 | 16 | 0.4 / 2.0 / 0.5 | (0.55, 0.55, 0.58) | mine |
 | copper_rock | 10 | 1 | copper_ore 2–3 | 16 | 0 / 0.6 / 0 | (0.8, 0.5, 0.3) | mine |
 
-  - Tree art: open `assets/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png` and `Model_02/Size_02.png` with Read. Copy the one with clear single trees to `assets/world/trees.png`, import, and set 2–3 `regions` plus a stump `remains_region` if the sheet has one.
-  - Rock art: the current map rocks (`assets/map/Rocks.png`, the regions and radii in `data/maps/grass.tres` obstacles) become the `rock.tres` regions.
+  - Tree art: open `assets/source/third_party/pixel_crawler/Environment/Props/Static/Trees/Model_01/Size_02.png` and `Model_02/Size_02.png` with Read. Copy the one with clear single trees to `assets/game/world/trees.png`, import, and set 2–3 `regions` plus a stump `remains_region` if the sheet has one.
+  - Rock art: the current map rocks (`assets/game/map/Rocks.png`, the regions and radii in `data/maps/grass.tres` obstacles) become the `rock.tres` regions.
   - Copper: if `Rocks.png` / `Resources.png` has an ore-coloured rock, use it; else the placeholder colour.
 - HitFx profiles: copy `data/hit_fx/sword.tres` and change:
   - `chop`: `stop_frames 1`, `shake 0.05`, `knockback 0`, `recoil_px 3`, `spark_count 5`, `spark_color` brown, `number_size 0` (if 0 does not hide numbers, set `numbers_on` false in the profile, or skip numbers for these types)
@@ -488,7 +488,7 @@ func status_text() -> String:
 - [ ] **Step 5: Commit**
 
 ```bash
-git add scripts/world/ scenes/world/resource_node.tscn data/resource_nodes/ data/hit_fx/ scripts/components/hitbox.gd scripts/fx/hit_fx.gd scenes/arena.tscn assets/world/ tests/test_resource_node.gd
+git add scripts/world/ scenes/world/resource_node.tscn data/resource_nodes/ data/hit_fx/ scripts/components/hitbox.gd scripts/fx/hit_fx.gd scenes/arena.tscn assets/game/world/ tests/test_resource_node.gd
 git commit -m "feat(world): resource nodes - punch trees and rocks, copper clinks (W2)"
 ```
 

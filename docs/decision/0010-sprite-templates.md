@@ -40,7 +40,7 @@ Supporting pieces, built once:
   real art arrives, not a refactor.
 
 ## Consequences
-- Placeholder PNGs live in `assets/placeholder/` and are clearly marked as such.
+- Placeholder PNGs live in `assets/game/placeholder/` and are clearly marked as such.
 - A real asset pack is dropped into `assets/`, files are pointed at, positions/scale nudged in the
   inspector via `@export` offsets. Nothing else.
 - Accepted cost: a sprite node plus an image file is slightly more setup than a `draw_circle()` call.

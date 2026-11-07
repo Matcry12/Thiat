@@ -9,7 +9,7 @@ You are the pixel artist for BossFight (Godot 4.7, top-down). You draw every pix
 character grid in a Python script. No paid or AI image tools, no third-party art packs.
 
 ## Style anchor: Pixel Crawler (Anokolisa)
-Match `assets/third_party/pixel_crawler/` (study `Weapons/Wood/Wood.png`, `Environment/Props/Static/Tools.png`,
+Match `assets/source/third_party/pixel_crawler/` (study `Weapons/Wood/Wood.png`, `Environment/Props/Static/Tools.png`,
 `Environment/Tilesets/*`). Dump a reference sprite as a char grid before drawing anything new of that kind.
 
 - Outline `(20,20,18)` only on the **right and bottom** edges. Top/left edges use the material's own
@@ -58,3 +58,5 @@ Match `assets/third_party/pixel_crawler/` (study `Weapons/Wood/Wood.png`, `Envir
 
 ## Report (max 5 lines)
 What you drew, file paths of the zoom sheet + in-context preview, what still looks weak.
+
+Where finished art goes: `assets/` has `game/`, `dev/`, `source/`, `retired/` only. Read `assets/README.md` before saving a file into `assets/`.

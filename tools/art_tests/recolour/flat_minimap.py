@@ -31,10 +31,10 @@ cells = [[(m, 0) for m in row] for row in g]
 rgb, foam, _ = b.render(cells, b.BEACH_B)
 rgb = b.frames(rgb, foam)[0]
 img = Image.fromarray(rgb).convert("RGBA")
-man = json.load(open("../../../assets/map/pixel_plains/manifest.json"))["sprites"]
+man = json.load(open("../../../assets/source/map/pixel_plains/manifest.json"))["sprites"]
 sheets = {}
 def spr(s):
-    if s["file"] not in sheets: sheets[s["file"]] = Image.open("../../../assets/map/pixel_plains/" + s["file"]).convert("RGBA")
+    if s["file"] not in sheets: sheets[s["file"]] = Image.open("../../../assets/game/map/pixel_plains/" + s["file"]).convert("RGBA")
     x, y, w, h = s["region"]; return sheets[s["file"]].crop((x, y, x + w, y + h)), s["anchor"]
 def pick(kind, var, **kw): return [s for s in man if s["kind"] == kind and s.get("variant") == var and all(s.get(k) == v for k, v in kw.items())]
 def land(x, y, r=1): # all cells around are ok land (not water/sand-beach issues)

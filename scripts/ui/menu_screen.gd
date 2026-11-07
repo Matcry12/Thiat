@@ -2,7 +2,7 @@ class_name MenuScreen
 extends Control
 ## A full-screen menu page (W8, decision 0040; looks = Island Workshop, DESIGN.md 6-7): dim, then baked planks / buttons at
 ## whole-number 2x. Used by the title screen (style TITLE: logo plaque + panel) and the pause menu (style PAUSE: "Paused" plank).
-## Settings page = the shared SettingsPanel, swapped in for the button list. Parts + positions: assets/ui/game/README.md.
+## Settings page = the shared SettingsPanel, swapped in for the button list. Parts + positions: assets/game/ui/skin/README.md.
 ## `items`: Array of {text, cb (Callable), enabled (bool, default true)}; {text, settings: true} opens the settings page.
 
 enum Style { TITLE, PAUSE }

@@ -1,11 +1,11 @@
-"""Builds assets/characters/player/3d/player_3d_frames.tres (a SpriteFrames) from the rendered sheets + sheet_info.json.
+"""Builds assets/game/characters/player/3d/player_3d_frames.tres (a SpriteFrames) from the rendered sheets + sheet_info.json.
 Animations: <idle|run|hit>_<front|side>. Hold times (ms) become per-frame durations at speed 10 fps (duration 1.0 = 100 ms),
 so SpriteActorVisual plays them as-is. Run by render_body.py; or: python3 tools/blender/build_frames.py"""
 import json, os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(HERE, "..", "..", "assets", "characters", "player", "3d")
-RES = "res://assets/characters/player/3d/"
+OUT = os.path.join(HERE, "..", "..", "assets", "game", "characters", "player", "3d")
+RES = "res://assets/game/characters/player/3d/"
 LOOPS = {"idle": True, "run": True, "hit": False}
 
 def build(out=OUT, name="player_3d_frames.tres", res=RES):

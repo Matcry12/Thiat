@@ -52,7 +52,7 @@ extends Resource
 @export_range(0.0, 0.95, 0.01) var smear_inner := 0.3  ## band starts this far along the blade (0 = from the hand)
 @export_group("Slash art")
 @export_enum("ribbon", "sprite") var slash_mode := "ribbon"   ## ribbon = a band built from the real blade path each frame (always on the blade); sprite = the fixed crescent picture
-@export var ribbon_textures: Array[Texture2D] = [preload("res://assets/fx/slash/ribbon_f1.png"), preload("res://assets/fx/slash/ribbon_f2.png"), preload("res://assets/fx/slash/ribbon_f3.png"), preload("res://assets/fx/slash/ribbon_f4.png")]   ## unwrapped crescents: x = along the arc (newest end at x=0), y = inner -> outer
+@export var ribbon_textures: Array[Texture2D] = [preload("res://assets/game/fx/slash/ribbon_f1.png"), preload("res://assets/game/fx/slash/ribbon_f2.png"), preload("res://assets/game/fx/slash/ribbon_f3.png"), preload("res://assets/game/fx/slash/ribbon_f4.png")]   ## unwrapped crescents: x = along the arc (newest end at x=0), y = inner -> outer
 @export_range(10.0, 360.0, 1.0) var ribbon_tail_deg := 110.0   ## the band covers at most this many degrees behind the blade, never before active start
 @export_range(0.0, 1.0, 0.01) var ribbon_f2_at := 0.2      ## share of active after which the big frame (f2) replaces the thin one (f1)
 @export_range(0.1, 3.0, 0.05) var ribbon_taper_power := 0.4   ## crescent shape: higher = thinner tail, point at the tail
@@ -66,8 +66,8 @@ extends Resource
 @export var ribbon_px_per_deg := 0.5                       ## strip pixels per degree (tools/art_tests/slash_smear/unwrap_ribbon.py PPD)
 @export_range(4, 64, 1) var ribbon_steps := 32            ## samples along the band (more = smoother)
 @export_range(0.0, 0.95, 0.01) var ribbon_inner := 0.5   ## band starts this far along the blade (share of the Tip length; 0 = from the hand)
-@export var slash_on := true                       ## the drawn slash (assets/fx/slash): on the live grip during active, frozen after
-@export var slash_textures: Array[Texture2D] = [preload("res://assets/fx/slash/slash_f1.png"), preload("res://assets/fx/slash/slash_f2.png"), preload("res://assets/fx/slash/slash_f3.png"), preload("res://assets/fx/slash/slash_f4.png")]
+@export var slash_on := true                       ## the drawn slash (assets/game/fx/slash): on the live grip during active, frozen after
+@export var slash_textures: Array[Texture2D] = [preload("res://assets/game/fx/slash/slash_f1.png"), preload("res://assets/game/fx/slash/slash_f2.png"), preload("res://assets/game/fx/slash/slash_f3.png"), preload("res://assets/game/fx/slash/slash_f4.png")]
 @export var slash_scale := 2.2                     ## art px -> blade px (times the rig scale): the art's outer edge reaches the blade tip
 @export var slash_inner_cut := 12.2                ## art px: everything closer to the hand than this is cut away
 @export var slash_head_f1_deg := -23.2             ## per frame: art angle (0 = right, clockwise) of the NEWEST end; it is put on the blade

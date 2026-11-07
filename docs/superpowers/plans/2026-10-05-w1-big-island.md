@@ -408,7 +408,7 @@ git commit -m "feat(map): island mask and areas in MapGen (W1)"
 **3b. `data/maps/grass.tres`** — placeholders that need no new art:
 - `boss_fills = [Vector2i(1, 11), Vector2i(2, 11), Vector2i(3, 11)]` (the dark grass, drawn on the dirt layer).
 - `rocky_fills`: open `docs/wiki/img/ground-floors.png` (preview of `Floors_Tiles.png`) with the Read tool. If there is a plain grey stone / cobble fill row of 16 px tiles, put its 2–3 coords here and add the coords to the `Floors_Tiles` row in `docs/wiki/ground-tiles.md`. If unsure, leave it empty (dirt shows). Verify the choice in the Task 6 screenshot.
-- `water_texture` / `water_fills`: open `docs/wiki/img/ground-water*.png`. If `Water_tiles.png` has a plain full-water 16 px tile, copy `assets/third_party/pixel_crawler/Environment/Tilesets/Water_tiles.png` to `assets/map/Water_tiles.png` (the editor imports it on the next `godot --headless --quit`), set `water_texture` to it and `water_fills` to that coord. Otherwise leave both empty.
+- `water_texture` / `water_fills`: open `docs/wiki/img/ground-water*.png`. If `Water_tiles.png` has a plain full-water 16 px tile, copy `assets/source/third_party/pixel_crawler/Environment/Tilesets/Water_tiles.png` to `assets/game/map/Water_tiles.png` (the editor imports it on the next `godot --headless --quit`), set `water_texture` to it and `water_fills` to that coord. Otherwise leave both empty.
 
 **3c. `generate`** — same order; every step reads `res.land` / `res.area`; the border is skipped on the island:
 
@@ -525,7 +525,7 @@ Run: `tools/run_tests.sh` → `0 failing`.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add scripts/map/map_gen.gd scripts/map/map_style.gd data/maps/grass.tres tests/test_island_gen.gd docs/wiki/ground-tiles.md assets/map/
+git add scripts/map/map_gen.gd scripts/map/map_style.gd data/maps/grass.tres tests/test_island_gen.gd docs/wiki/ground-tiles.md assets/game/map/
 git commit -m "feat(map): ground, patches, rocks, deco follow the island; water-aware reachability (W1)"
 ```
 
@@ -689,7 +689,7 @@ extends Node2D
 ## Art lives in the Visual child; swapping it touches no code.
 ```
 
-- `scenes/world/home_point.tscn`: root `HomePoint` (Node2D, the script), child `Visual` (Sprite2D). Art: look for the Bonfire in `assets/third_party/pixel_crawler/` (`find … -iname "*fire*"`). If found, copy the png to `assets/map/` and set the Sprite2D `texture` + `region_rect` to its first frame, `scale = Vector2(2, 2)`, `offset` so its feet sit at (0, 0). If not found, leave `texture` empty and add a `Placeholder` child `Polygon2D` (orange diamond, 20 px). Never edit the pack.
+- `scenes/world/home_point.tscn`: root `HomePoint` (Node2D, the script), child `Visual` (Sprite2D). Art: look for the Bonfire in `assets/source/third_party/pixel_crawler/` (`find … -iname "*fire*"`). If found, copy the png to `assets/game/map/` and set the Sprite2D `texture` + `region_rect` to its first frame, `scale = Vector2(2, 2)`, `offset` so its feet sit at (0, 0). If not found, leave `texture` empty and add a `Placeholder` child `Polygon2D` (orange diamond, 20 px). Never edit the pack.
 - `scenes/arena.tscn`: instance it as `HomePoint`, sibling of `Player` (y-sorted with characters).
 - `arena_map.gd`: `@export var home_path: NodePath = ^"../HomePoint"`; the two offset exports with `_changed(false, true)` setters; in `_place_actors`, place it and append its position to `_spawns`.
 - `tuning_panel.gd`: in `range_overrides` set `map_cols` 12..300, `map_rows` 12..200, `forest_end` / `rocky_end` / `island_threshold` / `island_noise` / `area_wobble` 0..1, `island_falloff` 0.5..4, `island_noise_frequency` 0.005..0.2. Next to `New map`, add:
@@ -704,7 +704,7 @@ extends Node2D
 - [ ] **Step 5: Commit**
 
 ```bash
-git add scripts/world/ scenes/world/ scenes/arena.tscn scripts/map/arena_map.gd scripts/debug/tuning_panel.gd tests/test_island_arena.gd assets/map/
+git add scripts/world/ scenes/world/ scenes/arena.tscn scripts/map/arena_map.gd scripts/debug/tuning_panel.gd tests/test_island_arena.gd assets/game/map/
 git commit -m "feat(map): home campfire marker, F3 island sliders and Go home / Go to boss (W1)"
 ```
 

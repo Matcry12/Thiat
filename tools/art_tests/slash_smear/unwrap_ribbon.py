@@ -1,11 +1,11 @@
 # Unwraps slash_f1..f4.png (crescent, centre (24,24), clockwise) into straight strips ribbon_f1..f4.png.
 # u (x) = along the arc, NEWEST end at x=0; v (y) = inner -> outer radius. Nearest sampling keeps the pixel look.
-# Run from this folder; also writes to ../../../assets/fx/slash/. Used by scripts/visual/swing_ribbon.gd.
+# Run from this folder; also writes to ../../../assets/game/fx/slash/. Used by scripts/visual/swing_ribbon.gd.
 import math, os
 from PIL import Image
 HEAD = [-23.2, 60.3, 60.3, 70.3]   # newest-end angle per frame (= SwingMotion.slash_head_fN_deg)
 R0, R1, H, PPD = 10.5, 22.0, 12, 0.5   # radii kept (art px, 22 = blade tip), rows, strip px per degree
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../assets/fx/slash")
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../assets/game/fx/slash")
 for i in range(4):
     im = Image.open(f"slash_f{i+1}.png").convert("RGBA"); px = im.load()
     rel = []

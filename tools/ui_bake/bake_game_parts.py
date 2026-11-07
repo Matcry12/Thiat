@@ -1,13 +1,13 @@
 """Deterministic $0 bake of the game UI parts. Run from repo root:  python3 tools/ui_bake/bake_game_parts.py
 Serves the repo on 127.0.0.1 (free port), opens tools/ui_bake/game_parts.html in headless Chromium, writes
-assets/ui/game/<part>.png + slices.json and tools/f3_mock/game_shots/game_parts_sheet.png. Same input -> same bytes.
+assets/game/ui/skin/<part>.png + slices.json and tools/f3_mock/game_shots/game_parts_sheet.png. Same input -> same bytes.
 """
 import base64, json, socket, subprocess, sys, time
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / "assets/ui/game"
+OUT = ROOT / "assets/game/ui/skin"
 SHEET = ROOT / "tools/f3_mock/game_shots/game_parts_sheet.png"
 
 s = socket.socket(); s.bind(("127.0.0.1", 0)); port = s.getsockname()[1]; s.close()

@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="SwingMotion" format=3]
 
 [ext_resource type="Script" path="res://scripts/visual/swing_motion.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/fx/slash/ribbon_f1.png" id="r1"]
-[ext_resource type="Texture2D" path="res://assets/fx/slash/ribbon_f2.png" id="r2"]
-[ext_resource type="Texture2D" path="res://assets/fx/slash/ribbon_f3.png" id="r3"]
+[ext_resource type="Texture2D" path="res://assets/game/fx/slash/ribbon_f1.png" id="r1"]
+[ext_resource type="Texture2D" path="res://assets/game/fx/slash/ribbon_f2.png" id="r2"]
+[ext_resource type="Texture2D" path="res://assets/game/fx/slash/ribbon_f3.png" id="r3"]
 
 [resource]
 script = ExtResource("1")

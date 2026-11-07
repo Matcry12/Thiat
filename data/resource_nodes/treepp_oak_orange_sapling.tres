@@ -2,9 +2,9 @@
 
 [ext_resource type="Script" path="res://scripts/world/resource_node_data.gd" id="1"]
 [ext_resource type="Resource" path="res://data/items/wood.tres" id="2"]
-[ext_resource type="Texture2D" path="res://assets/map/pixel_plains/oaks.png" id="3"]
-[ext_resource type="Texture2D" path="res://assets/map/pixel_plains/hedges.png" id="4"]
-[ext_resource type="Texture2D" path="res://assets/map/pixel_plains/oaks_noshadow.png" id="5"]
+[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/oaks.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/hedges.png" id="4"]
+[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/oaks_noshadow.png" id="5"]
 
 [resource]
 script = ExtResource("1")

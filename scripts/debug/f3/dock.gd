@@ -35,7 +35,7 @@ extends PanelContainer
 @export var text_size := 15
 @export var small_text_size := 13         ## captions, counts, hints
 @export var text_outline := 0             ## 0 or 1 (1 px OUT ring behind the text)
-@export var label_font: Font              ## tabs, headers, buttons. null = the pixel Bold (assets/ui/fonts)
+@export var label_font: Font              ## tabs, headers, buttons. null = the pixel Bold (assets/game/ui/fonts)
 @export var label_size := 18              ## 2x the pixel font's native 9
 @export var button_pad_y := 3.0            ## px added above and below the button art content
 @export var button_pad := 4.0              ## px added to each side of the button art content margins

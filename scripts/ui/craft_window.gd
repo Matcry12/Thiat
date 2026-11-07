@@ -7,7 +7,7 @@ extends Control
 ## the inventory. A Furnace tab shows [input] > [progress] > [output] when a furnace is near.
 ## Pure view: it reads Crafter / Inventory / Furnace by polling and EMITS requests; the HUD answers them.
 ## Everything is placed in ART px (1 art px = skin.art_scale screen px, whole numbers) from the baked parts in
-## assets/ui/game (README: "Bag + crafting book"). Organic pictures are never stretched.
+## assets/game/ui/skin (README: "Bag + crafting book"). Organic pictures are never stretched.
 
 signal craft_requested(recipe: RecipeData, straight: bool)   ## straight = shift + Craft: into the inventory, not the cursor
 signal furnace_input_clicked(shift: bool)

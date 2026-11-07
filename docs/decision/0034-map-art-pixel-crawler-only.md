@@ -18,7 +18,7 @@ No Serene Village art is used on the map. The map rework builds on `grass.tres`.
 
 ## Consequences
 - `grass_sv.tres`, `ground_sv_*.tres`, `tree_sv.tres`, `assets/map/sv_*.png` and `assets/world/trees_sv.png`
-  are no longer used. Remove them in the rework. Keep `assets/third_party/serene_village/` as a downloaded pack.
+  are no longer used. Remove them in the rework. Keep `assets/source/third_party/serene_village/` as a downloaded pack.
 - `grass_pc.tres` is the same as `grass.tres`. Remove it.
 - If Pixel Crawler lacks a picture we need, draw it in the Pixel Crawler style (outline, palette). Do not take it from another pack.
 - Use the creator filter in the asset viewer to check that new map art is Anokolisa only.

@@ -15,7 +15,7 @@ const SLOT_SCENE := preload("res://scenes/ui/item_slot.tscn")
 @export var gap_override := -1
 ## The HUD hotbar sits on the carved panel (hotbar_panel, real size); the copy inside the bag window does not.
 var framed := false
-@export var art_gap := 1                     ## 23 art px step - 22 px slot (assets/ui/game/README.md)
+@export var art_gap := 1                     ## 23 art px step - 22 px slot (assets/game/ui/skin/README.md)
 @export var pad_left := 8                    ## art px from the panel box to the first slot
 @export var pad_top := 11
 @export var panel_w := 223

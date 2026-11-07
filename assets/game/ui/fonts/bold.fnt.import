@@ -1,0 +1,17 @@
+[remap]
+
+importer="font_data_bmfont"
+type="FontFile"
+uid="uid://dji7dqrg4ao0m"
+path="res://.godot/imported/bold.fnt-41f9d934604ae7b016ae5cd620523fdb.fontdata"
+
+[deps]
+
+source_file="res://assets/game/ui/fonts/bold.fnt"
+dest_files=["res://.godot/imported/bold.fnt-41f9d934604ae7b016ae5cd620523fdb.fontdata"]
+
+[params]
+
+fallbacks=[]
+compress=true
+scaling_mode=2

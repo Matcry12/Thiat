@@ -111,7 +111,7 @@ COLOR_ROW = {"green": 0, "yellow": 3, "brown": 6}                 # tuft / fern 
 # ======================================================================================================== sprites
 def load_art():
     A = lambda p: Image.open(ROOT / p).convert("RGBA")
-    veg, rocks, tiles, water = A("assets/map/Vegetation.png"), A("assets/map/Rocks.png"), A("assets/map/Floors_Tiles.png"), A("assets/map/Water_tiles.png")
+    veg, rocks, tiles, water = A("assets/game/map/Vegetation.png"), A("assets/game/map/Rocks.png"), A("assets/game/map/Floors_Tiles.png"), A("assets/game/map/Water_tiles.png")
     cut = lambda sh, b: sh.crop(b)
     art = {"tiles": tiles, "water": water}
     art["bush"] = {c: [cut(veg, bbox(veg, col, a, col + 3, b)) for a, b in [(0, 2), (2, 4)]] for c, col in COLOR_COL.items()}

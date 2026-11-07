@@ -2,14 +2,14 @@
 """Bake Island Workshop pixel fonts (Body, Bold, Small) to BMFont .fnt + PNG atlases.
 Source of truth: glyph tables in tools/ui_mock/index.html (fallback: tools/f3_mock/workshop.html).
 Run: python3 tools/ui_bake/bake_fonts.py   (deterministic, $0)
-Out: assets/ui/fonts/<name>.png/.fnt (white glyphs, 1 art px = 1 texel)
-     assets/ui/fonts/<name>_ring.png (same layout, 1 px 8-neighbour dilation, for the OUT outline)
+Out: assets/game/ui/fonts/<name>.png/.fnt (white glyphs, 1 art px = 1 texel)
+     assets/game/ui/fonts/<name>_ring.png (same layout, 1 px 8-neighbour dilation, for the OUT outline)
 """
 import re, os
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-OUTDIR = os.path.join(ROOT, "assets/ui/fonts")
+OUTDIR = os.path.join(ROOT, "assets/game/ui/fonts")
 SRC = [open(os.path.join(ROOT, p), encoding="utf-8").read()
        for p in ("tools/ui_mock/index.html", "tools/f3_mock/workshop.html")]
 

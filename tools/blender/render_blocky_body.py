@@ -8,8 +8,8 @@ import os, sys, math, subprocess, json, tempfile, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
-OUT = os.path.join(ROOT, "assets", "characters", "player", "blocky")
-TEST = os.path.join(ROOT, "assets", "characters", "test_blocky")
+OUT = os.path.join(ROOT, "assets", "dev", "characters", "player", "blocky")
+TEST = os.path.join(ROOT, "assets", "dev", "characters", "test_blocky")
 CELL = 32
 PITCH = 80
 YAW = int(os.environ.get('BLOCKY_YAW', 30))   # 3/4 side yaw; chosen from yaw_compare_4x.png
@@ -184,8 +184,8 @@ def before_after():
     for lab, path in (("round 6 + arms", os.path.join(TEST, "s18_arms")), ("round 6 no arms (stick)", os.path.join(TEST, "s18_noarms")), ("NEW chunky no arms", OUT)):
         for v, rowi in (("front", 0), ("side", 1)):
             items.append((f"{lab} {v}", Image.open(os.path.join(path, "idle.png")).crop((0, rowi * CELL, CELL, (rowi + 1) * CELL))))
-    items.append(("soft 3D body (before)", Image.open(os.path.join(ROOT, "assets/characters/player/3d/idle.png")).crop((0, 0, 48, 48))))
-    items.append(("old drawn player", Image.open(os.path.join(ROOT, "assets/characters/player/idle/idle_1.png")).convert("RGBA")))
+    items.append(("soft 3D body (before)", Image.open(os.path.join(ROOT, "assets/game/characters/player/3d/idle.png")).crop((0, 0, 48, 48))))
+    items.append(("old drawn player", Image.open(os.path.join(ROOT, "assets/dev/characters/player/idle/idle_1.png")).convert("RGBA")))
     S, pad = 4, 14; f = font(14)
     from PIL import ImageDraw as _D
     tw = lambda t: int(_D.Draw(Image.new("RGBA", (1, 1))).textlength(t, font=f))
@@ -262,6 +262,6 @@ if __name__ == "__main__":
             _, dt, px = full(size, ppu, "noarms")
             print(f"size {size}px (ppu {ppu}, measured {h}px, yaw {YAW}): blender {dt:.1f}s, face + no-second-head checks ok ({px} head px)")
             gif_and_contact()
-            sys.path.insert(0, HERE); import build_frames; build_frames.build(OUT, "blocky_frames.tres", "res://assets/characters/player/blocky/")
+            sys.path.insert(0, HERE); import build_frames; build_frames.build(OUT, "blocky_frames.tres", "res://assets/dev/characters/player/blocky/")
             before_after()
             shape_compare()

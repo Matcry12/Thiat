@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/weapons/projectile.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/arrow.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/game/placeholder/arrow.png" id="2"]
 
 [node name="Arrow" type="Node2D"]
 script = ExtResource("1")

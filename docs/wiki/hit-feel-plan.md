@@ -126,7 +126,7 @@ is a new row of data, not new code (put the table in a `HitFxProfile` Resource, 
 2. **Inputs pressed during a freeze must not be lost.** Check that attack/dodge pressed inside the freeze
    still fire after it (test + playtest). If not, buffer them.
 3. **Sound needs a source.** We have no audio files. Slice one uses free CC0 sounds (e.g. Kenney "Impact
-   Sounds") or generated blips (jsfxr), in `assets/audio/`, behind one `HitSound` node so they swap later.
+   Sounds") or generated blips (jsfxr), in `assets/game/audio/`, behind one `HitSound` node so they swap later.
 
 ## How we'll test it
 

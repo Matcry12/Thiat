@@ -15,17 +15,17 @@ OUT = Path(__file__).with_name("map_assets.html")
 DATA_DIRS = ["data/maps", "data/resource_nodes"]
 # Sheets shown even when nothing uses them (what is available to pick from).
 LIBRARY_GLOBS = [
-    "assets/map/*.png",
-    "assets/world/*.png",
-    "assets/stations/*.png",
-    "assets/third_party/pixel_crawler/Environment/Tilesets/*.png",
-    "assets/third_party/pixel_crawler/Environment/Props/Static/*.png",
-    "assets/third_party/pixel_crawler/Environment/Props/Static/Trees/*/*.png",
-    "assets/third_party/serene_village/*.png",
-    "assets/third_party/serene_village/Construct 3/*.png",
-    "assets/third_party/serene_village/Animated stuff/*16x16.png",
+    "assets/game/map/*.png",
+    "assets/game/world/*.png",
+    "assets/game/stations/*.png",
+    "assets/source/third_party/pixel_crawler/Environment/Tilesets/*.png",
+    "assets/source/third_party/pixel_crawler/Environment/Props/Static/*.png",
+    "assets/source/third_party/pixel_crawler/Environment/Props/Static/Trees/*/*.png",
+    "assets/source/third_party/serene_village/*.png",
+    "assets/source/third_party/serene_village/Construct 3/*.png",
+    "assets/source/third_party/serene_village/Animated stuff/*16x16.png",
 ]
-PACKS = {  # third_party folder -> (creator, pack, license); see assets/third_party/README.md
+PACKS = {  # third_party folder -> (creator, pack, license); see assets/source/third_party/README.md
     "pixel_crawler": ("Anokolisa", "Pixel Crawler 2.11", "credit not required, no resale"),
     "serene_village": ("LimeZu", "Serene Village 16x16", "CC BY 4.0, credit required"),
 }
@@ -33,7 +33,7 @@ OWN = ("Own", "Project placeholder", "ours")
 # Edited copies a file hash cannot trace back (docs/wiki/credits.md).
 # trees_sv.png = Pixel Crawler tree sheet + Serene Village trees pasted in the bottom row.
 MIXED = ("Mixed", "Pixel Crawler + Serene Village", "both licenses apply, LimeZu credit required")
-ORIGIN_OVERRIDE = {"assets/world/trees_sv.png": MIXED, "assets/stations/anvil.png": OWN}
+ORIGIN_OVERRIDE = {"assets/game/world/trees_sv.png": MIXED, "assets/game/stations/anvil.png": OWN}
 TEX_KEYS = {"texture", "tileset_texture", "water_texture", "edge_texture"}
 NUM = r"-?[\d.]+"
 RECT = re.compile(rf"Rect2i?\(({NUM}), ({NUM}), ({NUM}), ({NUM})\)")
@@ -78,7 +78,7 @@ def md5(p):
 
 def origin(path, originals):
     """-> (pack folder or None, original third_party path or None)"""
-    if path.startswith("assets/third_party/"):
+    if path.startswith("assets/source/third_party/"):
         return path.split("/")[2], None
     src = originals.get(md5(path))
     return (src.split("/")[2], src) if src else (None, None)
@@ -90,7 +90,7 @@ def main():
     for g in LIBRARY_GLOBS:
         paths |= {str(p.relative_to(ROOT)) for p in ROOT.glob(g)}
     originals = {md5(str(p.relative_to(ROOT))): str(p.relative_to(ROOT))
-                 for p in (ROOT / "assets/third_party").rglob("*.png")}
+                 for p in (ROOT / "assets/source/third_party").rglob("*.png")}
     sheets = []
     for p in sorted(paths):
         w, h = Image.open(ROOT / p).size
@@ -159,7 +159,7 @@ function side(){
   $('lic').textContent=lic.join(' · ');$('mix').innerHTML=f?'':mixes();
   const g={used:[],lib:[]};D.sheets.filter(s=>!f||s.creator===f).forEach(s=>g[s.used?'used':'lib'].push(s));
   $('list').innerHTML=`<h3>Used by the game</h3>${g.used.map(row).join('')}<h3>Available (not used)</h3>${g.lib.map(row).join('')}`;
-  function row(s){return `<div class="sh" data-p="${s.path}">${s.used?'<span class=dot></span>':''}${s.path.split('/').pop()}<span class=cr style="background:${CC[s.creator]}">${s.creator}</span><br><small>${s.path.split('/').slice(0,-1).join('/')} · ${s.w}x${s.h}${s.copy_of?'<br>copy of '+s.copy_of.replace('assets/third_party/',''):''}</small></div>`}
+  function row(s){return `<div class="sh" data-p="${s.path}">${s.used?'<span class=dot></span>':''}${s.path.split('/').pop()}<span class=cr style="background:${CC[s.creator]}">${s.creator}</span><br><small>${s.path.split('/').slice(0,-1).join('/')} · ${s.w}x${s.h}${s.copy_of?'<br>copy of '+s.copy_of.replace('assets/source/third_party/',''):''}</small></div>`}
   document.querySelectorAll('.sh').forEach(e=>e.onclick=()=>show(e.dataset.p));
 }
 function show(p){

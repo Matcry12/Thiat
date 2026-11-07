@@ -26,7 +26,7 @@ cone around the aim, so a mirrored picture never disagrees with it.
 - A later sprite animation replaces `SwingMotion.pose()`; timing stays in `WeaponData`.
 
 ## Addendum: drawn slash "P3" replaces the code smear
-- `SwingSlash` (own node, `scripts/visual/swing_slash.gd`, art in `assets/fx/slash/`) is driven only by `WeaponVisual`. While active it sits on the live grip, scaled so
+- `SwingSlash` (own node, `scripts/visual/swing_slash.gd`, art in `assets/game/fx/slash/`) is driven only by `WeaponVisual`. While active it sits on the live grip, scaled so
   the art's outer edge reaches the blade tip, inner radius cut by a tiny shader, newest end on the blade. f1 shows once the blade has turned 67 deg since active began, f2 at 150 deg.
   At active end it freezes (position + angle) and plays f3, then f4 fading (`slash_fade_time` 0.08 s), then hides. Mirrored swings flip the sprite.
 - All numbers are `SwingMotion` "Slash art" fields (`slash_*`), live in F3. `smear_on` is now false by default (the code smear stays as an option); sword copies stay off.

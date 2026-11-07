@@ -13,8 +13,8 @@ def icon_h(img):                       # icon drawn handle bottom-left -> head t
     c.alpha_composite(big, (cx - 5 * S, cx - 27 * S))   # grip pixel (5,27) on the centre
     return c.rotate(-45, resample=Image.NEAREST, center=(cx, cx))
 TOOLS = [("sword", icon_h(src.crop((32, 160, 64, 192))), -80, 80),
-         ("axe", icon_h(Image.open(f"{HERE}/../../../assets/ui/items/stone_axe.png").convert("RGBA")), -135, 55),
-         ("pickaxe", icon_h(Image.open(f"{HERE}/../../../assets/ui/items/stone_pickaxe.png").convert("RGBA")), -135, 55)]
+         ("axe", icon_h(Image.open(f"{HERE}/../../../assets/game/ui/items/stone_axe.png").convert("RGBA")), -135, 55),
+         ("pickaxe", icon_h(Image.open(f"{HERE}/../../../assets/game/ui/items/stone_pickaxe.png").convert("RGBA")), -135, 55)]
 T_W, T_A, T_R, T_P = .28, .12, .35, .45
 TOT = T_W + T_A + T_R + T_P
 eo = lambda t: 1 - (1 - t) ** 3

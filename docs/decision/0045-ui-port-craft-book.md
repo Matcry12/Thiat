@@ -11,8 +11,8 @@ The approved book design has a right page with a `< n >` count and a `Craft` but
   (the same held-stack rules as 0031); shift + `Craft` sends it straight into the bag. The button is lit
   only when the Crafter would really make it. Side tabs Craft / Furnace / Anvil are dimmed when that
   station is not near. The rest of 0031 (stations, placing, furnace, Crafter decides) is unchanged.
-- **Art pipeline:** `tools/ui_bake/*` bakes the mockup's drawing code to `assets/ui/game/` and
-  `assets/ui/f3/` (+ `slices.json` for margins). Fonts go to `assets/ui/fonts/` (BMFont, `UiFonts`).
+- **Art pipeline:** `tools/ui_bake/*` bakes the mockup's drawing code to `assets/game/ui/skin/` and
+  `assets/dev/ui/f3/` (+ `slices.json` for margins). Fonts go to `assets/game/ui/fonts/` (BMFont, `UiFonts`).
   Bakes are deterministic. Screens read textures from `InventorySkin` slots and margins from `slices.json`.
 - **One helper:** `scripts/ui/pixel_art.gd` (nearest 2x upscale with one cache, 9-slice, pixel labels).
   Every screen uses it.

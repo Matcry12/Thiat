@@ -3,9 +3,9 @@ extends Node2D
 ## The 3D twin of the player (3 views: S front, E side, N back; W = E flipped, like the player's flip_h)
 ## walks a rectangle using only 4 directions, slashes in each, next to the REAL player sprite.
 
-const GRASS := "res://assets/map/Floors_Tiles.png"
-const PLAYER_FRAMES := "res://assets/characters/player/player_frames.tres"
-const SHEETS := "res://assets/characters/test3d_chibi/"
+const GRASS := "res://assets/game/map/Floors_Tiles.png"
+const PLAYER_FRAMES := "res://assets/dev/characters/player/player_frames.tres"
+const SHEETS := "res://assets/dev/characters/test3d_chibi/"
 @export var run_speed := 140.0
 @export var half_w := 150.0
 @export var half_h := 65.0

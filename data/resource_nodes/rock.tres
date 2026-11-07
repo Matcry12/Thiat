@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/world/resource_node_data.gd" id="1"]
 [ext_resource type="Resource" path="res://data/items/stone.tres" id="2"]
-[ext_resource type="Texture2D" path="res://assets/map/Rocks.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/game/map/Rocks.png" id="3"]
 
 [resource]
 script = ExtResource("1")

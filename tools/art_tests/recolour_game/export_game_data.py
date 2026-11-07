@@ -1,4 +1,4 @@
-"""$0: assets/map/pixel_plains/manifest.json -> game data. No coordinates live in GDScript.
+"""$0: assets/source/map/pixel_plains/manifest.json -> game data. No coordinates live in GDScript.
   data/resource_nodes/treepp_oak_<season>_<age>.tres   gatherable oaks (MapGen._tree_kinds reads the id in Pixel Plains mode)
   data/maps/prop_pp_{flowers,tufts,hedges}.tres        PropSets for BiomeVeg; groups are "<role>@<biome label>" (from manifest biome lists)
   data/maps/grass.tres                                 gets the new nodes / sets appended (idempotent: old pp_ entries are dropped first)
@@ -7,7 +7,7 @@ Run: python3 tools/art_tests/recolour_game/export_game_data.py"""
 import json, os, re
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
-M = json.load(open(os.path.join(ROOT, "assets/map/pixel_plains/manifest.json")))
+M = json.load(open(os.path.join(ROOT, "assets/source/map/pixel_plains/manifest.json")))
 S = M["sprites"]
 BIOMES = ["plains", "forest", "autumn", "taiga", "snowy", "rocky", "swamp", "beach_sand", "beach_gravel"]   # MapStyle.biomes order
 LABEL = {b: {"beach_sand": "beach (sand)", "beach_gravel": "beach (gravel)"}.get(b, b) for b in BIOMES}
@@ -34,9 +34,9 @@ for var, season in SEASON.items():
 
 [ext_resource type="Script" path="res://scripts/world/resource_node_data.gd" id="1"]
 [ext_resource type="Resource" path="res://data/items/wood.tres" id="2"]
-[ext_resource type="Texture2D" path="res://assets/map/pixel_plains/oaks.png" id="3"]
-[ext_resource type="Texture2D" path="res://assets/map/pixel_plains/{STUMP["file"]}" id="4"]
-[ext_resource type="Texture2D" path="res://assets/map/pixel_plains/oaks_noshadow.png" id="5"]
+[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/oaks.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/{STUMP["file"]}" id="4"]
+[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/oaks_noshadow.png" id="5"]
 
 [resource]
 script = ExtResource("1")
@@ -80,7 +80,7 @@ def propset(name, sheet, rows):
     write("data/maps/prop_pp_%s.tres" % name, f'''[gd_resource type="Resource" script_class="PropSet" format=3]
 
 [ext_resource type="Script" path="res://scripts/map/prop_set.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/map/pixel_plains/{sheet}" id="2"]
+[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/{sheet}" id="2"]
 
 [resource]
 script = ExtResource("1")

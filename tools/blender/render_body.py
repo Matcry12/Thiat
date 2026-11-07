@@ -1,6 +1,6 @@
 """Round 4 BODY-ONLY sheets (hands/weapon are 2D in the game): 3 views (S front, E = 3/4 front, N back), rows = views, columns = frames.
 The game flips the E row for W (like the player's flip_h). Plain python3:
-  python3 tools/blender/render_body.py                     full render at the default tilt -> assets/characters/test3d_chibi/
+  python3 tools/blender/render_body.py                     full render at the default tilt -> assets/dev/characters/test3d_chibi/
   python3 tools/blender/render_body.py --yaw-compare       yaw comparison (yaw_compare_4x.png)
   options: --pitch N (deg from straight down; 90 = pure front view)  --ppu N"""
 import os, sys, math, subprocess, json, tempfile, time
@@ -16,8 +16,8 @@ ACTIONS = {"idle": 2, "run": 6, "hit": 2}
 HOLD_MS = {"idle": [450, 450], "run": [90, 90, 90, 90, 90, 90], "hit": [90, 150]}
 VIEWS = [("S", 0), ("E", YAW)]   # name, yaw degrees
 OUTLINE = (0, 0, 0)
-OUT = os.path.join(ROOT, "assets", "characters", "player", "3d")
-CMP = os.path.join(ROOT, "assets", "characters", "test3d_chibi")
+OUT = os.path.join(ROOT, "assets", "game", "characters", "player", "3d")
+CMP = os.path.join(ROOT, "assets", "dev", "characters", "test3d_chibi")
 SUN = 3.0
 LIGHT = (0.5, -0.8, 0.45)   # toward the light: right, FRONT, up -> the face sits in the light band
 

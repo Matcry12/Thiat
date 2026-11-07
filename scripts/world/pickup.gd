@@ -34,7 +34,7 @@ static func spawn(parent: Node, it: ItemData, n: int, from: Vector2, to: Vector2
 	p._hop(to)
 	return p
 
-const SHADOW := preload("res://assets/placeholder/shadow.png")
+const SHADOW := preload("res://assets/game/placeholder/shadow.png")
 
 var _visual: PickupVisual
 var _shadow: Sprite2D

@@ -29,7 +29,7 @@ func bind(hud: HUD, inv: Inventory) -> void:
 	name = "ItemPicker"
 	add_to_group("debug")
 	items = list_items()
-	_win.items_tab_icon = load("res://assets/ui/game/items_tab_icon.png")
+	_win.items_tab_icon = load("res://assets/game/ui/skin/items_tab_icon.png")
 	_win.set_catalog(items)
 	_win.catalog_clicked.connect(_on_click)
 

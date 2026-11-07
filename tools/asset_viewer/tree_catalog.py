@@ -13,7 +13,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[2]
-TREES = Path("assets/third_party/pixel_crawler/Environment/Props/Static/Trees")
+TREES = Path("assets/source/third_party/pixel_crawler/Environment/Props/Static/Trees")
 # (model, size): cell w, h, dead_x0 (extra dead column, or None), stump spec
 #   ("x", x0) = stumps are the components right of x0, top to bottom;  ("row", y0) = stumps in grid row below y0
 CELLS = {

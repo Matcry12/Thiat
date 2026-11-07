@@ -4,13 +4,13 @@ extends Node2D
 ## Camera: the game's normal zoom for 8.5 s, then a 2x close-up. All three walk the same rectangle (down, right, up, left).
 ## Standalone: the game's weapon scripts are only instanced, never edited.
 
-const GRASS := "res://assets/map/Floors_Tiles.png"
-const PLAYER_FRAMES := "res://assets/characters/player/3d/player_3d_frames.tres"
+const GRASS := "res://assets/game/map/Floors_Tiles.png"
+const PLAYER_FRAMES := "res://assets/game/characters/player/3d/player_3d_frames.tres"
 const SWORD := "res://data/weapons/wooden_sword.tres"
 const WeaponVisualS := preload("res://scripts/visual/weapon_visual.gd")
 const SwingFxS := preload("res://scripts/visual/swing_fx.gd")
 @export var size_px := 18                  # which rendered size to show (14 / 18 / 22)
-@export var base := "res://assets/characters/test_blocky/"
+@export var base := "res://assets/dev/characters/test_blocky/"
 @export var walk_speed := 90.0
 @export var half := 30.0
 @export var sprite_scale := 2.0

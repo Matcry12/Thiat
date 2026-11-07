@@ -40,7 +40,7 @@ func _init():
 	_shipped_run_tests(vis, body)
 	# The rest covers the OLD drawn-art path (plain idle/run + code bounce). The player ships Pixel Plains now;
 	# swapping the SpriteFrames resource back is all it takes (tests/test_player_3d_body.gd covers the new set).
-	vis.rig = load("res://data/body_rigs/drawn_art.tres")   # the old character is one resource swap (rig = frames + body position + weapon fit)
+	vis.rig = load("res://data/dev/body_rigs/drawn_art.tres")   # the old character is one resource swap (rig = frames + body position + weapon fit)
 	vis.bounce_mode = SpriteActorVisual.BounceMode.SMOOTH   # player.tscn tunes the bounce for the 4-frame Pixel Plains run: put the drawn-art values back
 	vis.bounce_offsets = PackedFloat32Array([0, 1, 0, 0, 1, 0])
 	vis.set_move_state("idle")

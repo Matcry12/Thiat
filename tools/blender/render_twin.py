@@ -1,6 +1,6 @@
 """Player-twin -> pixel sprite sheets: 3 views (S front, E side, N back), rows = views, columns = frames.
 The game flips the E row for W (like the player's flip_h). Plain python3:
-  python3 tools/blender/render_twin.py                     full render at the default tilt -> assets/characters/test3d_chibi/
+  python3 tools/blender/render_twin.py                     full render at the default tilt -> assets/dev/characters/test3d_chibi/
   python3 tools/blender/render_twin.py --compare 70,80,90  angle comparison (angle_compare2_4x.png)
   python3 tools/blender/render_twin.py --twin-compare      real player vs twin front/side/back (twin_compare_4x.png)
   options: --pitch N (deg from straight down; 90 = pure front view)  --ppu N"""
@@ -16,7 +16,7 @@ ACTIONS = {"idle": 2, "run": 4, "slash": 4}
 HOLD_MS = {"idle": [450, 450], "run": [130, 100, 130, 100], "slash": [170, 70, 90, 140]}
 VIEWS = [("S", 0), ("E", 90), ("N", 180)]   # name, yaw degrees
 OUTLINE = (0, 0, 0)
-OUT = os.path.join(ROOT, "assets", "characters", "test3d_chibi")
+OUT = os.path.join(ROOT, "assets", "dev", "characters", "test3d_chibi")
 SUN = 3.0
 
 def palette():
@@ -100,7 +100,7 @@ def twin_compare():
     run_blender([[PITCH, "idle", yaw, 0, f"{raw}/{n}.png"] for n, yaw in VIEWS])
     S = 4; cw = 48 * S
     img = Image.new("RGBA", (cw * 4, cw + 24), GREEN); dr = ImageDraw.Draw(img)
-    pl = Image.open(os.path.join(ROOT, "assets/characters/player/idle/idle_1.png")).convert("RGBA")
+    pl = Image.open(os.path.join(ROOT, "assets/dev/characters/player/idle/idle_1.png")).convert("RGBA")
     big = Image.new("RGBA", (48, 48), (0, 0, 0, 0)); big.alpha_composite(pl, (8, 8))
     img.alpha_composite(big.resize((cw, cw), Image.NEAREST), (0, 24)); dr.text((4, 6), "REAL player (front)", fill=(255, 255, 255, 255))
     for i, (n, yaw) in enumerate(VIEWS):

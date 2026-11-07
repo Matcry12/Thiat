@@ -46,7 +46,7 @@ func fill_color() -> Color:
 	return c
 
 @export var title := "Orc Warlord"   ## name on the plate when the boss has no `boss_name`
-@export_group("Frame layout (art px; the end caps come from assets/ui/game/slices.json boss_fill / boss_plate)")
+@export_group("Frame layout (art px; the end caps come from assets/game/ui/skin/slices.json boss_fill / boss_plate)")
 @export var fill_x := 14
 @export var fill_y := 10
 @export var fill_w := 256

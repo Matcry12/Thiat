@@ -3,12 +3,12 @@
 
 Placeholder art is deliberately plain shapes, but it is REAL IMAGE FILES so that
 swapping in a real asset pack is a file replacement and never a code change
-(decision 0010). Re-run this any time; it overwrites assets/placeholder/.
+(decision 0010). Re-run this any time; it overwrites assets/game/placeholder/.
 """
 from PIL import Image, ImageDraw
 from pathlib import Path
 
-OUT = Path(__file__).resolve().parent.parent / "assets" / "placeholder"
+OUT = Path(__file__).resolve().parent.parent / "assets" / "game" / "placeholder"
 OUT.mkdir(parents=True, exist_ok=True)
 
 

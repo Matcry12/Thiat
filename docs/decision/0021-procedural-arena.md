@@ -7,9 +7,9 @@ replays stay fresh. Drawing our own art is slow; a free pack lets us see the loo
 
 ## Decision
 
-- Art: **Pixel Crawler — Free Pack** (Anokolisa), kept untouched in `assets/third_party/pixel_crawler/`.
+- Art: **Pixel Crawler — Free Pack** (Anokolisa), kept untouched in `assets/source/third_party/pixel_crawler/`.
   Commercial use allowed, no credit required, art may not be resold (`Terms.txt`). The 3 sheets we
-  use are copied to `assets/map/` (Godot needs to write `.import` files next to them).
+  use are copied to `assets/game/map/` (Godot needs to write `.import` files next to them).
 - **Pixel scale 2x** (16 px tile → 32 px), the same grid as the swing FX `pixel_size`.
 - Characters will be **head + body, no hands** — the weapon floats beside the body (Soul Knight).
   Not in this pack; placeholder bodies stay for now.

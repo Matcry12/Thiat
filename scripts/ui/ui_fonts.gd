@@ -1,5 +1,5 @@
 class_name UiFonts
-## Island Workshop pixel fonts (baked by tools/ui_bake/bake_fonts.py). See assets/ui/fonts/README.md.
+## Island Workshop pixel fonts (baked by tools/ui_bake/bake_fonts.py). See assets/game/ui/fonts/README.md.
 ## UiFonts.get_font("body"|"bold"|"small") -> FontFile that supports outline_size = 1
 ## (the 1 px 8-neighbour ring, drawn in font_outline_color). Use at font_size = 2 * NATIVE[name].
 const NATIVE := {"body": 9, "bold": 9, "small": 5}
@@ -8,9 +8,9 @@ static var _cache := {}
 static func get_font(name: String) -> FontFile:
 	if _cache.has(name):
 		return _cache[name]
-	var f: FontFile = load("res://assets/ui/fonts/%s.fnt" % name).duplicate()
+	var f: FontFile = load("res://assets/game/ui/fonts/%s.fnt" % name).duplicate()
 	var native: int = NATIVE[name]
-	var ring := (load("res://assets/ui/fonts/%s_ring.png" % name) as Texture2D).get_image()
+	var ring := (load("res://assets/game/ui/fonts/%s_ring.png" % name) as Texture2D).get_image()
 	var base := Vector2i(native, 0)
 	var o := Vector2i(native, 1)
 	f.set_texture_image(0, o, 0, ring)

@@ -1,7 +1,7 @@
 # Ground tiles — Pixel Crawler, tagged
 
 All tiles are **16x16 px**. Sheets live in
-`assets/third_party/pixel_crawler/Environment/Tilesets/`. Pictures below are 3x, boxes are rough
+`assets/source/third_party/pixel_crawler/Environment/Tilesets/`. Pictures below are 3x, boxes are rough
 groups (a guide, not exact tile coordinates).
 
 ## Tags

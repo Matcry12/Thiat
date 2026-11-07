@@ -10,7 +10,7 @@ class_name HealthBar
 @export var trail_delay := 0.5                      ## seconds the "lost HP" chunk waits
 @export var trail_speed := 0.6                      ## then drains this fraction of max HP per second
 @export_range(0.0, 1.0) var low_tint := 0.6         ## how far the fill pulses toward health_low_color
-@export_group("Frame layout (art px; the fill cap comes from assets/ui/game/slices.json hp_fill)")
+@export_group("Frame layout (art px; the fill cap comes from assets/game/ui/skin/slices.json hp_fill)")
 @export var fill_x := 15
 @export var fill_y := 5
 @export var fill_w := 114

@@ -5,9 +5,10 @@ extends Node2D
 ## Next to it: the REAL player sprite with the SAME weapon nodes, aiming and swinging in sync.
 ##   user args:  --static   frozen idle pose, camera 4x, used for hybrid_compare_4x.png
 
-const GRASS := "res://assets/map/Floors_Tiles.png"
-const PLAYER_FRAMES := "res://assets/characters/player/player_frames.tres"
-const SHEETS := "res://assets/characters/player/3d/"
+const GRASS := "res://assets/game/map/Floors_Tiles.png"
+const PLAYER_FRAMES := "res://assets/dev/characters/player/player_frames.tres"
+const SHEETS := "res://assets/game/characters/player/3d/"
+const INFO := "res://assets/dev/characters/player/3d/sheet_info.json"   # next to the pictures in game/ it would be an unused game file
 const SWORD := "res://data/weapons/wooden_sword.tres"
 const WeaponVisualS := preload("res://scripts/visual/weapon_visual.gd")
 const SwingFxS := preload("res://scripts/visual/swing_fx.gd")
@@ -53,7 +54,7 @@ var _swing_clock := 0.0
 func _ready() -> void:
 	_static = "--static" in OS.get_cmdline_user_args()
 	if _static: zoom = 4.0
-	_info = JSON.parse_string(FileAccess.get_file_as_string(SHEETS + "sheet_info.json"))
+	_info = JSON.parse_string(FileAccess.get_file_as_string(INFO))
 	for a in _info["actions"]:
 		_sheets[a] = load(SHEETS + a + ".png")
 	_weapon = load(SWORD)

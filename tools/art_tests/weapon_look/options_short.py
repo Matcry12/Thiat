@@ -2,7 +2,7 @@
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 OUT = Path(__file__).parent
-BODY = Image.open("assets/characters/pixel_plains/idle.png").convert("RGBA").crop((0, 0, 12, 17))
+BODY = Image.open("assets/game/characters/pixel_plains/idle.png").convert("RGBA").crop((0, 0, 12, 17))
 SWORD1 = Image.open("/home/matcry/Developer/BossFight/docs/assets/PNA-art/Sword1.png").convert("RGBA")
 PAL = {"a": "#392a4e", "d": "#d2ccd6", "e": "#fefdff", "c": "#150734", "h": "#524179", "x": "#fff372", "i": "#53450c", "k": "#0e0021"}
 SHORT = [".......aaa", "......aeea", ".....aedea", "....aedea.", ".c.aedea..", "..hxdea...", "..cixa....", ".ii.ch....", ".i...c....", "k........."]

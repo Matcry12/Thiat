@@ -2,10 +2,10 @@ extends Node2D
 ## Round 2 of the "3D -> pixel sprite" test. Standalone, touches no player/combat code.
 ## Chibi (walks the circle, slashes) | old knight (idle) | current player, on the real grass tile.
 
-const GRASS := "res://assets/map/Floors_Tiles.png"
-const PLAYER_FRAMES := "res://assets/characters/player/player_frames.tres"
-@export var chibi_dir := "res://assets/characters/test3d_chibi/"
-@export var knight_dir := "res://assets/characters/test3d/"
+const GRASS := "res://assets/game/map/Floors_Tiles.png"
+const PLAYER_FRAMES := "res://assets/dev/characters/player/player_frames.tres"
+@export var chibi_dir := "res://assets/dev/characters/test3d_chibi/"
+@export var knight_dir := "res://assets/dev/characters/test3d/"
 @export var chibi_cell := 48
 @export var frame_counts := {"idle": 4, "run": 8, "slash": 6}
 @export var fps := {"idle": 5.0, "run": 12.0, "slash": 14.0}

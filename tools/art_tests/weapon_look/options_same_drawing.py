@@ -2,7 +2,7 @@
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 OUT = Path(__file__).parent
-BODY = Image.open("assets/characters/pixel_plains/idle.png").convert("RGBA").crop((0, 0, 12, 17))
+BODY = Image.open("assets/game/characters/pixel_plains/idle.png").convert("RGBA").crop((0, 0, 12, 17))
 SWORD1 = Image.open("/home/matcry/Developer/BossFight/docs/assets/PNA-art/Sword1.png").convert("RGBA")
 N, SS = 64, 8
 ANGLES = [0, 15, 30, 45, 60, 90, 135]

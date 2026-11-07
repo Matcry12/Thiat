@@ -1,8 +1,8 @@
-"""Writes assets/characters/pixel_plains/frames.tres from the strips + anims.json (run from repo root, $0).
+"""Writes assets/game/characters/pixel_plains/frames.tres from the strips + anims.json (run from repo root, $0).
 Timing = real ms from anims.json (speed 10 => duration = ms/100). Only 3 animations: idle, run, death (plain mode, flipped for left)."""
 import json
-D = "assets/characters/pixel_plains/"
-A = json.load(open("assets/third_party/pixel_plains/character/anims.json"))
+D = "assets/game/characters/pixel_plains/"
+A = json.load(open("assets/source/third_party/pixel_plains/character/anims.json"))
 # anim -> (strip, loop, frame order or None = all in strip order)
 # death = roll_move: stands (7), jumps (8, 9), falls + slides (0..5), lies (6); plays once, holds 6
 ANIMS = [

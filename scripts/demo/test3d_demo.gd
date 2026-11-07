@@ -3,9 +3,9 @@ extends Node2D
 ## player/combat code. A 3D-rendered knight walks a circle (all 8 directions), slashes, idles,
 ## next to the current player sprite for a size/style comparison.
 
-const DIR := "res://assets/characters/test3d/"
-const TILES := "res://assets/map/Floors_Tiles.png"
-const PLAYER_FRAMES := "res://assets/characters/player/player_frames.tres"
+const DIR := "res://assets/dev/characters/test3d/"
+const TILES := "res://assets/game/map/Floors_Tiles.png"
+const PLAYER_FRAMES := "res://assets/dev/characters/player/player_frames.tres"
 ## Sheet layout comes from sheet_info.json: rows = 8 directions (S SE E NE N NW W SW), columns = frames.
 @export var cell := 64
 @export var frame_counts := {"idle": 4, "run": 8, "slash": 6}

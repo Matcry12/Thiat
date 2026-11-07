@@ -296,8 +296,8 @@ extends Resource
 		emit_changed()
 
 ## ===== Island Workshop parts (decision 0043) =====
-## Baked by tools/ui_bake/bake_game_parts.py into assets/ui/game/ (art scale 1; draw at art_scale, nearest). Slot lists per screen: assets/ui/game/README.md.
-## <part>_tex = the picture. Nine-patch + content margins are NOT fields: PixelArt reads them from assets/ui/game/slices.json (part name = the
+## Baked by tools/ui_bake/bake_game_parts.py into assets/game/ui/skin/ (art scale 1; draw at art_scale, nearest). Slot lists per screen: assets/game/ui/skin/README.md.
+## <part>_tex = the picture. Nine-patch + content margins are NOT fields: PixelArt reads them from assets/game/ui/skin/slices.json (part name = the
 ## field name without "_tex"), so a rebake cannot drift from the code.
 @export_group("Island Workshop: scale")
 @export_range(1, 4) var art_scale := 2:

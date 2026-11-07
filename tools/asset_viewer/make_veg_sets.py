@@ -1,7 +1,7 @@
 """$0 generator (0038 step 4): the floor-prop sets the biome passes draw, as PropSet .tres files in data/maps/.
-  prop_veg.tres    one set for assets/map/Vegetation.png (bushes, dead shrubs, flowers, foxglove, mushrooms, tufts, ferns, reeds)
-  prop_rocks.tres  one set for assets/map/Rocks.png (boulders, small stones; grey and brown)
-  prop_stump_<model>_s<size>.tres  snow-covered stumps, one per tree sheet in assets/world/trees/
+  prop_veg.tres    one set for assets/game/map/Vegetation.png (bushes, dead shrubs, flowers, foxglove, mushrooms, tufts, ferns, reeds)
+  prop_rocks.tres  one set for assets/game/map/Rocks.png (boulders, small stones; grey and brown)
+  prop_stump_<model>_s<size>.tres  snow-covered stumps, one per tree sheet in assets/game/world/trees/
 Each set names its sprites in `groups` (name -> region indices) so MapGen never holds a coordinate. The crops are the ones of the approved
 preview (tools/asset_viewer/biome_looks.py). Re-run after changing the cut-outs; do not hand-edit the .tres.
 Run: python3 tools/asset_viewer/make_veg_sets.py"""
@@ -42,7 +42,7 @@ any_ground = {"true" if any_ground else "false"}
 
 
 def main():
-    veg = Image.open(ROOT / "assets/map/Vegetation.png").convert("RGBA")
+    veg = Image.open(ROOT / "assets/game/map/Vegetation.png").convert("RGBA")
     regions, groups = [], {}
 
     def add(name, boxes):
@@ -70,14 +70,14 @@ def main():
         add(f"tuft_{col}", t)
         add(f"fern_{col}", [bbox(veg, 5, 11 + o, 6, 12 + o), bbox(veg, 6, 11 + o, 7, 12 + o), bbox(veg, 7, 10 + o, 8, 12 + o)])
         add(f"reed_{col}", [bbox(veg, c, 10 + o, c + 1, 12 + o) for c in (8, 9, 10)])
-    write("prop_veg.tres", "veg", "assets/map/Vegetation.png", regions, groups)
+    write("prop_veg.tres", "veg", "assets/game/map/Vegetation.png", regions, groups)
 
     regions, groups = [], {}
     for col, ox in (("brown", 0), ("grey", 96)):
         sh = lambda b: (b[0] + ox, b[1], b[2] + ox, b[3])
         add(f"boulder_{col}", [sh(b) for b in ROCKS["boulder"]])
         add(f"stone_{col}", [sh(b) for b in ROCKS["small"] + ROCKS["pebble"]])
-    write("prop_rocks.tres", "rocks", "assets/map/Rocks.png", regions, groups)
+    write("prop_rocks.tres", "rocks", "assets/game/map/Rocks.png", regions, groups)
 
     cat = json.load(open(ROOT / "data/maps/tree_catalog.json"))
     names = {1: "oak", 2: "fir", 3: "pine"}
@@ -86,7 +86,7 @@ def main():
             es = [e for e in cat if e["model"] == model and e["size"] == size and e["stage"] == "stump" and e["season"] == "snow"]
             if es:
                 boxes = [(e["rect"][0], e["rect"][1], e["rect"][0] + e["rect"][2], e["rect"][1] + e["rect"][3]) for e in es]
-                write(f"prop_stump_{name}_s{size}.tres", f"stump_{name}_s{size}", f"assets/world/trees/{name}_s{size}.png", boxes,
+                write(f"prop_stump_{name}_s{size}.tres", f"stump_{name}_s{size}", f"assets/game/world/trees/{name}_s{size}.png", boxes,
                       {"snow_stump": list(range(len(boxes)))})
     print("ok")
 

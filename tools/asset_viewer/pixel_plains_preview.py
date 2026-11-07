@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 from scipy import ndimage as ndi
 import numpy as np
 
-PK = "assets/third_party/pixel_plains/"
+PK = "assets/source/third_party/pixel_plains/"
 B = Image.open(PK + "New Basic Tiles Free.png").convert("RGBA")
 T = Image.open(PK + "Trees and bushes.png").convert("RGBA")
 GREY = (150, 150, 150, 255)

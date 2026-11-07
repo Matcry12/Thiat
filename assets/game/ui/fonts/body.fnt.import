@@ -1,0 +1,17 @@
+[remap]
+
+importer="font_data_bmfont"
+type="FontFile"
+uid="uid://dgl3tmotun5j2"
+path="res://.godot/imported/body.fnt-1a94945aaf3a8906d220481c545ffa61.fontdata"
+
+[deps]
+
+source_file="res://assets/game/ui/fonts/body.fnt"
+dest_files=["res://.godot/imported/body.fnt-1a94945aaf3a8906d220481c545ffa61.fontdata"]
+
+[params]
+
+fallbacks=[]
+compress=true
+scaling_mode=2

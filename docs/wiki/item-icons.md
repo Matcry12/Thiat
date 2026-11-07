@@ -3,8 +3,8 @@
 Status (2026-10-25): user "acceptable". These are the **temporary** bag icons in the game now, and the
 **template** for training an AI icon model later.
 
-- In game: `assets/ui/placeholder/{pickaxe,copper_pickaxe,axe,copper_axe,sword,copper_sword,wooden_sword}.png`
-  (16x16, loaded by `data/items/*.tres`; swapping a PNG needs no code change).
+- Not in game any more: `assets/source/ui/placeholder/{pickaxe,copper_pickaxe,axe,copper_axe,copper_sword,wooden_sword}.png`
+  (16x16; `data/items/*.tres` now load `assets/game/ui/items/`; only the UI mock `tools/ui_mock/` reads these).
 - Source: `tools/art_tests/items/icon_lab.py` (hand-placed 16x16 diagonal grids, tier = metal ramp swap;
   wood icons use their own pale ramp `WOOD_ICON`). Run `python3 icon_lab.py <out_dir>` from that folder.
 - Template set: `tools/art_tests/items/icons_final/` (4 tools x iron / copper / stone / wood + `labeled.png`).

@@ -13,7 +13,7 @@ ACTIONS = {"idle": 4, "run": 8, "slash": 6}
 DIRS = ["S", "SE", "E", "NE", "N", "NW", "W", "SW"]
 PALETTE_COLORS = 32
 OUTLINE = (24, 18, 34)
-OUT = os.path.join(ROOT, "assets", "characters", "test3d")
+OUT = os.path.join(ROOT, "assets", "dev", "characters", "test3d")
 
 def blender_part(raw):
     import bpy

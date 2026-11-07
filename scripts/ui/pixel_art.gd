@@ -2,11 +2,10 @@ class_name PixelArt
 extends RefCounted
 ## The ONE owner of pixel-art plumbing for every screen (game UI and F3 dock): nearest upscale with one cache, 9-slice
 ## builders that read the slice / content margins from a bake's slices.json, pixel-font labels and the few draw helpers.
-## Parts are baked at art scale 1 (assets/ui/game/README.md); here they are enlarged ONCE by a whole number so every
+## Parts are baked at art scale 1 (assets/game/ui/skin/README.md); here they are enlarged ONCE by a whole number so every
 ## part lands on whole screen pixels. Holds no state but caches. Every entry point accepts a null texture and then draws nothing.
 
-const GAME := "res://assets/ui/game/"
-const F3 := "res://assets/ui/f3/"
+const GAME := "res://assets/game/ui/skin/"
 
 static var _up_cache := {}     ## "instance_id:scale" -> ImageTexture
 static var _parts_cache := {}  ## dir -> {part: {...}} from <dir>slices.json

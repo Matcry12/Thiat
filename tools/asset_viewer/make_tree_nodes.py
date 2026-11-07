@@ -1,7 +1,7 @@
 """$0 generator: data/resource_nodes/tree_{oak,fir,pine}[_season]_{sapling,young,small,mature,old}.tres from data/maps/tree_catalog.json.
 One file per (model, season, age) that the catalog has (0038 step 4: seasons green, yellow, orange, red, teal, dead, snow). Green keeps the old
 ids (tree_oak_old); other seasons are tree_oak_yellow_old ... Regions = every variant of that season and age; anchors = the catalog trunk_base
-of each (trunk foot sits on the collision circle's bottom). Also copies the tree sheets we use into assets/world/trees/ (raw pack stays untouched).
+of each (trunk foot sits on the collision circle's bottom). Also copies the tree sheets we use into assets/game/world/trees/ (raw pack stays untouched).
 Run: python3 tools/asset_viewer/make_tree_nodes.py   (re-run after the catalog changes; do not hand-edit the .tres, tune in F3)."""
 import json
 import pathlib
@@ -17,11 +17,11 @@ STUMP_SEASON = {"snow": "snow", "teal": "moss"}   # every other season leaves a 
 MODELS = {"oak": 1, "fir": 2, "pine": 3}
 SEASONS = ["green", "yellow", "orange", "red", "teal", "dead", "snow"]   # same order as BiomeData.SEASONS
 cat = json.load(open(ROOT / "data/maps/tree_catalog.json"))
-PACK = ROOT / "assets/third_party/pixel_crawler/Environment/Props/Static/Trees"
-(ROOT / "assets/world/trees").mkdir(parents=True, exist_ok=True)
+PACK = ROOT / "assets/source/third_party/pixel_crawler/Environment/Props/Static/Trees"
+(ROOT / "assets/game/world/trees").mkdir(parents=True, exist_ok=True)
 for name, model in MODELS.items():       # the sheets, copied once (Godot imports them on the next --import)
     for size in (2, 3, 4, 5):
-        dst = ROOT / f"assets/world/trees/{name}_s{size}.png"
+        dst = ROOT / f"assets/game/world/trees/{name}_s{size}.png"
         if not dst.exists():
             shutil.copy(PACK / f"Model_0{model}/Size_0{size}.png", dst)
 made = 0
@@ -47,7 +47,7 @@ for name, model in MODELS.items():
 
 [ext_resource type="Script" path="res://scripts/world/resource_node_data.gd" id="1"]
 [ext_resource type="Resource" path="res://data/items/wood.tres" id="2"]
-[ext_resource type="Texture2D" path="res://assets/world/trees/{name}_s{size}.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/game/world/trees/{name}_s{size}.png" id="3"]
 
 [resource]
 script = ExtResource("1")

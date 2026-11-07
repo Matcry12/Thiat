@@ -1,5 +1,5 @@
 """Chibi -> pixel sprite sheets. Plain python3:
-  python3 tools/blender/render_chibi.py                  full render (default tilt) -> assets/characters/test3d_chibi/
+  python3 tools/blender/render_chibi.py                  full render (default tilt) -> assets/dev/characters/test3d_chibi/
   python3 tools/blender/render_chibi.py --compare 30,40,50   angle comparison PNG
   options: --pitch N (deg from straight down)  --ppu N  --out DIR
 Rows: S SE E NE N NW W SW. Columns: frames."""
@@ -14,7 +14,7 @@ ACTIONS = {"idle": 4, "run": 8, "slash": 6}
 DIRS = ["S", "SE", "E", "NE", "N", "NW", "W", "SW"]
 PALETTE_COLORS = 32
 OUTLINE = (14, 10, 20)
-OUT = os.path.join(ROOT, "assets", "characters", "test3d_chibi")
+OUT = os.path.join(ROOT, "assets", "dev", "characters", "test3d_chibi")
 
 def blender_part(cfg):
     import bpy

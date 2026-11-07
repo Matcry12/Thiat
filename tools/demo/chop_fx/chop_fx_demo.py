@@ -32,7 +32,7 @@ FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 def font(n): return ImageFont.truetype(FONT, n)
 
 # ---------------------------------------------------------------- art
-PP = ROOT / "assets/map/pixel_plains"
+PP = ROOT / "assets/game/map/pixel_plains"
 SPR = np.array(Image.open(PP / "oaks_noshadow.png").convert("RGBA").crop((99, 0, 141, 43)))   # regions[0]
 STUMP = np.array(Image.open(PP / "hedges.png").convert("RGBA").crop((15, 93, 33, 104)))     # remains_region
 GROUND = np.array((84, 146, 66), np.float32)        # grass colour of tiles.png, a bit darker so the crown reads

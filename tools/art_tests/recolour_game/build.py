@@ -1,5 +1,5 @@
 """$0: cut the pack's oaks / flowers / tufts / hedges / stump / logs, recolour per biome with the tables of
-tools/art_tests/recolour/recolour.py, write sheets + manifest.json to assets/map/pixel_plains/, previews here.
+tools/art_tests/recolour/recolour.py, write sheets + manifest.json to assets/game/map/pixel_plains/, previews here.
 Pack pixels only. Run: python3 tools/art_tests/recolour_game/build.py"""
 import os, sys, json
 import numpy as np
@@ -10,7 +10,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "tools", "art_tests", "recolour"))
 import recolour as rc          # tables + swap(); importing it also writes its own out/ files (harmless)
-OUT = os.path.join(ROOT, "assets", "map", "pixel_plains")
+OUT = os.path.join(ROOT, "assets", "game", "map", "pixel_plains")
 os.makedirs(OUT, exist_ok=True)
 TREES, SHEET = rc.TREES, rc.SHEET
 LEAFRGB = {c[:3] for c in rc.LEAF}
@@ -174,7 +174,7 @@ for s in manifest["sprites"]:
     for b in s["biome"]: have.setdefault((b, s["kind"]), 0); have[(b, s["kind"])] += 1
 manifest["by_biome"] = {b: {k: have[(b, k)] for k in ALL_KINDS if (b, k) in have} for b in ALL_BIOMES}
 manifest["no_art"] = {b: [k for k in ALL_KINDS if (b, k) not in have] for b in ALL_BIOMES}
-json.dump(manifest, open(f"{OUT}/manifest.json", "w"), indent=1, default=int)
+json.dump(manifest, open(os.path.join(ROOT, "assets", "source", "map", "pixel_plains", "manifest.json"), "w"), indent=1, default=int)
 print(len(manifest["sprites"]), "sprites;", "hedge pieces", len(hedge_p), "wood", wood)
 
 # ---- previews

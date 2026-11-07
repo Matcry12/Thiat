@@ -121,11 +121,11 @@ Inspector. Empty texture = the grey placeholder. Put a PNG in and the look chang
 | "Locked" picture on slots | `lock_texture` | Empty = a dark tint |
 | Dodge / skill / guard icon (bottom-left) | `dodge_icon`, `skill_icon`, `guard_icon` | Empty = a plain square in `dodge_color` / `skill_color` / `guard_color`. Same slot frame; the cooldown is a dim that drains |
 | Hover name box | `tooltip_texture`, `tooltip_patch_margin`, `tooltip_pad`, `tooltip_font_size`, `tooltip_color`, `tooltip_offset` | Empty texture = flat panel (`tooltip_bg`, `tooltip_border`) |
-| Health bar | `hp_frame_tex`, `hp_fill_tex`, `hp_trail_tex`, `health_low_color` | Island Workshop parts (assets/ui/game); fill caps come from slices.json |
+| Health bar | `hp_frame_tex`, `hp_fill_tex`, `hp_trail_tex`, `health_low_color` | Island Workshop parts (assets/game/ui/skin); fill caps come from slices.json |
 | Boss bar | `boss_frame_tex`, `boss_fill_tex`, `boss_plate_tex`, `boss_fill_color`, `boss_phase2_color`, `boss_fade_time`, `boss_flash_time` | Hidden until the boss wakes |
 | Slot size and gap | `slot_size` (44) and `slot_gap` (6) | One number each; the hotbar and the bag lay themselves out |
 | Count / key number text | `font`, `count_font_size`, `count_color`, `key_font_size`, `key_color` | |
-| Item icon | `icon` on the item file in `data/items/` (`ItemData`) | Placeholders live in `assets/ui/placeholder/` (16 x 16): replace the PNG or point `icon` at your own. No icon = a coloured square (the item's `color`). Weapons without an icon show their model's `Art` sprite |
+| Item icon | `icon` on the item file in `data/items/` (`ItemData`) | Placeholders live in `assets/game/ui/placeholder/` (16 x 16): replace the PNG or point `icon` at your own. No icon = a coloured square (the item's `color`). Weapons without an icon show their model's `Art` sprite |
 
 The slot itself is the scene `scenes/ui/item_slot.tscn`. Its child nodes are named by job (`Frame`,
 `SelectedFrame`, `Icon`, `Count`, `KeyLabel`, `LockOverlay`), so you can restyle or replace a child
@@ -139,14 +139,14 @@ The HUD has no text words. The health bar is `HealthBar` (`fill_texture` and `fr
 
 | What | Field on the station root | Notes |
 |---|---|---|
-| The picture | `art` (a whole PNG) + `art_region` (the rectangle inside it) + `pixel_scale` | Today: copies of the Pixel Crawler sheets in `assets/stations/`. Change `art_region` to pick another look on the sheet, or point `art` at your own PNG and set `art_region` to its full size |
+| The picture | `art` (a whole PNG) + `art_region` (the rectangle inside it) + `pixel_scale` | Today: copies of the Pixel Crawler sheets in `assets/game/stations/`. Change `art_region` to pick another look on the sheet, or point `art` at your own PNG and set `art_region` to its full size |
 | Placeholder | `color` | Shown as a plain box while `art` is empty |
 | Size on the ground | the scene's `CollisionShape2D` (and the `Hurtbox/CollisionShape2D` a little bigger) | One owner: the placing check and the ghost box read the body shape. The picture is never the body: resize the shapes, not the art |
 | Craft distance | `CraftStation` child: `craft_radius` | F1 draws it as a magenta circle |
 | Inventory icon | `data/items/workbench.tres` (and `furnace`, `anvil`): `icon` | Today a slice of the same sheet |
 | Furnace progress bar (in the world) | `Visual/ProgressCue` on `furnace.tscn`: `bar_size`, `bar_offset`, `bg_color`, `fill_color`, `glow_color` | A small bar above the furnace and a warm glow on the picture while it smelts. Replace the node with a sprite or particles and nothing else changes |
 
-The anvil picture is a small drawn placeholder (`assets/stations/anvil.png`, 32 x 20): none of the Pixel Crawler anvil sheets shows a plain anvil. Replace the file (or `art` / `art_region`) when you have one.
+The anvil picture is a small drawn placeholder (`assets/game/stations/anvil.png`, 32 x 20): none of the Pixel Crawler anvil sheets shows a plain anvil. Replace the file (or `art` / `art_region`) when you have one.
 
 The ghost colours are on the player's `Placer` node: `ok_color`, `bad_color`, `outline_ok`, `outline_bad`, `outline_width`.
 
@@ -156,12 +156,12 @@ The art sits with its feet on the bottom edge of the footprint, centred. If your
 
 | What | Field | Notes |
 |---|---|---|
-| (removed) | the old flat window fields are gone: the book is built from the `book_*` / `well_tex` parts, see assets/ui/game/README.md | |
+| (removed) | the old flat window fields are gone: the book is built from the `book_*` / `well_tex` parts, see assets/game/ui/skin/README.md | |
 | Lit / dim / flash | `craft_lit_color`, `craft_dim_color` (45% alpha), `craft_lit_backdrop` (light square), `craft_dim_backdrop` (dark square), `craft_flash_color`, `craft_flash_time` | Lit and dim never depend on the art's own colours: a lit icon sits on a light square, a dim one on a dark square and is faded. Flash = clicked while dim |
 | Held stack (cursor, bag and crafting) | `cursor_offset`, `cursor_scale`, `cursor_shadow_size`, `cursor_shadow_color`, `cursor_shadow_offset` | Drawn offset from the pointer, a bit bigger, with a soft shadow: it reads as lifted |
 | Ingredient icons in the hover | `tooltip_icon_size`, `craft_short_color`, `craft_enough_color` | The need count is white, or red when you are short |
 | Furnace tab | `furnace_slot_size`, `furnace_arrow_width`, `furnace_arrow_height`, `furnace_arrow_color`, `furnace_fill_color` | Input slot, a drawn progress arrow that fills, output slot |
-| Tabs and station marker | `tab_size`, `craft_tab_icon` (hammer), `hand_icon` (hand), `tab_color`, `hand_color`, `furnace_tab_glow_color`, `furnace_tab_pulse_speed` | Placeholder PNGs `hand.png`, `hammer.png` in `assets/ui/placeholder/`. The marker only shows when there are no tabs. The Furnace tab pulses while the furnace works. The furnace tab and the marker show the station's item `icon` (found through the recipes) |
+| Tabs and station marker | `tab_size`, `craft_tab_icon` (hammer), `hand_icon` (hand), `tab_color`, `hand_color`, `furnace_tab_glow_color`, `furnace_tab_pulse_speed` | Placeholder PNGs `hand.png`, `hammer.png` in `assets/game/ui/placeholder/`. The marker only shows when there are no tabs. The Furnace tab pulses while the furnace works. The furnace tab and the marker show the station's item `icon` (found through the recipes) |
 
 New copper tools use the stone tool models, tinted: `model_tint` on the weapon file in `data/weapons/` (white = as drawn). When you have real copper art, point `model` at it and set `model_tint` back to white.
 

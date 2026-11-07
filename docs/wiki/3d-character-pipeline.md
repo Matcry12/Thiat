@@ -1,6 +1,6 @@
 # 3D character pipeline (player body)
 
-> **Round 7 update:** the shipped body is now the chunky **blocky 18 px** one (`assets/characters/player/blocky/`, `data/body_rigs/blocky.tres`). The older sections below describe the soft 3D body, which is still loadable (see "Swap characters").
+> **Round 7 update:** the shipped body is now the chunky **blocky 18 px** one (`assets/dev/characters/player/blocky/`, `data/dev/body_rigs/blocky.tres`). The older sections below describe the soft 3D body, which is still loadable (see "Swap characters").
 
 The player's BODY is a 3D model built in code, rendered to small pixel sheets. Hands and weapon stay 2D
 (`WeaponVisual` / `Hands` / `SwingFx`, unchanged). Decision: [0028](../decision/0028-3d-rendered-characters.md).
@@ -12,8 +12,8 @@ The player's BODY is a 3D model built in code, rendered to small pixel sheets. H
 | Model + rig + poses (Blender script) | `tools/blender/make_player_body.py` -> `tools/blender/player_body.blend` |
 | Renderer + packer + checks | `tools/blender/render_body.py` |
 | SpriteFrames builder | `tools/blender/build_frames.py` (called by the renderer) |
-| Output (what the game loads) | `assets/characters/player/3d/`: `idle.png`, `run.png`, `hit.png`, `sheet_info.json`, `player_3d_frames.tres`, `run_preview_4x.gif`, `contact_sheet_4x.png` |
-| Old drawn art (kept) | `assets/characters/player/player_frames.tres` |
+| Output (what the game loads) | `assets/game/characters/player/3d/`: `idle.png`, `run.png`, `hit.png`, `sheet_info.json`, `player_3d_frames.tres`, `run_preview_4x.gif`, `contact_sheet_4x.png` |
+| Old drawn art (kept) | `assets/dev/characters/player/player_frames.tres` |
 
 Needs Blender 4.5 LTS (`~/.local/bin/blender`) and Python with Pillow. `tools/blender/.gdignore` keeps Godot from importing `.blend`.
 
@@ -52,7 +52,7 @@ Body `AnimatedSprite2D` stays at (0,-19), scale 2, so the shadow, hands and weap
 
 ## Swap back to the old drawn art
 
-Set the Body's `sprite_frames` in `scenes/player.tscn` to `res://assets/characters/player/player_frames.tres`
+Set the Body's `sprite_frames` in `scenes/player.tscn` to `res://assets/dev/characters/player/player_frames.tres`
 (the `ext_resource id="8b"` line). No code change: plain `idle`/`run` animations switch the visual to the old behaviour
 (fps exports, code bounce, `flip_h`). `tests/test_player_3d_body.gd` covers both.
 
@@ -68,7 +68,7 @@ Set the Body's `sprite_frames` in `scenes/player.tscn` to `res://assets/characte
 |---|---|
 | Model + poses | `tools/blender/make_blocky_body.py` -> `tools/blender/blocky_body.blend` |
 | Renderer, checks, GIF, before/after | `tools/blender/render_blocky_body.py` (`--yaw-compare`, `--yaw N`, `--ppu N`) |
-| Output | `assets/characters/player/blocky/`: `idle|run|hit.png`, `sheet_info.json`, `blocky_frames.tres`, `run_preview_4x.gif`, `contact_sheet_4x.png`, `before_after_4x.png`, `yaw_compare_4x.png` |
+| Output | `assets/dev/characters/player/blocky/`: `idle|run|hit.png`, `sheet_info.json`, `blocky_frames.tres`, `run_preview_4x.gif`, `contact_sheet_4x.png`, `before_after_4x.png`, `yaw_compare_4x.png` |
 
 ```
 blender --background --python tools/blender/make_blocky_body.py
@@ -79,7 +79,7 @@ godot --headless --editor --quit
 - Minecraft-style rigid parts, **no arms** (hands and weapon are the game's 2D visuals). A plain wide box read as a CUBE, so the silhouette is
   three separate masses: big head, a stepped/tapered torso (shoulders about the head width, narrower waist, gold belt, 1 px dark neck
   line), and two short legs with a gap and darker shoes. Idle = small A-stance (8 deg out); run = 42 deg diagonal swing + 10 deg lean;
-  hit = lean back, legs diagonal backward. `assets/characters/test_blocky/body_shape_compare_4x.png` compares arms / cube / new.
+  hit = lean back, legs diagonal backward. `assets/dev/characters/test_blocky/body_shape_compare_4x.png` compares arms / cube / new.
 - 18 px body (about 20 px with the outline), `PPU_DEFAULT` 4.9. Side view yaw 30 (`BLOCKY_YAW` env or `--yaw`): the leg swing reads
   and the cube-head face keeps both eyes. Pitch 80, front + side (flipped for left), idle 2 / run 4 / hit 2.
 - Same renderer rules: rigid face (head stamped at whole-pixel offsets) + "no second head" check, whole-pixel body bob/foot lift.
@@ -94,9 +94,9 @@ godot --headless --editor --quit
 
 | Rig | File | visual_scale | slash_scale | pivot | hand radius | shadow |
 |---|---|---|---|---|---|---|
-| blocky 18 px (current) | `data/body_rigs/blocky.tres` | 0.7 | 0.7 | (0,-13) | 3 | 0.65 |
+| blocky 18 px (current) | `data/dev/body_rigs/blocky.tres` | 0.7 | 0.7 | (0,-13) | 3 | 0.65 |
 | soft 3D body | `data/body_rigs/soft_body.tres` | 1.0 | 1.0 | (0,-9) | 5 | 1.0 |
-| old drawn art | `data/body_rigs/drawn_art.tres` | 1.0 | 1.0 | (0,-9) | 5 | 1.0 |
+| old drawn art | `data/dev/body_rigs/drawn_art.tres` | 1.0 | 1.0 | (0,-9) | 5 | 1.0 |
 
 **Gameplay is never scaled.** `WeaponVisual` scales the model's picture and hand markers; the `Hitbox` and `Muzzle` get the inverse
 scale, so their world shape/position are exactly as at scale 1 (`tests/test_body_rig.gd` checks sword, bow and fists).
@@ -106,7 +106,7 @@ to see the true area (F1 also draws the hitbox).
 ## Swap characters (one resource)
 
 In `scenes/player.tscn`, the `Visual` node's `rig` line (`ext_resource id="rig"`): point it at
-`data/body_rigs/soft_body.tres` (soft 3D body) or `data/body_rigs/drawn_art.tres` (old drawn art, plain idle/run, code bounce).
+`data/body_rigs/soft_body.tres` (soft 3D body) or `data/dev/body_rigs/drawn_art.tres` (old drawn art, plain idle/run, code bounce).
 No code change. In code or F3: `visual.rig = load(...)`. A new character = a new `.tres` with its own frames and numbers.
 
 ## F3
