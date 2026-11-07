@@ -50,7 +50,7 @@ Never report a task as done on assumption. Before any "it works" claim:
 3. **Test the user's steps too.** If the report tells the user to set something in the editor, load
    the scene headless and confirm that value actually reaches the running game.
 4. **Get a second judge**, unless the change is small: 1-3 code files, no new system, not save format,
-   map generation or shared combat code ([0058](docs/decision/0058-test-levels-by-change-size.md)). A small
+   map generation or shared combat code ([0062](docs/decision/0062-test-levels-by-change-size.md)). A small
    change needs no builder and no judge: Quick tests, then report. After any bigger change, spawn a reviewer agent with **fresh context,
    on a different model than the one that did the work** (Opus wrote it → Sonnet judges; Sonnet
    wrote it → Opus judges). Give it the request, the diff, and this file. It judges: does the change

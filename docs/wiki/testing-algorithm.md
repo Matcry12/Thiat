@@ -1,6 +1,6 @@
 # Testing algorithm: how we keep tests fast and still catch bugs
 
-Status: approved 2026-11-06, decision [0058](../decision/0058-test-levels-by-change-size.md).
+Status: approved 2026-11-06, decision [0062](../decision/0062-test-levels-by-change-size.md).
 
 Goal: a small change spends seconds on tests, not minutes. Real bugs must still be caught before commit.
 

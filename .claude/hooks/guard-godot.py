@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# PreToolUse(Bash): two test habits that cost real time (decision 0058), enforced.
+# PreToolUse(Bash): two test habits that cost real time (decision 0062), enforced.
 #   1. `godot --script` without `timeout`: one hung for an hour unnoticed.
 #   2. The full test suite in the foreground under a short limit: Bash kills it at 120 s, no result.
 # ponytail: reads the command as text; a godot call hidden in a script or variable gets through.

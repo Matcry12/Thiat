@@ -1,4 +1,4 @@
-# 0058 - Test levels, and work sized by the change
+# 0062 - Test levels, and work sized by the change
 
 ## Context
 A small change spent minutes on tests. `--changed` picked 75 of 110 tests after an edit to `player.gd`, the full suite took 296 s, most of it building the whole island in each test, and some sessions ran it many times. Numbers and sources: [testing-algorithm.md](../wiki/testing-algorithm.md).
