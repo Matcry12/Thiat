@@ -12,8 +12,8 @@ void vertex() {
 	node_modulate = COLOR;   // the node's modulate
 }
 
-vec4 texel(sampler2D t, ivec2 i, ivec2 sz) {
-	vec4 c = texelFetch(t, clamp(i, ivec2(0), sz - ivec2(1)), 0);
+// c = the texel at i, clamped by the caller (TEXTURE cannot be passed into a function: the shader compiler logs an ERROR).
+vec4 premult(vec4 c, ivec2 i, ivec2 sz) {
 	if (i.x < 0 || i.y < 0 || i.x >= sz.x || i.y >= sz.y) c = vec4(0.0);
 	return vec4(c.rgb * c.a, c.a);
 }
@@ -26,8 +26,10 @@ void fragment() {
 	vec2 q = p - 0.5;
 	ivec2 i = ivec2(floor(q));
 	vec2 f = q - floor(q);
-	vec4 c = mix(mix(texel(TEXTURE, i, sz), texel(TEXTURE, i + ivec2(1, 0), sz), f.x),
-		mix(texel(TEXTURE, i + ivec2(0, 1), sz), texel(TEXTURE, i + ivec2(1, 1), sz), f.x), f.y);
+	ivec2 top = sz - ivec2(1);
+	ivec2 i10 = i + ivec2(1, 0), i01 = i + ivec2(0, 1), i11 = i + ivec2(1, 1);
+	vec4 c = mix(mix(premult(texelFetch(TEXTURE, clamp(i, ivec2(0), top), 0), i, sz), premult(texelFetch(TEXTURE, clamp(i10, ivec2(0), top), 0), i10, sz), f.x),
+		mix(premult(texelFetch(TEXTURE, clamp(i01, ivec2(0), top), 0), i01, sz), premult(texelFetch(TEXTURE, clamp(i11, ivec2(0), top), 0), i11, sz), f.x), f.y);
 	vec3 rgb = c.a > 0.0001 ? c.rgb / c.a : vec3(0.0);
 	// COLOR already holds the sprite's own nearest sample: replace it, do not multiply with it. Ghosts (amount 1) stay the pure tint.
 	COLOR = vec4(mix(rgb * node_modulate.rgb, tint.rgb, amount), c.a * node_modulate.a);
