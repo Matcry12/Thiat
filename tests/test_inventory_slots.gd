@@ -20,6 +20,9 @@ func _init() -> void:
 	# --- stacking ---
 	_check(wood.max_stack == 64 and wood.category == "material", "wood: material, stacks to 64")
 	_check(sword.stack_limit() == 1 and sword.category == "weapon" and sword.weapon != null, "wooden sword: weapon item, stack 1")
+	var big_sword: ItemData = sword.duplicate()
+	big_sword.max_stack = 64   # the shipped weapons all say max_stack = 1, which would hide a broken stack_limit()
+	_check(big_sword.stack_limit() == 1, "a weapon never stacks, even if its file says max_stack 64")
 	_check(inv.add(wood, 100) == 0 and inv.count(&"wood") == 100, "100 wood fit")
 	_check(inv.slot_count(Inventory.HOTBAR) == 64 and inv.slot_count(Inventory.HOTBAR + 1) == 36, "wood fills the BAG first: 64 + 36")
 	_check(inv.slot_item(0) == null, "materials do not take hotbar slots while the bag has room")
