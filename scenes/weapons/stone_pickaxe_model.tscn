@@ -28,3 +28,11 @@ shape = SubResource("HitShape")
 
 [node name="Tip" type="Marker2D" parent="."]
 position = Vector2(44, 0)
+
+; Drag me along the weapon: this is where the hand holds it.
+[node name="MainHandGrip" type="Marker2D" parent="."]
+gizmo_extents = 14.0
+
+[node name="OffHandGrip" type="Marker2D" parent="."]
+position = Vector2(14, 0)
+gizmo_extents = 14.0

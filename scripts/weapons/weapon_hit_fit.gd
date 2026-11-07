@@ -108,15 +108,16 @@ static func apply(model: Node2D, w: WeaponData) -> String:
 	cs.shape = shape
 	# Centre line: the scene's hand-set y is kept, NOT the measured cy (about 1 px off for the swords). The picture mirrors about the grip line y = 0
 	# when the swing is reversed, and the mirror tests / Tip line rely on that. A big gap is reported (OFF AXIS) instead of followed.
-	cs.position = Vector2(length * 0.5, cs.position.y)
+	var hb_pos := (cs.get_parent() as Node2D).position if cs.get_parent() is Node2D else Vector2.ZERO   # Hitbox is moved when the scene's Grip is (WeaponVisual._apply_grip)
+	cs.position = Vector2(length * 0.5 - hb_pos.x, cs.position.y)   # the shape spans grip (model 0) .. tip + margin in MODEL space
 	if tip:
 		_set_tip(tip, Vector2(m["tip"], tip.position.y))
 	var out := "hit: auto %.0fx%.1f tip %.1f" % [length, width, m["tip"]]
-	if absf(m["cy"] - cs.position.y) > w.hit_axis_warn_px:
+	if absf(m["cy"] - (cs.position.y + hb_pos.y)) > w.hit_axis_warn_px:
 		out += "  OFF AXIS: fix Art rotation/offset"
 		if not _warned.has(art.texture):
 			_warned[art.texture] = true
-			push_warning("weapon picture is %.1f px off the model's +x line (hit box may miss): fix Art rotation / offset" % (m["cy"] - cs.position.y))
+			push_warning("weapon picture is %.1f px off the model's +x line (hit box may miss): fix Art rotation / offset" % (m["cy"] - (cs.position.y + hb_pos.y)))
 	return out
 
 ## Moves the Tip and the position BodyRig scaling resets it to.

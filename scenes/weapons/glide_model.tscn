@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://5snu4xrc3sca"]
+
+[ext_resource type="Texture2D" uid="uid://b2pnrliyetri3" path="res://assets/game/ui/items/glide.png" id="1"]
+[ext_resource type="Script" uid="uid://d0s5saauew0b5" path="res://scripts/components/hitbox.gd" id="2"]
+
+[sub_resource type="RectangleShape2D" id="HitShape"]
+size = Vector2(57, 9.562761)
+
+[node name="GlideModel" type="Node2D" unique_id=667775581]
+
+[node name="Art" type="Sprite2D" parent="." unique_id=839840440]
+texture_filter = 1
+rotation = 1.5707964
+texture = ExtResource("1")
+centered = false
+offset = Vector2(-32, -54)
+
+[node name="Hitbox" type="Area2D" parent="." unique_id=934628065]
+collision_layer = 8
+collision_mask = 4
+script = ExtResource("2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox" unique_id=314911737]
+position = Vector2(28.5, 0)
+shape = SubResource("HitShape")
+
+[node name="Tip" type="Marker2D" parent="." unique_id=1467727927]
+position = Vector2(49, 0)
+
+[node name="MainHandGrip" type="Marker2D" parent="." unique_id=1120921895]
+position = Vector2(-2, -1)
+gizmo_extents = 14.0

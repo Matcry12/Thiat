@@ -26,7 +26,10 @@ class_name BodyRig
 ## Off = plain nearest pixels. Art files are untouched.
 @export var soft_edges := true: set = _set_soft_edges
 @export_range(0.1, 3.0, 0.05) var soft_edge_width := 1.0: set = _set_soft_edge_width
-## (WeaponVisual stays at the actor's gameplay pivot: the hitbox and muzzle hang off it, so it is NOT a per-character value.)
+
+## How much the Hand point follows the body picture moving up/down (animation frames + code bounce), measured from idle frame 0.
+## 1 = the weapon stays on the same spot of the body. 0 = Hand never moves.
+@export_range(0.0, 1.0, 0.05) var hand_follow := 1.0: set = _set_hand_follow
 
 @export_group("Run cycle frames (directional / side-only sets)")
 ## Frames of the run animation where a foot lands (RunDust puff) and where the body is highest (shadow shrinks).
@@ -57,6 +60,9 @@ func _set_visual_scale(v: float) -> void:
 	emit_changed()
 func _set_slash_scale(v: float) -> void:
 	slash_scale = v
+	emit_changed()
+func _set_hand_follow(v: float) -> void:
+	hand_follow = v
 	emit_changed()
 func _set_soft_edges(v: bool) -> void:
 	soft_edges = v

@@ -165,7 +165,7 @@ func _spawn_projectile() -> void:
 	# under `root` rather than through change_scene_to_*() — fall back to root.
 	var parent: Node = get_tree().current_scene if get_tree().current_scene else get_tree().root
 	parent.add_child(p)
-	p.global_position = _muzzle.global_position
+	p.global_position = shot_start()
 	p.setup(aim_direction, weapon.projectile_speed, weapon.projectile_range,
 			weapon.damage, weapon.parryable, get_parent())
 
@@ -177,6 +177,11 @@ func _set_phase(new_phase: Phase) -> void:
 	state_changed.emit(Phase.keys()[phase].to_lower())
 
 ## Read-only, for the F1 overlay (draws a ranged weapon's reach from here).
+## Where a shot starts: as far out as the muzzle, but on the aim line through the owner, so it flies through the cursor wherever the Hand point sits (0065).
+func shot_start() -> Vector2:
+	var me := (get_parent() as Node2D).global_position
+	return me + aim_direction * (_muzzle.global_position - me).dot(aim_direction)
+
 func get_muzzle() -> Marker2D:
 	return _muzzle
 

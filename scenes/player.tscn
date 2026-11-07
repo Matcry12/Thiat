@@ -5,9 +5,7 @@
 [ext_resource type="Script" uid="uid://b2k3y42aktkbx" path="res://scripts/components/hurtbox.gd" id="3"]
 [ext_resource type="Script" uid="uid://d0awtsvbienb8" path="res://scripts/weapons/weapon_holder.gd" id="5"]
 [ext_resource type="Script" uid="uid://bdm85dlwvqabq" path="res://scripts/visual/weapon_visual.gd" id="7"]
-[ext_resource type="Texture2D" path="res://assets/game/characters/player/player_character_template.png" id="8"]
-[ext_resource type="SpriteFrames" path="res://assets/game/characters/player/3d/player_3d_frames.tres" id="8b"]
-[ext_resource type="Resource" path="res://data/body_rigs/pixel_plains.tres" id="rig"]
+[ext_resource type="Texture2D" uid="uid://bryt53jqyco7s" path="res://assets/game/characters/player/player_character_template.png" id="8"]
 [ext_resource type="Texture2D" uid="uid://c850m4ii26ok3" path="res://assets/game/placeholder/shadow.png" id="9"]
 [ext_resource type="Script" uid="uid://cfhocpi452k6r" path="res://scripts/components/health.gd" id="11"]
 [ext_resource type="Script" uid="uid://cu3cx00235xph" path="res://scripts/components/dodge.gd" id="12"]
@@ -15,23 +13,27 @@
 [ext_resource type="Script" uid="uid://10nk8ph3115l" path="res://scripts/visual/guard_visual.gd" id="14"]
 [ext_resource type="Script" uid="uid://bjs01qfet1ww8" path="res://scripts/visual/cover_arc.gd" id="17"]
 [ext_resource type="Script" uid="uid://cme80rjx7alqm" path="res://scripts/components/loadout.gd" id="18"]
-[ext_resource type="Resource" path="res://data/weapons/fists.tres" id="fists"]
 [ext_resource type="Script" uid="uid://ba6y0wkjj6tcb" path="res://scripts/components/skill_slot.gd" id="20"]
 [ext_resource type="Script" uid="uid://bhkdre3n8h4wt" path="res://scripts/visual/swing_fx.gd" id="21"]
-[ext_resource type="Script" path="res://scripts/visual/held_item_visual.gd" id="held_s"]
-[ext_resource type="Script" path="res://scripts/components/knockback.gd" id="kb_script"]
-[ext_resource type="Script" path="res://scripts/visual/run_dust.gd" id="dust_script"]
-[ext_resource type="Script" path="res://scripts/visual/water_fx.gd" id="water_fx_script"]
-[ext_resource type="Script" path="res://scripts/components/swimmer.gd" id="swimmer_script"]
-[ext_resource type="Script" path="res://scripts/components/inventory.gd" id="inv_s"]
-[ext_resource type="Script" path="res://scripts/components/collector.gd" id="col_s"]
-[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="item_s"]
-[ext_resource type="Resource" path="res://data/items/wooden_sword.tres" id="it_sword"]
+[ext_resource type="Script" uid="uid://cvwklsus3ft5y" path="res://scripts/components/collector.gd" id="col_s"]
+[ext_resource type="Script" uid="uid://dmjf3oxx4465u" path="res://scripts/components/crafter.gd" id="crafter_s"]
+[ext_resource type="Script" uid="uid://e4jtkofg43hc" path="res://scripts/visual/run_dust.gd" id="dust_script"]
+[ext_resource type="Resource" path="res://data/weapons/fists.tres" id="fists"]
+[ext_resource type="SpriteFrames" path="res://assets/game/characters/pixel_plains/frames.tres" id="frames_pp"]
+[ext_resource type="Texture2D" path="res://assets/game/characters/pixel_plains/hand.png" id="hand_tex"]
+[ext_resource type="Script" path="res://scripts/visual/hand_visual.gd" id="hand_s"]
+[ext_resource type="Script" uid="uid://bvchjorqvu4dh" path="res://scripts/visual/held_item_visual.gd" id="held_s"]
+[ext_resource type="Script" uid="uid://wf0c8uypqm5h" path="res://scripts/components/inventory.gd" id="inv_s"]
+[ext_resource type="Script" uid="uid://c74vnfevvkci" path="res://scripts/items/item_data.gd" id="item_s"]
 [ext_resource type="Resource" path="res://data/items/stone_axe.tres" id="it_axe"]
 [ext_resource type="Resource" path="res://data/items/stone_pickaxe.tres" id="it_pick"]
-[ext_resource type="Script" path="res://scripts/components/crafter.gd" id="crafter_s"]
-[ext_resource type="Script" path="res://scripts/components/placer.gd" id="placer_s"]
-[ext_resource type="Script" path="res://scripts/components/respawner.gd" id="respawner_s"]
+[ext_resource type="Resource" path="res://data/items/wooden_sword.tres" id="it_sword"]
+[ext_resource type="Script" uid="uid://dsawbpyt0tm3e" path="res://scripts/components/knockback.gd" id="kb_script"]
+[ext_resource type="Script" uid="uid://y4j8wsf5g2im" path="res://scripts/components/placer.gd" id="placer_s"]
+[ext_resource type="Script" uid="uid://d0cuck1ie4m0q" path="res://scripts/components/respawner.gd" id="respawner_s"]
+[ext_resource type="Resource" path="res://data/body_rigs/pixel_plains.tres" id="rig"]
+[ext_resource type="Script" uid="uid://661k0pygu5hh" path="res://scripts/components/swimmer.gd" id="swimmer_script"]
+[ext_resource type="Script" uid="uid://dhsyd41tvs3t5" path="res://scripts/visual/water_fx.gd" id="water_fx_script"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -46,45 +48,74 @@ script = ExtResource("1")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2036448946]
 shape = SubResource("BodyShape")
 
+[node name="OffHandArt" type="Sprite2D" parent="." unique_id=1604417734]
+texture_filter = 1
+texture = ExtResource("hand_tex")
+script = ExtResource("hand_s")
+process_priority = 1
+hand_z = 0
+rest_marker = NodePath("../OffHandRest")
+run_swing = PackedVector2Array(-3, 0, 0, 0, 3, -3, 0, 0)
+off_hand = true
+
 [node name="Visual" type="Node2D" parent="." unique_id=123694702]
 script = ExtResource("2")
-rig = ExtResource("rig")
-bounce_mode = 0
-bounce_offsets = PackedFloat32Array(1, 0, 1, 0)
 body_texture = ExtResource("8")
 shadow_texture = ExtResource("9")
+bounce_mode = 0
+bounce_offsets = PackedFloat32Array(1, 0, 1, 0)
+squash_frames = PackedInt32Array(0, 3)
+rig = ExtResource("rig")
+landing_frames = PackedInt32Array(1, 4)
+lift_frames = PackedInt32Array(2, 5)
 
 [node name="Body" type="AnimatedSprite2D" parent="Visual" unique_id=557419974]
 position = Vector2(0, -19)
-scale = Vector2(2, 2)
-sprite_frames = ExtResource("8b")
+scale = Vector2(3, 3)
+sprite_frames = ExtResource("frames_pp")
+animation = &"idle"
 
 [node name="Shadow" type="Sprite2D" parent="Visual" unique_id=882274028]
 z_index = -1
 position = Vector2(0, 4)
 texture = ExtResource("9")
 
-[node name="RunDust" type="Node2D" parent="Visual"]
+[node name="RunDust" type="Node2D" parent="Visual" unique_id=1229743893]
 z_index = -1
 script = ExtResource("dust_script")
 
-[node name="WaterFx" type="Node2D" parent="Visual"]
+[node name="WaterFx" type="Node2D" parent="Visual" unique_id=849922799]
 script = ExtResource("water_fx_script")
 
 [node name="WeaponVisual" type="Node2D" parent="." unique_id=1080354139]
-position = Vector2(0, -9)
 script = ExtResource("7")
 preview_guard_pose = true
 
 [node name="SwingPivot" type="Node2D" parent="WeaponVisual" unique_id=1733221144]
-position = Vector2(6, 15)
-rotation = -1.5707964
+rotation = -0.7853982
 
 [node name="SwingFx" type="Node2D" parent="WeaponVisual" unique_id=2963882]
 script = ExtResource("21")
 
-[node name="HeldItem" type="Sprite2D" parent="WeaponVisual"]
+[node name="HeldItem" type="Sprite2D" parent="WeaponVisual" unique_id=671982563]
 script = ExtResource("held_s")
+
+[node name="MainHandArt" type="Sprite2D" parent="." unique_id=1604417733]
+texture_filter = 1
+texture = ExtResource("hand_tex")
+script = ExtResource("hand_s")
+
+[node name="MainHandHold" type="Marker2D" parent="." unique_id=2004090145]
+position = Vector2(-3, -5.5)
+gizmo_extents = 14.0
+
+[node name="MainHandRest" type="Marker2D" parent="." unique_id=2004090147]
+position = Vector2(-15, -5.5)
+gizmo_extents = 14.0
+
+[node name="OffHandRest" type="Marker2D" parent="." unique_id=2004090146]
+position = Vector2(15, -5.5)
+gizmo_extents = 14.0
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=186865809]
 collision_layer = 2
@@ -123,33 +154,33 @@ script = ExtResource("17")
 
 [node name="Loadout" type="Node" parent="." unique_id=519427683]
 script = ExtResource("18")
-weapon_holder_path = NodePath("../WeaponHolder")
 inventory_path = NodePath("../Inventory")
+weapon_holder_path = NodePath("../WeaponHolder")
 unarmed = ExtResource("fists")
 
 [node name="SkillSlot" type="Node" parent="." unique_id=1996829668]
 script = ExtResource("20")
 weapon_holder_path = NodePath("../WeaponHolder")
 
-[node name="Inventory" type="Node" parent="."]
+[node name="Inventory" type="Node" parent="." unique_id=649394884]
 script = ExtResource("inv_s")
 start_items = Array[ExtResource("item_s")]([ExtResource("it_sword"), ExtResource("it_axe"), ExtResource("it_pick")])
 
-[node name="Crafter" type="Node" parent="."]
+[node name="Crafter" type="Node" parent="." unique_id=588091745]
 script = ExtResource("crafter_s")
 
-[node name="Placer" type="Node" parent="."]
+[node name="Placer" type="Node" parent="." unique_id=531166586]
 script = ExtResource("placer_s")
 
-[node name="Collector" type="Node" parent="."]
+[node name="Collector" type="Node" parent="." unique_id=1229734545]
 script = ExtResource("col_s")
 
-[node name="Respawner" type="Node" parent="."]
+[node name="Respawner" type="Node" parent="." unique_id=1521212579]
 script = ExtResource("respawner_s")
 
-[node name="Knockback" type="Node" parent="."]
+[node name="Knockback" type="Node" parent="." unique_id=464775122]
 script = ExtResource("kb_script")
 fixed_type = &"player_hit"
 
-[node name="Swimmer" type="Node" parent="."]
+[node name="Swimmer" type="Node" parent="." unique_id=1982629522]
 script = ExtResource("swimmer_script")

@@ -48,7 +48,7 @@ func _init():
 	check("player starts with the pixel plains rig", vis.rig.display_name.begins_with("pixel plains"))
 	vis.rig = blocky
 	check("blocky rig loads and shrinks the weapon picture", vis.rig == blocky and blocky.visual_scale < 1.0)
-	check("WeaponVisual (gameplay pivot) is NOT moved by the rig", wv.position == Vector2(0, -9))
+	check("WeaponVisual sits on the Hand marker (the rig does not move it)", wv.position == player.get_node("MainHandHold").position)
 	check("slash scale from the rig", is_equal_approx(fx._slash_scale, blocky.slash_scale))
 
 	var weapons: Array = []

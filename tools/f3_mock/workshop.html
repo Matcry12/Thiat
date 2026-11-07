@@ -524,7 +524,7 @@ function clone(x){return Array.isArray(x)?x.slice():x}
 S('Character','Player',[['speed','f',220,50,600],['hold_to_gather','b',true]]);
 S('Character','Visual',[['shadow_on','b',true,0,0,{g:'Shadow'}],['shadow_min_scale','f',0.6,0,1,{g:'Shadow'}],['shadow_min_alpha','f',0.3,0,1,{g:'Shadow'}],
  ['front_half_angle_deg','f',55,10,90,{g:'Directional body'}],['facing_hysteresis_deg','f',8,0,30,{g:'Directional body'}],['landing_frames','i',2,0,8,{g:'Directional body'}],['lift_frames','i',2,0,8,{g:'Directional body'}],['hit_time_scale','f',1,0.2,3,{g:'Directional body'}],['flip_deadzone','f',0.15,0,1,{g:'Directional body'}],['directional_lift_px','f',2,0,10,{g:'Directional body'}]]);
-S('Character','BodyRig',[['visual_scale','f',1,0.2,3],['slash_scale','f',1,0.2,3],['weapon_pivot_offset','v2',[4,-2],-40,40],['hand_radius','f',4.5,1,12],['hand_rest_x','f',9,-20,20],['hand_rest_y','f',3,-20,20],
+S('Character','BodyRig',[['visual_scale','f',1,0.2,3],['slash_scale','f',1,0.2,3],['hand_nudge','v2',[4,-2],-40,40],['hand_radius','f',4.5,1,12],['hand_rest_x','f',9,-20,20],['hand_rest_y','f',3,-20,20],
  ['hand_idle_front','v2',[7.5,5],-30,30,{g:'Relaxed hands'}],['hand_idle_back','v2',[-7.5,5],-30,30,{g:'Relaxed hands'}],['hand_sway_x','f',1.2,0,6,{g:'Relaxed hands'}],['hand_sway_y','f',0.8,0,6,{g:'Relaxed hands'}],['hand_sway_speed','f',2.2,0,10,{g:'Relaxed hands'}],['shadow_scale','f',0.9,0.2,2],['body_position','v2',[0,-6],-40,40]],{file:'data/body_rigs/tiny_soldier.tres'});
 S('Character','RunDust',[['dust_on','b',true],['dust_count','i',2,0,10],['dust_size','f',3,1,10],['dust_life','f',0.35,0.05,1.5],['dust_colour','c','#c9b48a']]);
 S('Character','Hands',[['relax_blend_time','f',0.12,0,1],['sway_ease_time','f',0.4,0,2]]);

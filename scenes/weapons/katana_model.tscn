@@ -1,0 +1,37 @@
+[gd_scene format=3 uid="uid://dok26kbqx5gk8"]
+
+[ext_resource type="Texture2D" uid="uid://b6fod22c7alvv" path="res://assets/game/ui/items/katana.png" id="1"]
+[ext_resource type="Script" uid="uid://d0s5saauew0b5" path="res://scripts/components/hitbox.gd" id="2"]
+
+[sub_resource type="RectangleShape2D" id="HitShape"]
+size = Vector2(98, 9.562761)
+
+[node name="KatanaModel" type="Node2D" unique_id=1076402995]
+
+[node name="Art" type="Sprite2D" parent="." unique_id=904228312]
+texture_filter = 1
+rotation = 1.5707963
+scale = Vector2(2, 2)
+texture = ExtResource("1")
+centered = false
+offset = Vector2(-32.5, -53.5)
+
+[node name="Hitbox" type="Area2D" parent="." unique_id=126460865]
+collision_layer = 8
+collision_mask = 4
+script = ExtResource("2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox" unique_id=1358593253]
+position = Vector2(49, 0)
+shape = SubResource("HitShape")
+
+[node name="Tip" type="Marker2D" parent="." unique_id=642992160]
+position = Vector2(90, 0)
+
+[node name="MainHandGrip" type="Marker2D" parent="." unique_id=464255865]
+position = Vector2(2, -2)
+gizmo_extents = 14.0
+
+[node name="OffHandGrip" type="Marker2D" parent="." unique_id=236775057]
+position = Vector2(10, 1)
+gizmo_extents = 14.0

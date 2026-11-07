@@ -51,7 +51,7 @@ enum SnapMode { NONE, WORLD_PX, ART_PX }
 @export var rig: BodyRig: set = _set_rig
 @export var weapon_visual_path := NodePath("../WeaponVisual")
 @export_group("Directional body (3D-rendered sheets)")
-## Used automatically when the SpriteFrames has `idle_side` (+ `idle_front` for a real front view) (see assets/characters/player/3d/): animations are
+## Used automatically when the SpriteFrames has `idle_side` (+ `idle_front` for a real front view) (see assets/game/characters/player/3d/): animations are
 ## `<idle|run|hit>_<front|side>`, timing is baked into the frames, and the old exports above (fps, code bounce) are skipped.
 ## A SpriteFrames with plain `idle` / `run` (the old drawn art) keeps the old behaviour: swapping art = swapping the resource.
 ## Facing is FRONT when the facing direction is within this many degrees of straight down, else SIDE (flipped for left).
@@ -217,6 +217,14 @@ func _has_death() -> bool:
 	var a := _anim()
 	return a != null and a.sprite_frames != null and a.sprite_frames.has_animation(&"death")
 
+## The run animation's current frame, -1 when the body is not running.
+func run_frame() -> int:
+	var a := _anim()
+	return a.frame if a and a.animation == &"run" else -1
+
+func is_dead() -> bool:
+	return _dead
+
 func _on_died() -> void:
 	if not _has_death():
 		return
@@ -235,6 +243,7 @@ func _set_rig(v: BodyRig) -> void:
 		_on_rig_changed()
 
 func _on_rig_changed() -> void:
+	_top_cache.clear()
 	_apply_rig_body()
 	_apply_rig_siblings()
 	if is_node_ready() and not Engine.is_editor_hint():
@@ -243,9 +252,42 @@ func _on_rig_changed() -> void:
 		_shadow_rest_scale = ($Shadow as Node2D).scale if has_node("Shadow") else Vector2.ONE
 		_play_resolved(true)
 
+var _top_cache := {}   ## "anim:frame" -> used-rect top (art px); _top_frames = the SpriteFrames it was built from
+var _top_frames: SpriteFrames
+
+func _frame_top(a: AnimatedSprite2D, anim: StringName, f: int) -> int:
+	if a.sprite_frames != _top_frames:
+		_top_cache.clear()
+		_top_frames = a.sprite_frames
+	var key := "%s:%d" % [anim, f]
+	if not _top_cache.has(key):
+		var img := a.sprite_frames.get_frame_texture(anim, f).get_image()
+		_top_cache[key] = img.get_used_rect().position.y if img else 0
+	return _top_cache[key]
+
+## How far the body picture has moved (screen px, y only) compared with idle frame 0: frame art top + code bounce, x rig.hand_follow.
+## WeaponVisual adds it to the Hand point. ZERO: no rig / static body / editor / a frame of another size (death).
+func hand_frame_offset() -> Vector2:
+	var a := _anim()
+	if rig == null or a == null or a.sprite_frames == null or Engine.is_editor_hint() or rig.hand_follow == 0.0:
+		return Vector2.ZERO
+	var ref := resolved_name(&"idle")
+	var sf := a.sprite_frames
+	if not sf.has_animation(ref) or sf.get_frame_count(ref) == 0 or not sf.has_animation(a.animation) or sf.get_frame_count(a.animation) == 0:
+		return Vector2.ZERO
+	var f := clampi(a.frame, 0, sf.get_frame_count(a.animation) - 1)
+	var t0 := sf.get_frame_texture(ref, 0)
+	var t1 := sf.get_frame_texture(a.animation, f)
+	if t0 == null or t1 == null or t0.get_size() != t1.get_size():
+		return Vector2.ZERO
+	var dy := float(_frame_top(a, a.animation, f) - _frame_top(a, ref, 0)) * rig.body_scale.y + (a.position.y - _rest_position.y)
+	return Vector2(0.0, dy * rig.hand_follow)
+
 ## Body frames, body position/scale (feet on the actor origin) and shadow size from the rig.
+## Never in the editor: this @tool script would write runtime values (shadow x rig scale, body) into the scene on save, so they drifted.
+## The editor shows the scene's own Body / Shadow values (player.tscn keeps them equal to the rig's).
 func _apply_rig_body() -> void:
-	if rig == null:
+	if rig == null or Engine.is_editor_hint():
 		return
 	var a := _anim()
 	if a and rig.sprite_frames and a.sprite_frames != rig.sprite_frames:

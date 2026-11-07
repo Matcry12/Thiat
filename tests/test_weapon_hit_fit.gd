@@ -30,6 +30,7 @@ func _reach(hb: Hitbox, origin: Vector2) -> float:
 ## a test model: the wooden sword scene with `tex` laid along +x (scale 2) at `rot` radians
 func _model(tex: Texture2D, rot := 0.0, region := Rect2()) -> PackedScene:
 	var m: Node2D = load("res://scenes/weapons/wooden_sword_model.tscn").instantiate()
+	m.get_node("MainHandGrip").position = Vector2.ZERO   # fixture: numbers below assume the grip at the model origin (the scene's Grip may be dragged)
 	var art := m.get_node("Art") as Sprite2D
 	art.texture = tex
 	art.rotation = rot
@@ -158,8 +159,9 @@ func _init() -> void:
 
 	# --- auto off puts the hand-set shape AND Tip back, auto on measures again ---
 	var tip_auto := _tipx(wv)
+	var sgrip: Vector2 = (load("res://scenes/weapons/sword1_model.tscn").instantiate() as Node2D).get_node("MainHandGrip").position   # Tip sits at its scene x minus the scene's Grip
 	sw.hit_auto_fit = false
-	_check(_shape(wv).size == Vector2(50, 9.562761) and _tipx(wv) == 42.0 and wv.status_text().contains("hit: manual"), "auto off: hand shape 50 x 9.56 and Tip 42 back")
+	_check(_shape(wv).size == Vector2(50, 9.562761) and absf(_tipx(wv) - (42.0 - sgrip.x)) < 0.001 and wv.status_text().contains("hit: manual"), "auto off: hand shape 50 x 9.56 and Tip 42 back")
 	sw.hit_auto_fit = true
 	_check(absf(_tipx(wv) - tip_auto) < 0.01 and wv.status_text().contains("hit: auto"), "auto on again")
 

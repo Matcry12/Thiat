@@ -71,11 +71,11 @@ func _init() -> void:
 			ok = false
 	var extra := []
 	for k in names:
-		if not OLD_TARGETS.has(k):
+		if not OLD_TARGETS.has(k) and not (k as String).begins_with("Tool "):   # one "Tool <id>" section per tool: a new tool must not break this list
 			extra.append(k)
 	extra.sort()
 	print("targets: %d old, %d found; new owners: %s" % [OLD_TARGETS.size(), names.size(), extra])
-	if extra != ["EnemySpawner", "Frame", "HeldItem", "Hit station_knock_stone", "Hit station_knock_wood", "Hit station_pickup_stone", "Hit station_pickup_wood", "Hit tree_break", "Item gel", "NodeReaction", "Pixel Plains", "Run", "Save", "Swing Sword Natural", "Weapon"]:   # status-only owners that had a block but no section
+	if extra != ["EnemySpawner", "Frame", "HeldItem","Hit station_knock_stone", "Hit station_knock_wood", "Hit station_pickup_stone", "Hit station_pickup_wood", "Hit tree_break", "Item gel", "MainHandArt", "NodeReaction", "OffHandArt", "Pixel Plains", "Run", "Save", "Swing Sword Natural", "Weapon"]:   # status-only owners that had a block but no section
 		print("FAIL: unexpected extra names ", extra)
 		ok = false
 	for l in OLD_ACTIONS:

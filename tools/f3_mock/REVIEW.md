@@ -15,7 +15,7 @@ Before (`f3_before.png`): **2/10**. 40 buttons + a status wall over half the gam
 | # | State | Score | Why (concrete) |
 |---|---|---|---|
 | 1 | Tune default | 7 | Calm, game visible. But 3 clicks deep before any value (Category > Section > row), and "Player > Player" is a stutter. The dock is see-through: the sand/water stripe at x~1080 runs through every row like a fake scrollbar. |
-| 2 | Tune BodyRig | 7 | Rows are good: number + slider + changed dot + reset. Vector2 rows (`weapon_pivot_offset`, `hand_idle_front`, `body_position`) have no slider and no visible scrub hint - and these are the values the user tunes most (hand positions). |
+| 2 | Tune BodyRig | 7 | Rows are good: number + slider + changed dot + reset. Vector2 rows (`hand_nudge`, `hand_idle_front`, `body_position`) have no slider and no visible scrub hint - and these are the values the user tunes most (hand positions). |
 | 3 | Search "hand" | 7 | Best flow in the mock: type 4 letters, edit in place. Bugs: Vector2 rows overflow - the reset arrow is cut and the pin star is gone (`hand_idle_front`, `hand_idle_back`). Hint line wraps to 2 lines. |
 | 4 | Search "heal" | 7 | Actions first, Enter runs: correct. Noise: 3 `HealthBar` settings match because the section name contains "heal". Rank section-name matches below name matches, or only match section names on whole words. |
 | 5 | Actions | 7 | Grouped, readable. Problems: `Kill player`, `Delete save`, `Restart` look the same as `Heal player` (one stray click loses a run / the save). Toggle dots are tiny and grey/green is hard to read. Pin star sits on the button corner and covers text. `Restart` under Boss is the wrong home. |

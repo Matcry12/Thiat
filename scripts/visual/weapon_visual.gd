@@ -75,12 +75,54 @@ var rig: BodyRig
 ## Applies a BodyRig: rescales the weapon ART (never the hitbox / muzzle), and tells SwingFx the crescent scale.
 func apply_rig(r: BodyRig) -> void:
 	rig = r
-	_apply_model_scale()      # NOT the pivot position: WeaponVisual is the gameplay anchor of the hitbox / muzzle, it never moves per character
+	_apply_model_scale()
 	var fx := get_node_or_null("SwingFx")
 	if fx and fx.has_method("set_slash_scale"):
 		fx.set_slash_scale(rig.slash_scale if rig else 1.0)
 	if _guarding:
 		_pivot_pos = _guard_offset()
+
+## The hand point: the player's `MainHandHold` marker (sibling, draggable in the editor) + `hand_nudge` (F3, live), x mirrored when the body faces left. The ONE place
+## WeaponVisual's position is set. Absolute, so re-applying never adds up. The hit area, muzzle, slash and held item are
+## children of this node, so they follow the picture. No Hand marker = the scene's own position.
+@export var hand_nudge := Vector2.ZERO: set = _set_hand_nudge
+
+func _set_hand_nudge(v: Vector2) -> void:
+	hand_nudge = v
+	_apply_hand()
+
+func _apply_hand() -> void:
+	var h := get_node_or_null("../MainHandHold") as Node2D if is_inside_tree() else null
+	if h and not Engine.is_editor_hint():
+		var v := get_node_or_null("../Visual")   # the same flag that flips the body picture (SpriteActorVisual._facing_left)
+		var sign_x := -1.0 if v and v.has_method("is_facing_left") and v.is_facing_left() else 1.0
+		var p := h.position + hand_nudge
+		if not dev_hold_still and v and v.has_method("hand_frame_offset"):
+			p += v.hand_frame_offset()   # body frames / bounce move the picture; the hand goes with it (BodyRig.hand_follow)
+		position = Vector2(p.x * sign_x, p.y)   # only x mirrors
+
+## Grip marker of the model scene (draggable along the weapon in the editor): the picture pixel under it is the held point.
+## Every other child of the model moves by -grip, then Grip sits at 0,0 (the rest of the code keeps its "origin = grip" rule).
+## No Grip = no shift. Runs once per model, before the art fit caches anything.
+func _apply_grip() -> void:
+	var g := _model.get_node_or_null("MainHandGrip") as Node2D if _model else null
+	if g == null:
+		return
+	var d := g.position
+	g.position = Vector2.ZERO
+	if d == Vector2.ZERO:
+		return
+	for c in _model.get_children():
+		var n := c as Node2D
+		if n != null and n != g:
+			n.position -= d
+
+func _follow_dy() -> float:
+	var v := get_node_or_null("../Visual")
+	return v.hand_frame_offset().y if v and v.has_method("hand_frame_offset") and not dev_hold_still else 0.0
+
+func hand_point() -> Vector2:
+	return global_position
 
 const Fit := preload("res://scripts/weapons/weapon_hit_fit.gd")
 const SOFT_SHADER := preload("res://scripts/visual/soft_pixel.gdshader")
@@ -125,7 +167,7 @@ func _apply_model_scale() -> void:
 			continue
 		if not n.has_meta("rig_base"):
 			n.set_meta("rig_base", [n.position, n.scale])
-		var keep_world := n is Area2D or n.name == &"Muzzle" or (n is Marker2D and n.name != &"Tip")   # Tip is part of the PICTURE (F1 aid), it scales with it
+		var keep_world := n is Area2D or n.name == &"Muzzle" or (n is Marker2D and n.name != &"Tip" and n.name != &"OffHandGrip")   # Tip and OffHandGrip are part of the PICTURE, they scale with it
 		var base: Array = n.get_meta("rig_base")
 		if keep_world:
 			n.position = base[0] / s
@@ -167,6 +209,7 @@ var _phase_start_pos := Vector2.ZERO
 var _phase_target_pos := Vector2.ZERO
 
 func _ready() -> void:
+	_apply_hand()
 	if not Engine.is_editor_hint():
 		_swing_art = Node2D.new()
 		_swing_art.name = "SwingArt"
@@ -235,12 +278,39 @@ func get_model() -> Node2D:
 func _refit_hit() -> void:
 	if _model == null or weapon == null:
 		return
+	apply_art_fit()
 	_hit_status = Fit.apply(_model, weapon)
 	_apply_model_scale()
 	var art := _model.get_node_or_null("Art") as CanvasItem
 	if art and _motion != null:
 		art.visible = true   # _setup_swing_art copies it again and hides it
 	_setup_swing_art()
+
+## Art fit (WeaponData "Art fit"): the one owner. The scene's own Art transform is remembered once (meta `art_base`), so 0 / zero gives it back and re-applying never adds up.
+func apply_art_fit() -> void:
+	var art := _model.get_node_or_null("Art") as Node2D if _model else null
+	if art == null or weapon == null:
+		return
+	if not art.has_meta("art_base"):
+		art.set_meta("art_base", [art.position, art.rotation, art.scale])
+	var b: Array = art.get_meta("art_base")
+	art.position = b[0] + Vector2(weapon.art_nudge_x, weapon.art_nudge_y)
+	art.rotation = b[1] + deg_to_rad(weapon.art_turn_deg)
+	art.scale = b[2] if weapon.art_scale <= 0 else Vector2.ONE * weapon.art_scale
+	art.set_meta("rig_base", [art.position, art.scale])   # _apply_model_scale puts children back to this; the fit is part of the picture
+
+## F3 dev toggle (never saved): keep the weapon shown in its rest pose while tuning its fit.
+var dev_hold_still := false
+@export_range(-180.0, 180.0, 1.0) var dev_still_aim_deg := 0.0   ## with `Hold weapon still` on: the fixed aim direction (0 = right, 90 = down). Dev only (an F3 edit lives in tuning.cfg like any F3 row).
+
+func debug_actions() -> Array:
+	return [{"label": "Hold weapon still", "run": func(): dev_hold_still = not dev_hold_still}]
+
+func _fit_status() -> String:
+	if weapon == null:
+		return "fit: -"
+	var art := _model.get_node_or_null("Art") as Node2D if _model else null
+	return "fit: x%s nudge %.1f,%.1f turn %.1f  still: %s aim %d  hand %.1f,%.1f follow %.1f  (%s)" % [str(snappedf(art.scale.x, 0.01)) if art else "-", weapon.art_nudge_x, weapon.art_nudge_y, weapon.art_turn_deg, "on" if dev_hold_still else "off", int(dev_still_aim_deg), position.x, position.y, _follow_dy(), weapon.resource_path.get_file().get_basename()]
 
 func _rebuild_model() -> void:
 	_hit_status = "hit: -"
@@ -253,6 +323,8 @@ func _rebuild_model() -> void:
 		_model = weapon.model.instantiate()
 		_model.modulate = weapon.model_tint   # copper tools reuse a model, tinted (decision 0031)
 		_swing_pivot.add_child(_model)
+		_apply_grip()
+		apply_art_fit()
 		_hit_status = Fit.apply(_model, weapon)   # before _apply_model_scale caches the node positions
 		_apply_model_scale()      # before model_changed: the hitbox / muzzle are already back at their real world transform
 	_setup_swing_art()
@@ -303,8 +375,8 @@ func _apply_all() -> void:
 			pivot.position = Vector2.ZERO
 
 ## The guard's arm offset. SwingPivot.position is CODE-OWNED (like its
-## rotation): drag WeaponVisual to move the hand, or the model's Art to move
-## the grip — never SwingPivot, or the game will move it back.
+## rotation): drag the player's `MainHandHold` marker to move the hand, or the model's `MainHandGrip` marker
+## to move the held point — never SwingPivot, or the game will move it back.
 func _guard_offset() -> Vector2:
 	return Vector2(weapon.guard_forward, weapon.guard_side) * visual_scale() if weapon else Vector2.ZERO
 
@@ -332,6 +404,8 @@ func _half_arc() -> float:
 var _side := 1.0   ## side chop (SwingMotion.side_only): 1 right, -1 left
 
 func set_aim_angle(angle: float) -> void:
+	if dev_hold_still:
+		angle = deg_to_rad(dev_still_aim_deg)   # dev only: held at a fixed direction, the mouse is ignored
 	var m := weapon.swing_motion if weapon else null
 	if m and m.side_only:   # picture AND Hitbox read this node's transform, so snapping here snaps both
 		var swinging := _phase == "windup" or _phase == "active" or _phase == "recovery"
@@ -340,6 +414,7 @@ func set_aim_angle(angle: float) -> void:
 		angle = sa[0]
 	aim_angle = angle
 	rotation = angle
+	_apply_hand()   # the body flip was set a line earlier (player.gd): hand and rotation change on the same tick
 	# Soul Knight style: aiming left MIRRORS the weapon instead of turning it
 	# upside down. Scaling the whole node (not flipping the sprite) mirrors the
 	# hitbox with the art, so the two can never disagree (decision 0011).
@@ -394,6 +469,7 @@ func on_weapon_state(state: String) -> void:
 			_phase_target_angle = deg_to_rad(_rest_angle())
 
 func _process(delta: float) -> void:
+	_apply_hand()   # a moved Hand marker (Remote inspector) follows live; one assignment
 	if Engine.is_editor_hint():
 		_sync_editor_preview_weapon()
 		# Re-apply while previewing, so edits to the weapon's .tres numbers show
@@ -503,10 +579,13 @@ func picture_grip_tip() -> Dictionary:
 	var tip := _model.get_node_or_null("Tip") as Node2D
 	if tip:
 		out["tip"] = xf * tip.position
+	var off_grip := _model.get_node_or_null("OffHandGrip") as Node2D   # where the free hand holds it (0065); none = one-handed
+	if off_grip:
+		out["off_grip"] = xf * off_grip.position
 	return out
 
 func status_text() -> String:
 	if _motion == null:
-		return "soft: %s  swing: %s  motion: none (old pivot swing)  %s" % ["on" if soft_on() else "off", _phase, _hit_status]
+		return "soft: %s  swing: %s  motion: none (old pivot swing)  %s" % ["on" if soft_on() else "off", _phase, _hit_status] + "\n" + _fit_status()
 	var side := ("  side: %s tilt %.0f" % ["right" if _side > 0.0 else "left", rad_to_deg(wrapf(aim_angle - (0.0 if _side > 0.0 else PI), -PI, PI))]) if _motion.side_only else ""
-	return "soft: %s  swing: %s  dir: %s  hits: %s  grip: (%.0f, %.0f)  ghosts: %d  slash: %s %s" % ["on" if soft_on() else "off", _phase, "first" if _flip > 0.0 else "reversed", "follow blade" if weapon and weapon.hit_follows_blade else "snap", _art_grip.x, _art_grip.y, ghosts.count(), _motion.slash_mode, ribbon.status() if _motion.slash_mode == "ribbon" else slash.status()] + side + "  " + _hit_status
+	return "soft: %s  swing: %s  dir: %s  hits: %s  grip: (%.0f, %.0f)  ghosts: %d  slash: %s %s" % ["on" if soft_on() else "off", _phase, "first" if _flip > 0.0 else "reversed", "follow blade" if weapon and weapon.hit_follows_blade else "snap", _art_grip.x, _art_grip.y, ghosts.count(), _motion.slash_mode, ribbon.status() if _motion.slash_mode == "ribbon" else slash.status()] + side + "  " + _hit_status + "\n" + _fit_status()

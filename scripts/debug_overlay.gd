@@ -245,6 +245,12 @@ func _draw_hurtbox_outline(hurtbox: Hurtbox) -> void:
 ## If the cross is not on the handle or the dot not on the blade end, the picture is misplaced in the model scene.
 func _draw_picture_fit() -> void:
 	var wv := _player.get_node_or_null("WeaponVisual") as WeaponVisual
+	if wv:   # the character's Hand point (the player's Hand marker): white X, apart from the cyan + grip cross
+		var h := wv.hand_point()
+		for dd in [Vector2(1, 1), Vector2(1, -1)]:
+			_draw_layer.draw_line(h - dd * 4.5, h + dd * 4.5, Color.BLACK, 3.0)
+		for dd in [Vector2(1, 1), Vector2(1, -1)]:
+			_draw_layer.draw_line(h - dd * 4.0, h + dd * 4.0, Color.WHITE, 1.5)
 	var d: Dictionary = wv.picture_grip_tip() if wv else {}
 	if d.is_empty():
 		return
@@ -252,6 +258,10 @@ func _draw_picture_fit() -> void:
 	var c := Color(0.2, 1.0, 1.0)
 	_draw_layer.draw_line(g + Vector2(-5, 0), g + Vector2(5, 0), c, 1.5)
 	_draw_layer.draw_line(g + Vector2(0, -5), g + Vector2(0, 5), c, 1.5)
+	if d.has("off_grip"):
+		var g2: Vector2 = d["off_grip"]
+		_draw_layer.draw_line(g2 + Vector2(-5, 0), g2 + Vector2(5, 0), c, 1.5)
+		_draw_layer.draw_line(g2 + Vector2(0, -5), g2 + Vector2(0, 5), c, 1.5)
 	if d.has("tip"):
 		_draw_layer.draw_circle(d["tip"], 3.0, Color(1.0, 0.3, 1.0))
 
@@ -262,7 +272,7 @@ func _draw_projectile_range(weapon_holder: WeaponHolder) -> void:
 	var muzzle := weapon_holder.get_muzzle()
 	if muzzle == null:
 		return
-	var from: Vector2 = muzzle.global_position
+	var from: Vector2 = weapon_holder.shot_start()
 	var to: Vector2 = from + weapon_holder.aim_direction.normalized() * weapon.projectile_range
 	_draw_layer.draw_line(from, to, Color(1, 1, 1, 0.25), 1.0)
 	_draw_layer.draw_circle(to, 3.0, Color(1, 1, 1, 0.5))

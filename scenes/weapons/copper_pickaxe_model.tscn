@@ -1,30 +1,37 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://caa7437hf253i"]
 
-[ext_resource type="Texture2D" path="res://assets/game/ui/items/copper_pickaxe.png" id="1"]
-[ext_resource type="Script" path="res://scripts/components/hitbox.gd" id="2"]
+[ext_resource type="Texture2D" uid="uid://bd5ckbmhqjb0m" path="res://assets/game/ui/items/copper_pickaxe.png" id="1"]
+[ext_resource type="Script" uid="uid://d0s5saauew0b5" path="res://scripts/components/hitbox.gd" id="2"]
 
 [sub_resource type="RectangleShape2D" id="HitShape"]
 size = Vector2(56, 9.562761)
 
-[node name="PickaxeModel" type="Node2D"]
+[node name="PickaxeModel" type="Node2D" unique_id=1905950719]
 
-; RULE: origin (0,0) = the grip (handle end, pixel 6,26 of the 32x32 picture). The picture's handle->head line points 48 deg up-right, so rotation +0.84 turns it onto +x. Hit mask 36 = enemies (4) + gather nodes (32).
-[node name="Art" type="Sprite2D" parent="."]
+[node name="Art" type="Sprite2D" parent="." unique_id=1510761063]
+texture_filter = 1
 rotation = 0.84
 scale = Vector2(2, 2)
 texture = ExtResource("1")
-texture_filter = 1
 centered = false
 offset = Vector2(-6.5, -26.5)
 
-[node name="Hitbox" type="Area2D" parent="."]
+[node name="Hitbox" type="Area2D" parent="." unique_id=576929336]
 collision_layer = 8
 collision_mask = 36
 script = ExtResource("2")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox" unique_id=945602950]
 position = Vector2(28, 0)
 shape = SubResource("HitShape")
 
-[node name="Tip" type="Marker2D" parent="."]
+[node name="Tip" type="Marker2D" parent="." unique_id=2050543781]
 position = Vector2(44, 0)
+
+[node name="MainHandGrip" type="Marker2D" parent="." unique_id=1652127586]
+position = Vector2(1, -1)
+gizmo_extents = 14.0
+
+[node name="OffHandGrip" type="Marker2D" parent="." unique_id=844261896]
+position = Vector2(10, 1)
+gizmo_extents = 14.0

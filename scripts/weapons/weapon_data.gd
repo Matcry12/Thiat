@@ -58,6 +58,16 @@ class_name WeaponData
 ## The picture's offset / rotation (grip + angle) are still set per picture; length and width are automatic.
 @export var hit_axis_warn_px := 4.0: set = _set_fit_axis
 @export_group("")
+@export_group("Art fit")
+## Live (F3): size / place / turn of the weapon PICTURE only. The grip stays the origin. All 0 = exactly the scene's own Art.
+## 0 = keep the scene's scale, 0.05..4 = that scale. Decimals are fine; whole sizes stay sharpest.
+@export_range(0.0, 4.0, 0.05) var art_scale := 0.0: set = _set_art_scale
+## Moves the picture in the model's px (x along the blade, y across it), on top of the scene's Art position.
+@export var art_nudge_x := 0.0: set = _set_art_nx
+@export var art_nudge_y := 0.0: set = _set_art_ny
+## Added to the scene's Art rotation (degrees).
+@export_range(-180.0, 180.0, 0.5, "or_greater", "or_less") var art_turn_deg := 0.0: set = _set_art_turn
+@export_group("")
 @export_group("Tool target")
 ## Tools only (tool_kind set). On the first frame of active, the nearest gatherable node this far from the user (px, edge of the node) AND inside the cone around the REAL aim gets the hit,
 ## even if the picture lands beside it (0050 addendum). 0 = off (the blade alone decides). The node is hit once per swing; the blade skips it.
@@ -124,4 +134,16 @@ func _set_fit_alpha(v: float) -> void:
 	emit_changed()
 func _set_fit_axis(v: float) -> void:
 	hit_axis_warn_px = v
+	emit_changed()
+func _set_art_scale(v: float) -> void:
+	art_scale = clampf(v, 0.0, 4.0)
+	emit_changed()
+func _set_art_nx(v: float) -> void:
+	art_nudge_x = v
+	emit_changed()
+func _set_art_ny(v: float) -> void:
+	art_nudge_y = v
+	emit_changed()
+func _set_art_turn(v: float) -> void:
+	art_turn_deg = v
 	emit_changed()

@@ -89,7 +89,7 @@ godot --headless --editor --quit
 
 `scripts/visual/body_rig.gd` (resource) holds everything that fits a body, its hands and its weapon:
 `sprite_frames`, `body_position` (feet on the actor origin), `body_scale`, `shadow_scale`, and the weapon/hand fit:
-`visual_scale` (weapon picture + hand offsets), `slash_scale` (the slash crescent), `weapon_pivot_offset`, `hand_radius`,
+`visual_scale` (weapon picture + hand offsets), `slash_scale` (the slash crescent), the `MainHandHold` marker in `player.tscn` (where every weapon is held), `hand_radius`,
 `hand_rest_main/off`. `SpriteActorVisual.rig` applies it to the Body, the Shadow and (via `apply_rig()`) to `WeaponVisual`, `Hands`, `SwingFx`.
 
 | Rig | File | visual_scale | slash_scale | pivot | hand radius | shadow |

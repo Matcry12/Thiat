@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/game/ui/items/axe.png" id="icon"]
+[ext_resource type="Resource" path="res://data/weapons/axe.tres" id="w"]
+
+[resource]
+script = ExtResource("1")
+id = &"axe"
+display_name = "Axe"
+icon = ExtResource("icon")
+color = Color(0.85, 0.52, 0.34, 1)
+category = "tool"
+max_stack = 1
+weapon = ExtResource("w")

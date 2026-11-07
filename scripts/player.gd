@@ -143,7 +143,7 @@ func _physics_process(delta: float) -> void:
 	weapon_visual.set_aim_angle(_body_facing.angle())
 	held_item.set_item(_held_item_data())
 	# Tinkerlands style (0055): the held weapon / tool / item shows only while facing the mouse, i.e. in use + face_mouse_hold after.
-	weapon_visual.visible = not hide_idle_held or _face_mouse_left > 0.0
+	weapon_visual.visible = not hide_idle_held or _face_mouse_left > 0.0 or weapon_visual.dev_hold_still
 	weapon_holder.aim_direction = aim_direction
 	skill_slot.aim_direction = aim_direction
 	guard.aim_direction = aim_direction
@@ -257,6 +257,8 @@ func debug_children() -> Array:
 		{"name": "WaterFx", "object": get_node_or_null("Visual/WaterFx")},
 		{"name": "BodyRig", "object": visual.get("rig")},   # per-character body / weapon fit (decision 0028)
 		{"name": "HeldItem", "object": held_item},
+		{"name": "MainHandArt", "object": get_node_or_null("MainHandArt")},
+		{"name": "OffHandArt", "object": get_node_or_null("OffHandArt")},
 		{"name": "GuardVisual", "object": guard_visual, "cat": "Combat"},
 		{"name": "SwingFx", "object": swing_fx, "cat": "Combat"},
 		{"name": "CoverArc", "object": guard_visual.get_node_or_null("CoverArc"), "cat": "Combat"},

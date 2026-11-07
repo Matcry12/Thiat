@@ -34,7 +34,7 @@ func move_scale() -> float:
 
 func debug_reach(user: Node2D, aim: Vector2) -> PackedVector2Array:
 	var muzzle := weapon_holder.get_muzzle() if weapon_holder else null
-	var from: Vector2 = muzzle.global_position if muzzle else user.global_position
+	var from: Vector2 = weapon_holder.shot_start() if muzzle else user.global_position
 	return PackedVector2Array([from, from + aim.normalized() * arrow_range])
 
 func _physics_process(delta: float) -> void:
@@ -55,5 +55,5 @@ func _fire() -> void:
 	var p: Node2D = arrow_scene.instantiate()
 	var parent: Node = get_tree().current_scene if get_tree().current_scene else get_tree().root
 	parent.add_child(p)
-	p.global_position = muzzle.global_position
+	p.global_position = weapon_holder.shot_start()
 	p.setup(aim_direction, arrow_speed, arrow_range, damage, parryable, _user, true, 1 | 4, null, &"charged_arrow")

@@ -1,31 +1,33 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://qcvb30b40tf"]
 
-[ext_resource type="Texture2D" path="res://assets/game/ui/items/wooden_sword.png" id="1"]
+[ext_resource type="Texture2D" uid="uid://dpcgme617gwaa" path="res://assets/game/ui/items/wooden_sword.png" id="1"]
 [ext_resource type="Script" uid="uid://d0s5saauew0b5" path="res://scripts/components/hitbox.gd" id="2"]
 
 [sub_resource type="RectangleShape2D" id="HitShape"]
 size = Vector2(56, 9.562761)
 
-[node name="SwordModel" type="Node2D"]
+[node name="SwordModel" type="Node2D" unique_id=894504071]
 
-; RULE: this scene's origin (0,0) = the grip. Art's `offset` puts the grip pixel of the picture on it; the blade runs along +x.
-[node name="Art" type="Sprite2D" parent="."]
+[node name="Art" type="Sprite2D" parent="." unique_id=132417756]
+texture_filter = 1
 rotation = 0.7853982
 scale = Vector2(2, 2)
 texture = ExtResource("1")
-texture_filter = 1
 centered = false
 offset = Vector2(-8.5, -22.5)
 
-; Hit shape: from the grip (0) to 56 px (blade tip 48 + 8 margin), centred ON the blade line (y = Tip y), so close enemies are hit.
-[node name="Hitbox" type="Area2D" parent="."]
+[node name="Hitbox" type="Area2D" parent="." unique_id=478139043]
 collision_layer = 8
 collision_mask = 4
 script = ExtResource("2")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox" unique_id=1820359165]
 position = Vector2(28, 0)
 shape = SubResource("HitShape")
 
-[node name="Tip" type="Marker2D" parent="."]
+[node name="Tip" type="Marker2D" parent="." unique_id=1733898423]
 position = Vector2(48, 0)
+
+[node name="MainHandGrip" type="Marker2D" parent="." unique_id=1323887435]
+position = Vector2(-6, 0)
+gizmo_extents = 14.0

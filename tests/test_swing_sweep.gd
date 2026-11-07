@@ -22,7 +22,11 @@ func _init():
 	wv.weapon.swing_motion = null   # 0050: a SwingMotion sword sweeps its blade path (tests/test_hit_follows_swing.gd); this test keeps the old fixed-pivot arc
 	wv.set_weapon(wv.weapon)
 	wv.weapon.step_distance = 0.0   # this test measures sweep geometry from a fixed spot
+	player.get_node("Visual").rig.hand_follow = 0.0   # the body animates while this runs; the hand must not move under the dummy
 	var half := wv.weapon.arc_degrees * 0.5
+	var gm := wv.weapon.model.instantiate() as Node2D
+	var gx: float = gm.get_node("MainHandGrip").position.x if gm.has_node("MainHandGrip") else 0.0   # the picture (and reach) starts at the scene's Grip
+	gm.free()
 	var ok := true
 	# [name, angle from the aim line in the weapon's own frame (deg), expected hits]
 	var cases := [["start side", -half + 5.0, 1], ["end side", half - 5.0, 1],
@@ -35,7 +39,7 @@ func _init():
 		for cs in cases:
 			await _frames(3)
 			# local -> world through the mirrored aim node, so "start side" is where the blade starts
-			dummy.global_position = wv.global_transform * (Vector2.from_angle(deg_to_rad(cs[1])) * (cs[3] if cs.size() > 3 else 40.0))
+			dummy.global_position = wv.global_transform * (Vector2.from_angle(deg_to_rad(cs[1])) * ((cs[3] if cs.size() > 3 else 40.0) - maxf(gx, 0.0)))   # a Grip further up shortens the reach; a Grip behind the origin only adds to it, the distances still hit
 			hp.hp = hp.max_hp
 			await _frames(3)
 			_holder.try_attack()

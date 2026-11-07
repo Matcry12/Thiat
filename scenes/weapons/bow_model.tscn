@@ -11,3 +11,7 @@ texture = ExtResource("1")
 [node name="Muzzle" type="Marker2D" parent="."]
 position = Vector2(28, 0)
 
+
+; Drag me along the weapon: this is where the hand holds it.
+[node name="MainHandGrip" type="Marker2D" parent="."]
+gizmo_extents = 14.0

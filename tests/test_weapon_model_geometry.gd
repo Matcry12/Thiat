@@ -35,10 +35,23 @@ func _init():
 	# These numbers pin the sword MODEL at scale 1 (the hand-tuned original). A character's BodyRig only shrinks the picture
 	# (hitbox world transform is unchanged, see tests/test_body_rig.gd), so measure with the unscaled rig.
 	player.get_node("Visual").rig = load("res://data/body_rigs/soft_body.tres")
+	player.get_node("MainHandHold").position = Vector2(0, -9)   # these numbers were measured with the hand at (0,-9); the scene's Hand may be dragged elsewhere
 	await process_frame
 	var wv = arena.get_node("Player/WeaponVisual")
-	var blade = arena.get_node("Player/WeaponVisual/SwingPivot/SwordModel/Art")
-	var hb_shape = arena.get_node("Player/WeaponVisual/SwingPivot/SwordModel/Hitbox/CollisionShape2D")
+	# these numbers were measured with the Grip at 0,0; the scene's Grip may be dragged, so test a copy of the model with Grip 0
+	var wd: WeaponData = wv.weapon.duplicate()
+	var txt := FileAccess.get_file_as_string(wd.model.resource_path)
+	var gi := txt.find('[node name="MainHandGrip"')
+	var pi := txt.find("position = Vector2(", gi)
+	if gi >= 0 and pi >= 0:
+		var f := FileAccess.open("user://geo_grip0.tscn", FileAccess.WRITE)
+		f.store_string(txt.substr(0, pi) + "position = Vector2(0, 0)" + txt.substr(txt.find("\n", pi)))
+		f.close()
+		wd.model = ResourceLoader.load("user://geo_grip0.tscn", "", ResourceLoader.CACHE_MODE_IGNORE) as PackedScene
+		wv.weapon = wd
+		await process_frame
+	var blade = wv.get_model().get_node("Art")
+	var hb_shape = wv.get_model().get_node("Hitbox/CollisionShape2D")
 
 	var ok := true
 	var shape_ok: bool = hb_shape.shape.size.is_equal_approx(EXPECTED_SHAPE_SIZE)

@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/swing_motions/tool_chop.tres" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/axe_model.tscn" id="2"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Axe"
+behavior = "arc"
+damage = 10.0
+gather_damage = 2.0
+tool_power = 1
+tool_kind = &"axe"
+windup = 0.1
+active = 0.08
+recovery = 0.18
+model = ExtResource("2")
+swing_motion = ExtResource("3")
+hit_follows_blade = true
+tool_target_reach = 64.0
+tool_target_cone_deg = 110.0
+tool_target_hit_t = 0.6
+arc_degrees = 60.0
+sweep_samples = 12
+step_distance = 4.0
+parryable = true
