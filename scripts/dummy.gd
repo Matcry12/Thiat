@@ -3,6 +3,8 @@ extends CharacterBody2D
 ## then slides back to its spawn spot once left alone, so a combo never turns into chasing it.
 
 ## Seconds without a hit before it starts sliding home.
+## How it sounds when hit (data/sounds/*.tres).
+@export var sound_set: SoundSet
 @export_range(0.0, 5.0, 0.02, "or_greater", "or_less") var home_return_delay := 1.0
 ## Speed of the slide home, px/s.
 @export_range(10.0, 600.0, 2, "or_greater", "or_less") var home_return_speed := 120.0

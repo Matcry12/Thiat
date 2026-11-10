@@ -20,6 +20,7 @@ var _travelled := 0.0
 var _shooter_rid: RID
 var _first_step := true   ## see _physics_process: the first ray starts at the shooter, not the spawn point
 var _mask := 1 | 4       ## what this bolt hits: world + enemy hurtbox by default (player shots)
+var weapon: WeaponData   ## the bow that fired it (set by the shooter after setup): its sound_set may make the impact sound
 var _tag: StringName = &"arrow"   ## what Health/HitFx are told this shot is
 var _pierce := false      ## passes through targets instead of stopping (Piercing Shot)
 var _hit: Array[Node] = []   ## targets already damaged: a piercing arrow hits each once
@@ -119,4 +120,4 @@ func _damage_hurtbox(hurtbox: Hurtbox) -> void:
 	_hit.append(hurtbox.owner)
 	var health := hurtbox.get_health()
 	if health:
-		health.take_damage(_damage, _source, _parryable, _tag)
+		health.take_damage(_damage, _source, _parryable, _tag, weapon)

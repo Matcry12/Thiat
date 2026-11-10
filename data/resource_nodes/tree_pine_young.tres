@@ -3,9 +3,11 @@
 [ext_resource type="Script" path="res://scripts/world/resource_node_data.gd" id="1"]
 [ext_resource type="Resource" path="res://data/items/wood.tres" id="2"]
 [ext_resource type="Texture2D" path="res://assets/game/world/trees/pine_s2.png" id="3"]
+[ext_resource type="Resource" path="res://data/sounds/wood.tres" id="snd_set"]
 
 [resource]
 script = ExtResource("1")
+sound_set = ExtResource("snd_set")
 id = &"tree_pine_young"
 display_name = "Young tree (Pine)"
 max_hp = 4.0

@@ -37,6 +37,7 @@ for var, season in SEASON.items():
 [ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/oaks.png" id="3"]
 [ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/{STUMP["file"]}" id="4"]
 [ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/oaks_noshadow.png" id="5"]
+[ext_resource type="Resource" path="res://data/sounds/wood.tres" id="snd_set"]
 
 [resource]
 script = ExtResource("1")
@@ -60,6 +61,7 @@ pixel_scale = {PX}
 fade_when_behind = true
 color = Color(0.25, 0.55, 0.25, 1)
 hit_type = &"chop"
+sound_set = ExtResource("snd_set")
 ''')
         new["nodes"].append(nid)
 

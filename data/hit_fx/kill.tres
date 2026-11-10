@@ -1,11 +1,11 @@
 [gd_resource type="Resource" script_class="HitFxProfile" format=3]
 
 [ext_resource type="Script" path="res://scripts/fx/hit_fx_profile.gd" id="1"]
-[ext_resource type="AudioStream" path="res://assets/game/audio/boom.wav" id="2"]
 
 [resource]
 script = ExtResource("1")
 hit_type = &"kill"
+sound_slot = &"break_"
 stop_frames = 12
 slowmo_scale = 0.3
 slowmo_time = 0.8
@@ -13,9 +13,6 @@ flash_time = 0.4
 flash_color = Color(1, 1, 1, 1)
 flash_who = 0
 shake = 0.8
-sound = ExtResource("2")
-volume_db = 2
-pitch = 0.8
 knockback = 0.0
 recoil_px = 0.0
 recoil_time = 0.1

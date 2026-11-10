@@ -1,11 +1,11 @@
 [gd_resource type="Resource" script_class="HitFxProfile" format=3]
 
 [ext_resource type="Script" path="res://scripts/fx/hit_fx_profile.gd" id="1"]
-[ext_resource type="AudioStream" path="res://assets/game/audio/wood_break.tres" id="2"]
 
 [resource]
 script = ExtResource("1")
 hit_type = &"tree_break"
+sound_slot = &"break_"
 stop_frames = 2
 slowmo_scale = 1.0
 slowmo_time = 0.0
@@ -13,9 +13,6 @@ flash_time = 0.0
 flash_color = Color(1, 1, 1, 1)
 flash_who = 0
 shake = 0.2
-sound = ExtResource("2")
-volume_db = 0
-pitch = 1.0
 reaction = &"pop"
 knockback = 0
 recoil_px = 0

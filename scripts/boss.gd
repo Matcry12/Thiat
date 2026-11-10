@@ -17,6 +17,8 @@ enum Mode { IDLE, ACTION, STAGGER, DEAD }
 ## (or just left it, inside leash_delay). RETURNING = walks home, resets, takes no damage.
 enum Aggro { IDLE, ENGAGED, RETURNING }
 
+## How it sounds: hit, phase, break_ (dies). data/sounds/*.tres.
+@export var sound_set: SoundSet
 @export var move_speed := 110.0
 ## Speed (px/s) above which the visual shows the walk / run clip.
 @export var run_anim_speed := 8.0

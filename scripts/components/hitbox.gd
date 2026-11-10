@@ -203,4 +203,4 @@ func _try_hit(area: Area2D) -> void:
 		return
 	var health := hurtbox.get_health()
 	if health:
-		health.take_damage(weapon.damage, owner, weapon.parryable, &"melee")
+		health.take_damage(weapon.damage, owner, weapon.parryable, &"melee", weapon)

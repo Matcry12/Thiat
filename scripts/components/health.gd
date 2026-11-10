@@ -8,7 +8,7 @@ class_name Health
 ## emits `dodged` instead, so feedback (HUD/overlay) can hook either signal.
 
 signal damaged(amount: float)
-## Same moment as `damaged`, with the story of the hit: {amount, victim, source, direction (source -> victim), tag}.
+## Same moment as `damaged`, with the story of the hit: {amount, victim, source, direction (source -> victim), tag, weapon (WeaponData or null: its sound_set may make the impact sound)}.
 ## Effects listen here (HitFx). `tag` is the damage dealer's own label (&"melee", &"arrow", ...), empty if unknown.
 signal hit_taken(info: Dictionary)
 signal dodged
@@ -51,7 +51,7 @@ func _physics_process(delta: float) -> void:
 ## `source`/`parryable` feed an optional sibling Guard (slice 3): a parry
 ## negates the hit entirely, a block chips it, both duck-type a `stagger()`
 ## call onto `source` on a successful parry.
-func take_damage(raw_damage: float, source: Node = null, parryable := true, tag: StringName = &"") -> void:
+func take_damage(raw_damage: float, source: Node = null, parryable := true, tag: StringName = &"", weapon: Resource = null) -> void:
 	if invulnerable:
 		dodged.emit()
 		return
@@ -76,6 +76,6 @@ func take_damage(raw_damage: float, source: Node = null, parryable := true, tag:
 	if source is Node2D and victim is Node2D:
 		dir = ((victim as Node2D).global_position - (source as Node2D).global_position).normalized()
 	if was_alive:   # no hit feel on a corpse (a bolt still in flight when the player died)
-		hit_taken.emit({"amount": dealt, "victim": victim, "source": source, "direction": dir, "tag": tag})
+		hit_taken.emit({"amount": dealt, "victim": victim, "source": source, "direction": dir, "tag": tag, "weapon": weapon})
 	if hp <= 0.0:
 		died.emit()

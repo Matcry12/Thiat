@@ -48,6 +48,7 @@ for name, model in MODELS.items():
 [ext_resource type="Script" path="res://scripts/world/resource_node_data.gd" id="1"]
 [ext_resource type="Resource" path="res://data/items/wood.tres" id="2"]
 [ext_resource type="Texture2D" path="res://assets/game/world/trees/{name}_s{size}.png" id="3"]
+[ext_resource type="Resource" path="res://data/sounds/wood.tres" id="snd_set"]
 
 [resource]
 script = ExtResource("1")
@@ -66,6 +67,7 @@ anchors = PackedVector2Array({anc})
 {remains}fade_when_behind = true
 color = Color({col[0]}, {col[1]}, {col[2]}, 1)
 hit_type = &"chop"
+sound_set = ExtResource("snd_set")
 ''')
             made += 1
 print("tree nodes written:", made)

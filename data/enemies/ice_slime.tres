@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/enemies/slime.tscn" id="4"]
 [ext_resource type="SpriteFrames" path="res://data/enemies/slime_frames.tres" id="5"]
 [ext_resource type="Resource" path="res://data/enemies/ice_slime_visual.tres" id="6"]
+[ext_resource type="Resource" path="res://data/sounds/flesh.tres" id="snd_set"]
 
 [sub_resource type="Resource" id="GelDrop"]
 script = ExtResource("2")
@@ -16,6 +17,7 @@ chance = 1.0
 
 [resource]
 script = ExtResource("1")
+sound_set = ExtResource("snd_set")
 id = &"ice_slime"
 display_name = "Ice Slime"
 max_hp = 72.0

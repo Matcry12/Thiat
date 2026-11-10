@@ -17,7 +17,7 @@ const OLD_TARGETS := [
 	"Tool stone_axe", "Tool stone_pickaxe", "Item wood", "Respawner", "Crafter", "Recipe workbench",
 	"Recipe stone_pickaxe", "Recipe stone_axe", "Recipe bow", "Recipe furnace", "Recipe anvil", "Recipe copper_sword",
 	"Recipe copper_axe", "Recipe copper_pickaxe", "Placer", "Smelt copper_bar", "HitFx", "HitStop",
-	"CameraShake", "HitSound", "HitSparks", "DamageNumbers", "Hit sword", "Hit sword_boss",
+	"CameraShake", "Sound", "HitSparks", "DamageNumbers", "Hit sword", "Hit sword_boss",
 	"Hit lunge", "Hit arrow", "Hit charged_arrow", "Hit parry", "Hit block", "Hit player_hit",
 	"Hit phase_change", "Hit kill", "Hit chop", "Hit mine", "Hit clink", "Hit node_break",
 	"HUD", "HealthBar", "Hotbar", "BagPanel", "InventorySkin", "Dummy",
@@ -71,7 +71,7 @@ func _init() -> void:
 			ok = false
 	var extra := []
 	for k in names:
-		if not OLD_TARGETS.has(k) and not (k as String).begins_with("Tool "):   # one "Tool <id>" section per tool: a new tool must not break this list
+		if not OLD_TARGETS.has(k) and not (k as String).begins_with("Tool ") and not (k as String).begins_with("Sound "):   # one "Tool <id>" section per tool: a new tool must not break this list   # one "Sound <set>" (+ cue) section per data/sounds file
 			extra.append(k)
 	extra.sort()
 	print("targets: %d old, %d found; new owners: %s" % [OLD_TARGETS.size(), names.size(), extra])

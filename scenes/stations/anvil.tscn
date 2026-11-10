@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/station.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/components/hurtbox.gd" id="2"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" path="res://assets/game/stations/anvil.png" id="4"]
 
 [ext_resource type="Script" path="res://scripts/fx/node_hit_reaction.gd" id="reaction"]
+[ext_resource type="Resource" path="res://data/sounds/stone.tres" id="snd_set"]
 
 [sub_resource type="RectangleShape2D" id="Body"]
 resource_local_to_scene = true
@@ -19,6 +20,7 @@ size = Vector2(72, 40)
 collision_layer = 1
 collision_mask = 0
 script = ExtResource("1")
+sound_set = ExtResource("snd_set")
 art = ExtResource("4")
 art_region = Rect2(0, 0, 32, 20)
 color = Color(0.5, 0.55, 0.65, 1)

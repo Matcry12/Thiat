@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="SoundSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/sound_set.gd" id="set"]
+
+[resource]
+script = ExtResource("set")
+id = &"blade"

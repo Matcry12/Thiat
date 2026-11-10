@@ -58,6 +58,8 @@ extends Resource
 ## Placeholder colour when there is no texture.
 @export var color := Color.WHITE
 @export_group("Hit feel")
+## How it sounds (hit, break_, wrong_tool): data/sounds/*.tres. hit_type / break_type below only pick the visual reaction.
+@export var sound_set: SoundSet
 @export var hit_type: StringName = &"chop"
 @export var clink_type: StringName = &"clink"
 @export var break_type: StringName = &"node_break"

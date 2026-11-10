@@ -13,6 +13,7 @@
 [ext_resource type="Script" path="res://scripts/boss/ring_attack.gd" id="11"]
 [ext_resource type="PackedScene" path="res://scenes/projectiles/boss_bolt.tscn" id="12"]
 [ext_resource type="Texture2D" path="res://assets/game/placeholder/shadow.png" id="14"]
+[ext_resource type="Resource" path="res://data/sounds/boss_orc.tres" id="snd_set"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 28.0
@@ -35,6 +36,7 @@ radius = 180.0
 [node name="Boss" type="CharacterBody2D"]
 motion_mode = 1
 script = ExtResource("1")
+sound_set = ExtResource("snd_set")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("BodyShape")

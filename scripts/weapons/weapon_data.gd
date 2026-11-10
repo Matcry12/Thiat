@@ -6,6 +6,8 @@ class_name WeaponData
 ## HUD hotbar look. Both optional: no icon = the model's Art sprite is shown; no name = the file name prettified.
 @export var icon: Texture2D
 @export var display_name := ""
+## How it sounds (data/sounds/*.tres): `hit` filled = this weapon makes the impact sound itself (arrows); else the target does. `swing` = whoosh.
+@export var sound_set: SoundSet
 @export var damage := 30.0
 ## Gathering (v1 §4). HP taken from a tree/rock per hit; 0 = this weapon can't gather.
 @export var gather_damage := 0.0

@@ -1,11 +1,11 @@
 [gd_resource type="Resource" script_class="HitFxProfile" format=3]
 
 [ext_resource type="Script" path="res://scripts/fx/hit_fx_profile.gd" id="1"]
-[ext_resource type="AudioStream" path="res://assets/game/audio/player_hurt.wav" id="2"]
 
 [resource]
 script = ExtResource("1")
 hit_type = &"player_hit"
+sound_slot = &"hit"
 stop_frames = 0
 slowmo_scale = 1.0
 slowmo_time = 0.0
@@ -13,9 +13,6 @@ flash_time = 0.12
 flash_color = Color(1, 0.1, 0.1, 1)
 flash_who = 0
 shake = 0.25
-sound = ExtResource("2")
-volume_db = 0
-pitch = 1.0
 knockback = 20.0
 recoil_px = 0.0
 recoil_time = 0.1

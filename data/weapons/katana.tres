@@ -4,9 +4,11 @@
 [ext_resource type="PackedScene" path="res://scenes/weapons/katana_model.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/skills/lunge_slash.tscn" id="3"]
 [ext_resource type="Resource" path="res://data/swing_motions/sword_natural.tres" id="4"]
+[ext_resource type="Resource" path="res://data/sounds/blade.tres" id="snd_set"]
 
 [resource]
 script = ExtResource("1")
+sound_set = ExtResource("snd_set")
 display_name = "Katana"
 damage = 20.0
 model = ExtResource("2")

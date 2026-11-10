@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SoundSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/sound_set.gd" id="set"]
+[ext_resource type="Resource" path="res://data/sounds/cues/player_hit.tres" id="c_hit"]
+[ext_resource type="Resource" path="res://data/sounds/cues/player_block.tres" id="c_block"]
+[ext_resource type="Resource" path="res://data/sounds/cues/player_parry.tres" id="c_parry"]
+
+[resource]
+script = ExtResource("set")
+id = &"player"
+hit = ExtResource("c_hit")
+block = ExtResource("c_block")
+parry = ExtResource("c_parry")

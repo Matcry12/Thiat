@@ -3,8 +3,10 @@
 ## Fast way (one command)
 
 ```
-python3 tools/add_weapon.py <picture.png> <id> [--kind sword|axe|pickaxe|hoe] [--scale N] [--flip] [--hands 1|2] [--name "Display Name"] [--dry-run] [--no-import]
+python3 tools/add_weapon.py <picture.png> <id> [--kind sword|axe|pickaxe|hoe] [--scale N] [--flip] [--hands 1|2] [--sound blade|tool|bow|<set>] [--name "Display Name"] [--dry-run] [--no-import]
 ```
+
+`--sound` = the SoundSet in `data/sounds/` (default: sword -> `blade`, axe / pickaxe / hoe -> `tool`). Both are silent on the swing for now; the target makes the hit sound.
 
 - `<id>` is snake_case (`iron_sword`). It never overwrites: if the item, weapon or model exists, it stops.
 - Draw the picture pointing **up**, handle at the bottom. The handle is the lower end of the long axis. If the script picked the wrong end, run again with `--flip`.

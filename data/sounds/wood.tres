@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SoundSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/sound_set.gd" id="set"]
+[ext_resource type="Resource" path="res://data/sounds/cues/wood_hit.tres" id="c_hit"]
+[ext_resource type="Resource" path="res://data/sounds/cues/wood_break.tres" id="c_break_"]
+[ext_resource type="Resource" path="res://data/sounds/cues/wood_wrong_tool.tres" id="c_wrong_tool"]
+[ext_resource type="Resource" path="res://data/sounds/cues/wood_place.tres" id="c_place"]
+
+[resource]
+script = ExtResource("set")
+id = &"wood"
+hit = ExtResource("c_hit")
+break_ = ExtResource("c_break_")
+wrong_tool = ExtResource("c_wrong_tool")
+place = ExtResource("c_place")

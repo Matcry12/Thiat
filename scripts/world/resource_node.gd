@@ -46,7 +46,7 @@ func restore_broken() -> void:
 func take_gather_hit(weapon: WeaponData, source: Node2D) -> bool:
 	if is_broken() or weapon == null:
 		return false
-	var info := {"source": source, "direction": (global_position - source.global_position).normalized()}
+	var info := {"source": source, "direction": (global_position - source.global_position).normalized(), "weapon": weapon}
 	if weapon.gather_damage <= 0.0 or weapon.tool_power < data.required_power:
 		_note_hit()
 		_fx(data.clink_type, source, info)
@@ -58,6 +58,7 @@ func take_gather_hit(weapon: WeaponData, source: Node2D) -> bool:
 	hp = maxf(hp - weapon.gather_damage * bonus, 0.0)
 	_note_hit()
 	info["hp_fraction"] = hp / data.max_hp   # the hit feel scales with it (bigger as the node nears its break)
+	info["no_sound"] = is_broken()   # break wins: the breaking hit plays only the break sound (one sound per event)
 	_fx(data.hit_type, source, info)
 	if is_broken():
 		_break(source)
@@ -87,7 +88,7 @@ func _fx(type: StringName, source: Node, info: Dictionary) -> void:
 		_hit_fx.fire(type, self, source, info)
 
 func _break(source: Node) -> void:
-	_fx(data.break_type, source, {"source": source, "hp_fraction": 0.0, "direction": (global_position - source.global_position).normalized()})
+	_fx(data.break_type, source, {"source": source, "weapon": null, "hp_fraction": 0.0, "direction": (global_position - source.global_position).normalized()})
 	get_node("CollisionShape2D").set_deferred("disabled", true)
 	get_node("Hurtbox").set_deferred("monitorable", false)
 	broken.emit(self)

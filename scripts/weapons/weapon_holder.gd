@@ -168,6 +168,7 @@ func _spawn_projectile() -> void:
 	p.global_position = shot_start()
 	p.setup(aim_direction, weapon.projectile_speed, weapon.projectile_range,
 			weapon.damage, weapon.parryable, get_parent())
+	p.weapon = weapon
 
 func _set_phase(new_phase: Phase) -> void:
 	phase = new_phase

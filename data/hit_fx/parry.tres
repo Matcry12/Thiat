@@ -1,11 +1,11 @@
 [gd_resource type="Resource" script_class="HitFxProfile" format=3]
 
 [ext_resource type="Script" path="res://scripts/fx/hit_fx_profile.gd" id="1"]
-[ext_resource type="AudioStream" path="res://assets/game/audio/parry_chime.wav" id="2"]
 
 [resource]
 script = ExtResource("1")
 hit_type = &"parry"
+sound_slot = &"parry"
 stop_frames = 6
 slowmo_scale = 1.0
 slowmo_time = 0.0
@@ -13,9 +13,6 @@ flash_time = 0.1
 flash_color = Color(1, 1, 1, 1)
 flash_who = 1
 shake = 0.3
-sound = ExtResource("2")
-volume_db = 0
-pitch = 1.0
 knockback = 0.0
 recoil_px = 6.0
 recoil_time = 0.1

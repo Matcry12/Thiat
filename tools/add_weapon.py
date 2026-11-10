@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Add a weapon / tool from one PNG: icon + data/items + data/weapons + scenes/weapons model.
-  python3 tools/add_weapon.py <picture.png> <id> [--kind sword|axe|pickaxe|hoe] [--scale N] [--flip] [--hands 1|2] [--name "X"] [--dry-run] [--no-import]
+  python3 tools/add_weapon.py <picture.png> <id> [--kind sword|axe|pickaxe|hoe] [--scale N] [--flip] [--hands 1|2] [--sound blade|tool|bow|<set>] [--name "X"] [--dry-run] [--no-import]
+--sound = the SoundSet in data/sounds/ (default: sword -> blade, axe / pickaxe / hoe -> tool).
 --hands 1 = one-handed (no OffHandGrip marker, the free hand stays on the body). Default 2.
 The picture must be drawn pointing up (handle low). Handle = the LOWER end of the long axis (--flip swaps)."""
 import argparse, math, re, shutil, subprocess, sys
@@ -53,6 +54,14 @@ category = "{k["cat"]}"
 max_stack = 1
 weapon = ExtResource("w")
 '''
+
+def with_sound(text, sound):
+    """Point the weapon at a SoundSet (data/sounds/<sound>.tres)."""
+    text = text.replace("\n[resource]\nscript = ExtResource(\"1\")\n",
+        f'\n[ext_resource type="Resource" path="res://data/sounds/{sound}.tres" id="snd_set"]\n\n[resource]\nscript = ExtResource("1")\nsound_set = ExtResource("snd_set")\n', 1)
+    assert "sound_set" in text
+    return text
+
 
 def tres_weapon(i, name, kind, k):
     if kind == "sword":
@@ -157,6 +166,7 @@ def main():
     p.add_argument("--scale", type=float, default=3.0)
     p.add_argument("--flip", action="store_true")
     p.add_argument("--hands", type=int, default=2, choices=[1, 2])
+    p.add_argument("--sound", help="SoundSet id in data/sounds/ (default by kind)")
     p.add_argument("--name")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--no-import", action="store_true")
@@ -172,6 +182,9 @@ def main():
     f = detect(Path(a.png), a.flip)
     name = a.name or i.replace("_", " ").title()
     k = KINDS[a.kind]
+    sound = a.sound or ("blade" if a.kind == "sword" else "tool")
+    if not (ROOT / f"data/sounds/{sound}.tres").exists():
+        sys.exit(f"no sound set data/sounds/{sound}.tres")
     print(f"angle: art rotation {f['rot']} deg (long axis {f['axis']:.1f} deg in picture), offset {f['off']}")
     print(f"handle end pixel {f['handle']}, tip end pixel {f['tip']}  (handle = {'UPPER end, --flip' if a.flip else 'lower end'})")
     print(f"length in game: {f['length'] * a.scale:.0f} px (picture {f['length']:.0f} px x scale {a.scale:g})")
@@ -179,7 +192,7 @@ def main():
         return
     shutil.copyfile(a.png, out["icon"])
     out["item"].write_text(tres_item(i, name, k))
-    out["weapon"].write_text(tres_weapon(i, name, a.kind, k))
+    out["weapon"].write_text(with_sound(tres_weapon(i, name, a.kind, k), sound))
     out["model"].write_text(tscn_model(i, k, f, a.scale, a.kind, a.hands))
     print("made:", *[str(v.relative_to(ROOT)) for v in out.values()], sep="\n  ")
     if not a.no_import:

@@ -4,6 +4,8 @@ extends Resource
 
 @export var id: StringName = &"slime"
 @export var display_name := "Slime"
+## How it sounds when hit (data/sounds/*.tres).
+@export var sound_set: SoundSet
 @export_group("Body")
 @export_range(1.0, 5000.0, 1.0, "or_greater") var max_hp := 40.0
 @export_range(0.0, 600.0, 1.0, "or_greater") var move_speed := 45.0   ## wander / walk-home speed, px/s

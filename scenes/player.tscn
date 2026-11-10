@@ -34,6 +34,7 @@
 [ext_resource type="Resource" path="res://data/body_rigs/pixel_plains.tres" id="rig"]
 [ext_resource type="Script" uid="uid://661k0pygu5hh" path="res://scripts/components/swimmer.gd" id="swimmer_script"]
 [ext_resource type="Script" uid="uid://dhsyd41tvs3t5" path="res://scripts/visual/water_fx.gd" id="water_fx_script"]
+[ext_resource type="Resource" path="res://data/sounds/player.tres" id="snd_set"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -44,6 +45,7 @@ radius = 15.0
 [node name="Player" type="CharacterBody2D" unique_id=1610032297]
 motion_mode = 1
 script = ExtResource("1")
+sound_set = ExtResource("snd_set")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=2036448946]
 shape = SubResource("BodyShape")

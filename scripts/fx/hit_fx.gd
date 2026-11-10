@@ -19,7 +19,6 @@ signal hit_fx(hit_type: StringName)
 @export var enabled := true
 @export var flash_on := true
 @export var stop_on := true
-@export var sound_on := true
 @export var shake_on := true
 @export var recoil_on := true
 @export var sparks_on := true
@@ -34,7 +33,7 @@ signal hit_fx(hit_type: StringName)
 @export_range(1.0, 200.0, 1, "or_greater", "or_less") var test_amount := 25.0
 
 var stop := HitStop.new()
-var sound := HitSound.new()
+var sound := SoundBoard.new()
 var shake := CameraShake.new()
 var sparks := HitSparks.new()
 var numbers := DamageNumbers.new()
@@ -61,7 +60,7 @@ func _ready() -> void:
 	sparks.name = "HitSparks"
 	numbers.name = "DamageNumbers"
 	stop.name = "HitStop"
-	sound.name = "HitSound"
+	sound.name = "SoundBoard"
 	shake.name = "CameraShake"
 	for p in profiles:
 		_by_type[p.hit_type] = p
@@ -113,6 +112,10 @@ func _on_hit_taken(info: Dictionary) -> void:
 	var type := &"player_hit"
 	if victim != _player:
 		type = HitFxProfile.type_for_tag(info["tag"], victim is Boss)   # melee or untagged = sword
+	var h := victim.get_node_or_null("Health") as Health if victim else null
+	if h and h.hp <= 0.0 and victim.has_signal("defeated"):
+		info = info.duplicate()
+		info["no_sound"] = true   # break wins: the kill event that follows plays the one sound
 	fire(type, victim, info["source"], info)
 
 ## Plays every layer of `hit_type`. `victim` = who was hit (or the actor the event is about); `source` = who hit.
@@ -133,9 +136,9 @@ func fire(hit_type: StringName, victim: Node, source: Node, info := {}) -> void:
 	if stop_on and (p.stop_frames > 0 or p.slowmo_time > 0.0):
 		stop.request(p.stop_frames, p.slowmo_scale, p.slowmo_time)
 		layer_counts["stop"] += 1
-	if sound_on and p.sound:
-		sound.play(p.sound, p.volume_db, p.pitch + p.pitch_gain * (1.0 - float(info.get("hp_fraction", 1.0))))
-		layer_counts["sound"] += 1
+	if p.sound_slot != &"" and not info.get("no_sound", false) and sound.enabled:
+		if sound.play(_sound_set(p, victim, info), p.sound_slot, info):
+			layer_counts["sound"] += 1
 	var dir: Vector2 = info.get("direction", _dir_between(source, victim))
 	if recoil_on and p.recoil_px > 0.0:
 		var who := source if p.recoil_who == 1 else victim
@@ -169,6 +172,13 @@ func fire(hit_type: StringName, victim: Node, source: Node, info := {}) -> void:
 			shake.add_trauma(extra)
 			layer_counts["shake"] += 1
 
+## Whose set plays this hit: the target's makes the impact; a weapon whose own set has this slot filled (arrow) plays instead.
+func _sound_set(p: HitFxProfile, victim: Node, info: Dictionary) -> SoundSet:
+	var w := info.get("weapon") as WeaponData
+	if w != null and w.sound_set != null and w.sound_set.cue(p.sound_slot) != null:
+		return w.sound_set
+	return SoundSet.of(victim)
+
 func _dir_between(source: Node, victim: Node) -> Vector2:
 	if source is Node2D and victim is Node2D:
 		return ((victim as Node2D).global_position - (source as Node2D).global_position).normalized()
@@ -191,7 +201,7 @@ func test_hit(kind: StringName) -> void:
 		&"kill": fire(&"kill", _boss if _boss else _dummy, null)
 		&"boss_sword": fire(&"sword_boss", _boss, _player)
 		&"lunge": fire(&"lunge", _dummy, _player)
-		&"charged_arrow": fire(&"charged_arrow", _boss if _boss else _dummy, _player)
+		&"charged_arrow": fire(&"charged_arrow", _boss if _boss else _dummy, _player, {"weapon": load("res://data/weapons/bow.tres")})
 
 func _test_origin() -> Vector2:
 	return (_player as Node2D).global_position if _player is Node2D else Vector2.ZERO
@@ -212,7 +222,7 @@ func debug_category() -> String:
 
 func debug_children() -> Array:
 	var out: Array = [
-		{"name": "HitStop", "object": stop}, {"name": "CameraShake", "object": shake}, {"name": "HitSound", "object": sound},
+		{"name": "HitStop", "object": stop}, {"name": "CameraShake", "object": shake},
 		{"name": "NodeReaction", "object": node_fx}, {"name": "HitSparks", "object": sparks}, {"name": "DamageNumbers", "object": numbers},
 	]
 	for prof in profile_list():   # one section per hit type (its .tres numbers)

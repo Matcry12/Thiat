@@ -162,6 +162,9 @@ func _place(it: ItemData, st: Station, pos: Vector2, consume: bool) -> bool:
 	if consume and inv and lo and inv.slot_item(lo.selected_slot) == it:
 		inv.remove_from_slot(lo.selected_slot, 1)
 	last_placed = "%s at %d,%d" % [it.display_name, pos.x, pos.y]
+	var board := get_tree().get_first_node_in_group("sound_board") as SoundBoard
+	if board:
+		board.play(SoundSet.of(st), &"place")
 	placed.emit(st)
 	return true
 

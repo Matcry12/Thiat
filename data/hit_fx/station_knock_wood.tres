@@ -1,11 +1,11 @@
 [gd_resource type="Resource" script_class="HitFxProfile" format=3]
 
 [ext_resource type="Script" path="res://scripts/fx/hit_fx_profile.gd" id="1"]
-[ext_resource type="AudioStream" path="res://assets/game/audio/wood_chop.tres" id="2"]
 
 [resource]
 script = ExtResource("1")
 hit_type = &"station_knock_wood"
+sound_slot = &"wrong_tool"
 stop_frames = 0
 slowmo_scale = 1.0
 slowmo_time = 0.0
@@ -13,9 +13,6 @@ flash_time = 0.0
 flash_color = Color(1, 1, 1, 1)
 flash_who = 0
 shake = 0.0
-sound = ExtResource("2")
-volume_db = -4
-pitch = 0.8
 reaction = &"chop"
 sway_scale = 0.3
 chip_scale = 0.0

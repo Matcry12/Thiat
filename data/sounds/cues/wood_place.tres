@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="SoundCue" format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/sound_cue.gd" id="cue"]
+[ext_resource type="AudioStream" path="res://assets/game/audio/wood_chop.tres" id="s"]
+
+[resource]
+script = ExtResource("cue")
+stream = ExtResource("s")
+volume_db = -2
+pitch = 0.9

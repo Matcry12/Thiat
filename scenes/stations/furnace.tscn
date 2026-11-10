@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/station.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/components/hurtbox.gd" id="2"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/world/furnace_cue.gd" id="6"]
 
 [ext_resource type="Script" path="res://scripts/fx/node_hit_reaction.gd" id="reaction"]
+[ext_resource type="Resource" path="res://data/sounds/stone.tres" id="snd_set"]
 
 [sub_resource type="RectangleShape2D" id="Body"]
 resource_local_to_scene = true
@@ -21,6 +22,7 @@ size = Vector2(60, 46)
 collision_layer = 1
 collision_mask = 0
 script = ExtResource("1")
+sound_set = ExtResource("snd_set")
 art = ExtResource("4")
 art_region = Rect2(1, 87, 30, 41)
 color = Color(0.7, 0.35, 0.25, 1)

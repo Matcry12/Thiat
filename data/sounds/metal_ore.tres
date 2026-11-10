@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SoundSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/sound_set.gd" id="set"]
+[ext_resource type="Resource" path="res://data/sounds/cues/metal_ore_hit.tres" id="c_hit"]
+[ext_resource type="Resource" path="res://data/sounds/cues/metal_ore_break.tres" id="c_break_"]
+[ext_resource type="Resource" path="res://data/sounds/cues/metal_ore_wrong_tool.tres" id="c_wrong_tool"]
+
+[resource]
+script = ExtResource("set")
+id = &"metal_ore"
+hit = ExtResource("c_hit")
+break_ = ExtResource("c_break_")
+wrong_tool = ExtResource("c_wrong_tool")

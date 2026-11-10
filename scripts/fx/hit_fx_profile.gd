@@ -21,12 +21,9 @@ class_name HitFxProfile
 ## Trauma added to the camera (0..1; shake size grows with its square).
 @export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var shake := 0.2
 @export_group("Sound")
-@export var sound: AudioStream
-@export_range(-30.0, 12.0, 0.2, "or_greater", "or_less") var volume_db := 0.0
-## Base pitch; HitSound adds a random +/- on top.
-@export_range(0.3, 2.0, 0.01, "or_greater", "or_less") var pitch := 1.0
-## Extra pitch when the node is nearly broken: pitch + pitch_gain * (1 - hp fraction). 0 = off. Only for hits that report `hp_fraction`.
-@export_range(0.0, 1.0, 0.01, "or_greater", "or_less") var pitch_gain := 0.0
+## Which slot of a SoundSet this hit plays: hit, break_, wrong_tool, place, block, parry, phase, hit_charged. Empty = silent.
+## The files live in data/sounds/*.tres (SoundSet), never here.
+@export var sound_slot: StringName = &""
 @export_group("Reaction (nodes)")
 ## Visual reaction of a gatherable node (tree, rock, copper): "chop" (sway + chips + leaves) or "pop" (scale up, burst, stump).
 ## Every node's hit profile (chop, mine, ...) and break profile (tree_break, node_break, ...) carries one; a new node kind copies them. Empty = none.

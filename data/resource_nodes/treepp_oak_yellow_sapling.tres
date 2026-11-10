@@ -5,9 +5,11 @@
 [ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/oaks.png" id="3"]
 [ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/hedges.png" id="4"]
 [ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/oaks_noshadow.png" id="5"]
+[ext_resource type="Resource" path="res://data/sounds/wood.tres" id="snd_set"]
 
 [resource]
 script = ExtResource("1")
+sound_set = ExtResource("snd_set")
 id = &"treepp_oak_yellow_sapling"
 display_name = "Tree (Oak)"
 max_hp = 2.0

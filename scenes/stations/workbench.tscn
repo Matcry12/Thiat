@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/station.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/components/hurtbox.gd" id="2"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" path="res://assets/game/stations/workbench.png" id="4"]
 
 [ext_resource type="Script" path="res://scripts/fx/node_hit_reaction.gd" id="reaction"]
+[ext_resource type="Resource" path="res://data/sounds/wood.tres" id="snd_set"]
 
 [sub_resource type="RectangleShape2D" id="Body"]
 resource_local_to_scene = true
@@ -19,6 +20,7 @@ size = Vector2(72, 44)
 collision_layer = 1
 collision_mask = 0
 script = ExtResource("1")
+sound_set = ExtResource("snd_set")
 knock_type = &"station_knock_wood"
 pickup_type = &"station_pickup_wood"
 art = ExtResource("4")

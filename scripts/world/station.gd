@@ -15,6 +15,8 @@ signal picked_up
 ## Hit feel (HitFx profiles): a wrong tool knocks it, a pickaxe pops it into the bag. Per scene: wood or stone sounds.
 @export var knock_type: StringName = &"station_knock_stone"
 @export var pickup_type: StringName = &"station_pickup_stone"
+## How it sounds: knock (wrong_tool), pick up (break_), placed (place). data/sounds/*.tres.
+@export var sound_set: SoundSet
 @export var pickup_lockout := 0.5              ## s after a pickup in which no other station can be picked up
 
 ## What you get back on pickup (set by the Placer). Plain var: code-owned.

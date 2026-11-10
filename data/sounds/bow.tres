@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="SoundSet" format=3]
+
+[ext_resource type="Script" path="res://scripts/audio/sound_set.gd" id="set"]
+[ext_resource type="Resource" path="res://data/sounds/cues/bow_hit.tres" id="c_hit"]
+[ext_resource type="Resource" path="res://data/sounds/cues/bow_hit_charged.tres" id="c_hit_charged"]
+
+[resource]
+script = ExtResource("set")
+id = &"bow"
+hit = ExtResource("c_hit")
+hit_charged = ExtResource("c_hit_charged")

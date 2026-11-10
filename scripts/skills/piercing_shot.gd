@@ -57,3 +57,4 @@ func _fire() -> void:
 	parent.add_child(p)
 	p.global_position = weapon_holder.shot_start()
 	p.setup(aim_direction, arrow_speed, arrow_range, damage, parryable, _user, true, 1 | 4, null, &"charged_arrow")
+	p.weapon = weapon_holder.weapon

@@ -4,6 +4,8 @@ extends CharacterBody2D
 ## (set_move_state/set_facing/set_weapon_state/set_aim_angle) — never touched
 ## for internals (decision 0005, 0010).
 
+## How it sounds: hit (hurt), block, parry. data/sounds/*.tres.
+@export var sound_set: SoundSet
 @export var speed := 260.0
 ## Holding attack with a tool keeps gathering (weapons stay one click per swing, 0036).
 @export var hold_to_gather := true

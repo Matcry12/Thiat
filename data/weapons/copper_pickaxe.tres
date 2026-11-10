@@ -3,9 +3,11 @@
 [ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
 [ext_resource type="Resource" path="res://data/swing_motions/tool_chop.tres" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/weapons/copper_pickaxe_model.tscn" id="2"]
+[ext_resource type="Resource" path="res://data/sounds/tool.tres" id="snd_set"]
 
 [resource]
 script = ExtResource("1")
+sound_set = ExtResource("snd_set")
 display_name = "Copper Pickaxe"
 behavior = "arc"
 damage = 10.0
