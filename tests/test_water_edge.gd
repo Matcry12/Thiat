@@ -10,7 +10,7 @@ func _check(cond: bool, msg: String) -> void:
 
 var _m: ArenaMap
 
-## Is the picture water at art pixel a? Read from the baked corner tile itself (water = transparent, the water fill or the bank band).
+## Is the picture water at art pixel a? Read from the baked corner tile itself (water = transparent or the water fill).
 func _drawn_water(a: Vector2i) -> bool:
 	var pp := _m.style.pixel_plains
 	var t := pp.tile_size
@@ -20,7 +20,7 @@ func _drawn_water(a: Vector2i) -> bool:
 	var c := img.get_pixelv(a + Vector2i(h, h) - tile * t)
 	var wf := pp.fill_of(PixelPlainsGround.Mat.WATER)
 	var same := func(x: Color, y: Color) -> bool: return x.r8 == y.r8 and x.g8 == y.g8 and x.b8 == y.b8
-	return c.a8 == 0 or same.call(c, wf) or same.call(c, pp.band_colour)
+	return c.a8 == 0 or same.call(c, wf)
 
 func _init() -> void:
 	var arena = load("res://scenes/arena.tscn").instantiate()

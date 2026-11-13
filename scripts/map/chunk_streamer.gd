@@ -337,10 +337,10 @@ func _build_visuals(ch: Chunk) -> void:
 	for i in _deco[ch.id]:
 		list.append(res.deco[i])
 	if not list.is_empty():
-		ch.deco = ChunkDeco.build(list, map.style.deco, float(map.style.pixel_scale), map.ysort_min_px)
+		ch.deco = ChunkDeco.build(list, map.style.deco, float(map.style.pixel_scale), map.ysort_min_px, map.biome_id_at)
 		ch.deco.name = "Deco%d" % ch.id
 		map.deco_root().add_child(ch.deco)
-		ch.tall = ChunkDeco.build_tall(list, map.style.deco, float(map.style.pixel_scale), map.ysort_min_px)
+		ch.tall = ChunkDeco.build_tall(list, map.style.deco, float(map.style.pixel_scale), map.ysort_min_px, map.biome_id_at)
 		for sp in ch.tall:
 			map.obstacles_root().add_child(sp)
 	part_ms["deco"] += ((Time.get_ticks_usec() - t1) / 1000.0 - part_ms["deco"]) / (built_total + 1)
@@ -369,6 +369,7 @@ func _build_nodes(ch: Chunk) -> void:
 				continue   # gathered and nothing is left to see
 			var rn: ResourceNode = RESOURCE_NODE.instantiate()
 			rn.setup(data, o["region"])
+			rn.biome = map.biome_id_at(o["pos"])
 			rn.placement = idx
 			rn.position = o["pos"]
 			rn.broken.connect(_on_node_broken)

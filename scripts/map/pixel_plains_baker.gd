@@ -7,13 +7,11 @@ extends RefCounted
 ## Rules, like the reference: 4 cells of one material = a fill tile (hash of the corner picks it, so chunks match);
 ## 2 materials with a table = the table's quarters; water in the corner or any other mix = each quarter shows its own cell's plain quarter.
 ## Map rule on top: a dark cell with dirt within `dark_dirt_gap` cells becomes light grass.
-## Slice 2 (decision 0046): a corner that holds sand, snow or water is built by _compose(): the grounds of the corner sorted by (level, priority),
-## the lowest one flat, every higher one drawn with the light_on_dirt shape in the ground's own sheet colours (step or flat border, see
-## PixelPlainsGround Levels); water is not painted (the flat water sprite shows through) except bank band / shadow pixels. The picture
-## "foam" is now the ANIMATION MASK (RGBA8, R = kind: 1 beach foam, 2 foam dash, 3 shore water (flat water over the marks), G = j * 8 + length, B = phase) that terrain_anim.gdshader
-## lights frame by frame; marks on open water come from terrain_water_flat.gdshader.
-## All flat (decision 0047, the default): every mixed corner goes through _compose(), so dark / light grass and grass / dirt get the same quiet
-## flat border as the rest (the pack's own raised-edge pairs are only used with all_flat off). Everything is tile local: a chunk baked alone equals the whole map.
+## Ground tile set (decision 0069): a corner that holds sand, snow or water (or any mix, all_flat) is stacked by _compose() from PICTURES: the grounds
+## of the corner sorted by priority, the lowest one is its base slot (water: the flat cell of ground/water.png), every higher one is its edge slot of
+## its sheet drawn over it. The picture "foam" is the ANIMATION MASK (RGBA8, R = 1 foam pixel, G / B = x / y of its colour in frame 0 of ground/foam.png)
+## that terrain_anim.gdshader reads per frame; the open-water wave marks are rows of water.png chosen by terrain_water_flat.gdshader.
+## tools/bake_ground_art.gd -- tiles draws the pictures once from _layer() (the old code look). Everything is tile local: a chunk baked alone equals the whole map.
 
 class Cache:
 	var pp: PixelPlainsGround
@@ -21,16 +19,60 @@ class Cache:
 	var quarters := {}   ## Vector3i -> 8x8 Image
 	var fills := {}      ## Vector2i -> 16x16 Image
 	var tiles := {}      ## pair * 16 + mask -> composed 16x16 Image
-	var composed := {}   ## Vector4i of 4 x (material * 16 + level) -> {img, anim, has_anim, cands, ok}
+	var composed := {}   ## Vector4i of the 4 materials -> {img, anim, has_anim, land}
 	var roles := {}      ## mask -> PackedByteArray of the role of every pixel of the pack's light_on_dirt tile
 	var skins := {}      ## Skin -> that ground's sheet Image (assets/game/map/pixel_plains/ground/)
 	var pal := {}        ## material -> PackedColorArray [fill, highlight, outline, shade] read from its sheet
+	var foam_pic: Image  ## ground/foam.png: 8 frames of 4x4 slots (slot = sand mask), foam colour where lit
+	var water_pic: Image ## ground/water.png: cell (0,0) = flat water, below it one row of 8 frames per wave mark variant
+	var slots := {}      ## (biome + 1) * 256 + material * 16 + slot -> 16x16 Image of the edge block of that ground's sheet
+	var foam_any := {}   ## (biome + 1) * 16 + mask -> PackedByteArray, 1 = lit in some frame of that biome's foam.png
+	var grounds := {}    ## "file/biome" -> Image of a ground file of a biome (or the base file)
 
 static var _caches := {}
+static var _from_files := false   ## after reload_pictures(): read the PNGs from disk (no editor re-import needed)
+## Layout of the ground pictures (art facts, not tuning): slot s of a ground sheet = cell (s % 4, 1 + s / 4); foam.png frames are 4 x 4 slots wide;
+## water.png has the flat water cell on top, then wave mark variants of MARK_BLOCK px.
+const EDGE_ROW := 1
+const FOAM_FRAMES := 8
+const WATER_TOP := 16
+const MARK_BLOCK := 32
 
 
 static func clear_cache() -> void:
 	_caches.clear()
+
+
+## F3 "Reload ground pictures": forget everything and read the PNGs from disk again.
+static func reload_pictures() -> void:
+	_from_files = true
+	_caches.clear()
+	BiomeArt.clear_cache()
+
+
+static func _pic(tex: Texture2D) -> Image:
+	if tex == null:
+		return null
+	var img: Image = null
+	if _from_files and tex.resource_path.begins_with("res://"):
+		img = Image.load_from_file(ProjectSettings.globalize_path(tex.resource_path))
+	if img == null:
+		img = tex.get_image()
+	img.convert(Image.FORMAT_RGBA8)
+	return img
+
+
+## Colour of flat water: pixel (0, 0) of water.png.
+static func water_colour(pp: PixelPlainsGround) -> Color:
+	var w := _cache(pp).water_pic
+	return Color(1, 0, 1) if w == null else Color8(w.get_pixel(0, 0).r8, w.get_pixel(0, 0).g8, w.get_pixel(0, 0).b8)
+
+
+## The two pictures the shaders sample (TerrainVisual.begin_island).
+static func shader_pictures(pp: PixelPlainsGround) -> Dictionary:
+	var c := _cache(pp)
+	var none := Image.create_empty(1, 1, false, Image.FORMAT_RGBA8)   # a missing picture: nothing (warned in _cache)
+	return {"foam_pic": ImageTexture.create_from_image(c.foam_pic if c.foam_pic != null else none), "water_pic": ImageTexture.create_from_image(c.water_pic if c.water_pic != null else none)}
 
 
 static func _cache(pp: PixelPlainsGround) -> Cache:
@@ -41,6 +83,10 @@ static func _cache(pp: PixelPlainsGround) -> Cache:
 	c.pp = pp
 	c.sheet = pp.texture.get_image()
 	c.sheet.convert(Image.FORMAT_RGBA8)
+	c.foam_pic = _pic(pp.foam_texture)
+	c.water_pic = _pic(pp.water_texture)
+	if c.foam_pic == null or c.water_pic == null:
+		push_warning("PixelPlainsGround: foam_texture / water_texture is not set: no beach foam, no water base (run tools/bake_ground_art.gd -- tiles)")
 	_caches[key] = c
 	return c
 
@@ -52,24 +98,29 @@ static func _quarter(c: Cache, e: Vector3i) -> Image:
 	return c.quarters[e]
 
 
-static func _skin_sheet(c: Cache, skin: int) -> Image:
-	if not c.skins.has(skin):
-		var tex := c.pp.sheet_of(skin)
-		if tex == null:
-			push_warning("PixelPlainsGround: sheet %d is not set, using the dirt sheet (or tiles.png)" % skin)
-			tex = c.pp.sheet_dirt if c.pp.sheet_dirt != null else c.pp.texture
-		var img := tex.get_image()
-		img.convert(Image.FORMAT_RGBA8)
-		c.skins[skin] = img
-	return c.skins[skin]
+## The picture of a ground file in a biome (biome -1 or a missing biome file = the base file). file: BiomeArt.GROUND_FILES name, base: its texture in the resource.
+static func _ground_img(c: Cache, file: String, base: Texture2D, biome: int) -> Image:
+	var key := "%s/%d" % [file, biome]
+	if not c.grounds.has(key):
+		var tex := BiomeArt.ground_texture(file, biome)
+		c.grounds[key] = _pic(tex if tex != null else base)
+	return c.grounds[key]
+
+
+static func _skin_sheet(c: Cache, skin: int, biome := -1) -> Image:
+	var base := c.pp.sheet_of(skin)
+	if base == null:
+		push_warning("PixelPlainsGround: sheet %d is not set, using the dirt sheet (or tiles.png)" % skin)
+		base = c.pp.sheet_dirt if c.pp.sheet_dirt != null else c.pp.texture
+	return _ground_img(c, BiomeArt.GROUND_FILES[skin], base, biome)
 
 
 ## A whole 16 px fill tile from the sheet of a ground (skin).
-static func _fill(c: Cache, skin: int, v: Vector2i) -> Image:
-	var key := Vector3i(skin, v.x, v.y)
+static func _fill(c: Cache, skin: int, v: Vector2i, biome := -1) -> Image:
+	var key := Vector4i(skin, v.x, v.y, biome)
 	if not c.fills.has(key):
 		var t := c.pp.tile_size
-		c.fills[key] = _skin_sheet(c, skin).get_region(Rect2i(v.x * t, v.y * t, t, t))
+		c.fills[key] = _skin_sheet(c, skin, biome).get_region(Rect2i(v.x * t, v.y * t, t, t))
 	return c.fills[key]
 
 
@@ -174,82 +225,50 @@ static func cell_skins(res: MapGen.Result, pp: PixelPlainsGround, ci0: int, cj0:
 	return out
 
 
-# ---- Slice 2: levels ----------------------------------------------------------------------------------------------------------
-
-## Level of one map cell (off the map = water). Rules in PixelPlainsGround "Levels".
-static func level_at(res: MapGen.Result, pp: PixelPlainsGround, x: int, y: int) -> int:
-	if x < 0 or y < 0 or x >= res.cols or y >= res.rows:
-		return pp.level_water
-	if pp.all_flat:
-		return pp.level_water
-	var i := y * res.cols + x
-	if not res.level_override.is_empty():
-		return res.level_override[i]
-	var has_biome := not res.biome.is_empty()
-	match int(res.ground[i]):
-		MapGen.Ground.WATER:
-			return pp.level_water
-		MapGen.Ground.SAND:
-			if not res.shore.is_empty() and res.shore[i] == 1:
-				return pp.level_bank_sand
-			if has_biome and res.biome[i] == MapGen.Biome.BEACH_SAND:
-				return pp.level_beach_sand
-			return pp.level_inland_sand
-		MapGen.Ground.SNOW:
-			if has_biome:
-				for dy in range(-1, 2):
-					for dx in range(-1, 2):
-						var nx := x + dx
-						var ny := y + dy
-						if nx < 0 or ny < 0 or nx >= res.cols or ny >= res.rows:
-							continue
-						var ni := ny * res.cols + nx
-						if res.ground[ni] != MapGen.Ground.WATER and res.biome[ni] != MapGen.Biome.SNOWY:
-							return pp.level_snow_edge
-			return pp.level_snow
-		MapGen.Ground.GRASS:
-			return maxi(pp.level_grass, pp.level_snow_edge) if has_biome and res.biome[i] == MapGen.Biome.SNOWY else pp.level_grass
-	if has_biome and res.biome[i] == MapGen.Biome.SNOWY:   # other land inside the snowy biome stands with the snow edge: no step against it
-		return maxi(pp.level_dirt, pp.level_snow_edge)
-	return pp.level_dirt   # dirt, cobble, boss
-
-
-## Levels of the same cells as cell_materials (same window, same order).
-static func cell_levels(res: MapGen.Result, pp: PixelPlainsGround, ci0: int, cj0: int, tiles_w: int, tiles_h: int) -> PackedByteArray:
+## Biome + 1 of each cell of the same window as cell_materials (0 = no biome / off the map).
+static func cell_biomes(res: MapGen.Result, ci0: int, cj0: int, tiles_w: int, tiles_h: int) -> PackedByteArray:
 	var pw := tiles_w + 1
 	var out := PackedByteArray()
 	out.resize(pw * (tiles_h + 1))
+	if res.biome.is_empty():
+		return out
 	for ly in tiles_h + 1:
+		var y := cj0 - 1 + ly
+		if y < 0 or y >= res.rows:
+			continue
 		for lx in pw:
-			out[ly * pw + lx] = level_at(res, pp, ci0 - 1 + lx, cj0 - 1 + ly)
+			var x := ci0 - 1 + lx
+			if x >= 0 and x < res.cols:
+				out[ly * pw + lx] = res.biome[y * res.cols + x] + 1
 	return out
 
 
-## What is drawn between two grounds: "" (same ground), "step", "flat" or "foam" (flat beach: sand level with water).
-static func border_kind(pp: PixelPlainsGround, ma: int, la: int, mb: int, lb: int) -> String:
-	if PixelPlainsGround.mi(ma) == PixelPlainsGround.mi(mb):
-		return ""
-	if la != lb:
-		return "step"
-	var up := ma if pp.prio_of(ma) > pp.prio_of(mb) else mb
-	var lo := mb if up == ma else ma
-	if up == PixelPlainsGround.Mat.SAND and PixelPlainsGround.mi(lo) == PixelPlainsGround.Mat.WATER:
-		return "foam"
-	return "flat"
-
-
-## F3: the cell, its level and the border to each of its 4 neighbours.
+## F3: the cell and the layers stacked at the corner on its south-east: e.g. `water base | sand slot 6 + foam | light slot 4`.
 static func report(res: MapGen.Result, pp: PixelPlainsGround, x: int, y: int) -> String:
 	var here := _cell_mat(res, pp, x, y)
-	var lh := level_at(res, pp, x, y)
-	var parts: Array[String] = []
-	for d in [["N", Vector2i(0, -1)], ["E", Vector2i(1, 0)], ["S", Vector2i(0, 1)], ["W", Vector2i(-1, 0)]]:
-		var n: Vector2i = Vector2i(x, y) + d[1]
-		var m := _cell_mat(res, pp, n.x, n.y)
-		var k := border_kind(pp, here, lh, m, level_at(res, pp, n.x, n.y))
-		if k != "":
-			parts.append("%s %s (%s L%d)" % [d[0], k, pp.name_of(m), level_at(res, pp, n.x, n.y)])
-	return "%s level %d  borders: %s" % [pp.name_of(here), lh, ", ".join(parts) if not parts.is_empty() else "none"]
+	var m4: Array[int] = []
+	for d in [Vector2i(0, 0), Vector2i(1, 0), Vector2i(0, 1), Vector2i(1, 1)]:
+		m4.append(PixelPlainsGround.mi(_cell_mat(res, pp, x + d.x, y + d.y)))
+	return "%s  corner at its south-east: %s" % [pp.name_of(here), corner_layers(pp, Vector4i(m4[0], m4[1], m4[2], m4[3]))]
+
+
+## The layers of a corner (key = 4 materials NW NE SW SE) as text: lowest ground = base, each higher one with its slot (sand: + foam).
+static func corner_layers(pp: PixelPlainsGround, key: Vector4i) -> String:
+	var present := {}
+	for qd in 4:
+		present[key[qd]] = true
+	var layers: Array = present.keys()
+	layers.sort_custom(func(a: int, b: int) -> bool: return pp.prio_of(a) < pp.prio_of(b))
+	if layers.size() == 1:
+		return "%s fill" % pp.name_of(layers[0])
+	var parts: Array[String] = ["%s base" % pp.name_of(layers[0])]
+	for k in range(1, layers.size()):
+		var mask := 0
+		for qd in 4:
+			if pp.prio_of(key[qd]) >= pp.prio_of(layers[k]):
+				mask |= 1 << qd
+		parts.append("%s slot %d%s" % [pp.name_of(layers[k]), mask, " + foam" if layers[k] == PixelPlainsGround.Mat.SAND else ""])
+	return " | ".join(parts)
 
 
 static func _cell_mat(res: MapGen.Result, pp: PixelPlainsGround, x: int, y: int) -> int:   # with the dark-near-dirt rule, like what is drawn
@@ -326,191 +345,126 @@ static func palette(pp: PixelPlainsGround, mat: int) -> PackedColorArray:
 	return out
 
 
-## One tile of a corner with sand / snow / water in it. key = Vector4i of 4 x (material * 16 + level), NW NE SW SE (material 5 = water).
-## Returns {img: RGBA8 (water pixels transparent), anim: RGBA8 mask, has_anim, cands: PackedInt32Array (x, y, dir) of foam dash anchors, ok: PackedByteArray}.
+## One ground's layer of one corner shape (mask: NW 1, NE 2, SW 4, SE 8, set = this ground or a higher one): the pack's light_on_dirt shape
+## painted in the colours given. shadow.a == 0 = no shadow pixels. beach: the outline pixels carry foam.
+## Returns {rgba: RGBA8 bytes (alpha 0 = untouched, the ground below shows), foam: 1 where beach foam, land: 1 where this layer is ground}.
+static func _layer(c: Cache, mask: int, fill: Color, hl: Color, outline: Color, shadow: Color, beach: bool) -> Dictionary:
+	var t := c.pp.tile_size
+	var rgba := PackedByteArray()
+	rgba.resize(t * t * 4)
+	var foam := PackedByteArray()
+	foam.resize(t * t)
+	var land := PackedByteArray()
+	land.resize(t * t)
+	var rm := _roles(c, mask)
+	for p in t * t:
+		match rm[p]:
+			R_FILL:
+				_put(rgba, p, fill)
+				land[p] = 1
+			R_HL:
+				_put(rgba, p, hl)
+				land[p] = 1
+			R_OUTLINE:
+				_put(rgba, p, fill if beach else outline)
+				land[p] = 1
+				foam[p] = 1 if beach else 0
+			R_SHADOW:
+				if shadow.a > 0.0:
+					_put(rgba, p, shadow)
+	return {"rgba": rgba, "foam": foam, "land": land}
+
+
+## One tile of a corner with sand / snow / water in it, stacked from the pictures (docs/wiki/ground-tileset-algorithm.md rule 3).
+## key = Vector4i of the 4 cells (NW NE SW SE): material (5 = water) | (biome + 1) << 4 (0 = no biome = the base pictures). The lowest ground is its base
+## (slot 15; water: the flat cell of water.png), every higher ground (by priority) is drawn over it with its slot of the mask "cells that are this ground
+## or higher". Each layer reads the pictures of the biome of the FIRST cell (NW NE SW SE) that holds that ground.
+## Returns {img: RGBA8, anim: RGBA8 mask (R 1 = foam, G / B = x / y of the pixel in frame 0 of that biome's foam.png), has_anim, land: 1 where ground is drawn}.
 static func _compose(c: Cache, key: Vector4i) -> Dictionary:
 	if c.composed.has(key):
 		return c.composed[key]
 	var pp := c.pp
 	var t := pp.tile_size
+	var rect := Rect2i(0, 0, t, t)
 	var ms: Array[int] = []
-	var lvs: Array[int] = []
-	var top := {}   # material -> its highest level in this corner
+	var bs: Array[int] = []
+	var present := {}
 	for qd in 4:
-		ms.append(key[qd] >> 4)
-		lvs.append(key[qd] & 15)
-		top[ms[qd]] = maxi(top.get(ms[qd], -1), lvs[qd])
-	var rank := func(m: int) -> int: return int(top[m]) * 16 + pp.prio_of(m)
-	var layers: Array = top.keys()
-	layers.sort_custom(func(a: int, b: int) -> bool: return rank.call(a) < rank.call(b))
-	var buf := PackedByteArray()
-	buf.resize(t * t * 4)
-	var land := PackedByteArray()   # 1 = ground that is not water (band and dashes look at it)
+		ms.append(key[qd] & 15)
+		bs.append((key[qd] >> 4) - 1)
+		if not present.has(ms[qd]):
+			present[ms[qd]] = bs[qd]   # the first cell holding it
+	var layers: Array = present.keys()
+	layers.sort_custom(func(a: int, b: int) -> bool: return pp.prio_of(a) < pp.prio_of(b))
+	var img := Image.create_empty(t, t, false, Image.FORMAT_RGBA8)
+	var land := PackedByteArray()
 	land.resize(t * t)
-	var foam := PackedByteArray()
+	var foam := PackedByteArray()   # the sand mask whose foam picture marks this pixel, 0 = none
 	foam.resize(t * t)
-	var water_step := false
-	if layers[0] != PixelPlainsGround.Mat.WATER:
-		var f := pp.fill_of(layers[0])
-		for p in t * t:
-			_put(buf, p, f)
-			land[p] = 1
+	if layers[0] == PixelPlainsGround.Mat.WATER:
+		var w := _ground_img(c, "water", pp.water_texture, present[layers[0]])
+		if w != null:
+			img.blit_rect(w, rect, Vector2i.ZERO)
+	else:
+		img.blit_rect(_slot(c, layers[0], 15, present[layers[0]]), rect, Vector2i.ZERO)
+		land.fill(1)
 	for k in range(1, layers.size()):
-		var lo: int = layers[k - 1]
 		var up: int = layers[k]
+		if up == PixelPlainsGround.Mat.WATER:
+			continue
 		var mask := 0
 		for qd in 4:
-			if rank.call(ms[qd]) >= rank.call(up):
+			if pp.prio_of(ms[qd]) >= pp.prio_of(up):
 				mask |= 1 << qd
-		var step: bool = top[up] != top[lo]
-		var fill := pp.fill_of(up)
-		var hl := pp.hl_of(up) if step else fill
-		var outline := pp.outline_of(up) if step else Color8(int(fill.r8 * (1.0 - pp.quiet_darken)), int(fill.g8 * (1.0 - pp.quiet_darken)), int(fill.b8 * (1.0 - pp.quiet_darken)))
-		var has_shadow := step
-		var shadow := pp.shade_of(lo)
-		var beach := not step and lo == PixelPlainsGround.Mat.WATER and up == PixelPlainsGround.Mat.SAND   # flat beach: foam outline, water shadow
-		if beach:
-			has_shadow = true
-			shadow = pp.fill_of(PixelPlainsGround.Mat.WATER)
-		water_step = water_step or (step and lo == PixelPlainsGround.Mat.WATER)
-		var rm := _roles(c, mask)
+		var slot := _slot(c, up, mask, present[up])
+		img.blend_rect(slot, rect, Vector2i.ZERO)
+		var sd := slot.get_data()
+		var fa := _foam_any(c, mask, present[up]) if up == PixelPlainsGround.Mat.SAND else PackedByteArray()
 		for p in t * t:
-			match rm[p]:
-				R_FILL:
-					_put(buf, p, fill)
-					land[p] = 1
-					foam[p] = 0
-				R_HL:
-					_put(buf, p, hl)
-					land[p] = 1
-					foam[p] = 0
-				R_OUTLINE:
-					_put(buf, p, fill if beach else outline)
-					land[p] = 1
-					foam[p] = 1 if beach else 0
-				R_SHADOW:
-					if has_shadow:
-						_put(buf, p, shadow)
-						foam[p] = 0
-	if water_step:   # bank band: water just below / right of land
-		for y in t:
-			for x in t:
-				var p := y * t + x
-				if land[p] == 1 or buf[p * 4 + 3] != 0:
-					continue
-				var hit := false
-				for d in range(1, pp.band_up + 1):
-					if y - d >= 0 and land[(y - d) * t + x] == 1:
-						hit = true
-				for d in range(1, pp.band_left + 1):
-					if x - d >= 0 and land[y * t + x - d] == 1:
-						hit = true
-				if hit:
-					_put(buf, p, pp.band_colour)
-	var cands := PackedInt32Array()
-	var ok := PackedByteArray()
-	if water_step:   # dash anchors: free water 2..4 px (chessboard) off ground / band, may run out to 8
-		ok.resize(t * t)
-		var dist := PackedInt32Array()
-		dist.resize(t * t)
-		for p in t * t:
-			dist[p] = 99 if buf[p * 4 + 3] == 0 else 0
-		for y in t:
-			for x in t:
-				var p := y * t + x
-				var v := dist[p]
-				if v == 0:
-					continue
-				if x > 0:
-					v = mini(v, dist[p - 1] + 1)
-				if y > 0:
-					v = mini(v, dist[p - t] + 1)
-					if x > 0:
-						v = mini(v, dist[p - t - 1] + 1)
-					if x < t - 1:
-						v = mini(v, dist[p - t + 1] + 1)
-				dist[p] = v
-		for y in range(t - 1, -1, -1):
-			for x in range(t - 1, -1, -1):
-				var p := y * t + x
-				var v := dist[p]
-				if v == 0:
-					continue
-				if x < t - 1:
-					v = mini(v, dist[p + 1] + 1)
-				if y < t - 1:
-					v = mini(v, dist[p + t] + 1)
-					if x < t - 1:
-						v = mini(v, dist[p + t + 1] + 1)
-					if x > 0:
-						v = mini(v, dist[p + t - 1] + 1)
-				dist[p] = v
-		for y in t:
-			for x in t:
-				var p := y * t + x
-				if dist[p] < pp.dash_near or dist[p] > pp.dash_reach:
-					continue
-				ok[p] = 1
-				if dist[p] <= pp.dash_far:
-					var gx := (dist[p + 1] if x < t - 1 else dist[p]) - (dist[p - 1] if x > 0 else dist[p])
-					cands.append_array(PackedInt32Array([x, y, 1 if gx >= 0 else -1]))
+			if sd[p * 4 + 3] == 0:
+				continue
+			land[p] = 1
+			foam[p] = mask if not fa.is_empty() and fa[p] == 1 else 0
 	var abuf := PackedByteArray()
 	abuf.resize(t * t * 4)
 	var has_anim := false
 	for p in t * t:
 		abuf[p * 4 + 3] = 255
-		if foam[p] == 1:
+		if foam[p] != 0:
 			abuf[p * 4] = 1
+			abuf[p * 4 + 1] = (foam[p] % 4) * t + p % t
+			abuf[p * 4 + 2] = (foam[p] / 4) * t + p / t
 			has_anim = true
-		elif buf[p * 4 + 3] == 0:   # kind 3 = shore water: the anim shader paints flat water over it, so the open-water marks stay off the shore
-			abuf[p * 4] = 3
-			has_anim = true
-	var out := {"img": Image.create_from_data(t, t, false, Image.FORMAT_RGBA8, buf), "anim": Image.create_from_data(t, t, false, Image.FORMAT_RGBA8, abuf),
-		"has_anim": has_anim, "cands": cands, "ok": ok, "land": land}
+	var out := {"img": img, "anim": Image.create_from_data(t, t, false, Image.FORMAT_RGBA8, abuf), "has_anim": has_anim, "land": land}
 	c.composed[key] = out
 	return out
 
 
-## Is pixel j (0..length) of a foam dash lit in frame f? Mirror of terrain_anim.gdshader (tests). States of the loop: (shift, cut) per (f+1)/2 + phase.
-static func dash_lit(j: int, length: int, phase: int, f: int) -> bool:
-	var q := (((f + 1) / 2) + phase) % 4
-	var sft := 1 if q == 1 or q == 2 else 0
-	var cut := 1 if q == 2 or q == 3 else 0
-	return j >= sft and j - sft < length - cut
+## The edge tile of ground `mat` (0..4) for slot s (1..15) from its sheet in `biome` (-1 = base).
+static func _slot(c: Cache, mat: int, s: int, biome := -1) -> Image:
+	var key := (biome + 1) * 256 + mat * 16 + s
+	if not c.slots.has(key):
+		var t := c.pp.tile_size
+		c.slots[key] = _skin_sheet(c, mat, biome).get_region(Rect2i((s % 4) * t, (EDGE_ROW + s / 4) * t, t, t))
+	return c.slots[key]
 
 
-## Is pixel x + y of a beach foam lit in frame f? Mirror of the shader.
-static func beach_lit(px: int, py: int, f: int, lit: int, frames: int) -> bool:
-	return posmod(px + py - f, 8) < lit
-
-
-## One foam dash on a shore tile (the tile's own anchor, picked by a hash of the tile): written into the animation mask.
-static func _dash(res: MapGen.Result, pp: PixelPlainsGround, comp: Dictionary, anim: Image, tx: int, ty: int, dst: Vector2i) -> void:
-	var cands: PackedInt32Array = comp["cands"]
-	if cands.is_empty():
-		return
-	var t := pp.tile_size
-	var h := GroundBaker._hash(tx, ty, res.seed + 300)
-	if (h % 1000) >= int(pp.dash_keep * 1000.0):
-		return
-	var best := 0
-	var best_h := -1
-	for n in cands.size() / 3:
-		var hh := GroundBaker._hash(tx * t + cands[n * 3], ty * t + cands[n * 3 + 1], res.seed + 17)
-		if hh > best_h:
-			best_h = hh
-			best = n
-	var length := pp.dash_len_min + ((h >> 10) % (pp.dash_len_max - pp.dash_len_min + 1))
-	var phase := (h >> 20) & 3
-	var ok: PackedByteArray = comp["ok"]
-	for j in length + 1:
-		var x := cands[best * 3] + cands[best * 3 + 2] * j
-		var y := cands[best * 3 + 1]
-		if x < 0 or x >= t or ok[y * t + x] == 0:
-			continue
-		if anim.get_pixel(dst.x + x, dst.y + y).r8 == 1:
-			continue
-		anim.set_pixel(dst.x + x, dst.y + y, Color8(2, j * 8 + length, phase, 255))
+## 1 where the foam picture (of `biome`) of sand mask `mask` has a pixel in any of its 8 frames.
+static func _foam_any(c: Cache, mask: int, biome := -1) -> PackedByteArray:
+	var key := (biome + 1) * 16 + mask
+	if not c.foam_any.has(key):
+		var t := c.pp.tile_size
+		var out := PackedByteArray()
+		out.resize(t * t)
+		var pic := _ground_img(c, "foam", c.pp.foam_texture, biome)
+		if pic != null:
+			for f in FOAM_FRAMES:
+				var d := pic.get_region(Rect2i(f * 4 * t + (mask % 4) * t, (mask / 4) * t, t, t)).get_data()
+				for p in t * t:
+					if d[p * 4 + 3] > 0:
+						out[p] = 1
+		c.foam_any[key] = out
+	return c.foam_any[key]
 
 
 static func bake_region(res: MapGen.Result, pp: PixelPlainsGround, ci0: int, cj0: int, tiles_w: int, tiles_h: int) -> Dictionary:
@@ -522,7 +476,7 @@ static func bake_region(res: MapGen.Result, pp: PixelPlainsGround, ci0: int, cj0
 	anim.fill(Color8(0, 0, 0, 255))
 	var cells := cell_materials(res, pp, ci0, cj0, tiles_w, tiles_h)
 	var skins := cell_skins(res, pp, ci0, cj0, tiles_w, tiles_h)
-	var lvls := cell_levels(res, pp, ci0, cj0, tiles_w, tiles_h)
+	var biomes := cell_biomes(res, ci0, cj0, tiles_w, tiles_h)
 	var pw := tiles_w + 1
 	var tile_rect := Rect2i(0, 0, t, t)
 	var q_rect := Rect2i(0, 0, h, h)
@@ -555,20 +509,19 @@ static func bake_region(res: MapGen.Result, pp: PixelPlainsGround, ci0: int, cj0
 				var skin := mat   # a corner of one special ground (cobble, gravel) uses its own sheet
 				if skins[p0] > 0 and skins[p0] == skins[p0 + 1] and skins[p0] == skins[p0 + pw] and skins[p0] == skins[p0 + pw + 1]:
 					skin = skins[p0] - 1
-				img.blit_rect(_fill(c, skin, v), tile_rect, dst)
+				img.blit_rect(_fill(c, skin, v, biomes[p0] - 1), tile_rect, dst)
 				continue
 			var native := true
 			for qd in 4:
 				native = native and m4[qd] >= 1 and m4[qd] <= PixelPlainsGround.Mat.DARK + 1
-			if not native or pp.all_flat:   # sand, snow or water in the corner (or all flat: every border, grass / dirt too): levels decide step / flat
+			if not native or pp.all_flat:   # sand, snow or water in the corner (or all flat: every border, grass / dirt too):
 				var key := Vector4i(0, 0, 0, 0)
 				for qd in 4:
-					key[qd] = (PixelPlainsGround.mi(m4[qd] - 1) << 4) | lvls[p0 + (qd & 1) + (qd >> 1) * pw]
+					key[qd] = PixelPlainsGround.mi(m4[qd] - 1) | (biomes[p0 + (qd & 1) + (qd >> 1) * pw] << 4)
 				var comp := _compose(c, key)
 				img.blit_rect(comp["img"], tile_rect, dst)
 				if comp["has_anim"]:
 					anim.blit_rect(comp["anim"], tile_rect, dst)
-				_dash(res, pp, comp, anim, ci0 + i, cj0 + j, dst)
 				continue
 			if kinds == 2:   # the pack's own pairs, pixel for pixel like the python reference
 				var pair := _pair(pp, a - 1, other - 1)
@@ -599,10 +552,10 @@ static func drawn_land_at(res: MapGen.Result, pp: PixelPlainsGround, a: Vector2i
 		wet += 1 if cells[qd] == 0 else 0
 	if wet == 0 or wet == 4:
 		return wet == 0
-	var lvls := cell_levels(res, pp, tile.x, tile.y, 1, 1)
+	var bio := cell_biomes(res, tile.x, tile.y, 1, 1)
 	var key := Vector4i(0, 0, 0, 0)
 	for qd in 4:
-		key[qd] = (PixelPlainsGround.mi(cells[qd] - 1) << 4) | lvls[qd]
+		key[qd] = PixelPlainsGround.mi(cells[qd] - 1) | (bio[qd] << 4)
 	var land: PackedByteArray = _compose(_cache(pp), key)["land"]
 	var l := a + Vector2i(h, h) - tile * t
 	return land[l.y * t + l.x] == 1

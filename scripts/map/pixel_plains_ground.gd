@@ -5,7 +5,7 @@ extends Resource
 ## Generated from tools/asset_viewer/pixel_plains_tiles.py by tools/asset_viewer/pixel_plains_export_tres.py: edit the .tres in F3,
 ## or change the python table and export again. MapStyle.pixel_plains = null brings the old ground look back.
 ## Materials: DIRT 0, LIGHT grass 1, DARK grass 2 (the pack's own art), SAND 3, SNOW 4 (dirt art recoloured), WATER 5 (flat colour, drawn by
-## PixelPlainsBaker). NONE (-1) = water in a map cell array. Slice 2: every cell also has a LEVEL (see Levels below, decision 0046).
+## PixelPlainsBaker). NONE (-1) = water in a map cell array.
 
 enum Mat { NONE = -1, DIRT, LIGHT, DARK, SAND, SNOW, WATER }
 ## Which sheet a cell is drawn from. The first 5 equal Mat; cobble and beach gravel share the material of dirt / sand.
@@ -181,105 +181,24 @@ func material_of(ground: int, biome: int) -> int:
 	return m
 
 
-# ---- Slice 2 (0046): levels, step / flat borders, new grounds, flat water ----------------------------------------------------
-## Everything below is a first pick, tune by eye (F3). Colours are the ones of tools/art_tests/recolour/borders.py (the approved demo).
-## Level of a cell: who stands higher. A different level = STEP border (outline, highlight, shadow down-right in the LOWER ground's shade);
-## the same level = FLAT border (same shapes, no shadow, outline = upper fill a bit darker). Material priority only breaks ties.
+# ---- Ground pictures (decision 0069, docs/wiki/ground-tileset-algorithm.md) -------------------------------------------------
+## Every border, the beach foam and the water are pixels of the pictures below (`sheet_*`, foam, water). Nothing here is a colour.
 
 
-@export_group("Levels")
+@export_group("Borders")
 
-## All flat: every cell is on one level, so every border is flat (no step shadows, also dark / light grass and grass / dirt) and sand meets water with foam.
-## Off = the per-ground levels below (steps). User pick after playtest: levels looked chaotic.
+## All flat (the default): every border of two grounds is drawn from the ground sheets' edge slots (flat, quiet outline), sand meets water with foam.
+## Off: grass / dirt and dark / light grass use the pack's own raised-edge pairs (tiles.png). Kept for the python reference test only.
 @export var all_flat := true:
 	set(v):
 		all_flat = v
 		_touch()
 
-## Water.
-@export_range(0, 9) var level_water := 0:
-	set(v):
-		level_water = v
-		_touch()
-
-## Beach sand (biome beach): level with the water = flat beach with animated foam.
-@export_range(0, 9) var level_beach_sand := 0:
-	set(v):
-		level_beach_sand = v
-		_touch()
-
-## Sand on the shore of a river / lake: above the water = a step (sand bank).
-@export_range(0, 9) var level_bank_sand := 1:
-	set(v):
-		level_bank_sand = v
-		_touch()
-
-## Sand anywhere else (desert): level with grass = flat edge.
-@export_range(0, 9) var level_inland_sand := 2:
-	set(v):
-		level_inland_sand = v
-		_touch()
-
-## Dirt, cobble, boss ground: below grass.
-@export_range(0, 9) var level_dirt := 1:
-	set(v):
-		level_dirt = v
-		_touch()
-
-## Light and dark grass.
-@export_range(0, 9) var level_grass := 2:
-	set(v):
-		level_grass = v
-		_touch()
-
-## Snow inside a snowy biome: level with grass = flat.
-@export_range(0, 9) var level_snow := 2:
-	set(v):
-		level_snow = v
-		_touch()
-
-## Snow with a land cell of another biome next to it (8 neighbours): above grass = step.
-@export_range(0, 9) var level_snow_edge := 3:
-	set(v):
-		level_snow_edge = v
-		_touch()
-
-## Flat border: the outline pixels are the upper fill this much darker.
-@export_range(0.0, 0.5, 0.01) var quiet_darken := 0.08:
-	set(v):
-		quiet_darken = v
-		_touch()
-
-@export_group("Material colours")
-
-## dirt, light, dark, sand, snow: fill / highlight / outline / shade are the pixels of the ground's own sheet (`sheet_*`, assets/game/map/pixel_plains/ground/),
-## read by PixelPlainsBaker.palette(). Redraw the sheet to change them. Only water has no sheet, so only water has colours here.
-
-## water: fill, highlight and outline of its edge when it is the UPPER ground, shade = shadow cast ONTO it.
-@export var water_fill := Color8(112, 210, 228):
-	set(v):
-		water_fill = v
-		_touch()
-
-@export var water_hl := Color8(112, 210, 228):
-	set(v):
-		water_hl = v
-		_touch()
-
-@export var water_outline := Color8(112, 210, 228):
-	set(v):
-		water_outline = v
-		_touch()
-
-@export var water_shade := Color8(30, 88, 140):
-	set(v):
-		water_shade = v
-		_touch()
-
 @export_group("Ground sheets")
 
 ## One picture per ground, same size and cell layout as `texture` (tiles.png). Made by tools/bake_ground_art.gd, then redrawn by hand if wanted.
-## The game reads two things from a sheet: its fill tiles (plain_* / variants_* cells) and its 4-colour swatch (PixelPlainsBaker.SWATCH_CELL).
+## The game reads from a sheet: its fill tiles (plain_* / variants_* cells) and its edge block (cells 0..3 of rows 1..4, slot s = cell (s % 4, 1 + s / 4)).
+## The 4-colour swatch (PixelPlainsBaker.SWATCH_CELL) is only the input of `tools/bake_ground_art.gd -- tiles`.
 @export var sheet_dirt: Texture2D:
 	set(v):
 		sheet_dirt = v
@@ -309,6 +228,16 @@ func material_of(ground: int, biome: int) -> int:
 	set(v):
 		sheet_gravel = v
 		_touch()
+## Beach foam: 8 frames of 4x4 slots (slot = sand mask), foam colour where lit. Water: cell (0,0) = flat water, then rows of wave mark variants.
+## Both made by `tools/bake_ground_art.gd -- tiles`, redraw them to change the look (README of the folder).
+@export var foam_texture: Texture2D:
+	set(v):
+		foam_texture = v
+		_touch()
+@export var water_texture: Texture2D:
+	set(v):
+		water_texture = v
+		_touch()
 
 @export_group("Fills")
 ## Sand / snow fills: plain tile only (true = clean fill) or its rare variants too.
@@ -323,7 +252,7 @@ func material_of(ground: int, biome: int) -> int:
 		_touch()
 @export_group("Priority (ties only)")
 
-## Who takes the upper shape when two grounds are on the same level.
+## Who lies over whom where grounds meet: the higher number is drawn over the lower. Order: water 1, sand 2, dirt 3, light 4, dark 5, snow 6.
 @export_range(0, 15) var prio_dirt := 3:
 	set(v):
 		prio_dirt = v
@@ -367,129 +296,31 @@ func material_of(ground: int, biome: int) -> int:
 		anim_fps = v
 		_touch()
 
-## Foam (beach outline, dashes).
-@export var foam_colour := Color8(218, 246, 252):
-	set(v):
-		foam_colour = v
-		_touch()
-
-## Bank band: water just below / right of land.
-@export var band_colour := Color8(40, 112, 166):
-	set(v):
-		band_colour = v
-		_touch()
-
-## Band thickness under land (px).
-@export_range(0, 6) var band_up := 3:
-	set(v):
-		band_up = v
-		_touch()
-
-## Band thickness right of land (px).
-@export_range(0, 6) var band_left := 2:
-	set(v):
-		band_left = v
-		_touch()
-
-## Beach foam: lit px of every 8 along the shore (the lit part moves 1 px per frame).
-@export_range(1, 8) var beach_foam_lit := 6:
-	set(v):
-		beach_foam_lit = v
-		_touch()
-
-## Foam dashes: chance that a shore tile gets one.
-@export_range(0.0, 1.0, 0.01) var dash_keep := 0.55:
-	set(v):
-		dash_keep = v
-		_touch()
-
-## Foam dash length (px).
-@export_range(1, 5) var dash_len_min := 4:
-	set(v):
-		dash_len_min = v
-		_touch()
-
-## 
-@export_range(1, 5) var dash_len_max := 5:
-	set(v):
-		dash_len_max = v
-		_touch()
-
-## A dash sits this many px (or more) off the bank, ...
-@export_range(1, 8) var dash_near := 2:
-	set(v):
-		dash_near = v
-		_touch()
-
-## ... anchored at most this far, ...
-@export_range(1, 8) var dash_far := 4:
-	set(v):
-		dash_far = v
-		_touch()
-
-## ... and may run out to this far.
-@export_range(1, 8) var dash_reach := 8:
-	set(v):
-		dash_reach = v
-		_touch()
-
-## Wave marks (light dashes on open water): one per block of this many px.
-@export_range(8, 128) var mark_block := 32:
-	set(v):
-		mark_block = v
-		_touch()
-
-## Chance of a mark in a block.
+## Chance that a 32 px block of open water has a wave mark (the marks are the rows of water.png).
 @export_range(0.0, 1.0, 0.01) var mark_chance := 0.85:
 	set(v):
 		mark_chance = v
 		_touch()
-
-## Mark length (px).
-@export_range(1, 8) var mark_len_min := 3:
-	set(v):
-		mark_len_min = v
-		_touch()
-
-## 
-@export_range(1, 8) var mark_len_max := 5:
-	set(v):
-		mark_len_max = v
-		_touch()
-
-## Mark lightness (0..255 added) in the first / second half of its 8 frame loop.
-@export_range(0, 120) var mark_light_a := 34:
-	set(v):
-		mark_light_a = v
-		_touch()
-
-## 
-@export_range(0, 120) var mark_light_b := 14:
-	set(v):
-		mark_light_b = v
-		_touch()
-
-
 ## Index of a material in the per-material tables (water in a cell array is NONE).
 static func mi(m: int) -> int:
 	return int(Mat.WATER) if m < 0 else m
 
 
-## Fill / highlight / outline / shade of a material: read from its sheet (water: the exports above).
+## Fill / highlight / outline / shade of a ground (dirt .. snow): the swatch of its sheet. Water: its colour is pixel (0, 0) of water.png (fill_of only).
 func fill_of(m: int) -> Color:
-	return water_fill if mi(m) == Mat.WATER else PixelPlainsBaker.palette(self, mi(m))[0]
+	return PixelPlainsBaker.water_colour(self) if mi(m) == Mat.WATER else PixelPlainsBaker.palette(self, mi(m))[0]
 
 
 func hl_of(m: int) -> Color:
-	return water_hl if mi(m) == Mat.WATER else PixelPlainsBaker.palette(self, mi(m))[1]
+	return PixelPlainsBaker.palette(self, mi(m))[1]
 
 
 func outline_of(m: int) -> Color:
-	return water_outline if mi(m) == Mat.WATER else PixelPlainsBaker.palette(self, mi(m))[2]
+	return PixelPlainsBaker.palette(self, mi(m))[2]
 
 
 func shade_of(m: int) -> Color:
-	return water_shade if mi(m) == Mat.WATER else PixelPlainsBaker.palette(self, mi(m))[3]
+	return PixelPlainsBaker.palette(self, mi(m))[3]
 
 
 func sheet_of(skin: int) -> Texture2D:
@@ -513,7 +344,16 @@ func name_of(m: int) -> String:
 	return ["dirt", "light grass", "dark grass", "sand", "snow", "water"][mi(m)]
 
 
-## Uniforms of the two water shaders (flat water + animated foam), see TerrainVisual.begin_island.
+## Uniforms of the two water shaders (flat water + animated foam), see TerrainVisual.begin_island: the two pictures, the frame rate, the mark density.
 func shader_params() -> Dictionary:
-	return {"shallow": water_fill, "foam_colour": foam_colour, "fps": anim_fps, "beach_lit": beach_foam_lit, "block": float(mark_block), "chance": mark_chance,
-		"len_min": mark_len_min, "len_max": mark_len_max, "light_a": mark_light_a / 255.0, "light_b": mark_light_b / 255.0}
+	var out := PixelPlainsBaker.shader_pictures(self)
+	out["fps"] = anim_fps
+	out["chance"] = mark_chance
+	return out
+
+
+## F3 > Pixel Plains: read the ground pictures from disk again and rebuild the map.
+func debug_actions() -> Array:
+	return [{"label": "Reload ground pictures", "run": func():
+		PixelPlainsBaker.reload_pictures()
+		emit_changed()}]

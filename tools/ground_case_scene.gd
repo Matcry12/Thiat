@@ -3,7 +3,7 @@ extends Node2D
 ## Forced ground cases for screenshots and tests (decision 0046). A case is a char grid of (material, level): one token per cell, tokens
 ## separated by spaces, e.g. "l2 l2 s1" = light grass level 2, light grass level 2, sand level 1. Materials:
 ##   w water   d dirt   l light grass   D dark grass (forest)   s beach sand   n snow (snowy biome)
-## The grid becomes a MapGen.Result (levels forced through Result.level_override, so the level rules are bypassed) and is baked by the
+## The grid becomes a MapGen.Result (the digit after the letter is ignored since 0069: no levels any more) and is baked by the
 ## real GroundBaker / TerrainVisual. Run the scene: godot --path . tools/ground_case_scene.tscn  (cases below, `case_name`, or F3-less: just look).
 ##   godot --path . tools/ground_case_scene.tscn -- <case name>      (prints the case names with no argument)
 
@@ -25,7 +25,7 @@ const BIOME := {"w": MapGen.Biome.PLAINS, "d": MapGen.Biome.ROCKY, "l": MapGen.B
 @export var zoom := 4.0
 
 
-## A MapGen.Result of a case grid (levels forced).
+## A MapGen.Result of a case grid.
 static func result(rows: Array, seed_value := 1) -> MapGen.Result:
 	var res := MapGen.Result.new()
 	res.seed = seed_value
@@ -34,7 +34,6 @@ static func result(rows: Array, seed_value := 1) -> MapGen.Result:
 	var n := res.cols * res.rows
 	res.ground.resize(n)
 	res.biome.resize(n)
-	res.level_override.resize(n)
 	for y in res.rows:
 		var toks := String(rows[y]).split(" ", false)
 		assert(toks.size() == res.cols, "ragged case row %d" % y)
@@ -42,7 +41,6 @@ static func result(rows: Array, seed_value := 1) -> MapGen.Result:
 			var tok: String = toks[x]
 			res.ground[y * res.cols + x] = GROUND[tok[0]]
 			res.biome[y * res.cols + x] = BIOME[tok[0]]
-			res.level_override[y * res.cols + x] = int(tok.substr(1))
 	return res
 
 

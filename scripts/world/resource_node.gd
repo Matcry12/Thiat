@@ -14,6 +14,8 @@ var _since_hit := 0.0   ## game seconds since the last damaging hit (slow-mo / h
 var _last_hit_preferred := true   ## the latest damaging hit used the preferred tool
 
 ## Call before add_child.
+var biome := -1   ## MapGen.Biome it stands in (set by the chunk streamer before _ready): picks the biome sheet (BiomeArt)
+
 func setup(d: ResourceNodeData, v: int) -> void:
 	data = d
 	variant = v
@@ -26,7 +28,7 @@ func _ready() -> void:
 	collision_mask = 0
 	(get_node("CollisionShape2D").shape as CircleShape2D).radius = data.radius
 	(get_node("Hurtbox/CollisionShape2D").shape as CircleShape2D).radius = data.radius + data.hurtbox_pad
-	get_node("Visual").show_variant(data, variant)
+	get_node("Visual").show_variant(data, variant, biome)
 
 ## Where the picture's foot is, in Visual coordinates (NodeHitReaction bends / grows the picture around it).
 func foot_local() -> Vector2:

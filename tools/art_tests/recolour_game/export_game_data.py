@@ -34,9 +34,8 @@ for var, season in SEASON.items():
 
 [ext_resource type="Script" path="res://scripts/world/resource_node_data.gd" id="1"]
 [ext_resource type="Resource" path="res://data/items/wood.tres" id="2"]
-[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/oaks.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/oaks_noshadow.png" id="3"]
 [ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/{STUMP["file"]}" id="4"]
-[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/oaks_noshadow.png" id="5"]
 [ext_resource type="Resource" path="res://data/sounds/wood.tres" id="snd_set"]
 
 [resource]
@@ -55,8 +54,6 @@ regions = Array[Rect2]([{", ".join(rect(s["region"]) for s in sp)}])
 anchors = PackedVector2Array({", ".join(vec(s["anchor"]) for s in sp)})
 remains_region = {rect(STUMP["region"])}
 remains_texture = ExtResource("4")
-ground_shadow = false
-texture_no_shadow = ExtResource("5")
 pixel_scale = {PX}
 fade_when_behind = true
 color = Color(0.25, 0.55, 0.25, 1)

@@ -4,13 +4,15 @@ extends ActorVisual
 ## Kinds with fade_when_behind fade when the player stands behind them so a tree never hides the player.
 
 var _d: ResourceNodeData
+var _biome := -1
 var _player: Node2D
 
 func flash_target() -> CanvasItem:
 	return get_node("Body")
 
-func show_variant(d: ResourceNodeData, v: int) -> void:
+func show_variant(d: ResourceNodeData, v: int, biome := -1) -> void:
 	_d = d
+	_biome = biome
 	var body: Sprite2D = get_node("Body")
 	if d.texture == null or d.regions.is_empty():
 		body.texture = null
@@ -36,11 +38,11 @@ func show_remains(d: ResourceNodeData) -> void:
 func _show_remains_now(d: ResourceNodeData) -> void:
 	_set_region(get_node("Body"), d.remains_region, Vector2(d.remains_region.size.x * 0.5, d.remains_region.size.y))
 	if d.remains_texture != null:
-		get_node("Body").texture = d.remains_texture
+		get_node("Body").texture = BiomeArt.sheet(d.remains_texture, _biome)
 	body_alpha(1.0)
 
 func _set_region(body: Sprite2D, r: Rect2, foot: Vector2) -> void:
-	body.texture = _d.body_texture()
+	body.texture = BiomeArt.sheet(_d.texture, _biome)
 	body.region_enabled = true
 	body.region_rect = r
 	body.scale = Vector2.ONE * _d.pixel_scale

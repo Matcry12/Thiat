@@ -3,7 +3,7 @@ extends SceneTree
 ## render() pixel for pixel (tests/support/pixel_plains/ref.png, made by tools/asset_viewer/pixel_plains_test_ref.py);
 ## (2) pieces baked alone equal the same pixels of the whole picture (picture + foam), with the real fills (variants on);
 ## (3) pixel_plains = null still takes the old path; (4) pack pixels reach the screen: tint / shade maps are neutral;
-## (5) slice 2 (0046): level rules + border kinds, forced step / flat / beach cases pixel by pixel, chunk seams with sand, snow, water, foam masks.
+## (5) ground tile set (0069): every border pixel comes from the pictures (edge slots, foam.png, water.png), chunk seams with sand, snow, water, foam masks.
 var _ok := true
 
 func _check(cond: bool, msg: String) -> void:
@@ -89,7 +89,7 @@ func _init() -> void:
 		big.append(r)
 	var res2 := _result(big, 11)
 	var stepped := real.duplicate() as PixelPlainsGround
-	stepped.all_flat = false   # levels on: steps + dashes are the harder seam case
+	stepped.all_flat = false   # the pack's own pairs next to the stacked pictures: the harder seam case
 	var style2 := _style(stepped)
 	var tw := res2.cols + 1
 	var th := res2.rows + 1
@@ -102,12 +102,12 @@ func _init() -> void:
 		pic.blit_rect(part["ground"], Rect2i(Vector2i.ZERO, part["ground"].get_size()), Vector2i(cut[0], cut[1]) * t)
 		fm.blit_rect(part["foam"], Rect2i(Vector2i.ZERO, part["foam"].get_size()), Vector2i(cut[0], cut[1]) * t)
 	_check(_same(pic, whole["ground"]), "four pieces equal the whole ground picture")
-	_check(_same(fm, whole["foam"]), "four pieces equal the whole animation mask (beach foam + dashes)")
-	var kinds := [0, 0, 0]
+	_check(_same(fm, whole["foam"]), "four pieces equal the whole animation mask (beach foam)")
+	var foam_px := 0
 	var wd: PackedByteArray = whole["foam"].get_data()
 	for o in range(0, wd.size(), 4):
-		kinds[mini(wd[o], 2) if wd[o] != 3 else 0] += 1
-	_check(kinds[1] > 0 and kinds[2] > 0, "the seam grid has beach foam (%d px) and foam dashes (%d px)" % [kinds[1], kinds[2]])
+		foam_px += 1 if wd[o] == 1 else 0
+	_check(foam_px > 0, "the seam grid has beach foam (%d px)" % foam_px)
 	var shares := PixelPlainsBaker.shares(res2, real)
 	_check(shares[3] > 0 and shares[4] > 0, "the seam grid has sand and snow %s" % [shares])
 	# the map rule: a dark cell touching dirt is light grass
@@ -145,51 +145,21 @@ func _k(c: Color) -> int:
 	return (c.r8 << 16) | (c.g8 << 8) | c.b8
 
 
-func _kind_count(anim: Image, kind: int) -> int:
-	var n := 0
-	var d := anim.get_data()
-	for o in range(0, d.size(), 4):
-		if d[o] == kind:
-			n += 1
-	return n
-
-
-func _slice2(flat_pp: PixelPlainsGround) -> void:
-	# all flat (the default): every cell on one level, sand meets water with foam
-	_check(flat_pp.all_flat, "all_flat is the default")
-	var flat_res := _result(["..SSs", "l.snn", "dDlll"], 1)
-	for y in flat_res.rows:
-		for x in flat_res.cols:
-			_check(PixelPlainsBaker.level_at(flat_res, flat_pp, x, y) == flat_pp.level_water, "all flat: one level everywhere")
-	var pp := flat_pp.duplicate() as PixelPlainsGround
-	pp.all_flat = false   # the level rules below
-	# level -> border kind decisions
+func _slice2(pp: PixelPlainsGround) -> void:
 	var M := PixelPlainsGround.Mat
-	_check(PixelPlainsBaker.border_kind(pp, M.LIGHT, 2, M.SAND, 1) == "step", "grass 2 over sand 1 = step")
-	_check(PixelPlainsBaker.border_kind(pp, M.LIGHT, 2, M.SAND, 2) == "flat", "grass 2 next to sand 2 = flat")
-	_check(PixelPlainsBaker.border_kind(pp, M.SAND, 0, M.NONE, 0) == "foam", "sand 0 next to water 0 = foam (flat beach)")
-	_check(PixelPlainsBaker.border_kind(pp, M.SAND, 1, M.NONE, 0) == "step", "sand 1 over water 0 = step (bank)")
-	_check(PixelPlainsBaker.border_kind(pp, M.SNOW, 3, M.LIGHT, 2) == "step" and PixelPlainsBaker.border_kind(pp, M.SNOW, 2, M.LIGHT, 2) == "flat", "snow: step at an edge, flat inside")
-	_check(PixelPlainsBaker.border_kind(pp, M.LIGHT, 2, M.LIGHT, 3) == "", "same ground = no border")
-	# level rules (the table of PixelPlainsGround "Levels") on a small real result
-	var res := _result(["..SSs", "l.snn", "dDlll"], 1)   # row 1: grass, water, snow (edge), snow, snow ; row 2: dirt, dark, grass
-	_check(PixelPlainsBaker.level_at(res, pp, 4, 0) == pp.level_beach_sand, "beach sand level")
-	_check(PixelPlainsBaker.level_at(res, pp, 2, 0) == pp.level_bank_sand, "river-shore sand = bank level")
-	res.biome[0 * 5 + 2] = MapGen.Biome.PLAINS
-	_check(PixelPlainsBaker.level_at(res, pp, 0, 2) == pp.level_dirt and PixelPlainsBaker.level_at(res, pp, 2, 2) == pp.level_grass, "dirt and grass levels")
-	_check(PixelPlainsBaker.level_at(res, pp, 3, 1) == pp.level_snow_edge, "snow next to a plains cell = edge level")
-	_check(PixelPlainsBaker.level_at(res, pp, 4, 1) == pp.level_snow_edge or PixelPlainsBaker.level_at(res, pp, 4, 1) == pp.level_snow, "snow level is one of the two")
-	_check(PixelPlainsBaker.level_at(res, pp, -1, 0) == pp.level_water, "off the map = water level")
-	var inland := _result(["ll", "ls"], 1)
-	inland.biome[3] = MapGen.Biome.PLAINS
-	_check(PixelPlainsBaker.level_at(inland, pp, 1, 1) == pp.level_inland_sand, "sand outside the beach and shore = inland level")
-	# ground sheets: exist, load, same size as tiles.png, palette readable (a redrawn sheet must keep passing)
+	BiomeArt.get_default().enabled = false   # the base ground/ files are what the next checks redraw; the biome files come back below
+	_check(pp.all_flat, "all_flat is the default")
+	# ground sheets + foam / water pictures: set, right size (a redrawn picture must keep passing)
 	var tsize := pp.texture.get_size()
 	for sk in 7:
 		var tex := pp.sheet_of(sk)
 		_check(tex != null and tex.get_size() == tsize, "ground sheet %d is set and the size of tiles.png" % sk)
+	var t := pp.tile_size
+	_check(pp.foam_texture != null and pp.foam_texture.get_size() == Vector2(8 * 4 * t, 4 * t), "foam.png: 8 frames of 4x4 slots")
+	_check(pp.water_texture != null and int(pp.water_texture.get_width()) == 8 * PixelPlainsBaker.MARK_BLOCK and (int(pp.water_texture.get_height()) - PixelPlainsBaker.WATER_TOP) % PixelPlainsBaker.MARK_BLOCK == 0, "water.png: flat strip + mark rows of 8 frames")
 	var pal := PixelPlainsBaker.palette(pp, M.SAND)
-	_check(pal.size() == 4 and pp.fill_of(M.SAND) != pp.outline_of(M.SAND) and pp.hl_of(M.SNOW).a > 0.0, "palette readable from the sheets' edge cells")
+	_check(pal.size() == 4 and pp.fill_of(M.SAND) != pp.outline_of(M.SAND) and pp.hl_of(M.SNOW).a > 0.0, "palette readable from the sheets' swatch")
+	_check(pp.fill_of(M.WATER) == PixelPlainsBaker.water_colour(pp) and pp.fill_of(M.WATER) != Color(1, 0, 1), "water colour is pixel (0, 0) of water.png")
 	# a redraw reaches the game: change one fill pixel of the sand sheet in memory, the baked sand cell changes
 	var sand_res := _result(["ss", "ss"], 1)
 	var before: Image = GroundBaker.bake_region(sand_res, _style(pp), 0, 0, 3, 3)["ground"]
@@ -197,48 +167,119 @@ func _slice2(flat_pp: PixelPlainsGround) -> void:
 	var simg: Image = pp.sheet_sand.get_image().duplicate()
 	simg.convert(Image.FORMAT_RGBA8)
 	var cell: Vector2i = pp.plain_dirt[0]
-	simg.set_pixel(cell.x * pp.tile_size + 3, cell.y * pp.tile_size + 3, Color8(1, 2, 3))
+	simg.set_pixel(cell.x * t + 3, cell.y * t + 3, Color8(1, 2, 3))
 	red.sheet_sand = ImageTexture.create_from_image(simg)
 	var after: Image = GroundBaker.bake_region(sand_res, _style(red), 0, 0, 3, 3)["ground"]
 	_check(not _same(before, after), "a redrawn sand sheet changes the baked sand ground")
-	PixelPlainsBaker.clear_cache()   # the cache is keyed by instance id: forget the throwaway copy
-	# forced cases, pixel by pixel
-	var sand_fill := _k(pp.fill_of(M.SAND))
-	var sand_shade := _k(pp.shade_of(M.SAND))
-	var grass_outline := _k(pp.outline_of(M.LIGHT))
-	var grass_fill := _k(pp.fill_of(M.LIGHT))
-	var dim_grass := _k(Color8(int(pp.fill_of(M.LIGHT).r8 * (1.0 - pp.quiet_darken)), int(pp.fill_of(M.LIGHT).g8 * (1.0 - pp.quiet_darken)), int(pp.fill_of(M.LIGHT).b8 * (1.0 - pp.quiet_darken))))
-	var step := GroundCase.bake(GroundCase.CASES["step_beach"], pp)
-	var cs := _colours(step["ground"])
-	_check(cs.has(grass_outline) and cs.has(sand_shade) and cs.has(sand_fill) and cs.has(grass_fill), "step beach: grass outline + shadow in the sand's shade")
-	var flat := GroundCase.bake(GroundCase.CASES["flat_desert"], pp)
-	var cf := _colours(flat["ground"])
-	_check(not cf.has(grass_outline) and not cf.has(sand_shade) and cf.has(dim_grass), "flat desert: no outline, no shadow, quiet 8%% darker edge (%s)" % [cf.keys().size()])
-	_check(cf.keys().size() == 3, "flat desert: only grass, sand and the quiet edge colour (got %d)" % cf.keys().size())
-	var beach := GroundCase.bake(GroundCase.CASES["flat_beach"], pp)
-	var cb := _colours(beach["ground"])
-	_check(_kind_count(beach["foam"], 1) > 20 and _kind_count(beach["foam"], 2) == 0, "flat beach: foam px %d, no dashes" % _kind_count(beach["foam"], 1))
-	_check(not cb.has(_k(pp.band_colour)) and not cb.has(_k(pp.outline_of(M.SAND))) and not cb.has(_k(pp.water_shade)), "flat beach: no band, no sand outline, no water shadow")
-	var bank := GroundCase.bake(GroundCase.CASES["sand_bank"], pp)
-	var cbk := _colours(bank["ground"])
-	_check(cbk.has(_k(pp.band_colour)) and cbk.has(_k(pp.water_shade)) and cbk.has(_k(pp.outline_of(M.SAND))), "sand bank: band, water shadow, sand outline")
-	_check(_kind_count(bank["foam"], 1) == 0 and _kind_count(bank["foam"], 2) > 0, "sand bank: no beach foam, foam dashes %d" % _kind_count(bank["foam"], 2))
-	var snow := GroundCase.bake(GroundCase.CASES["snow_on_grass"], pp)
-	var snow_flat := GroundCase.bake(GroundCase.CASES["snow_flat"], pp)
-	_check(_colours(snow["ground"]).has(_k(pp.outline_of(M.SNOW))) and not _colours(snow_flat["ground"]).has(_k(pp.outline_of(M.SNOW))), "snow: outline only on the step")
-	# the same case twice = same pixels (nothing random per call), and a baked tile is never half transparent
+	# pixels come from the picture: paint one pixel of light slot 6 (NE + SW light) and of dirt slot 15 (the base) in memory
+	var mixed := _result(["dl", "ld"], 1)   # corner tile (1, 1): NW dirt, NE light, SW light, SE dirt
+	var plain_img: Image = GroundBaker.bake_region(mixed, _style(pp), 0, 0, 3, 3)["ground"].get_region(Rect2i(t, t, t, t))
+	var limg: Image = pp.sheet_grass_light.get_image().duplicate()
+	limg.convert(Image.FORMAT_RGBA8)
+	var dimg: Image = pp.sheet_dirt.get_image().duplicate()
+	dimg.convert(Image.FORMAT_RGBA8)
+	var slot6 := Vector2i(2 * t, 2 * t)    # slot 6 = cell (2, 1 + 1)
+	var base15 := Vector2i(3 * t, 4 * t)   # slot 15 = cell (3, 1 + 3)
+	var on := Vector2i(-1, -1)
+	var off := Vector2i(-1, -1)
+	for y in t:
+		for x in t:
+			if limg.get_pixel(slot6.x + x, slot6.y + y).a8 > 0 and on.x < 0:
+				on = Vector2i(x, y)
+			if limg.get_pixel(slot6.x + x, slot6.y + y).a8 == 0 and off.x < 0:
+				off = Vector2i(x, y)
+	_check(on.x >= 0 and off.x >= 0, "light slot 6 has drawn and empty pixels")
+	limg.set_pixelv(slot6 + on, Color8(1, 2, 3))
+	dimg.set_pixelv(base15 + off, Color8(4, 5, 6))
+	var edit := pp.duplicate() as PixelPlainsGround
+	edit.sheet_grass_light = ImageTexture.create_from_image(limg)
+	edit.sheet_dirt = ImageTexture.create_from_image(dimg)
+	var painted: Image = GroundBaker.bake_region(mixed, _style(edit), 0, 0, 3, 3)["ground"].get_region(Rect2i(t, t, t, t))
+	_check(painted.get_pixelv(on) == Color8(1, 2, 3), "a pixel painted in light slot 6 shows in the mask 6 corner")
+	_check(painted.get_pixelv(off) == Color8(4, 5, 6), "a pixel painted in dirt slot 15 shows where the light edge is empty")
+	_check(plain_img.get_pixelv(on) != Color8(1, 2, 3), "(the unpainted corner differs)")
+	PixelPlainsBaker.clear_cache()   # the cache is keyed by instance id: forget the throwaway copies
+	# beach corner: sand over water. land = sand slot alpha; drawn_land_at agrees; foam marks point at foam.png pixels
+	var beach := _result(["ss", ".."], 1)   # corner tile (1, 1): sand NW + NE, water SW + SE = sand slot 3
+	var c := PixelPlainsBaker._cache(pp)
+	var key := Vector4i(M.SAND, M.SAND, M.WATER, M.WATER)
+	var comp := PixelPlainsBaker._compose(c, key)
+	var slot: PackedByteArray = PixelPlainsBaker._slot(c, M.SAND, 3).get_data()
+	var land: PackedByteArray = comp["land"]
+	var agree := true
+	for p in t * t:
+		agree = agree and (land[p] == 1) == (slot[p * 4 + 3] > 0)
+		agree = agree and PixelPlainsBaker.drawn_land_at(beach, pp, Vector2i(t / 2 + p % t, t / 2 + p / t)) == (slot[p * 4 + 3] > 0)
+	_check(agree, "beach corner: land and drawn_land_at agree with the alpha of the sand slot")
+	var anim: PackedByteArray = (comp["anim"] as Image).get_data()
+	var marks := 0
+	var lit := 0
+	for p in t * t:
+		if anim[p * 4] != 1:
+			continue
+		marks += 1
+		var any := false
+		for f in 8:
+			any = any or c.foam_pic.get_pixel(f * 64 + anim[p * 4 + 1], anim[p * 4 + 2]).a8 > 0
+		lit += 1 if any else 0
+		_check(slot[p * 4 + 3] > 0, "a foam pixel lies on a drawn sand pixel")
+	_check(marks > 5 and lit == marks, "beach corner: %d foam pixels, all lit in some frame of foam.png" % marks)
+	# a later layer clears the foam under it: dirt over the sand takes the foam pixels it draws
+	var cd := PixelPlainsBaker._compose(c, Vector4i(M.SAND, M.DIRT, M.WATER, M.WATER))
+	var dirt_slot: PackedByteArray = PixelPlainsBaker._slot(c, M.DIRT, 2).get_data()
+	var anim2: PackedByteArray = (cd["anim"] as Image).get_data()
+	var cleared := true
+	for p in t * t:
+		cleared = cleared and not (dirt_slot[p * 4 + 3] > 0 and anim2[p * 4] == 1)
+	_check(cleared, "dirt over sand: no foam on a pixel the dirt edge draws")
+	# per-biome ground: painting one pixel of FOREST's sand slot changes only corners whose sand cell is forest (the first cell holding sand)
+	BiomeArt.get_default().enabled = true
+	PixelPlainsBaker.clear_cache()
+	var forest := MapGen.Biome.FOREST
+	var spic := BiomeArt.ground_texture("sand", forest)
+	_check(spic != null, "forest has its own sand sheet")
+	var simg2: Image = spic.get_image().duplicate()
+	simg2.convert(Image.FORMAT_RGBA8)
+	var sp := Vector2i(-1, -1)   # a drawn pixel of sand slot 3
+	for y in t:
+		for x in t:
+			if sp.x < 0 and simg2.get_pixel(3 * t + x, (1 + 0) * t + y).a8 > 0:
+				sp = Vector2i(x, y)
+	simg2.set_pixel(3 * t + sp.x, t + sp.y, Color8(7, 8, 9))   # slot 3 = cell (3, 1)
+	BiomeArt.override(&"ground/sand", forest, ImageTexture.create_from_image(simg2))
+	PixelPlainsBaker.clear_cache()
+	var wet := _result(["ss", ".."], 1)
+	wet.biome.fill(MapGen.Biome.PLAINS)
+	var wet_forest := _result(["ss", ".."], 1)
+	wet_forest.biome.fill(MapGen.Biome.FOREST)
+	var px_plains: Image = GroundBaker.bake_region(wet, _style(pp), 0, 0, 3, 3)["ground"]
+	var px_forest: Image = GroundBaker.bake_region(wet_forest, _style(pp), 0, 0, 3, 3)["ground"]
+	_check(px_forest.get_pixel(t + sp.x, t + sp.y) == Color8(7, 8, 9), "a pixel painted in forest's sand slot 3 shows in a forest corner")
+	_check(px_plains.get_pixel(t + sp.x, t + sp.y) != Color8(7, 8, 9), "the same corner in plains is unchanged")
+	_check(not _same(px_plains, px_forest) and _same(px_plains.get_region(Rect2i(0, 0, t, t)), px_forest.get_region(Rect2i(0, 0, t, t))), "only the forest corner changed")
+	BiomeArt.override(&"ground/sand", forest, null)
+	BiomeArt.clear_cache()
+	PixelPlainsBaker.clear_cache()
+	_check(BiomeArt.get_default().status_text().contains("ground files loaded (of 9)"), "F3 status lists the biome ground files")
+	# the F3 layers line
+	_check(PixelPlainsBaker.corner_layers(pp, Vector4i(M.WATER, M.SAND, M.LIGHT, M.LIGHT)) == "water base | sand slot 14 + foam | light grass slot 12", "layers line: " + PixelPlainsBaker.corner_layers(pp, Vector4i(M.WATER, M.SAND, M.LIGHT, M.LIGHT)))
+	_check(PixelPlainsBaker.corner_layers(pp, Vector4i(M.DIRT, M.DIRT, M.DIRT, M.DIRT)) == "dirt fill", "layers line of a single ground")
+	# a missing foam / water picture warns and does not crash
+	var nopic := pp.duplicate() as PixelPlainsGround
+	nopic.foam_texture = null
+	nopic.water_texture = null
+	var np: Image = GroundBaker.bake_region(beach, _style(nopic), 0, 0, 3, 3)["ground"]
+	_check(np.get_width() == 3 * t, "no foam / water picture: bake still runs")
+	PixelPlainsBaker.clear_cache()
+	# a baked case twice = same pixels (nothing random per call)
 	var again := GroundCase.bake(GroundCase.CASES["mixed_coast"], pp)
 	_check(_same(again["ground"], GroundCase.bake(GroundCase.CASES["mixed_coast"], pp)["ground"]), "a case bakes the same twice")
-	# animation mirrors: beach foam moves 1 px per frame, 6 of 8 lit; a dash loop has 4 distinct states
-	var lit := 0
-	for x in 8:
-		lit += 1 if PixelPlainsBaker.beach_lit(x, 0, 3, pp.beach_foam_lit, 8) else 0
-	_check(lit == pp.beach_foam_lit, "beach foam: %d of 8 lit" % lit)
-	_check(PixelPlainsBaker.beach_lit(5, 0, 0, 6, 8) == PixelPlainsBaker.beach_lit(6, 0, 1, 6, 8), "beach foam moves 1 px per frame")
-	var states := {}
-	for f in 8:
-		var s := ""
-		for j in 6:
-			s += "1" if PixelPlainsBaker.dash_lit(j, 5, 0, f) else "0"
-		states[s] = true
-	_check(states.size() == 4, "a foam dash cycles through 4 shapes (%d)" % states.size())
+	# every mixed corner of the 6 grounds can be stacked, none half transparent
+	var bad := 0
+	for k in 1296:
+		var kk := Vector4i(k % 6, (k / 6) % 6, (k / 36) % 6, (k / 216) % 6)
+		var img: Image = PixelPlainsBaker._compose(c, kk)["img"]
+		var d := img.get_data()
+		for p in t * t:
+			bad += 1 if d[p * 4 + 3] != 255 and not (kk.x == M.WATER and kk.y == M.WATER and kk.z == M.WATER and kk.w == M.WATER) else 0
+	_check(bad == 0, "all mixed corners are opaque (%d pixels not)" % bad)

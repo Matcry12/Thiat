@@ -13,7 +13,7 @@ static var _materials := {}   ## PropSet instance id -> ShaderMaterial
 ## deco: the Result.deco dictionaries to show ({set, region, pos = bottom centre of the picture, px}); sets: MapStyle.deco.
 ## Returns a Node2D (named "Deco") holding the instances. Positions are world px; the node sits at the origin.
 ## ysort_min_px: props whose picture is taller than this (art px) are left out here: see build_tall.
-static func build(deco: Array[Dictionary], sets: Array[PropSet], art_scale: float, ysort_min_px := 1000000) -> Node2D:
+static func build(deco: Array[Dictionary], sets: Array[PropSet], art_scale: float, ysort_min_px := 1000000, biome_at := Callable()) -> Node2D:
 	var root := Node2D.new()
 	root.name = "Deco"
 	if _quad == null:
@@ -23,12 +23,16 @@ static func build(deco: Array[Dictionary], sets: Array[PropSet], art_scale: floa
 	for d in deco:
 		if sets[d["set"]].regions[d["region"]].size.y > ysort_min_px:
 			continue
-		if not by_set.has(d["set"]):
-			by_set[d["set"]] = []
-		by_set[d["set"]].append(d)
-	for si in by_set:
+		var b: int = biome_at.call(d["pos"]) if biome_at.is_valid() else -1
+		var tex: Texture2D = sets[d["set"]].texture
+		var key := Vector2i(d["set"], b if BiomeArt.sheet(tex, b) != tex else -1)   # split by biome only for sheets that have a biome copy (BiomeArt)
+		if not by_set.has(key):
+			by_set[key] = []
+		by_set[key].append(d)
+	for key: Vector2i in by_set:
+		var si := key.x
 		var set: PropSet = sets[si]
-		var list: Array = by_set[si]
+		var list: Array = by_set[key]
 		var mm := MultiMesh.new()
 		mm.transform_format = MultiMesh.TRANSFORM_2D
 		mm.use_custom_data = true
@@ -48,9 +52,9 @@ static func build(deco: Array[Dictionary], sets: Array[PropSet], art_scale: floa
 			mm.set_instance_transform_2d(k, Transform2D(Vector2(size.x, 0.0), Vector2(0.0, size.y), item["pos"] - Vector2(0.0, size.y * 0.5)))
 			mm.set_instance_custom_data(k, Color(r.position.x, r.position.y, r.size.x, r.size.y))
 		var inst := MultiMeshInstance2D.new()
-		inst.name = "Set%d" % si
+		inst.name = "Set%d_%d" % [si, key.y]
 		inst.multimesh = mm
-		inst.texture = set.texture
+		inst.texture = BiomeArt.sheet(set.texture, key.y)
 		inst.material = _material(set)
 		root.add_child(inst)
 	return root
@@ -58,7 +62,7 @@ static func build(deco: Array[Dictionary], sets: Array[PropSet], art_scale: floa
 
 ## The tall props (picture taller than ysort_min_px art px) as Y-sorted Sprite2D, to be added under the same Y-sorted parent as the trees and
 ## characters: the player walks behind a bush. Foot (bottom centre) on `pos`.
-static func build_tall(deco: Array[Dictionary], sets: Array[PropSet], art_scale: float, ysort_min_px: int) -> Array[Sprite2D]:
+static func build_tall(deco: Array[Dictionary], sets: Array[PropSet], art_scale: float, ysort_min_px: int, biome_at := Callable()) -> Array[Sprite2D]:
 	var out: Array[Sprite2D] = []
 	for d in deco:
 		var set: PropSet = sets[d["set"]]
@@ -67,7 +71,7 @@ static func build_tall(deco: Array[Dictionary], sets: Array[PropSet], art_scale:
 			continue
 		var sp := Sprite2D.new()
 		sp.name = "Prop"
-		sp.texture = set.texture
+		sp.texture = BiomeArt.sheet(set.texture, biome_at.call(d["pos"]) if biome_at.is_valid() else -1)
 		sp.region_enabled = true
 		sp.region_rect = r
 		sp.offset = Vector2(0.0, -r.size.y * 0.5)

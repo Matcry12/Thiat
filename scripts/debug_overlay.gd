@@ -7,6 +7,8 @@ extends CanvasLayer
 @export var boss_path: NodePath
 
 @export var enabled := true  ## exported so the F3 tuning panel can reflect it
+## F1 also draws a thin line round every loaded map chunk. Off by default: it looks like a ground seam in play.
+@export var show_chunk_borders := false
 var last_damage := 0.0
 var weapon_state := "idle"
 
@@ -178,7 +180,7 @@ func _on_draw() -> void:
 
 	# Map chunks (0038 step 2): a thin border round every loaded chunk. The world beyond them is data only.
 	var arena_map := get_tree().get_first_node_in_group("arena_map") as ArenaMap
-	if arena_map != null and arena_map.streamer() != null:
+	if show_chunk_borders and arena_map != null and arena_map.streamer() != null:
 		for r in arena_map.streamer().loaded_rects():
 			_draw_layer.draw_rect(r, Color(0.6, 0.75, 1.0, 0.45), false, 1.0)
 

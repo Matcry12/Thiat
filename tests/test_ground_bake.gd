@@ -42,12 +42,14 @@ func _init() -> void:
 			var img: Image = GroundBaker.bake(res, style, look)["ground"]
 			var bad_water := 0
 			var bad_land := 0
+			var wc: Color = style.pixel_plains.fill_of(PixelPlainsGround.Mat.WATER)   # water is pixels of water.png now: transparent (open water) or its colour (mixed corners)
 			for y in p.rows:
 				for x in p.cols:
-					var a := img.get_pixel(x * 16 + 16, y * 16 + 16).a   # cell centre; the picture starts half a tile up and left
-					if res.land[y * p.cols + x] == 0 and a > 0.0:
+					var px := img.get_pixel(x * 16 + 16, y * 16 + 16)   # cell centre; the picture starts half a tile up and left
+					var is_water := px.a == 0.0 or (px.r8 == wc.r8 and px.g8 == wc.g8 and px.b8 == wc.b8)
+					if res.land[y * p.cols + x] == 0 and not is_water:
 						bad_water += 1
-					elif res.land[y * p.cols + x] == 1 and a == 0.0:
+					elif res.land[y * p.cols + x] == 1 and is_water:
 						bad_land += 1
 			_check(bad_water == 0 and bad_land == 0, "%s seed %d: ground picture matches land / water at every cell centre (water showing land %d, land showing water %d)" % [path, seed_v, bad_water, bad_land])
 	var style: MapStyle = load("res://data/maps/grass.tres")

@@ -1005,12 +1005,18 @@ func _ground_text(here_pos: Vector2) -> String:
 	if hi >= 0:   # which plants the pack art draws in the biome under the player (PixelPlainsGround.show_*)
 		var bi: int = result.biome[hi]
 		shown = "\n  plants here (biome %d): %s" % [bi, " ".join(["trees", "flowers", "tufts", "hedges", "other"].map(func(k): return "%s %s" % [k, "on" if style.pixel_plains.shows(StringName(k), bi) else "hidden"]))]
-	return "pixel plains, no tint (land: dirt %d%% light %d%% dark %d%% sand %d%% snow %d%%, before the dark-near-dirt rule)  all trees hidden %s  all plants hidden %s%s%s" % [_pp_shares[0], _pp_shares[1], _pp_shares[2], _pp_shares[3], _pp_shares[4], style.pixel_plains.hide_trees, style.pixel_plains.hide_veg, shown, cell_text]
+	return "pixel plains, no tint (land: dirt %d%% light %d%% dark %d%% sand %d%% snow %d%%, before the dark-near-dirt rule)  all trees hidden %s  all plants hidden %s%s%s" % [_pp_shares[0], _pp_shares[1], _pp_shares[2], _pp_shares[3], _pp_shares[4], style.pixel_plains.hide_trees, style.pixel_plains.hide_veg, shown, cell_text] + "\n" + BiomeArt.get_default().status_text()
 
 
 func _cell_i(pos: Vector2) -> int:   ## index into result.land / f / biome, -1 off the grid
 	var c := Vector2i((pos / cell_px()).floor())
 	return -1 if c.x < 0 or c.y < 0 or c.x >= result.cols or c.y >= result.rows else c.y * result.cols + c.x
+
+
+## MapGen.Biome under a world position, -1 off the grid / no biome map (flat test map).
+func biome_id_at(pos: Vector2) -> int:
+	var i := _cell_i(pos)
+	return -1 if i < 0 or result.biome.is_empty() else result.biome[i]
 
 
 func _biome_name(pos: Vector2) -> String:

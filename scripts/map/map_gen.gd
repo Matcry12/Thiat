@@ -220,7 +220,6 @@ class Result:
 	var shallow := PackedByteArray()         ## 1 on shallow water (rivers, lakes, the first ocean cells along the coast): walkable, nothing is placed on it. Empty on a flat map
 	var fresh := PackedByteArray()           ## 1 river, 2 lake (a subset of `shallow`)
 	var shore := PackedByteArray()           ## 1 on the dry land cells around a river / lake: their ground is BiomeData.shore_ground
-	var level_override := PackedByteArray()  ## Pixel Plains: a level per cell that replaces the level rules. Only tools/ground_case_scene.gd and tests set it (forced border cases)
 	var warp_x := PackedFloat32Array()       ## the domain warp (cells) per cell, shared by the continent, the climate and the water; freed when the water is done
 	var warp_y := PackedFloat32Array()
 	var coast_dist := PackedByteArray()      ## _water_dist of the dry land at biome time (1 = touches the ocean); freed when the water is done

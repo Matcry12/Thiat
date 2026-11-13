@@ -16,6 +16,7 @@ const DEV_SHARED := {}
 const BY_NAME := {
 	"assets/game/ui/fonts/": "scripts/ui/ui_fonts.gd",                              # load("%s.fnt" % name) + "%s_ring.png"
 	"assets/game/ui/skin/slices.json": "scripts/ui/pixel_art.gd",                   # GAME + "slices.json"
+	"assets/game/map/pixel_plains/biomes/": "scripts/map/biome_art.gd",             # load("<folder>/<biome>/oaks.png") per biome (BiomeArt)
 }
 const TEXT_EXT: Array[String] = ["gd", "tscn", "tres", "json", "cfg", "gdshader", "godot"]
 const NOT_CODE_EXT: Array[String] = ["import", "uid", "md", "txt"]
