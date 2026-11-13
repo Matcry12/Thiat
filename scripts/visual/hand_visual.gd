@@ -36,11 +36,16 @@ func _hold_point() -> Variant:
 	if not _weapon.visible:
 		return null
 	if off_hand:
+		if _held.visible:   # a held item (torch, wood) is one-handed: the free hand stays at rest
+			return null
 		_at = "off_grip"
 		return _weapon.picture_grip_tip().get("off_grip") if use_off_grip else null
+	if _held.visible and _held.keeps_shown():   # carried (torch): the hand keeps its idle / walk pose, the item follows the hand
+		return null
 	if _held.visible:
 		_at = "item"
-		return _held.global_position + item_offset
+		var g: Variant = _held.grip_point()
+		return g if g != null else _held.global_position + item_offset
 	var model := _weapon.get_model()
 	_at = "grip"
 	return _weapon.picture_grip_tip().get("grip") if model and model.has_node("MainHandGrip") else null
@@ -64,6 +69,9 @@ func _process(_delta: float) -> void:
 			o += run_swing[f % run_swing.size()]
 		p = get_parent().global_position + Vector2(-o.x if _body.is_facing_left() else o.x, o.y)
 	global_transform = Transform2D(0.0, Vector2.ONE * s, 0.0, p)
+	if not off_hand and hold == null and _held.visible and _held.keeps_shown():
+		_at = "rest, carrying"
+		_held.carry_at(p, _body.is_facing_left())
 
 func status_text() -> String:
 	return "hand: %s at %s  (%.0f, %.0f) from player" % ["on" if visible else "off", _at, position.x, position.y]

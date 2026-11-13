@@ -325,6 +325,8 @@ func debug_children() -> Array:
 		var it := load("res://data/items/" + f) as ItemData if f.ends_with(".tres") else null
 		if it == null:
 			continue
+		if it.light != null:   # one "Light <id>" section per glowing item (torch, a future lantern): radius, colour, energy, flicker
+			out.append({"name": "Light " + String(it.id), "object": it.light})
 		if it.category == "material":
 			out.append({"name": "Item " + String(it.id), "object": it})
 		elif it.category == "tool":

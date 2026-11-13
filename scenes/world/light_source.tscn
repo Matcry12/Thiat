@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/light_source.gd" id="1"]
+
+[sub_resource type="Gradient" id="SoftFalloff"]
+offsets = PackedFloat32Array(0, 0.35, 1)
+colors = PackedColorArray(1, 1, 1, 1, 0.55, 0.55, 0.55, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="SoftCircle"]
+gradient = SubResource("SoftFalloff")
+width = 256
+height = 256
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+
+[node name="LightSource" type="PointLight2D"]
+texture = SubResource("SoftCircle")
+script = ExtResource("1")

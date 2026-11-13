@@ -115,8 +115,8 @@ func _on_screen(pos: Vector2, center: Vector2) -> bool:
 func _near_safe(pos: Vector2) -> bool:
 	if _map != null and pos.distance_to(_map.home_point()) < safe_radius:
 		return true
-	for s: Node2D in get_tree().get_nodes_in_group("station"):
-		if pos.distance_to(s.global_position) < safe_radius:
+	for s: Station in get_tree().get_nodes_in_group("station"):
+		if s.safe_zone and pos.distance_to(s.global_position) < safe_radius:
 			return true
 	return false
 
@@ -315,8 +315,9 @@ func _draw_ring() -> void:
 	var centers: Array[Vector2] = []
 	if _map != null:
 		centers.append(_map.home_point())
-	for s: Node2D in get_tree().get_nodes_in_group("station"):
-		centers.append(s.global_position)
+	for s: Station in get_tree().get_nodes_in_group("station"):
+		if s.safe_zone:
+			centers.append(s.global_position)
 	for h in centers:
 		_ring.draw_circle(_ring.to_local(h), safe_radius, Color(0.2, 1.0, 0.4, 0.6), false, 1.5)
 

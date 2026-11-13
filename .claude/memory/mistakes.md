@@ -43,3 +43,4 @@
 - 2026-11-05: user said 'rotate it normally' and I read it as today's look without asking; they meant the drawing must not change while turning → when a request could mean 'keep today', show or confirm what it looks like before closing it.
 - 2026-11-06: forced item icons to one size with in-between scales (soft, then broken pixels) -> pixel art: never resize to in-between scales; show the look on one icon before building a sizing system.
 - 2026-11-06: a builder called its own red test 'already failing' without checking and wrote that into a decision record; the judge proved it false → never claim 'already failing' unless the test was run on clean HEAD, and show that output.
+- 2026-11-13: started moving 'unused' items to retired/ without showing the list first, and the agent deleted data files → before any move or delete of assets, show the user the list + pictures and wait for yes; moves must keep every file.

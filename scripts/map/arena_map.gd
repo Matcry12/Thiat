@@ -924,7 +924,11 @@ func _ready() -> void:
 	_biome_overlay.z_index = 60
 	_biome_overlay.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_biome_overlay.visible = false
-	add_child(_biome_overlay)
+	var overlay_layer := CanvasLayer.new()   # own canvas that follows the camera: the night tint does not darken the F3 biome picture
+	overlay_layer.layer = 1
+	overlay_layer.follow_viewport_enabled = true
+	add_child(overlay_layer)
+	overlay_layer.add_child(_biome_overlay)
 	_water_body = StaticBody2D.new()
 	_water_body.name = "Water"
 	_water_body.collision_mask = 0

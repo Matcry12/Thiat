@@ -169,7 +169,9 @@ func collect() -> Dictionary:
 	if inv.held_item != null:
 		held = {"id": String(inv.held_item.id), "n": inv.held_count}
 	var boss := _boss()
+	var clock := get_tree().get_first_node_in_group("day_clock") as DayClock
 	return {
+		"day_night": {"time": clock.time, "day": clock.day_count} if clock else {},
 		"version": VERSION,
 		"saved_at": Time.get_datetime_string_from_system(),
 		"play_time": play_time,
@@ -232,6 +234,10 @@ func apply(d: Dictionary) -> void:
 	var rs := p.get_node("Respawner") as Respawner
 	rs.deaths = int(d.get("deaths", 0))
 	play_time = float(d.get("play_time", 0.0))
+	var clock := get_tree().get_first_node_in_group("day_clock") as DayClock
+	var dn = d.get("day_night")
+	if clock and dn is Dictionary and dn.has("time"):   # old saves have none: the clock keeps its start_time
+		clock.restore(float(dn["time"]), int(dn.get("day", 1)))
 	if bool(d.get("boss_defeated", false)) and _boss() != null:
 		var bh := _boss().health
 		bh.invulnerable = false

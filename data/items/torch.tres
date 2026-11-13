@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemData" format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Resource" path="res://data/lights/torch.tres" id="2"]
+[ext_resource type="Texture2D" path="res://assets/game/ui/placeholder/torch.png" id="icon"]
+[ext_resource type="PackedScene" path="res://scenes/stations/torch.tscn" id="p"]
+[ext_resource type="Texture2D" path="res://assets/game/characters/player/held/torch_held.png" id="held"]
+
+[resource]
+script = ExtResource("1")
+id = &"torch"
+display_name = "Torch"
+icon = ExtResource("icon")
+color = Color(1, 0.7, 0.3, 1)
+category = "placeable"
+max_stack = 99
+placeable = ExtResource("p")
+light = ExtResource("2")
+held_grip = Vector2(0, 4)
+held_scale = 3.0
+held_icon = ExtResource("held")

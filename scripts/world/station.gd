@@ -17,6 +17,10 @@ signal picked_up
 @export var pickup_type: StringName = &"station_pickup_stone"
 ## How it sounds: knock (wrong_tool), pick up (break_), placed (place). data/sounds/*.tres.
 @export var sound_set: SoundSet
+## False = does not count as a crafting base: enemies may spawn next to it (torch). Real stations keep the no-spawn ring.
+@export var safe_zone := true
+## False = walk-through (no collision for the player or enemies). The footprint still keeps other things off its spot.
+@export var solid := true
 @export var pickup_lockout := 0.5              ## s after a pickup in which no other station can be picked up
 
 ## What you get back on pickup (set by the Placer). Plain var: code-owned.
@@ -32,6 +36,12 @@ func _ready() -> void:
 	add_to_group("station")
 	var cs := get_node("CollisionShape2D") as CollisionShape2D
 	_build_art()
+	if not solid:
+		collision_layer = 0
+	if item != null and item.light != null and not ghost:
+		var l := item.light.make()
+		l.position += Vector2(0, art_rect_local().position.y + art_rect_local().size.y * 0.25)   # the flame: upper part of the picture
+		add_child(l)
 	if ghost:
 		remove_from_group("station")
 		collision_layer = 0

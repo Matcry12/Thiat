@@ -35,6 +35,7 @@
 [ext_resource type="Script" uid="uid://661k0pygu5hh" path="res://scripts/components/swimmer.gd" id="swimmer_script"]
 [ext_resource type="Script" uid="uid://dhsyd41tvs3t5" path="res://scripts/visual/water_fx.gd" id="water_fx_script"]
 [ext_resource type="Resource" path="res://data/sounds/player.tres" id="snd_set"]
+[ext_resource type="PackedScene" path="res://scenes/world/light_source.tscn" id="night_glow"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
 radius = 11.0
@@ -186,3 +187,9 @@ fixed_type = &"player_hit"
 
 [node name="Swimmer" type="Node" parent="." unique_id=1982629522]
 script = ExtResource("swimmer_script")
+
+[node name="NightGlow" parent="." instance=ExtResource("night_glow")]
+color = Color(0.6, 0.75, 1, 1)
+radius = 48.0
+f3_label = "Light player glow"
+base_energy = 0.5

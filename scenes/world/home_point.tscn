@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/home_point.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/game/map/campfire.png" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/world/light_source.tscn" id="3"]
 
 [node name="HomePoint" type="Node2D"]
 y_sort_enabled = true
@@ -13,3 +14,12 @@ texture = ExtResource("2")
 offset = Vector2(0, -13)
 region_enabled = true
 region_rect = Rect2(0, 0, 32, 32)
+
+[node name="NightLight" parent="." instance=ExtResource("3")]
+position = Vector2(0, -8)
+color = Color(1, 0.5, 0.22, 1)
+radius = 220.0
+f3_label = "Light campfire"
+base_energy = 1.6
+flicker_amount = 0.12
+flicker_speed = 9.0

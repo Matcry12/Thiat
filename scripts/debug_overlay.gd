@@ -115,6 +115,7 @@ func _on_draw() -> void:
 	_draw_projectile_range(weapon_holder)
 	_draw_skill_reach(weapon_holder)
 	_draw_picture_fit()
+	_draw_lights()
 	for hb in get_tree().get_nodes_in_group("hitbox"):
 		if (hb as Hitbox).is_active():
 			for pose in (hb as Hitbox).sweep_poses:   # the arc a snapping swing covered
@@ -243,6 +244,11 @@ func _draw_hurtbox_outline(hurtbox: Hurtbox) -> void:
 ## an arrow can reach if nothing stops it. Nothing drawn for melee weapons.
 ## Weapon picture fit (0049): cross = the grip (model origin = where the hand holds it), dot = the blade tip (`Tip` marker).
 ## If the cross is not on the handle or the dot not on the blade end, the picture is misplaced in the model scene.
+## Every LightSource's reach: orange circle (the light's own canvas is tinted by night, this layer is not).
+func _draw_lights() -> void:
+	for l: LightSource in get_tree().get_nodes_in_group("light_source"):
+		_draw_layer.draw_circle(l.global_position, l.radius, Color(1.0, 0.5, 0.1, 0.9), false, 2.0)
+
 func _draw_picture_fit() -> void:
 	var wv := _player.get_node_or_null("WeaponVisual") as WeaponVisual
 	if wv:   # the character's Hand point (the player's Hand marker): white X, apart from the cyan + grip cross

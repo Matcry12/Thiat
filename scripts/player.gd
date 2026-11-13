@@ -86,6 +86,7 @@ func _on_died() -> void:
 	skill_slot.cancel()
 	velocity = Vector2.ZERO
 	visual.set_move_state("idle")
+	held_item.set_item(null)   # the held light goes out at once, not at respawn
 
 ## Wakes up after a death (Respawner): full hp, inputs back. The caller moves the body.
 func respawn() -> void:
@@ -145,7 +146,7 @@ func _physics_process(delta: float) -> void:
 	weapon_visual.set_aim_angle(_body_facing.angle())
 	held_item.set_item(_held_item_data())
 	# Tinkerlands style (0055): the held weapon / tool / item shows only while facing the mouse, i.e. in use + face_mouse_hold after.
-	weapon_visual.visible = not hide_idle_held or _face_mouse_left > 0.0 or weapon_visual.dev_hold_still
+	weapon_visual.visible = not hide_idle_held or _face_mouse_left > 0.0 or weapon_visual.dev_hold_still or held_item.keeps_shown()
 	weapon_holder.aim_direction = aim_direction
 	skill_slot.aim_direction = aim_direction
 	guard.aim_direction = aim_direction

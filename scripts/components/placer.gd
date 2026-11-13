@@ -126,7 +126,8 @@ func _blocks_path(m: ArenaMap, pos: Vector2, rect: Rect2) -> bool:
 		return _neck_value
 	var rects: Array[Rect2] = [rect]
 	for s: Station in stations:
-		rects.append(Rect2(s.global_position - s.footprint() * 0.5, s.footprint()))
+		if s.solid:
+			rects.append(Rect2(s.global_position - s.footprint() * 0.5, s.footprint()))
 	_neck_key = key
 	_neck_value = m.blocks_boss_path(rects)
 	last_neck_ms = m.last_walk_check_ms
@@ -231,5 +232,6 @@ func debug_actions() -> Array:
 	return [
 		{"label": "Place workbench here", "run": func(): place_free(load("res://data/items/workbench.tres"))},
 		{"label": "Place furnace here", "run": func(): place_free(load("res://data/items/furnace.tres"))},
+		{"label": "Place torch here", "run": func(): place_free(load("res://data/items/torch.tres"))},
 		{"label": "Place anvil here", "run": func(): place_free(load("res://data/items/anvil.tres"))},
 	]

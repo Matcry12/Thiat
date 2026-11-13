@@ -48,7 +48,7 @@ func _init():
 		fx.fire([&"sword", &"lunge", &"arrow", &"charged_arrow", &"parry", &"player_hit"][i % 6], dummy, player, info)
 		await process_frame
 	check("sparks pool bounded (%d <= %d)" % [sp.pool_size(), sp.max_sparks], sp.pool_size() <= sp.max_sparks)
-	check("number pool bounded (%d <= %d), one Label per slot" % [nm.pool_size(), nm.max_numbers], nm.pool_size() <= nm.max_numbers and nm.get_child_count() == nm.pool_size())
+	check("number pool bounded (%d <= %d), one Label per slot" % [nm.pool_size(), nm.max_numbers], nm.pool_size() <= nm.max_numbers and nm.get_child(0).get_child_count() == nm.pool_size())
 	# 200 hits in ONE frame
 	await process_frame
 	var spawned := sp.spawned_total

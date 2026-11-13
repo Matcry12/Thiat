@@ -198,6 +198,13 @@ func _build_ui(player: Node) -> void:
 			_tooltip.watch(s, s.tip_text)
 		for s in [_win.marker(), _win.furnace_slots()[0], _win.furnace_slots()[1]] + _win.tab_slots():
 			_tooltip.watch(s, s.tip_text)
+	var clock := get_tree().get_first_node_in_group("day_clock") as DayClock
+	if clock:   # time of day: a small dial under the hotbar (decision 0067)
+		var dial := DayDial.new()
+		dial.name = "DayDial"
+		_top_left.add_child(dial)
+		dial.bind(clock)
+		_tooltip.watch(dial, dial.tip_text)
 	_abilities = AbilityBar.new()
 	_abilities.skin = skin
 	_bottom_left.add_child(_abilities)

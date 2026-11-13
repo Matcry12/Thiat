@@ -19,3 +19,12 @@ func stack_limit() -> int:
 ## Set for stations (workbench, furnace, anvil): the scene the Placer puts in the world (decision 0031).
 ## An item with a `placeable` is held like bare hands; a click puts it down instead of punching.
 @export var placeable: PackedScene
+
+## Set for anything that glows (torch, lantern): held in the selected slot it lights the player, placed it lights its spot.
+@export var light: LightData
+## Held in the hand: where the fist closes, in icon pixels from the icon's centre (a torch: its handle end). Zero = the hand's default `item_offset`.
+@export var held_grip := Vector2.ZERO
+## Held in the hand: picture size (1 = icon pixels). 0 = HeldItem.icon_scale.
+@export var held_scale := 0.0
+## Held in the hand: its own picture (an upright torch) instead of the inventory icon. Null = the icon. `held_grip` is then in this picture's pixels.
+@export var held_icon: Texture2D

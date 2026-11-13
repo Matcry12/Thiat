@@ -60,7 +60,7 @@ func _ready() -> void:
 
 	# The storyboards use screen coordinates: run them on the screen-sized arena with the old layout.
 	# The showcase scenarios use the real big map instead.
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "body3d", "blocky", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory", "w4_crafting"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "body3d", "blocky", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory", "w4_crafting", "daynight"]:
 		_arena = load("res://scenes/arena.tscn").instantiate()
 		(_arena.get_node("ArenaMap") as ArenaMap).map_seed = _seed
 	else:
@@ -114,7 +114,7 @@ var _cap_gen := 0
 func _build_captions() -> void:
 	var layer := CanvasLayer.new()
 	add_child(layer)
-	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "body3d", "blocky", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory", "w4_crafting"]:
+	if _scenario in ["showcase", "hands", "hitfeel", "hitfeel2", "charanim", "body3d", "blocky", "runbounce", "rundust", "hud", "island", "gather", "w3_inventory", "w4_crafting", "daynight"]:
 		# Small, bottom-centre, semi-transparent; each caption fades out by itself.
 		_cap_panel = PanelContainer.new()
 		_cap_panel.anchor_left = 0.5
@@ -272,6 +272,7 @@ func _run() -> void:
 		"gather": await _run_gather()
 		"w3_inventory": await _run_w3_inventory()
 		"w4_crafting": await _run_w4_crafting()
+		"daynight": await _run_daynight()
 		_: await _run_guard()
 
 func _run_guard() -> void:
@@ -1845,3 +1846,51 @@ func _run_w4_crafting() -> void:
 	print("[demo] end: copper_sword %d, anvil back in the bag %d, stations left %d" % [inv.count(&"copper_sword"), inv.count(&"anvil"), get_tree().get_nodes_in_group("station").size()])
 	get_tree().quit()
 
+
+## FPS=30 tools/demo/record.sh daynight-v1 --scenario=daynight --seed=21
+func _run_daynight() -> void:
+	_arena.get_node("Boss").passive = true
+	_overlay(false)
+	_dummy_off(_dummy)
+	_aim_at = null
+	_player.aim_override = Vector2.RIGHT
+	var clock: DayClock = get_tree().get_first_node_in_group("day_clock")
+	var inv: Inventory = _player.get_node("Inventory")
+	var placer: Placer = _player.get_node("Placer")
+	var torch: ItemData = load("res://data/items/torch.tres")
+	var m: ArenaMap = _arena.get_node("ArenaMap")
+	_player.global_position = m.home_point() + Vector2(60, 40)
+	_player.velocity = Vector2.ZERO
+	clock.frozen = false   # BOSSFIGHT_TEST_SEED would freeze it
+	clock.set_time(0.62)
+	clock.time_scale = clock.data.day_length_s / 40.0   # a full day in 40 s
+	await _wait(2.0)
+	_say("Day: the clock runs fast", "the dial top-right follows it")
+	await _wait(5.0)
+	_say("Dusk, then night", "the campfire and the player glow")
+	await _wait(6.0)
+	clock.time_scale = 0.0
+	clock.set_time(0.95)   # deep night
+	await _wait(2.0)
+	inv.add(torch, 5)
+	await _wait(0.3)
+	_say("Torch in hand: a light that follows you", "walking, then standing still")
+	await _tap("slot_%d" % (_slot_of(torch.id) + 1))
+	await _wait(1.5)
+	_aim_at = null
+	_player.aim_override = Vector2.RIGHT
+	for off in [Vector2(220, 0), Vector2(0, 160), Vector2(-260, 0)]:
+		await _walk(_player.global_position + off, 14.0, 4.0)
+	await _wait(2.0)
+	_say("Place a torch, walk away", "its light stays")
+	await _aim_free_spot()
+	await _tap("attack")
+	await _wait(1.0)
+	await _walk(_player.global_position + Vector2(-200, 100), 14.0, 4.0)
+	await _tap("slot_1")
+	await _wait(3.0)
+	_say("Dawn, then day")
+	clock.set_time(0.12)
+	clock.time_scale = clock.data.day_length_s / 40.0
+	await _wait(8.0)
+	get_tree().quit()

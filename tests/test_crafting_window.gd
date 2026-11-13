@@ -143,7 +143,7 @@ func _init() -> void:
 	inv.add(World.item("stone"), 20)
 	var wb := World.station(arena, "workbench", player.global_position + Vector2(40, 0))
 	await _frames()
-	_check(win.marker().tip_text() == "Workbench" and win.shown_recipes().size() == 8, "workbench in range: the marker shows it; 8 icons (the anvil itself needs bars you do not hold: hidden; the 3 copper tools use wood: dim)")
+	_check(win.marker().tip_text() == "Workbench" and win.shown_recipes().size() == 9, "workbench in range: the marker shows it; 9 icons (the torch needs gel: dim; the anvil itself needs bars you do not hold: hidden; the 3 copper tools use wood: dim)")
 	_check(win.shown_recipes()[0].station == &"workbench" and win.shown_recipes()[win.shown_recipes().size() - 1].station == &"anvil", "the workbench recipes come first, the out-of-range anvil ones last")
 	_check(win.get_node("Frame/Book/Chosen").visible and win.shown_recipes().has(win.selected_recipe()), "the right page shows the chosen recipe")
 	win.select_recipe(pick_i_for(win, &"stone_pickaxe"))

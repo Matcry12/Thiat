@@ -16,7 +16,7 @@ const OLD_TARGETS := [
 	"Inventory", "Tool copper_axe", "Item copper_bar", "Item copper_ore", "Tool copper_pickaxe", "Item stone",
 	"Tool stone_axe", "Tool stone_pickaxe", "Item wood", "Respawner", "Crafter", "Recipe workbench",
 	"Recipe stone_pickaxe", "Recipe stone_axe", "Recipe bow", "Recipe furnace", "Recipe anvil", "Recipe copper_sword",
-	"Recipe copper_axe", "Recipe copper_pickaxe", "Placer", "Smelt copper_bar", "HitFx", "HitStop",
+	"Recipe copper_axe", "Recipe copper_pickaxe", "Recipe torch", "Placer", "Smelt copper_bar", "HitFx", "HitStop",
 	"CameraShake", "Sound", "HitSparks", "DamageNumbers", "Hit sword", "Hit sword_boss",
 	"Hit lunge", "Hit arrow", "Hit charged_arrow", "Hit parry", "Hit block", "Hit player_hit",
 	"Hit phase_change", "Hit kill", "Hit chop", "Hit mine", "Hit clink", "Hit node_break",
@@ -71,11 +71,11 @@ func _init() -> void:
 			ok = false
 	var extra := []
 	for k in names:
-		if not OLD_TARGETS.has(k) and not (k as String).begins_with("Tool ") and not (k as String).begins_with("Sound "):   # one "Tool <id>" section per tool: a new tool must not break this list   # one "Sound <set>" (+ cue) section per data/sounds file
+		if not OLD_TARGETS.has(k) and not (k as String).begins_with("Tool ") and not (k as String).begins_with("Recipe ") and not (k as String).begins_with("Sound "):   # one "Tool <id>" section per tool: a new tool must not break this list   # one "Sound <set>" (+ cue) section per data/sounds file
 			extra.append(k)
 	extra.sort()
 	print("targets: %d old, %d found; new owners: %s" % [OLD_TARGETS.size(), names.size(), extra])
-	if extra != ["EnemySpawner", "Frame", "HeldItem","Hit station_knock_stone", "Hit station_knock_wood", "Hit station_pickup_stone", "Hit station_pickup_wood", "Hit tree_break", "Item gel", "MainHandArt", "NodeReaction", "OffHandArt", "Pixel Plains", "Run", "Save", "Swing Sword Natural", "Weapon"]:   # status-only owners that had a block but no section
+	if extra != ["DayClock", "DayNightData", "EnemySpawner", "Frame", "HeldItem","Hit station_knock_stone", "Hit station_knock_wood", "Hit station_pickup_stone", "Hit station_pickup_wood", "Hit tree_break", "Item gel", "Light campfire", "Light player glow", "Light torch", "MainHandArt", "NodeReaction", "OffHandArt", "Pixel Plains", "Run", "Save", "Swing Sword Natural", "Weapon"]:   # status-only owners that had a block but no section
 		print("FAIL: unexpected extra names ", extra)
 		ok = false
 	for l in OLD_ACTIONS:

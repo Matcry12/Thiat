@@ -38,9 +38,14 @@ class Num:
 var spawned_total := 0
 var merged_total := 0
 var _pool: Array[Num] = []
+var _layer: CanvasLayer   ## own canvas that follows the camera: the night tint (CanvasModulate) does not reach it, numbers stay readable
 
 func _ready() -> void:
 	z_index = 12
+	_layer = CanvasLayer.new()
+	_layer.layer = 1
+	_layer.follow_viewport_enabled = true
+	add_child(_layer)
 
 func pool_size() -> int:
 	return _pool.size()
@@ -66,7 +71,8 @@ func _free_slot() -> Num:
 		n.label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		n.label.add_theme_constant_override("outline_size", outline_size)
 		n.label.add_theme_color_override("font_outline_color", Color(0, 0, 0, outline_alpha))
-		add_child(n.label)
+		n.label.z_index = z_index
+		_layer.add_child(n.label)
 		_pool.append(n)
 		return n
 	return oldest   # full: reuse the one closest to fading away

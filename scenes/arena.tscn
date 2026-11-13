@@ -18,6 +18,9 @@
 [ext_resource type="Script" path="res://scripts/end_screen.gd" id="7"]
 [ext_resource type="Script" path="res://scripts/pause_menu.gd" id="pause_s"]
 [ext_resource type="Script" path="res://scripts/save_game.gd" id="save_s"]
+[ext_resource type="Script" path="res://scripts/world/day_clock.gd" id="clock_s"]
+[ext_resource type="Script" path="res://scripts/world/day_tint.gd" id="tint_s"]
+[ext_resource type="Resource" path="res://data/day_night/default.tres" id="daynight_d"]
 [ext_resource type="Script" path="res://scripts/map/arena_map.gd" id="8"]
 [ext_resource type="Resource" path="res://data/maps/grass.tres" id="9"]
 [ext_resource type="Script" path="res://scripts/fx/hit_fx.gd" id="hf_script"]
@@ -153,3 +156,10 @@ enemy_types = Array[ExtResource("slime_cls")]([ExtResource("slime_d"), ExtResour
 
 [node name="SaveGame" type="Node" parent="."]
 script = ExtResource("save_s")
+
+[node name="DayClock" type="Node" parent="."]
+script = ExtResource("clock_s")
+data = ExtResource("daynight_d")
+
+[node name="DayTint" type="CanvasModulate" parent="."]
+script = ExtResource("tint_s")

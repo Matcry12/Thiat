@@ -87,6 +87,9 @@ Test yard (0056, debug builds): title button `Test yard` starts the normal arena
 Node hit feedback (0057): trees, rocks, copper sway from the foot, throw chips + leaves/dust, grow per hit, pop on break; real Kenney CC0 wood / stone sounds; no white flash. Picked from a $0 demo video (`tools/demo/chop_fx/chop_fx_demo.py`).
   Slice log: built by Sonnet (godot-builder); Opus judge round 1 found 6 (debug-contract red, stump lean after pop, rocks lost flash, fade rect, colour-sample hitch, hardcoded numbers), round 2 (rocks) 3 (outline-black chips, no-op test, F3 buttons trees only), all fixed; user found no FX in game at all = map nodes cached a null HitFx (old bug, fixed by Opus); user then found stations missing (furnace...) → round 3 added stations (wobble + knock on wrong tool, pop on pickup); judge found 3 (New map pop spam, dead swing in lockout, crafter saw picked station), fixed; a builder test hung 1 h (bare godot, no timeout); user playtest: pending.
 
+Day / night (0067, [day-night-algorithm.md](day-night-algorithm.md)): 12 min day, CanvasModulate tint from a data gradient, LightSource lights (campfire, player glow, held + placed torch: 1 wood + 1 gel = 4), HUD dial, saved time, F3 `[DayClock]` + skips / freeze.
+  Slice log: core + torch built by Sonnet (godot-builder, 2 builders), torch art by pixel-artist; Opus judge core: 4 (light numbers not in F3, night darkened damage numbers + F1 circles, tree walk per light), torch: FAIL 7 (held light hidden when idle, torch light not in F3, torches made no-spawn zones, solid torch, light kept on death...), all fixed, re-judge PASS; full suite 124/124; Opus warmed light colours after the demo; user playtest: pending.
+
 Rules:
 - **Never a sprite-vs-hitbox mismatch.** If an attack looks like it should hit, it hits.
   When tuning says otherwise, change the shape, not a hidden offset.
