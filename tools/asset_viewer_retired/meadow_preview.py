@@ -1,10 +1,11 @@
+# RETIRED with the old map art (Floors_Tiles / Rocks / Water_tiles / Vegetation are in assets/retired/map/ and assets/source/map/). Kept as the reference of the GDScript ports (MapGen, BiomeVeg).
 """Preview: where trees, bushes, flowers, tufts and stones go on the grass (placement rules, $0, before any game code).
 One smooth "forest density" field d (0..1) drives everything. Writes two pictures:
   docs/demo/meadow_preview.png          the field
   docs/demo/meadow_preview_density.png  same field, d as a translucent tint (blue meadow ... red dense forest)
 All rule numbers are the constants below. Sprites sit at bottom-centre and are drawn sorted by bottom y.
 
-Run: python3 tools/asset_viewer/meadow_preview.py [seed]   (default seed 7)
+Run: python3 tools/asset_viewer_retired/meadow_preview.py [seed]   (default seed 7)
 """
 import math
 import random
@@ -95,7 +96,7 @@ def sprite(img, rect):
 
 def load_sprites():
     A = lambda p: Image.open(ROOT / p).convert("RGBA")
-    veg, rocks = A("assets/game/map/Vegetation.png"), A("assets/game/map/Rocks.png")
+    veg, rocks = A("assets/game/map/Vegetation.png"), A("assets/source/map/Rocks.png")
     R = {}
     R["bush"] = [bbox(veg, 0, a, 3, b) for a, b in [(0, 2), (2, 4), (4, 6), (6, 9)]]
     R["tuft"] = [r for r in (bbox(veg, c, row, c + 1, row + 1) for row in (9, 10, 11) for c in range(12)
@@ -269,7 +270,7 @@ def place(rng, d, R_TREE):
 
 def render(items, d, sp, tinted):
     img = Image.new("RGBA", (W * S, H * S))
-    sheet = Image.open(ROOT / "assets/game/map/Floors_Tiles.png").convert("RGBA")
+    sheet = Image.open(ROOT / "assets/retired/map/Floors_Tiles.png").convert("RGBA")
     rng = random.Random(1)
     for y in range(H):
         for x in range(W):

@@ -8,6 +8,8 @@ extends Resource
 ## PixelPlainsBaker). NONE (-1) = water in a map cell array. Slice 2: every cell also has a LEVEL (see Levels below, decision 0046).
 
 enum Mat { NONE = -1, DIRT, LIGHT, DARK, SAND, SNOW, WATER }
+## Which sheet a cell is drawn from. The first 5 equal Mat; cobble and beach gravel share the material of dirt / sand.
+enum Sheet { DIRT, LIGHT, DARK, SAND, SNOW, COBBLE, GRAVEL }
 ## An entry of a case table that is not a pack quarter: the plain quarter of the upper / lower material.
 const UPPER := -1
 const LOWER := -2
@@ -250,110 +252,8 @@ func material_of(ground: int, biome: int) -> int:
 
 @export_group("Material colours")
 
-## dirt: fill, highlight and outline of its edge when it is the UPPER ground, shade = shadow cast ONTO it.
-@export var dirt_fill := Color8(240, 181, 65):
-	set(v):
-		dirt_fill = v
-		_touch()
-
-@export var dirt_hl := Color8(250, 208, 112):
-	set(v):
-		dirt_hl = v
-		_touch()
-
-@export var dirt_outline := Color8(150, 100, 60):
-	set(v):
-		dirt_outline = v
-		_touch()
-
-@export var dirt_shade := Color8(189, 106, 98):
-	set(v):
-		dirt_shade = v
-		_touch()
-
-## light: fill, highlight and outline of its edge when it is the UPPER ground, shade = shadow cast ONTO it.
-@export var light_fill := Color8(99, 171, 63):
-	set(v):
-		light_fill = v
-		_touch()
-
-@export var light_hl := Color8(164, 196, 67):
-	set(v):
-		light_hl = v
-		_touch()
-
-@export var light_outline := Color8(42, 89, 79):
-	set(v):
-		light_outline = v
-		_touch()
-
-@export var light_shade := Color8(59, 125, 79):
-	set(v):
-		light_shade = v
-		_touch()
-
-## dark: fill, highlight and outline of its edge when it is the UPPER ground, shade = shadow cast ONTO it.
-@export var dark_fill := Color8(59, 125, 79):
-	set(v):
-		dark_fill = v
-		_touch()
-
-@export var dark_hl := Color8(99, 171, 63):
-	set(v):
-		dark_hl = v
-		_touch()
-
-@export var dark_outline := Color8(42, 89, 79):
-	set(v):
-		dark_outline = v
-		_touch()
-
-@export var dark_shade := Color8(42, 89, 79):
-	set(v):
-		dark_shade = v
-		_touch()
-
-## sand: fill, highlight and outline of its edge when it is the UPPER ground, shade = shadow cast ONTO it.
-@export var sand_fill := Color8(236, 214, 150):
-	set(v):
-		sand_fill = v
-		_touch()
-
-@export var sand_hl := Color8(248, 232, 182):
-	set(v):
-		sand_hl = v
-		_touch()
-
-@export var sand_outline := Color8(150, 112, 84):
-	set(v):
-		sand_outline = v
-		_touch()
-
-@export var sand_shade := Color8(170, 134, 100):
-	set(v):
-		sand_shade = v
-		_touch()
-
-## snow: fill, highlight and outline of its edge when it is the UPPER ground, shade = shadow cast ONTO it.
-@export var snow_fill := Color8(240, 246, 252):
-	set(v):
-		snow_fill = v
-		_touch()
-
-@export var snow_hl := Color8(255, 255, 255):
-	set(v):
-		snow_hl = v
-		_touch()
-
-@export var snow_outline := Color8(150, 170, 204):
-	set(v):
-		snow_outline = v
-		_touch()
-
-@export var snow_shade := Color8(214, 228, 242):
-	set(v):
-		snow_shade = v
-		_touch()
+## dirt, light, dark, sand, snow: fill / highlight / outline / shade are the pixels of the ground's own sheet (`sheet_*`, assets/game/map/pixel_plains/ground/),
+## read by PixelPlainsBaker.palette(). Redraw the sheet to change them. Only water has no sheet, so only water has colours here.
 
 ## water: fill, highlight and outline of its edge when it is the UPPER ground, shade = shadow cast ONTO it.
 @export var water_fill := Color8(112, 210, 228):
@@ -376,37 +276,42 @@ func material_of(ground: int, biome: int) -> int:
 		water_shade = v
 		_touch()
 
-@export_group("Recolour (sand, snow = dirt art)")
-## Sand fills: plain dirt-art tile only (true = clean fill, no patch squares) or its rare variants too.
+@export_group("Ground sheets")
 
-## The pack's dirt colours that sand / snow replace: fill, darker patch, shadow.
-@export var src_dirt_fill := Color8(240, 181, 65):
+## One picture per ground, same size and cell layout as `texture` (tiles.png). Made by tools/bake_ground_art.gd, then redrawn by hand if wanted.
+## The game reads two things from a sheet: its fill tiles (plain_* / variants_* cells) and its 4-colour swatch (PixelPlainsBaker.SWATCH_CELL).
+@export var sheet_dirt: Texture2D:
 	set(v):
-		src_dirt_fill = v
+		sheet_dirt = v
+		_touch()
+@export var sheet_grass_light: Texture2D:
+	set(v):
+		sheet_grass_light = v
+		_touch()
+@export var sheet_grass_dark: Texture2D:
+	set(v):
+		sheet_grass_dark = v
+		_touch()
+@export var sheet_sand: Texture2D:
+	set(v):
+		sheet_sand = v
+		_touch()
+@export var sheet_snow: Texture2D:
+	set(v):
+		sheet_snow = v
+		_touch()
+## Cobble and beach gravel: their own sheet, for the cells that are only that ground (a mixed corner and every border use the sheet of its material, dirt / sand).
+@export var sheet_cobble: Texture2D:
+	set(v):
+		sheet_cobble = v
+		_touch()
+@export var sheet_gravel: Texture2D:
+	set(v):
+		sheet_gravel = v
 		_touch()
 
-@export var src_dirt_patch := Color8(235, 150, 61):
-	set(v):
-		src_dirt_patch = v
-		_touch()
-
-@export var src_dirt_shadow := Color8(189, 106, 98):
-	set(v):
-		src_dirt_shadow = v
-		_touch()
-
-## Sand: fill = `sand_fill`; patch; shadow = `sand_shade`.
-@export var sand_patch := Color8(222, 192, 125):
-	set(v):
-		sand_patch = v
-		_touch()
-
-## Snow: fill = `snow_fill`; patch; shadow = `snow_shade`.
-@export var snow_patch := Color8(214, 228, 242):
-	set(v):
-		snow_patch = v
-		_touch()
-
+@export_group("Fills")
+## Sand / snow fills: plain tile only (true = clean fill) or its rare variants too.
 @export var sand_plain_only := true:
 	set(v):
 		sand_plain_only = v
@@ -570,20 +475,34 @@ static func mi(m: int) -> int:
 	return int(Mat.WATER) if m < 0 else m
 
 
+## Fill / highlight / outline / shade of a material: read from its sheet (water: the exports above).
 func fill_of(m: int) -> Color:
-	return [dirt_fill, light_fill, dark_fill, sand_fill, snow_fill, water_fill][mi(m)]
+	return water_fill if mi(m) == Mat.WATER else PixelPlainsBaker.palette(self, mi(m))[0]
 
 
 func hl_of(m: int) -> Color:
-	return [dirt_hl, light_hl, dark_hl, sand_hl, snow_hl, water_hl][mi(m)]
+	return water_hl if mi(m) == Mat.WATER else PixelPlainsBaker.palette(self, mi(m))[1]
 
 
 func outline_of(m: int) -> Color:
-	return [dirt_outline, light_outline, dark_outline, sand_outline, snow_outline, water_outline][mi(m)]
+	return water_outline if mi(m) == Mat.WATER else PixelPlainsBaker.palette(self, mi(m))[2]
 
 
 func shade_of(m: int) -> Color:
-	return [dirt_shade, light_shade, dark_shade, sand_shade, snow_shade, water_shade][mi(m)]
+	return water_shade if mi(m) == Mat.WATER else PixelPlainsBaker.palette(self, mi(m))[3]
+
+
+func sheet_of(skin: int) -> Texture2D:
+	return [sheet_dirt, sheet_grass_light, sheet_grass_dark, sheet_sand, sheet_snow, sheet_cobble, sheet_gravel][skin]
+
+
+## Skin of a map ground that is NOT the default of its material (cobble, gravel), else -1.
+static func special_skin(ground: int, biome: int) -> int:
+	if ground == MapGen.Ground.COBBLE:
+		return Sheet.COBBLE
+	if ground == MapGen.Ground.SAND and biome == MapGen.Biome.BEACH_GRAVEL:
+		return Sheet.GRAVEL
+	return -1
 
 
 func prio_of(m: int) -> int:

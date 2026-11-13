@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/world/resource_node_data.gd" id="1"]
 [ext_resource type="Resource" path="res://data/items/stone.tres" id="2"]
-[ext_resource type="Texture2D" path="res://assets/game/map/Rocks.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/game/map/temp/rocks_temp.png" id="3"]
 [ext_resource type="Resource" path="res://data/sounds/stone.tres" id="snd_set"]
 
 [resource]
@@ -21,7 +21,7 @@ radius = 16.0
 density_forest = 0
 density_boss = 0.0
 texture = ExtResource("3")
-regions = Array[Rect2]([Rect2(2, 19, 28, 43), Rect2(35, 19, 26, 27), Rect2(98, 19, 28, 43), Rect2(131, 19, 26, 27)])
+regions = Array[Rect2]([Rect2(0, 0, 28, 43), Rect2(58, 0, 26, 27), Rect2(29, 0, 28, 43), Rect2(85, 0, 26, 27)])
 looks_forest = PackedInt32Array(2, 3)
 looks_rocky = PackedInt32Array(2, 3)
 looks_boss = PackedInt32Array(2, 3)

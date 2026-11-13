@@ -8,7 +8,6 @@ const OLD_TARGETS := [
 	"CoverArc", "Player Health", "Dummy Health", "Attacker", "Debug", "Loadout",
 	"Wooden Sword", "SkillSlot", "Wooden Sword Skill", "Boss", "Boss Health", "Boss Brain",
 	"Boss Visual", "Boss Slam", "Boss Spread", "Boss Charge", "Boss Ring", "Map",
-	"Ground dirt", "Ground cobble", "Ground grass", "Ground boss_grass", "Ground sand", "Ground snow",
 	"Biome plains", "Biome forest", "Biome autumn", "Biome taiga", "Biome snowy", "Biome rocky",
 	"Biome swamp", "Biome beach (sand)", "Biome beach (gravel)", "Collector", "Node rock",
 	"Node copper", "Node treepp_oak_green_sapling", "Node treepp_oak_green_young", "Node treepp_oak_green_mature", "Node treepp_oak_green_old",

@@ -1,8 +1,9 @@
+# RETIRED with the old map art (Floors_Tiles / Rocks / Water_tiles / Vegetation are in assets/retired/map/ and assets/source/map/). Kept as the reference of the GDScript ports (MapGen, BiomeVeg).
 """Preview: docs/wiki/vegetation-rules.md as a picture ($0, no game code). Plains + Forest on a 112x72 map, 16 px/cell,
 sprites at native size. Passes in spec order, one random stream per pass. All numbers = constants below.
 Writes docs/demo/biome_preview.png (x1), biome_preview_zoom.png (48x27 cells at the border, x2), biome_preview_f.png (f tint).
 
-Run: python3 tools/asset_viewer/biome_preview.py [seed]
+Run: python3 tools/asset_viewer_retired/biome_preview.py [seed]
 """
 import json
 import math
@@ -343,7 +344,7 @@ def main(seed0):
 
     # ---- render
     gr = streams["ground"]
-    sh = Image.open(ROOT / "assets/game/map/Floors_Tiles.png").convert("RGBA")
+    sh = Image.open(ROOT / "assets/retired/map/Floors_Tiles.png").convert("RGBA")
     img = Image.new("RGBA", (W * S, H * S))
     for y in range(H):
         for x in range(W):

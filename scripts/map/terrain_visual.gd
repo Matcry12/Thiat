@@ -47,7 +47,7 @@ func _ready() -> void:
 	visible = false
 
 
-## The water under the whole map. water: its repeating picture; map_art_px: the map's size in art pixels; art_scale: screen px per art px.
+## The water under the whole map. water: unused (the old shader water is gone; pass null); map_art_px: the map's size in art pixels; art_scale: screen px per art px.
 ## flat: PixelPlainsGround.shader_params() = the Pixel Plains water (one flat colour + marks) and animated foam instead of the old shader water.
 func begin_island(water: Image, map_art_px: Vector2, art_scale: float, shallow: Image = null, tile := 16.0, flat := {}) -> void:
 	clear_chunks()
@@ -65,18 +65,7 @@ func begin_island(water: Image, map_art_px: Vector2, art_scale: float, shallow: 
 		_set_water_rect(map_art_px, art_scale, tile)
 		visible = true
 		return
-	if _water.material.shader != WATER_SHADER:   # back from the Pixel Plains water
-		var wm0 := ShaderMaterial.new()
-		wm0.shader = WATER_SHADER
-		_water.material = wm0
-	_water.texture = ImageTexture.create_from_image(water)
-	var wm := _water.material as ShaderMaterial
-	if shallow == null:
-		wm.set_shader_parameter("shallow_mask", null)   # no shallows on this map: drop the old map's mask
-	else:   # which cells are shallow water (one pixel per cell, 255 = shallow)
-		wm.set_shader_parameter("shallow_mask", ImageTexture.create_from_image(shallow))
-		wm.set_shader_parameter("map_cells", Vector2(shallow.get_width(), shallow.get_height()))
-		wm.set_shader_parameter("tile", tile)
+	push_error("TerrainVisual.begin_island: only the Pixel Plains water (flat params) exists now")
 	_set_water_rect(map_art_px, art_scale, tile)
 	visible = true
 

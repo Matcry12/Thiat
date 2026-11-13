@@ -5,7 +5,6 @@
 [ext_resource type="Script" uid="uid://b2k3y42aktkbx" path="res://scripts/components/hurtbox.gd" id="3"]
 [ext_resource type="Script" uid="uid://d0awtsvbienb8" path="res://scripts/weapons/weapon_holder.gd" id="5"]
 [ext_resource type="Script" uid="uid://bdm85dlwvqabq" path="res://scripts/visual/weapon_visual.gd" id="7"]
-[ext_resource type="Texture2D" uid="uid://bryt53jqyco7s" path="res://assets/game/characters/player/player_character_template.png" id="8"]
 [ext_resource type="Texture2D" uid="uid://c850m4ii26ok3" path="res://assets/game/placeholder/shadow.png" id="9"]
 [ext_resource type="Script" uid="uid://cfhocpi452k6r" path="res://scripts/components/health.gd" id="11"]
 [ext_resource type="Script" uid="uid://cu3cx00235xph" path="res://scripts/components/dodge.gd" id="12"]
@@ -63,7 +62,6 @@ off_hand = true
 
 [node name="Visual" type="Node2D" parent="." unique_id=123694702]
 script = ExtResource("2")
-body_texture = ExtResource("8")
 shadow_texture = ExtResource("9")
 bounce_mode = 0
 bounce_offsets = PackedFloat32Array(1, 0, 1, 0)

@@ -1,3 +1,4 @@
+# RETIRED with the old map art (Floors_Tiles / Rocks / Water_tiles / Vegetation are in assets/retired/map/ and assets/source/map/). Kept as the reference of the GDScript ports (MapGen, BiomeVeg).
 """Preview ($0, no game code): the WHOLE 512x512 world (world_preview.py, seed 7: land, biomes, rivers, lakes, beaches, home/boss)
 drawn with real sprites at 16 px/cell (8192x8192), using the BIOMES table and passes of biome_looks.py (same order: clearings,
 trees, rocks, bushes, flowers, mushrooms, tufts; one random stream per pass). A spot's biome is read from the biome map at a jittered
@@ -5,7 +6,7 @@ position (+-2.5 cells), so borders mix as dots, never as a line.
 Writes docs/demo/world_full.png (2048 px, LANCZOS, home H / boss B marked) and docs/demo/world_full_crop.png
 (128x128 cells around home at full resolution = 2048 px, not marked).
 
-Run: python3 tools/asset_viewer/world_full.py [seed]
+Run: python3 tools/asset_viewer_retired/world_full.py [seed]
 """
 import math
 import random

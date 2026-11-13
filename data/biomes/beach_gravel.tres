@@ -12,3 +12,5 @@ tint_bright = 1
 tint_warm = 0
 tint_sat = 1
 map_color = Color(0.6667, 0.6510, 0.5961, 1)
+rock_nodes_per_100 = 0.1
+copper_per_100 = 0

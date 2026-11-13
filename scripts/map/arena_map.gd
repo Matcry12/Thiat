@@ -562,7 +562,7 @@ signal rebuilt
 	set(v):
 		veg_density_period = v
 		_changed()
-@export var copper_near_home_cells: float = 0.0:
+@export var copper_near_home_cells: float = 70.0:
 	set(v):
 		copper_near_home_cells = v
 		_changed()
@@ -686,14 +686,6 @@ signal rebuilt
 	set(v):
 		rocky_warm = v
 		_retint()
-@export var boss_bright := 0.7:
-	set(v):
-		boss_bright = v
-		_sync_boss_ground()
-@export var boss_warm := 0.22:
-	set(v):
-		boss_warm = v
-		_sync_boss_ground()
 ## Colour strength per area: 1 = the picture's own colours, 0 = grey.
 @export var forest_sat := 1.0:
 	set(v):
@@ -703,10 +695,6 @@ signal rebuilt
 	set(v):
 		rocky_sat = v
 		_retint()
-@export var boss_sat := 0.3:
-	set(v):
-		boss_sat = v
-		_sync_boss_ground()
 ## Ground colour per biome (tint_bright / warm / sat) and the biome map colour live in each BiomeData (data/biomes/), F3 section "Biome <label>".
 ## Biome map (F3 button "Biome map"): a see-through colour per cell over the whole world, colours as in the demo legend. Live.
 @export var biome_map_on := false:
@@ -848,6 +836,8 @@ var build_ms := 0   ## last rebuild, in ms
 var gen_ms := 0   ## of which MapGen.generate (the world data)
 var bake_ms := 0   ## of which the first chunks (ground pictures, nodes, props around the player)
 var node_count := 0   ## resource nodes in the current result, cached at build time
+var stone_count := 0   ## rock nodes in the current result (F3 [Map] status)
+var copper_count := 0   ## copper rock nodes in the current result
 var tree_counts := {}   ## age -> aged trees in the current result (0037), cached at build time
 var tree_colours := {}  ## season name -> aged trees (0038 step 4), cached at build time
 var deco_counts := {}   ## kind of floor prop (flower, tuft, bush ...) -> count (0038 step 4), cached at build time
@@ -991,10 +981,10 @@ func status_text() -> String:
 	for b in result.biomes.size():
 		if not biome_pct.is_empty() and biome_pct[b] > 0:
 			shares.append("%s %d" % [result.biomes[b].label, biome_pct[b]])
-	return "zoom: %.2f (target %.2f)\nseed: %d  size: %dx%d cells (%dx%d px)\ndirt patches: %d  rocks: %d  deco: %d  bushes: %d\narea %s  land %d%%  nodes %d  dirt cells %d\nbiome %s  temperature %.2f  humidity %.2f  roughness %.2f  f %.2f\nground: %s\nwater: %s\nbiome %% of land: %s\ntrees by age: %s\ntrees by colour: %s\ndeco by kind: %s\nbuild %d ms (world data %d ms, first chunks %d ms)\n%s" % [
+	return "zoom: %.2f (target %.2f)\nseed: %d  size: %dx%d cells (%dx%d px)\ndirt patches: %d  rocks: %d  deco: %d  bushes: %d\narea %s  land %d%%  nodes %d (stone %d, copper %d)  dirt cells %d\nbiome %s  temperature %.2f  humidity %.2f  roughness %.2f  f %.2f\nground: %s\nwater: %s\nbiome %% of land: %s\ntrees by age: %s\ntrees by colour: %s\ndeco by kind: %s\nbuild %d ms (world data %d ms, first chunks %d ms)\n%s" % [
 		_camera.zoom.x if _camera else 1.0, camera_zoom, current_seed, map_cols, map_rows, map_size().x, map_size().y,
 		result.patches.size(), result.obstacles.size(), result.deco.size(), result.border.size(),
-		["forest", "rocky", "boss"][ai] if ai >= 0 else "water", land_pct, node_count, result.dirt_cells.size(),
+		["forest", "rocky", "boss"][ai] if ai >= 0 else "water", land_pct, node_count, stone_count, copper_count, result.dirt_cells.size(),
 		_biome_name(here), _climate_here(result.temp, here), _climate_here(result.humid, here), _climate_here(result.rough, here), _climate_here(result.f, here),
 		_ground_text(here), water_text, ", ".join(shares),
 		" ".join(MapGen.AGES.map(func(a): return "%s %d" % [a, tree_counts.get(a, 0)])), _counts_text(tree_colours), _counts_text(deco_counts), build_ms, gen_ms, bake_ms, _streamer.status_text() if _streamer else ""]
@@ -1157,6 +1147,8 @@ func rebuild(new_seed: bool, relayout := false) -> void:
 		water_text = "river %d  lake %d  shallow %d cells (walkable); deep ocean blocks" % [river, lake, shallow]
 	land_pct = 100 * land / maxi(land_a.size(), 1)
 	node_count = 0
+	stone_count = 0
+	copper_count = 0
 	tree_counts.clear()
 	tree_colours.clear()
 	deco_counts.clear()
@@ -1167,6 +1159,10 @@ func rebuild(new_seed: bool, relayout := false) -> void:
 		is_tree.append(1 if String(k.id).begins_with("tree") else 0)
 	for o in result.obstacles:
 		node_count += 1 if o["node"] >= 0 else 0
+		if o["node"] >= 0:
+			var nid: StringName = style.resource_nodes[o["node"]].id
+			stone_count += int(nid == &"rock")
+			copper_count += int(nid == &"copper_rock")
 		if o["node"] >= 0 and is_tree[o["node"]] == 1:
 			var parts := String(style.resource_nodes[o["node"]].id).split("_")   # tree_oak_old / tree_oak_yellow_old: the age is the last part
 			tree_counts[StringName(parts[parts.size() - 1])] += 1
@@ -1268,7 +1264,6 @@ func rebuild_ground() -> void:
 		return
 	var t0 := Time.get_ticks_msec()
 	MapGen.rebuild_ground(result, style, make_params())
-	_sync_boss_ground()
 	_apply_terrain_look()
 	_streamer.reload_visuals()   # the loaded chunks' ground and props again; their trees and rocks stay as they are (and as they were gathered)
 	build_ms = maxi(Time.get_ticks_msec() - t0, 1)
@@ -1815,14 +1810,7 @@ func _build() -> void:
 		_setup_island_terrain()
 	else:
 		_terrain.hide_island()
-		_build_water_tiles()
-		var ts := _make_tileset()
-		_dirt.tile_set = ts
-		_grass.tile_set = ts
-		for cell in result.dirt:
-			_dirt.set_cell(cell, 0, result.dirt[cell])
-		for cell in result.grass:
-			_grass.set_cell(cell, 0, result.grass[cell])
+		# ponytail: the flat map has no ground art (it is a test map: only the Background colour shows)
 	_apply_biome_map()
 	_build_border()
 	# World data is ready. The visuals and nodes come per chunk (ChunkStreamer): the 3 x 3 around the player now, the rest as the player walks.
@@ -1867,16 +1855,12 @@ func make_cover_rock(o: Dictionary) -> StaticBody2D:
 ## The island ground, once per map: the water under everything and the style hooks. The ground pictures themselves are made per
 ## chunk (ChunkStreamer -> GroundBaker.bake_region -> TerrainVisual.set_chunk).
 func _setup_island_terrain() -> void:
-	for d in style.grounds:   # an edited GroundData (F3 / editor) clears the piece cache and re-bakes the ground
-		if d != null and not d.changed.is_connected(_on_ground_resource_changed):
-			d.changed.connect(_on_ground_resource_changed)
 	if style.pixel_plains != null and not style.pixel_plains.changed.is_connected(_on_pp_changed):
 		style.pixel_plains.changed.connect(_on_pp_changed)
 	for b in style.biomes:   # an edited BiomeData (F3): climate / ground / tree fields rebuild the map, look fields only re-tint
 		if not b.changed.is_connected(_changed):
 			b.changed.connect(_changed)
 			b.look_changed.connect(_on_biome_look)
-	_sync_boss_ground()
 	var t := float(GroundBaker.tile_of(style))
 	var shallow_img: Image = null
 	if not result.shallow.is_empty():
@@ -1886,7 +1870,7 @@ func _setup_island_terrain() -> void:
 			mask[at] = 255
 			at = mask.find(1, at + 1)
 		shallow_img = Image.create_from_data(result.cols, result.rows, false, Image.FORMAT_L8, mask)
-	_terrain.begin_island(GroundBaker.water_image(style, 4, result.seed), Vector2(result.cols + 1, result.rows + 1) * t, float(style.pixel_scale), shallow_img, t,
+	_terrain.begin_island(null, Vector2(result.cols + 1, result.rows + 1) * t, float(style.pixel_scale), shallow_img, t,
 		style.pixel_plains.shader_params() if style.pixel_plains != null else {})
 	_apply_terrain_look()
 
@@ -1909,7 +1893,7 @@ func _apply_biome_map() -> void:
 ## The ground colour numbers for GroundBaker: a tint per Area and the patch settings.
 func tint_look() -> Dictionary:
 	var tints: Array[Color] = []
-	for a in [[forest_bright, forest_warm], [rocky_bright, rocky_warm], [1.0, 0.0]]:   # boss: in its pixels, see _sync_boss_ground
+	for a in [[forest_bright, forest_warm], [rocky_bright, rocky_warm], [1.0, 0.0]]:   # boss: neutral
 		tints.append(Color(a[0] * (1.0 + a[1]), a[0], a[0] * (1.0 - a[1])))
 	return {"tint": tints, "sat": [forest_sat, rocky_sat, 1.0], "shade_variation": shade_variation, "shade_scale": shade_scale, "neutral": style != null and style.pixel_plains != null}
 
@@ -1929,21 +1913,6 @@ func _apply_terrain_look() -> void:
 		"shimmer_color": Color(shimmer_r, shimmer_g, shimmer_b), "shallow_lighten": shallow_tint_amount, "shallow_color": Color(shallow_tint_r, shallow_tint_g, shallow_tint_b), "foam_color": Color(foam_r, foam_g, foam_b), "foam_alpha": foam_alpha, "foam_pulse": foam_pulse, "foam_speed": foam_speed})
 
 
-## The boss grass carries its own colour in its pixels (GroundData bright / warm / sat), so edge pieces drawn over the
-## cobble match the fill. The area tint of the boss area stays neutral.
-func _sync_boss_ground() -> void:
-	if style == null or style.grounds.size() <= MapGen.Ground.BOSS or style.grounds[MapGen.Ground.BOSS] == null:
-		return
-	var g := style.grounds[MapGen.Ground.BOSS]
-	if g.bright != boss_bright or g.warm != boss_warm or g.sat != boss_sat:
-		g.set_block_signals(true)   # we are about to (re)make the ground anyway: no queued second rebuild
-		g.bright = boss_bright
-		g.warm = boss_warm
-		g.sat = boss_sat
-		g.set_block_signals(false)
-		GroundBaker.clear_cache()
-
-
 func _on_biome_look() -> void:
 	_biome_overlay_for = null
 	_apply_biome_map()
@@ -1953,18 +1922,6 @@ func _on_biome_look() -> void:
 func _on_pp_changed() -> void:   # Pixel Plains table / hide switch edited (F3): new cache, whole map again (trees and deco depend on it)
 	GroundBaker.clear_cache()
 	_changed()
-
-
-func _on_ground_resource_changed() -> void:
-	GroundBaker.clear_cache()
-	_changed_ground()
-
-
-func _build_water_tiles() -> void:
-	if style.water_texture and not result.water.is_empty():
-		_water.tile_set = _make_tileset(style.water_texture, result.water.values())
-		for cell in result.water:
-			_water.set_cell(cell, 0, result.water[cell])
 
 
 func _build_water_body() -> void:
@@ -2006,21 +1963,6 @@ func _build_water_body() -> void:
 				x0 = -1
 
 
-func _make_tileset(texture: Texture2D = null, coord_list: Array = []) -> TileSet:
-	var ts := TileSet.new()
-	ts.tile_size = Vector2i(style.tile_size, style.tile_size)
-	var src := TileSetAtlasSource.new()
-	src.texture = texture if texture else style.tileset_texture
-	src.texture_region_size = ts.tile_size
-	var used: Dictionary = {}
-	for coords in (coord_list if texture else result.dirt.values() + result.grass.values()):
-		used[coords] = true
-	for coords in used:
-		src.create_tile(coords)
-	ts.add_source(src, 0)
-	return ts
-
-
 ## `pos` is the bottom-centre of the sprite.
 func add_prop_sprite(parent: Node, set: PropSet, region: int, pos: Vector2, s: float, flip: bool) -> void:
 	var r: Rect2 = set.regions[region]
@@ -2045,9 +1987,6 @@ func debug_category() -> String:
 func debug_children() -> Array:
 	var out: Array = []
 	if style:
-		for gd in style.grounds:   # the island grounds (edge outline, corner cut ...): changing one re-bakes the ground
-			if gd:
-				out.append({"name": "Ground " + String(gd.id), "object": gd})
 		for bd in style.biomes:   # climate point, ground, trees, rocks, deco, tint of every biome (0038)
 			out.append({"name": "Biome " + bd.label, "object": bd})
 	if style and style.pixel_plains != null:

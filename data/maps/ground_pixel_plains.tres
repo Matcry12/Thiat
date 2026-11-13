@@ -2,10 +2,24 @@
 
 [ext_resource type="Script" path="res://scripts/map/pixel_plains_ground.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/tiles.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/ground/dirt.png" id="3"]
+[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/ground/grass_light.png" id="4"]
+[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/ground/grass_dark.png" id="5"]
+[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/ground/sand.png" id="6"]
+[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/ground/snow.png" id="7"]
+[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/ground/cobble.png" id="8"]
+[ext_resource type="Texture2D" path="res://assets/game/map/pixel_plains/ground/gravel.png" id="10"]
 
 [resource]
 script = ExtResource("1")
 texture = ExtResource("2")
+sheet_dirt = ExtResource("3")
+sheet_grass_light = ExtResource("4")
+sheet_grass_dark = ExtResource("5")
+sheet_sand = ExtResource("6")
+sheet_snow = ExtResource("7")
+sheet_cobble = ExtResource("8")
+sheet_gravel = ExtResource("10")
 ground_material = PackedInt32Array(-1, 0, 0, 1, 0, 3, 4)
 dark_biomes = PackedInt32Array(0, 1, 0, 0, 0, 0, 0, 0, 0)
 dark_dirt_gap = 0

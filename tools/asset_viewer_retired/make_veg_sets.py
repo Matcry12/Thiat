@@ -1,10 +1,11 @@
+# RETIRED with the old map art (Floors_Tiles / Rocks / Water_tiles / Vegetation are in assets/retired/map/ and assets/source/map/). Kept as the reference of the GDScript ports (MapGen, BiomeVeg).
 """$0 generator (0038 step 4): the floor-prop sets the biome passes draw, as PropSet .tres files in data/maps/.
   prop_veg.tres    one set for assets/game/map/Vegetation.png (bushes, dead shrubs, flowers, foxglove, mushrooms, tufts, ferns, reeds)
-  prop_rocks.tres  one set for assets/game/map/Rocks.png (boulders, small stones; grey and brown)
+  prop_rocks.tres  one set for assets/source/map/Rocks.png (boulders, small stones; grey and brown)
   prop_stump_<model>_s<size>.tres  snow-covered stumps, one per tree sheet in assets/game/world/trees/
 Each set names its sprites in `groups` (name -> region indices) so MapGen never holds a coordinate. The crops are the ones of the approved
-preview (tools/asset_viewer/biome_looks.py). Re-run after changing the cut-outs; do not hand-edit the .tres.
-Run: python3 tools/asset_viewer/make_veg_sets.py"""
+preview (tools/asset_viewer_retired/biome_looks.py). Re-run after changing the cut-outs; do not hand-edit the .tres.
+Run: python3 tools/asset_viewer_retired/make_veg_sets.py"""
 import json
 from PIL import Image
 
@@ -77,7 +78,7 @@ def main():
         sh = lambda b: (b[0] + ox, b[1], b[2] + ox, b[3])
         add(f"boulder_{col}", [sh(b) for b in ROCKS["boulder"]])
         add(f"stone_{col}", [sh(b) for b in ROCKS["small"] + ROCKS["pebble"]])
-    write("prop_rocks.tres", "rocks", "assets/game/map/Rocks.png", regions, groups)
+    write("prop_rocks.tres", "rocks", "assets/source/map/Rocks.png", regions, groups)
 
     cat = json.load(open(ROOT / "data/maps/tree_catalog.json"))
     names = {1: "oak", 2: "fir", 3: "pine"}

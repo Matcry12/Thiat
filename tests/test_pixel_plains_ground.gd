@@ -122,11 +122,6 @@ func _init() -> void:
 	probe.dark_dirt_gap = 2
 	probe.hide_trees = not probe.hide_trees
 	_check(hits[0] == 2, "setting dark_dirt_gap / hide_trees emits changed (%d)" % hits[0])
-	# (3) pixel_plains = null: the old baker still runs
-	var old := load("res://data/maps/grass.tres").duplicate() as MapStyle
-	old.pixel_plains = null
-	var o := GroundBaker.bake_region(_result(["..", ".."], 1), old, 0, 0, 3, 3)
-	_check(o["ground"].get_size() == Vector2i(48, 48), "old path still bakes")
 	# (4) neutral look
 	var tint := GroundBaker.tint_image_region(res2, {"neutral": true}, 0, 0, 4, 4)
 	_check(tint.get_pixel(1, 1) == Color8(128, 128, 128, 128), "tint map neutral")
@@ -188,12 +183,31 @@ func _slice2(flat_pp: PixelPlainsGround) -> void:
 	var inland := _result(["ll", "ls"], 1)
 	inland.biome[3] = MapGen.Biome.PLAINS
 	_check(PixelPlainsBaker.level_at(inland, pp, 1, 1) == pp.level_inland_sand, "sand outside the beach and shore = inland level")
+	# ground sheets: exist, load, same size as tiles.png, palette readable (a redrawn sheet must keep passing)
+	var tsize := pp.texture.get_size()
+	for sk in 7:
+		var tex := pp.sheet_of(sk)
+		_check(tex != null and tex.get_size() == tsize, "ground sheet %d is set and the size of tiles.png" % sk)
+	var pal := PixelPlainsBaker.palette(pp, M.SAND)
+	_check(pal.size() == 4 and pp.fill_of(M.SAND) != pp.outline_of(M.SAND) and pp.hl_of(M.SNOW).a > 0.0, "palette readable from the sheets' edge cells")
+	# a redraw reaches the game: change one fill pixel of the sand sheet in memory, the baked sand cell changes
+	var sand_res := _result(["ss", "ss"], 1)
+	var before: Image = GroundBaker.bake_region(sand_res, _style(pp), 0, 0, 3, 3)["ground"]
+	var red := pp.duplicate() as PixelPlainsGround
+	var simg: Image = pp.sheet_sand.get_image().duplicate()
+	simg.convert(Image.FORMAT_RGBA8)
+	var cell: Vector2i = pp.plain_dirt[0]
+	simg.set_pixel(cell.x * pp.tile_size + 3, cell.y * pp.tile_size + 3, Color8(1, 2, 3))
+	red.sheet_sand = ImageTexture.create_from_image(simg)
+	var after: Image = GroundBaker.bake_region(sand_res, _style(red), 0, 0, 3, 3)["ground"]
+	_check(not _same(before, after), "a redrawn sand sheet changes the baked sand ground")
+	PixelPlainsBaker.clear_cache()   # the cache is keyed by instance id: forget the throwaway copy
 	# forced cases, pixel by pixel
-	var sand_fill := _k(pp.sand_fill)
-	var sand_shade := _k(pp.sand_shade)
-	var grass_outline := _k(pp.light_outline)
-	var grass_fill := _k(pp.light_fill)
-	var dim_grass := _k(Color8(int(pp.light_fill.r8 * (1.0 - pp.quiet_darken)), int(pp.light_fill.g8 * (1.0 - pp.quiet_darken)), int(pp.light_fill.b8 * (1.0 - pp.quiet_darken))))
+	var sand_fill := _k(pp.fill_of(M.SAND))
+	var sand_shade := _k(pp.shade_of(M.SAND))
+	var grass_outline := _k(pp.outline_of(M.LIGHT))
+	var grass_fill := _k(pp.fill_of(M.LIGHT))
+	var dim_grass := _k(Color8(int(pp.fill_of(M.LIGHT).r8 * (1.0 - pp.quiet_darken)), int(pp.fill_of(M.LIGHT).g8 * (1.0 - pp.quiet_darken)), int(pp.fill_of(M.LIGHT).b8 * (1.0 - pp.quiet_darken))))
 	var step := GroundCase.bake(GroundCase.CASES["step_beach"], pp)
 	var cs := _colours(step["ground"])
 	_check(cs.has(grass_outline) and cs.has(sand_shade) and cs.has(sand_fill) and cs.has(grass_fill), "step beach: grass outline + shadow in the sand's shade")
@@ -204,14 +218,14 @@ func _slice2(flat_pp: PixelPlainsGround) -> void:
 	var beach := GroundCase.bake(GroundCase.CASES["flat_beach"], pp)
 	var cb := _colours(beach["ground"])
 	_check(_kind_count(beach["foam"], 1) > 20 and _kind_count(beach["foam"], 2) == 0, "flat beach: foam px %d, no dashes" % _kind_count(beach["foam"], 1))
-	_check(not cb.has(_k(pp.band_colour)) and not cb.has(_k(pp.sand_outline)) and not cb.has(_k(pp.water_shade)), "flat beach: no band, no sand outline, no water shadow")
+	_check(not cb.has(_k(pp.band_colour)) and not cb.has(_k(pp.outline_of(M.SAND))) and not cb.has(_k(pp.water_shade)), "flat beach: no band, no sand outline, no water shadow")
 	var bank := GroundCase.bake(GroundCase.CASES["sand_bank"], pp)
 	var cbk := _colours(bank["ground"])
-	_check(cbk.has(_k(pp.band_colour)) and cbk.has(_k(pp.water_shade)) and cbk.has(_k(pp.sand_outline)), "sand bank: band, water shadow, sand outline")
+	_check(cbk.has(_k(pp.band_colour)) and cbk.has(_k(pp.water_shade)) and cbk.has(_k(pp.outline_of(M.SAND))), "sand bank: band, water shadow, sand outline")
 	_check(_kind_count(bank["foam"], 1) == 0 and _kind_count(bank["foam"], 2) > 0, "sand bank: no beach foam, foam dashes %d" % _kind_count(bank["foam"], 2))
 	var snow := GroundCase.bake(GroundCase.CASES["snow_on_grass"], pp)
 	var snow_flat := GroundCase.bake(GroundCase.CASES["snow_flat"], pp)
-	_check(_colours(snow["ground"]).has(_k(pp.snow_outline)) and not _colours(snow_flat["ground"]).has(_k(pp.snow_outline)), "snow: outline only on the step")
+	_check(_colours(snow["ground"]).has(_k(pp.outline_of(M.SNOW))) and not _colours(snow_flat["ground"]).has(_k(pp.outline_of(M.SNOW))), "snow: outline only on the step")
 	# the same case twice = same pixels (nothing random per call), and a baked tile is never half transparent
 	var again := GroundCase.bake(GroundCase.CASES["mixed_coast"], pp)
 	_check(_same(again["ground"], GroundCase.bake(GroundCase.CASES["mixed_coast"], pp)["ground"]), "a case bakes the same twice")

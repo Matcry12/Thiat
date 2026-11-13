@@ -4,7 +4,6 @@ extends Node2D
 ## Camera: the game's normal zoom for 8.5 s, then a 2x close-up. All three walk the same rectangle (down, right, up, left).
 ## Standalone: the game's weapon scripts are only instanced, never edited.
 
-const GRASS := "res://assets/game/map/Floors_Tiles.png"
 const PLAYER_FRAMES := "res://data/body_rigs/pixel_plains.tres"   # the shipped body (the old 3D soft body is retired)
 const SWORD := "res://data/weapons/wooden_sword.tres"
 const WeaponVisualS := preload("res://scripts/visual/weapon_visual.gd")
@@ -111,21 +110,12 @@ func _make(title: String, off: Vector2, variant: String, _with_hands: bool) -> A
 	_cl.add_child(a.label)
 	return a
 
-func _build_ground() -> void:
-	var tex: Texture2D = load(GRASS)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 5
-	for y in range(0, 22):
-		for x in range(0, 37):
-			var sp := Sprite2D.new()
-			sp.texture = tex
-			sp.region_enabled = true
-			sp.region_rect = Rect2(16 * (1 + rng.randi() % 3), 160, 16, 16)
-			sp.centered = false
-			sp.scale = Vector2(2, 2)
-			sp.position = Vector2(x * 32, y * 32)
-			sp.z_index = -10
-			add_child(sp)
+func _build_ground() -> void:   # a flat floor (the old tile picture is retired)
+	var r := ColorRect.new()
+	r.color = Color(0.36, 0.55, 0.28)
+	r.size = Vector2(37, 22) * 32
+	r.z_index = -10
+	add_child(r)
 
 func _draw() -> void:
 	for a in _actors:

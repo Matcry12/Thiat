@@ -17,6 +17,7 @@ Rules:
 - Use `git mv` and move the `.import` file with the picture. Then run `godot --headless --import`.
 
 Credit needed for packs: see `source/third_party/README.md`. `retired/stock/` is NOT cleared for release (see its README).
-Map art: `game/map/pixel_plains/README.md`. Decision: `docs/decision/0063-asset-folders-by-role.md`.
+Retired data / tests of retired art (old ground `.tres`, the old seam test) sit in `retired/data/` and `retired/tests/`; the old map preview tools in `tools/asset_viewer_retired/`.
+Map art: `game/map/pixel_plains/README.md` (grounds: one redrawable sheet each in `pixel_plains/ground/`, made by `tools/bake_ground_art.gd`; original `tiles.png` kept in `source/map/pixel_plains_original/`). Decision: `docs/decision/0063-asset-folders-by-role.md`.
 
 No export preset exists yet. When one is made, exclude `assets/dev/*`, since Godot would otherwise ship it.

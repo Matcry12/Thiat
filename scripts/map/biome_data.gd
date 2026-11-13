@@ -2,7 +2,7 @@ class_name BiomeData
 extends Resource
 ## One climate biome (decision 0038): where it sits in the climate, which ground it gets, everything that grows on it (trees, rocks, bushes, flowers ...), how it looks.
 ## One .tres per biome in data/biomes/, listed in MapStyle.biomes IN THE ORDER OF MapGen.Biome (the position is the biome id).
-## Step 4 (built): the per-biome vegetation lives here, one export per number, so F3 shows and tunes all of it. Port of tools/asset_viewer/biome_looks.py (BIOMES table).
+## Step 4 (built): the per-biome vegetation lives here, one export per number, so F3 shows and tunes all of it. Port of tools/asset_viewer_retired/biome_looks.py (BIOMES table).
 ## F3 shows a section per biome. A change to a climate / ground / vegetation field rebuilds the map (F3: on drag end); a change to a look field (tint, map colour)
 ## only re-tints (signal `look_changed`).
 

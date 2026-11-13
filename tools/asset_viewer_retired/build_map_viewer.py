@@ -1,7 +1,8 @@
-"""Build tools/asset_viewer/map_assets.html: every map-related sprite sheet, with the
+# RETIRED with the old map art (Floors_Tiles / Rocks / Water_tiles / Vegetation are in assets/retired/map/ and assets/source/map/). Kept as the reference of the GDScript ports (MapGen, BiomeVeg).
+"""Build tools/asset_viewer_retired/map_assets.html: every map-related sprite sheet, with the
 regions the game actually uses (read from data/maps + data/resource_nodes .tres) outlined.
 
-Run: python3 tools/asset_viewer/build_map_viewer.py   (re-run after changing any .tres)
+Run: python3 tools/asset_viewer_retired/build_map_viewer.py   (re-run after changing any .tres)
 """
 import hashlib
 import json

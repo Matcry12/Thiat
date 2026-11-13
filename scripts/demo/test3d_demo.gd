@@ -4,7 +4,6 @@ extends Node2D
 ## next to the current player sprite for a size/style comparison.
 
 const DIR := "res://assets/dev/characters/test3d/"
-const TILES := "res://assets/game/map/Floors_Tiles.png"
 const PLAYER_FRAMES := "res://assets/dev/characters/player/player_frames.tres"
 ## Sheet layout comes from sheet_info.json: rows = 8 directions (S SE E NE N NW W SW), columns = frames.
 @export var cell := 64
@@ -63,21 +62,12 @@ func _label(s: String, at: Vector2) -> void:
 	l.add_theme_constant_override("outline_size", 6)
 	add_child(l)
 
-func _build_ground() -> void:
-	var tex: Texture2D = load(TILES)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 5
-	for y in range(0, 22):
-		for x in range(0, 37):
-			var sp := Sprite2D.new()
-			sp.texture = tex
-			sp.region_enabled = true
-			sp.region_rect = Rect2(16 * (1 + rng.randi() % 3), 160, 16, 16)
-			sp.centered = false
-			sp.scale = Vector2(2, 2)
-			sp.position = Vector2(x * 32, y * 32)
-			sp.z_index = -10
-			add_child(sp)
+func _build_ground() -> void:   # a flat floor (the old tile picture is retired)
+	var r := ColorRect.new()
+	r.color = Color(0.36, 0.55, 0.28)
+	r.size = Vector2(37, 22) * 32
+	r.z_index = -10
+	add_child(r)
 
 func _draw() -> void:
 	_shadow(_knight.position)

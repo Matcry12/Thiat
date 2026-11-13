@@ -2,7 +2,6 @@ extends Node2D
 ## Round 2 of the "3D -> pixel sprite" test. Standalone, touches no player/combat code.
 ## Chibi (walks the circle, slashes) | old knight (idle) | current player, on the real grass tile.
 
-const GRASS := "res://assets/game/map/Floors_Tiles.png"
 const PLAYER_FRAMES := "res://assets/dev/characters/player/player_frames.tres"
 @export var chibi_dir := "res://assets/dev/characters/test3d_chibi/"
 @export var knight_dir := "res://assets/dev/characters/test3d/"
@@ -66,21 +65,12 @@ func _sprite(tex: Texture2D, hf: int, feet: float) -> Sprite2D:
 	add_child(s)
 	return s
 
-func _build_ground() -> void:
-	var tex: Texture2D = load(GRASS)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 5
-	for y in range(0, 22):
-		for x in range(0, 37):
-			var sp := Sprite2D.new()
-			sp.texture = tex
-			sp.region_enabled = true
-			sp.region_rect = Rect2(16 * (1 + rng.randi() % 3), 160, 16, 16)
-			sp.centered = false
-			sp.scale = Vector2(2, 2)
-			sp.position = Vector2(x * 32, y * 32)
-			sp.z_index = -10
-			add_child(sp)
+func _build_ground() -> void:   # a flat floor (the old tile picture is retired)
+	var r := ColorRect.new()
+	r.color = Color(0.36, 0.55, 0.28)
+	r.size = Vector2(37, 22) * 32
+	r.z_index = -10
+	add_child(r)
 
 func _label(s: String, at: Vector2) -> void:
 	var l := Label.new()

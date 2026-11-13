@@ -68,9 +68,6 @@ func _enter_tree() -> void:
 				for bd in map.style.biomes:
 					if sec == "Biome " + bd.label:
 						return bd
-				for gd in map.style.grounds:
-					if gd and sec == "Ground " + String(gd.id):
-						return gd
 			return null)
 		_note_applied(r)
 

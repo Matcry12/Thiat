@@ -8,7 +8,7 @@ extends RefCounted
 ## 2 materials with a table = the table's quarters; water in the corner or any other mix = each quarter shows its own cell's plain quarter.
 ## Map rule on top: a dark cell with dirt within `dark_dirt_gap` cells becomes light grass.
 ## Slice 2 (decision 0046): a corner that holds sand, snow or water is built by _compose(): the grounds of the corner sorted by (level, priority),
-## the lowest one flat, every higher one drawn with the pack's light_on_dirt shapes recoloured by role (step or flat border, see
+## the lowest one flat, every higher one drawn with the light_on_dirt shape in the ground's own sheet colours (step or flat border, see
 ## PixelPlainsGround Levels); water is not painted (the flat water sprite shows through) except bank band / shadow pixels. The picture
 ## "foam" is now the ANIMATION MASK (RGBA8, R = kind: 1 beach foam, 2 foam dash, 3 shore water (flat water over the marks), G = j * 8 + length, B = phase) that terrain_anim.gdshader
 ## lights frame by frame; marks on open water come from terrain_water_flat.gdshader.
@@ -23,7 +23,8 @@ class Cache:
 	var tiles := {}      ## pair * 16 + mask -> composed 16x16 Image
 	var composed := {}   ## Vector4i of 4 x (material * 16 + level) -> {img, anim, has_anim, cands, ok}
 	var roles := {}      ## mask -> PackedByteArray of the role of every pixel of the pack's light_on_dirt tile
-	var recol := {}      ## Vector3i(material, col, row) -> recoloured 16x16 fill (sand, snow)
+	var skins := {}      ## Skin -> that ground's sheet Image (assets/game/map/pixel_plains/ground/)
+	var pal := {}        ## material -> PackedColorArray [fill, highlight, outline, shade] read from its sheet
 
 static var _caches := {}
 
@@ -51,11 +52,25 @@ static func _quarter(c: Cache, e: Vector3i) -> Image:
 	return c.quarters[e]
 
 
-static func _fill(c: Cache, v: Vector2i) -> Image:
-	if not c.fills.has(v):
+static func _skin_sheet(c: Cache, skin: int) -> Image:
+	if not c.skins.has(skin):
+		var tex := c.pp.sheet_of(skin)
+		if tex == null:
+			push_warning("PixelPlainsGround: sheet %d is not set, using the dirt sheet (or tiles.png)" % skin)
+			tex = c.pp.sheet_dirt if c.pp.sheet_dirt != null else c.pp.texture
+		var img := tex.get_image()
+		img.convert(Image.FORMAT_RGBA8)
+		c.skins[skin] = img
+	return c.skins[skin]
+
+
+## A whole 16 px fill tile from the sheet of a ground (skin).
+static func _fill(c: Cache, skin: int, v: Vector2i) -> Image:
+	var key := Vector3i(skin, v.x, v.y)
+	if not c.fills.has(key):
 		var t := c.pp.tile_size
-		c.fills[v] = c.sheet.get_region(Rect2i(v.x * t, v.y * t, t, t))
-	return c.fills[v]
+		c.fills[key] = _skin_sheet(c, skin).get_region(Rect2i(v.x * t, v.y * t, t, t))
+	return c.fills[key]
 
 
 ## pair 0 = light on dirt, 1 = dark on light; -1 = not in the pack.
@@ -74,6 +89,13 @@ static func _case_tile(c: Cache, pair: int, up: int, lo: int, mask: int) -> Imag
 	var key := pair * 16 + mask
 	if c.tiles.has(key):
 		return c.tiles[key]
+	c.tiles[key] = build_case(c, c.sheet, pair, up, lo, mask)
+	return c.tiles[key]
+
+
+## The tile of a pair and mask built from the quarters of `sheet` (the pack's tiles.png, or a ground sheet to read its colours).
+## edges_only: the plain upper / lower quarters stay empty (palette reads only the edge cells).
+static func build_case(c: Cache, sheet: Image, pair: int, up: int, lo: int, mask: int, edges_only := false) -> Image:
 	var pp := c.pp
 	var table: Array[Vector3i] = pp.table_light_on_dirt if pair == 0 else pp.table_dark_on_light
 	var t := pp.tile_size
@@ -81,12 +103,14 @@ static func _case_tile(c: Cache, pair: int, up: int, lo: int, mask: int) -> Imag
 	var img := Image.create_empty(t, t, false, Image.FORMAT_RGBA8)
 	for qd in 4:
 		var e := table[mask * 4 + qd]
+		if edges_only and e.x < 0:
+			continue
 		if e.x == PixelPlainsGround.UPPER:
 			e = pp.quarter_of(up)
 		elif e.x == PixelPlainsGround.LOWER:
 			e = pp.quarter_of(lo)
-		img.blit_rect(_quarter(c, e), Rect2i(0, 0, h, h), Vector2i((qd & 1) * h, (qd >> 1) * h))
-	c.tiles[key] = img
+		var q := sheet.get_region(Rect2i(e.x * t + (e.z & 1) * h, e.y * t + (e.z >> 1) * h, h, h))
+		img.blit_rect(q, Rect2i(0, 0, h, h), Vector2i((qd & 1) * h, (qd >> 1) * h))
 	return img
 
 
@@ -128,6 +152,25 @@ static func cell_materials(res: MapGen.Result, pp: PixelPlainsGround, ci0: int, 
 						if raw[(ly + gap + dy) * rw + lx + gap + dx] == dirt:
 							m = PixelPlainsGround.Mat.LIGHT + 1
 			out[ly * pw + lx] = m
+	return out
+
+
+## Sheet of each cell of the same window as cell_materials: Skin + 1 for cobble / gravel, 0 = the default sheet of its material.
+static func cell_skins(res: MapGen.Result, pp: PixelPlainsGround, ci0: int, cj0: int, tiles_w: int, tiles_h: int) -> PackedByteArray:
+	var pw := tiles_w + 1
+	var out := PackedByteArray()
+	out.resize(pw * (tiles_h + 1))
+	var has_biome := not res.biome.is_empty()
+	for ly in tiles_h + 1:
+		var y := cj0 - 1 + ly
+		if y < 0 or y >= res.rows:
+			continue
+		for lx in pw:
+			var x := ci0 - 1 + lx
+			if x < 0 or x >= res.cols:
+				continue
+			var i := y * res.cols + x
+			out[ly * pw + lx] = PixelPlainsGround.special_skin(res.ground[i], res.biome[i] if has_biome else 0) + 1
 	return out
 
 
@@ -263,24 +306,24 @@ static func _put(buf: PackedByteArray, p: int, col: Color) -> void:
 	buf[p * 4 + 3] = 255
 
 
-## A dirt fill tile with its 3 colours swapped for sand / snow.
-static func _recol_fill(c: Cache, mat: int, v: Vector2i) -> Image:
-	var key := Vector3i(mat, v.x, v.y)
-	if c.recol.has(key):
-		return c.recol[key]
-	var pp := c.pp
-	var img: Image = _fill(c, v).duplicate()
-	var dst := [pp.fill_of(mat), pp.sand_patch if mat == PixelPlainsGround.Mat.SAND else pp.snow_patch, pp.shade_of(mat)]
-	var src := [pp.src_dirt_fill, pp.src_dirt_patch, pp.src_dirt_shadow]
-	for y in img.get_height():
-		for x in img.get_width():
-			var px := img.get_pixel(x, y)
-			for k in 3:
-				if px.r8 == src[k].r8 and px.g8 == src[k].g8 and px.b8 == src[k].b8:
-					img.set_pixel(x, y, Color8(dst[k].r8, dst[k].g8, dst[k].b8, px.a8))
-					break
-	c.recol[key] = img
-	return img
+## The 4-colour swatch of every ground sheet: 4 squares of SWATCH_PX side by side from the top-left of cell SWATCH_CELL, in the order
+## fill, highlight, outline, shade (shade = shadow cast ONTO this ground). tools/bake_ground_art.gd draws it; redraw a square to recolour that role.
+const SWATCH_CELL := Vector2i(0, 12)
+const SWATCH_PX := 4
+
+
+## Fill, highlight, outline and shade of a material, read from the swatch of its ground sheet.
+static func palette(pp: PixelPlainsGround, mat: int) -> PackedColorArray:
+	var c := _cache(pp)
+	if c.pal.has(mat):
+		return c.pal[mat]
+	var sheet := _skin_sheet(c, mat)
+	var out := PackedColorArray()
+	for k in 4:
+		var col := sheet.get_pixel(SWATCH_CELL.x * pp.tile_size + k * SWATCH_PX + SWATCH_PX / 2, SWATCH_CELL.y * pp.tile_size + SWATCH_PX / 2)
+		out.append(Color8(col.r8, col.g8, col.b8))
+	c.pal[mat] = out
+	return out
 
 
 ## One tile of a corner with sand / snow / water in it. key = Vector4i of 4 x (material * 16 + level), NW NE SW SE (material 5 = water).
@@ -478,6 +521,7 @@ static func bake_region(res: MapGen.Result, pp: PixelPlainsGround, ci0: int, cj0
 	var anim := Image.create_empty(tiles_w * t, tiles_h * t, false, Image.FORMAT_RGBA8)
 	anim.fill(Color8(0, 0, 0, 255))
 	var cells := cell_materials(res, pp, ci0, cj0, tiles_w, tiles_h)
+	var skins := cell_skins(res, pp, ci0, cj0, tiles_w, tiles_h)
 	var lvls := cell_levels(res, pp, ci0, cj0, tiles_w, tiles_h)
 	var pw := tiles_w + 1
 	var tile_rect := Rect2i(0, 0, t, t)
@@ -502,13 +546,16 @@ static func bake_region(res: MapGen.Result, pp: PixelPlainsGround, ci0: int, cj0
 			if kinds == 1:
 				if a == 0:
 					continue   # open water: the water sprite shows
-				var mat := a - 1   # one material: a fill tile picked by the corner (sand, snow: the dirt art recoloured)
+				var mat := a - 1   # one material: a fill tile picked by the corner, from the sheet of its ground
 				var src := mat if mat <= PixelPlainsGround.Mat.DARK else int(PixelPlainsGround.Mat.DIRT)
 				var hs := GroundBaker._hash(ci0 + i, cj0 + j, res.seed + 100 + mat)
 				var plain_only: bool = (mat == PixelPlainsGround.Mat.SAND and pp.sand_plain_only) or (mat == PixelPlainsGround.Mat.SNOW and pp.snow_plain_only)
 				var list := pp.plain_of(src) if plain_only or (hs % 1000) < weight or pp.variants_of(src).is_empty() else pp.variants_of(src)
 				var v: Vector2i = list[(hs >> 10) % list.size()]
-				img.blit_rect(_fill(c, v) if mat <= PixelPlainsGround.Mat.DARK else _recol_fill(c, mat, v), tile_rect, dst)
+				var skin := mat   # a corner of one special ground (cobble, gravel) uses its own sheet
+				if skins[p0] > 0 and skins[p0] == skins[p0 + 1] and skins[p0] == skins[p0 + pw] and skins[p0] == skins[p0 + pw + 1]:
+					skin = skins[p0] - 1
+				img.blit_rect(_fill(c, skin, v), tile_rect, dst)
 				continue
 			var native := true
 			for qd in 4:

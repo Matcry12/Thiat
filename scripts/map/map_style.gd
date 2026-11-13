@@ -6,7 +6,6 @@ extends Resource
 ## Ground model: a full DIRT layer below, a GRASS layer above. Grass has "holes" (rectangles);
 ## the hole shows the dirt. The tile set only has pieces for rectangular holes >= 2x2 cells.
 
-@export var tileset_texture: Texture2D
 @export var tile_size := 16
 ## On-screen size of one art pixel. 2 = a 16px tile is 32px on screen (same as the swing FX).
 @export var pixel_scale := 2
@@ -20,21 +19,15 @@ extends Resource
 ## Island areas (v1, decision 0026). Empty = use dirt_fills (placeholder look).
 @export var rocky_fills: Array[Vector2i] = []
 @export var boss_fills: Array[Vector2i] = []
-## Water art: its own sheet. Empty water_fills = no water tiles, the Background colour shows.
-@export var water_texture: Texture2D
 @export var water_fills: Array[Vector2i] = []
 ## Shows where there is no water art (the Background colour behind everything).
 @export var water_color := Color(0.18, 0.42, 0.62, 1)
 
-## Island ground (decision 0033), indexed by MapGen.Ground: [water (null), dirt, cobble, grass, boss grass].
-## Each is a GroundData (fills + edge frame). Empty = the island falls back to the old two-layer ground.
-@export var grounds: Array[GroundData] = []
-## Pixel Plains ground (SnowHex pack, data/maps/ground_pixel_plains.tres). Set = the island ground is drawn from the pack's own quarters with no
-## tint, and the things that clash (trees, vegetation, dirt stamps) are hidden; null = the old ground look above.
+## Pixel Plains ground (SnowHex pack, data/maps/ground_pixel_plains.tres): the island ground is drawn from the pack's own quarters with no
+## tint, and the things that clash (trees, vegetation, dirt stamps) are hidden. null = no island ground (flat map only).
 @export var pixel_plains: PixelPlainsGround
 ## The climate biomes, in the order of MapGen.Biome (decision 0038, data/biomes/*.tres). Empty = no island.
 @export var biomes: Array[BiomeData] = []
-## Water art for the shader layer: tiles of `water_texture` (water_fills) lay under the shimmer.
 ## Foam on the shore and the shimmer are numbers on ArenaMap (F3 Map).
 
 ## Edge pieces of look-variant A. Keys:

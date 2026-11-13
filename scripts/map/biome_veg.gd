@@ -1,6 +1,6 @@
 class_name BiomeVeg
 extends RefCounted
-## The island's floor decoration, one pass per kind, every number from BiomeData (decision 0038 step 4; port of tools/asset_viewer/biome_looks.py).
+## The island's floor decoration, one pass per kind, every number from BiomeData (decision 0038 step 4; port of tools/asset_viewer_retired/biome_looks.py).
 ## Runs after the trees, rock nodes and the ground, so it sees them: rock pieces (the small stones of the rock groups), bushes, flower patches,
 ## foxglove, mushrooms (in tree shade), snow stumps, reeds (along water), grass tufts and ferns (more near trunks and rocks). Each pass has its own
 ## random stream (MapGen.SEED_VEG + pass). A try that fails a check is dropped, never moved. Nothing grows on water, a shore cell, a path / camp

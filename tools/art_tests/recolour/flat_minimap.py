@@ -4,7 +4,7 @@ import json, math, random
 import numpy as np
 from PIL import Image
 import borders as b
-# the two pack-native grounds, flat like the rest (decision 0047; colours = PixelPlainsGround dark_fill / dirt_fill)
+# the two pack-native grounds, flat like the rest (decision 0047; colours = the swatch (cell 0,12) of assets/game/map/pixel_plains/ground/grass_dark.png / dirt.png)
 b.MAT["dark"] = dict(fill=(59, 125, 79), hl=(59, 125, 79), outline=(42, 89, 79), shade=(42, 89, 79))
 b.MAT["dirt"] = dict(fill=(240, 181, 65), hl=(240, 181, 65), outline=(189, 106, 98), shade=(189, 106, 98))
 b.MI.update({m: k for k, m in enumerate(b.MAT)}); b.PRIO.update(dark=3.5, dirt=2.5)   # dark over light grass, dirt under grass

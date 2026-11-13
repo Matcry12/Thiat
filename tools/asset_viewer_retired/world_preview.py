@@ -1,3 +1,4 @@
+# RETIRED with the old map art (Floors_Tiles / Rocks / Water_tiles / Vegetation are in assets/retired/map/ and assets/source/map/). Kept as the reference of the GDScript ports (MapGen, BiomeVeg).
 """Preview: a Minecraft-style 2D world from smooth climate noise ($0, no game code).
 Method: docs/reference/worldgen-biomes-water-research.md. Vegetation: docs/wiki/vegetation-rules.md (same passes as
 biome_preview.py, here driven by a per-biome table). Writes to docs/demo/:
@@ -7,7 +8,7 @@ biome_preview.py, here driven by a per-biome table). Writes to docs/demo/:
   world_zoom_A.png  river crossing Forest -> Taiga, real sprites (16 px cells, x2)
   world_zoom_B.png  lake + swamp edge (or snowy border), real sprites
 
-Run: python3 tools/asset_viewer/world_preview.py [seed]
+Run: python3 tools/asset_viewer_retired/world_preview.py [seed]
 """
 import json
 import math
@@ -114,7 +115,7 @@ FLOWER_PER_BLOCK, FLOWER_TRIES, FLOWER_R = 0.8, 50, 3.0
 MUSH_PER_BLOCK, MUSH_SHADE = 5, 2.0
 CATTAIL_PER_BLOCK, CATTAIL_TRIES, CATTAIL_R, CATTAIL_WATER_DIST = 10, 8, 2.0, 3.0
 TUFT_P = {"plains": .06, "forest": .12, "autumn": .10, "taiga": .08, "swamp": .10, "snowy": 0, "rocky": .02}
-# --- ground fills in assets/game/map/Floors_Tiles.png (col, row) + Water_tiles.png
+# --- ground fills in assets/retired/map/Floors_Tiles.png (col, row) + Water_tiles.png
 FILLS = {
     "grass": [(1, 10), (2, 10), (3, 10)], "dirt": [(11, 10), (12, 10), (13, 10)],
     "stone": [(6, 10), (7, 10), (8, 10)], "sand": [(5, 22), (6, 22), (7, 22), (8, 22)],
@@ -533,8 +534,8 @@ def bad_map(w):
 class Art:
     def __init__(self):
         self.R, self.sp = load_sprites()
-        self.floors = Image.open(ROOT / "assets/game/map/Floors_Tiles.png").convert("RGBA")
-        self.water = Image.open(ROOT / "assets/game/map/Water_tiles.png").convert("RGBA")
+        self.floors = Image.open(ROOT / "assets/retired/map/Floors_Tiles.png").convert("RGBA")
+        self.water = Image.open(ROOT / "assets/retired/map/Water_tiles.png").convert("RGBA")
         self.veg = Image.open(ROOT / "assets/game/map/Vegetation.png").convert("RGBA")
         self.cat = json.load(open(ROOT / "data/maps/tree_catalog.json"))
         self.sheets = {}

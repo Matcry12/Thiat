@@ -5,7 +5,6 @@ extends Node2D
 ## Next to it: the REAL player sprite with the SAME weapon nodes, aiming and swinging in sync.
 ##   user args:  --static   frozen idle pose, camera 4x, used for hybrid_compare_4x.png
 
-const GRASS := "res://assets/game/map/Floors_Tiles.png"
 const PLAYER_FRAMES := "res://assets/dev/characters/player/player_frames.tres"
 const SHEETS := "res://assets/game/characters/player/3d/"
 const INFO := "res://assets/dev/characters/player/3d/sheet_info.json"   # next to the pictures in game/ it would be an unused game file
@@ -123,21 +122,12 @@ func _make_actor(at: Vector2) -> Actor:
 	if hb: hb.set("weapon", _weapon)
 	return a
 
-func _build_ground() -> void:
-	var tex: Texture2D = load(GRASS)
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 5
-	for y in range(0, 22):
-		for x in range(0, 37):
-			var sp := Sprite2D.new()
-			sp.texture = tex
-			sp.region_enabled = true
-			sp.region_rect = Rect2(16 * (1 + rng.randi() % 3), 160, 16, 16)
-			sp.centered = false
-			sp.scale = Vector2(2, 2)
-			sp.position = Vector2(x * 32, y * 32)
-			sp.z_index = -10
-			add_child(sp)
+func _build_ground() -> void:   # a flat floor (the old tile picture is retired)
+	var r := ColorRect.new()
+	r.color = Color(0.36, 0.55, 0.28)
+	r.size = Vector2(37, 22) * 32
+	r.z_index = -10
+	add_child(r)
 
 func _draw() -> void:
 	for a in [_hy, _rp]:

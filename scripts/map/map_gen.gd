@@ -34,7 +34,7 @@ const SEED_VEG_NOISE := 1900 ## +0 density noise, +1 ground mix noise
 const SEED_KIND := 400
 const SEED_KIND_BIOME := 700 ## + kind index * 16 + biome id: lone rocks and copper per biome
 const TREE_BLOCK := 16.0
-## Island ground kinds (decision 0033); the index into MapStyle.grounds. WATER has no tiles.
+## Island ground kinds (decision 0033); the ids the ground array holds (Pixel Plains maps them to its own materials). WATER has no tiles.
 enum Ground { WATER, DIRT, COBBLE, GRASS, BOSS, SAND, SNOW }
 const AREA_GROUND := [Ground.GRASS, Ground.COBBLE, Ground.DIRT]   ## Area -> its ground. Only the boss area (= dirt, 0035) still uses it: every other ground comes from BiomeData.ground
 ## The biomes themselves (climate points, ground, trees, rocks, deco, tints, colours) are data: BiomeData in data/biomes/, listed in MapStyle.biomes.
@@ -192,7 +192,7 @@ class Result:
 	var deco: Array[Dictionary] = []         ## {set, region, pos}  pos = bottom-centre of the sprite
 	var obstacles: Array[Dictionary] = []    ## {region, pos (collision circle centre), radius, node}  node = index into style.resource_nodes, -1 = plain cover rock
 	var border: Array[Dictionary] = []       ## {region, pos (bottom-centre), flip}
-	var water: Dictionary = {}               ## Vector2i cell -> atlas coord on style.water_texture (empty = no water art)
+	var water: Dictionary = {}               ## Vector2i cell -> atlas coord of the old water sheet (retired: unused)
 	var land := PackedByteArray()            ## 1 land, 0 water, per cell
 	var bridge := {}                         ## Vector2i cell -> true for every cell of the carved land bridge (stations may not stand there)
 	var area := PackedByteArray()            ## Area per cell (ignore on water)
@@ -247,7 +247,7 @@ static func generate(style: MapStyle, p: Params, rng_seed: int) -> Result:
 	rng.seed = rng_seed
 	var noise := _noise(rng_seed, p.noise_frequency)
 	# The old tile dictionaries are not read by the island ground picture; a big map skips them (Params.legacy_tiles).
-	if p.legacy_tiles or not (p.island_on and not style.resource_nodes.is_empty() and not style.grounds.is_empty()):
+	if p.legacy_tiles or not (p.island_on and not style.resource_nodes.is_empty() and style.pixel_plains != null):
 		_place_patches(res, p, rng, noise)
 		t = _lap(res, "patches", t)
 		_assign_ground(res, style, p, rng)
@@ -257,7 +257,7 @@ static func generate(style: MapStyle, p: Params, rng_seed: int) -> Result:
 	else:
 		_place_obstacles(res, style, p, rng)
 	t = _lap(res, "nodes", t)
-	if p.island_on and not style.grounds.is_empty():
+	if p.island_on and style.pixel_plains != null:
 		_build_ground(res, style, p)
 	t = _lap(res, "ground", t)
 	if p.island_on and BiomeVeg.has_sets(style):   # the island's deco = the biome passes; the flat map keeps the old scatter
@@ -730,7 +730,7 @@ static func _place_obstacles(res: Result, style: MapStyle, p: Params, rng: Rando
 
 # ------------------------------------------------------------------- biomes ---
 
-## Climate -> biome per land cell (decision 0038; port of tools/asset_viewer/world_preview.py). Temperature, humidity and roughness are
+## Climate -> biome per land cell (decision 0038; port of tools/asset_viewer_retired/world_preview.py). Temperature, humidity and roughness are
 ## domain-warped noise, stretched to an even 0..1 over the land, pulled to a mild climate around home; each cell then takes the nearest
 ## point of the biomes (BiomeData). The map is smoothed, small patches absorbed, warm / cold clashes repaired, and land close to water becomes beach.
 ## Own seeds (SEED_CLIMATE + n): draws nothing from the main stream.
@@ -855,7 +855,7 @@ static func _make_biomes(res: Result, p: Params, home: Vector2i) -> void:
 				res.biome[i] = Biome.BEACH_SAND if temp[i] >= p.cold_beach_t else Biome.BEACH_GRAVEL
 
 
-## Water (0038 step 3; port of tools/asset_viewer/world_preview.py). Cut out of the land mass the continent and the biomes made:
+## Water (0038 step 3; port of tools/asset_viewer_retired/world_preview.py). Cut out of the land mass the continent and the biomes made:
 ##  - rivers: the zero line of a ridge noise (|n| < width), only inland, wider towards the sea; a piece that does not reach the sea is dropped.
 ##  - lakes: pockets of a separate noise on wet, inland, not-too-rough land.
 ##  - shallows: the first 1-2 ocean cells along the coast. Rivers, lakes and shallows are SHALLOW water: not land (nothing is placed there)
@@ -1116,7 +1116,7 @@ static func _make_water(res: Result, p: Params, home: Vector2i, zc: Rect2i) -> v
 	res.coast_dist = PackedByteArray()
 
 
-## Lakes (0038 water v2; port of tools/asset_viewer/world_preview.py): `lake_big_n` landmark lakes (`lake_big_on_river` of them on a river path) and
+## Lakes (0038 water v2; port of tools/asset_viewer_retired/world_preview.py): `lake_big_n` landmark lakes (`lake_big_on_river` of them on a river path) and
 ## `lake_pond_n` small ponds that cluster where a wetness noise is high (or sit next to a river). A lake is one or a few merged blobs, each
 ## an ellipse whose edge is wobbled by noise. Lake cells become fresh = 2 (a lake over a river cell wins). Home and the fight zone stay dry.
 ## Radii and counts shrink on a map smaller than 512 x 512 (counts by the area), never below 0.4 x.
@@ -2521,7 +2521,7 @@ static func _build_ground(res: Result, style: MapStyle, p: Params) -> void:
 	var dist: PackedByteArray
 	# The expensive base (biome ground, border jitter, smoothing, small patches, water distance) only depends on these numbers: a look
 	# slider for paths / camp / patches re-uses it and only redoes the stamps and the beach (0038 step 2).
-	var key := [p.border_jitter, p.min_island_cells, p.smooth_passes, p.camp_radius + p.beach_cells + 3, style.grounds.size()]
+	var key := [p.border_jitter, p.min_island_cells, p.smooth_passes, p.camp_radius + p.beach_cells + 3, int(style.pixel_plains != null)]
 	if res.ground_key == key and not res.ground_base.is_empty():
 		g = res.ground_base.duplicate()
 		dist = res.ground_dist

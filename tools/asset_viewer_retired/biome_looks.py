@@ -1,10 +1,11 @@
+# RETIRED with the old map art (Floors_Tiles / Rocks / Water_tiles / Vegetation are in assets/retired/map/ and assets/source/map/). Kept as the reference of the GDScript ports (MapGen, BiomeVeg).
 """Preview ($0, no game code): the look of 5 biomes, one 48x27-cell scene each (16 px cells, x2), with a soft border into
 the natural neighbour so the blend is visible. Same pass order and peaked-patch / try logic as biome_preview.py
 (clearings, trees, rocks, bushes, flowers, mushrooms, tufts; one random stream per pass). Every number is in BIOMES below
 (one row per biome: this table is meant to be ported into BiomeData).
 Writes docs/demo/biome_look_{taiga,autumn,snowy,rocky,swamp}.png and docs/demo/biome_looks_sheet.png.
 
-Run: python3 tools/asset_viewer/biome_looks.py
+Run: python3 tools/asset_viewer_retired/biome_looks.py
 """
 import math
 import random
@@ -111,7 +112,7 @@ COLOR_ROW = {"green": 0, "yellow": 3, "brown": 6}                 # tuft / fern 
 # ======================================================================================================== sprites
 def load_art():
     A = lambda p: Image.open(ROOT / p).convert("RGBA")
-    veg, rocks, tiles, water = A("assets/game/map/Vegetation.png"), A("assets/game/map/Rocks.png"), A("assets/game/map/Floors_Tiles.png"), A("assets/game/map/Water_tiles.png")
+    veg, rocks, tiles, water = A("assets/game/map/Vegetation.png"), A("assets/source/map/Rocks.png"), A("assets/retired/map/Floors_Tiles.png"), A("assets/retired/map/Water_tiles.png")
     cut = lambda sh, b: sh.crop(b)
     art = {"tiles": tiles, "water": water}
     art["bush"] = {c: [cut(veg, bbox(veg, col, a, col + 3, b)) for a, b in [(0, 2), (2, 4)]] for c, col in COLOR_COL.items()}

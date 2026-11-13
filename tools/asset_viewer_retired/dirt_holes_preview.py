@@ -1,8 +1,9 @@
+# RETIRED with the old map art (Floors_Tiles / Rocks / Water_tiles / Vegetation are in assets/retired/map/ and assets/source/map/). Kept as the reference of the GDScript ports (MapGen, BiomeVeg).
 """Preview: dirt patches made only from Pixel Crawler tiles (decision 0035). Dirt fill below, grass above with the
 pack's own hole frame (the rimmed one, rows 0-4 of Floors_Tiles; rows 5-9 have no rim). Holes are rectangles
 (the pack has no other shape), at least 2x2 cells; 3x3+ look best.
 
-Run: python3 tools/asset_viewer/dirt_holes_preview.py [out.png]   (default docs/demo/dirt_holes_preview.png)
+Run: python3 tools/asset_viewer_retired/dirt_holes_preview.py [out.png]   (default docs/demo/dirt_holes_preview.png)
 """
 import random
 import sys
@@ -38,7 +39,7 @@ def hole_tiles(x, y, w, h):
 
 def main(out_path):
     random.seed(4)
-    sheet = Image.open(ROOT / "assets/game/map/Floors_Tiles.png").convert("RGBA")
+    sheet = Image.open(ROOT / "assets/retired/map/Floors_Tiles.png").convert("RGBA")
     tile = lambda c: sheet.crop((c[0] * S, c[1] * S, c[0] * S + S, c[1] * S + S))
     W, H = 36, 20
     img = Image.new("RGBA", (W * S, H * S))
