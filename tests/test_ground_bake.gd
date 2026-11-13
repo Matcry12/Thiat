@@ -23,6 +23,7 @@ func _params() -> MapGen.Params:
 	p.spawns = PackedVector2Array([p.player_spawn, p.zone.get_center(), p.player_spawn, p.player_spawn])
 	p.obstacle_count = 190
 	p.patch_count = 120
+	p.pp = load("res://data/maps/grass.tres").pixel_plains   # the live look (the old tree nodes are retired)
 	return p
 
 func _obstacle_hash(res: MapGen.Result) -> int:
@@ -62,7 +63,7 @@ func _init() -> void:
 		if inside and tres.land[i] == 1 and tres.area[i] != MapGen.Area.BOSS and tres.ground[i] == MapGen.Ground.GRASS:
 			alpha[tres.biome[i]] = roundi(timg.get_pixel(i % pr.cols, i / pr.cols).a * 255.0)
 	_check(alpha.has(MapGen.Biome.FOREST) and alpha.has(MapGen.Biome.AUTUMN) and absi(alpha[MapGen.Biome.FOREST] - 128) <= 1 and absi(alpha[MapGen.Biome.AUTUMN] - 140) <= 1, "tint saturation 0..2 is stored (forest %s, autumn %s)" % [alpha.get(MapGen.Biome.FOREST), alpha.get(MapGen.Biome.AUTUMN)])
-	var pins := {11: 2304434224, 7: 335026835}   # re-pinned for 2x tree_tries; before: v5 (copper off); earlier pin: v3 water in MapGen.Params; earlier pin: v4 (rocks off in the data); earlier pin: 0038 step 4 (per-biome trees, rock groups); earlier pin: 0038 water v2 (big rivers / lakes, ponds); earlier pin: step 3 (continent shape, rivers, lakes, shallows); earlier pin for 0038 step 1
+	var pins := {11: 2565220860, 7: 2540053321}   # re-pinned for the retired old trees (now the live Pixel Plains oaks; the node index in the hash shifted too); before: re-pinned for 2x tree_tries; before: v5 (copper off); earlier pin: v3 water in MapGen.Params; earlier pin: v4 (rocks off in the data); earlier pin: 0038 step 4 (per-biome trees, rock groups); earlier pin: 0038 water v2 (big rivers / lakes, ponds); earlier pin: step 3 (continent shape, rivers, lakes, shallows); earlier pin for 0038 step 1
 	for seed_v in pins:
 		var h := _obstacle_hash(MapGen.generate(style, _params(), seed_v))
 		print("obstacle hash seed %d = %d" % [seed_v, h])

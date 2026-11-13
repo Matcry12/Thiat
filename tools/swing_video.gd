@@ -47,7 +47,7 @@ func _init() -> void:
 		var w: WeaponData = load(args[5])
 		player._on_swap_finished(w)
 		var tree: ResourceNode = load("res://scenes/world/resource_node.tscn").instantiate()
-		tree.setup(load("res://data/resource_nodes/tree_oak_sapling.tres"), 0)
+		tree.setup(load("res://data/resource_nodes/treepp_oak_green_sapling.tres"), 0)
 		tree.position = player.global_position + Vector2(64, 0)
 		arena.add_child(tree)
 		_tree = tree

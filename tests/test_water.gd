@@ -155,6 +155,7 @@ func _init() -> void:
 	q.obstacle_count = 190
 	q.patch_count = 120
 	q.legacy_tiles = true
+	q.pp = style.pixel_plains   # the live look: Pixel Plains oaks + pp_* deco (the old tree nodes are retired)
 	for sd in [11, 7, 3]:
 		var r := MapGen.generate(style, q, sd)
 		for o in r.obstacles:

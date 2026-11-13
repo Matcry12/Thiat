@@ -26,7 +26,7 @@ func _init() -> void:
 
 	# Break a tree: its drops land on the ground and end up in the inventory when you walk over.
 	var tree: ResourceNode = load("res://scenes/world/resource_node.tscn").instantiate()
-	tree.setup(load("res://data/resource_nodes/tree.tres"), 0)
+	tree.setup(load("res://data/resource_nodes/treepp_oak_green_mature.tres"), 0)
 	tree.position = player.global_position + Vector2(40, 0)
 	arena.add_child(tree)
 	await physics_frame
@@ -87,7 +87,7 @@ func _water_edge() -> void:
 	player.global_position = pos + Vector2(-2000, 0)
 	for k in 5:
 		var tree: ResourceNode = load("res://scenes/world/resource_node.tscn").instantiate()
-		tree.setup(load("res://data/resource_nodes/tree.tres"), 0)
+		tree.setup(load("res://data/resource_nodes/treepp_oak_green_mature.tres"), 0)
 		tree.position = pos
 		arena.add_child(tree)
 		await physics_frame

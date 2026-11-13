@@ -183,5 +183,5 @@ The Tiny RPG art is gone ([0054](../decision/0054-remove-tiny-rpg-art.md)). The 
 | A ground (fills, edge frame, layer) | `data/maps/ground_*.tres` (`GroundData`); list order in `MapStyle.grounds`: dirt, cobble, grass, boss grass |
 | Water tile | `MapStyle.water_texture` + `water_fills`; shimmer / foam numbers in F3 Map |
 | Trees by biome and colour | `data/resource_nodes/tree_<model>[_<season>]_<age>.tres`, made by `tools/asset_viewer/make_tree_nodes.py` from `data/maps/tree_catalog.json`; which tree a biome grows = its tree table in `data/biomes/*.tres` (0038 step 4). The old `tree` kind only stands on the boss land (`looks_boss`) |
-| Floor props (flowers, tufts, bushes, stones, reeds, snow stumps) | `data/maps/prop_veg.tres`, `prop_rocks.tres`, `prop_stump_*.tres`, made by `tools/asset_viewer/make_veg_sets.py`: sprites are named in `PropSet.groups` (`bush_green`, `flower_2`, `stone_grey` ...), which biome grows which = `BiomeData` |
+| Floor props (flowers, tufts, bushes, stones, reeds, snow stumps) | `data/maps/prop_pp_*.tres`, `prop_rocks.tres` (the old `prop_veg` / `prop_stump_*` are retired in `assets/retired/data/maps/`): sprites are named in `PropSet.groups` (`bush_green`, `flower_2`, `stone_grey` ...), which biome grows which = `BiomeData` |
 Credits for third-party art: [credits.md](credits.md).

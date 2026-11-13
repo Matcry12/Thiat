@@ -1,5 +1,5 @@
 extends SceneTree
-# The player's body is the 3D-rendered directional set (assets/game/characters/player/3d/): front when facing mostly down,
+# The player's body is the 3D-rendered directional set (assets/retired/characters/player/3d/, retired): front when facing mostly down,
 # side (flipped for left) otherwise, UP keeps the side (no back sprite); run/hit have their own animations; the OLD
 # drawn art still loads and works by swapping the SpriteFrames resource only.
 var _ok := true
@@ -127,9 +127,6 @@ func _init():
 	check("F3 status shows facing", vis.status_text().contains("facing: front"))
 
 	# the older characters are ONE resource swap (rig = frames + body position + shadow + weapon/hand fit)
-	vis.rig = load("res://data/body_rigs/soft_body.tres")
-	vis.set_facing(Vector2.DOWN)
-	check("soft 3D body rig: directional again, position/scale from its rig", vis.is_directional() and body.position == Vector2(0, -19) and body.sprite_frames.has_animation(&"run_front"))
 	vis.rig = load("res://data/dev/body_rigs/drawn_art.tres")
 	vis.set_move_state("run")
 	check("old drawn art rig: not directional, plain run plays", not vis.is_directional() and body.animation == &"run" and body.position == Vector2(0, -19))

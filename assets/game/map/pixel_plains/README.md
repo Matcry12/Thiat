@@ -24,8 +24,9 @@ Still in `assets/game/map/` (kept, not deleted). Only the old ground look (`MapS
 | File | What it was | Why it is off |
 |---|---|---|
 | `assets/game/map/Rocks.png` | Old rocks + copper ore (`data/resource_nodes/rock.tres`, `copper_rock.tres`), rock-group pebbles (`data/maps/prop_rocks.tres`) | Not Pixel Plains style: `rock_per_block`, `rock_nodes_per_100`, `copper_per_100` = 0 in every biome, `rock.density_boss` = 0, `copper_near_home_cells` = 0. So no stone / copper source on the map yet |
-| `assets/game/map/Vegetation.png` | Old bushes, stumps, reeds, mushrooms, ferns (`data/maps/prop_veg.tres`) | `PixelPlainsGround.show_other` all 0 |
 | `assets/game/map/Floors_Tiles.png` | Old ground (`data/maps/ground_dirt.tres`, `ground_sand.tres`, `ground_boss.tres`) | The Pixel Plains baker replaces it |
 | `assets/game/map/Water_tiles.png` | Old water edges (`data/maps/grass.tres`) | Flat water shader (`scripts/map/terrain_water_flat.gdshader`) |
+
+Retired (moved, not deleted, to `assets/retired/`): `map/Vegetation.png`, `world/trees.png`, `world/trees/*` (old bushes, stumps and tree sheets), with the old tree nodes (`data/resource_nodes/tree.tres`, `tree_*.tres`), `data/maps/prop_veg.tres`, `prop_stump_*.tres` (under `assets/retired/data/`) and the old bush border. The Pixel Plains oaks (`treepp_*`) and `pp_*` sets are the only vegetation now.
 
 Not Pixel Plains but still in game: `assets/game/map/campfire.png` (the home campfire, `scenes/world/home_point.tscn`).

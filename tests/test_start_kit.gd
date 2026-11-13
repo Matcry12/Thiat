@@ -34,7 +34,7 @@ func _init() -> void:
 	var copper_rock: ResourceNodeData = load("res://data/resource_nodes/copper_rock.tres")
 	_check(cp.tool_power == 3 and cp.tool_power > sp.tool_power and cp.gather_damage > sp.gather_damage and cp.tool_kind == &"pickaxe", "copper pickaxe: tool_power 3, gathers faster than stone")
 	_check(sp.tool_power >= copper_rock.required_power and sa.tool_power < copper_rock.required_power, "stone pickaxe mines copper, the axe cannot")
-	var tree: ResourceNodeData = load("res://data/resource_nodes/tree.tres")
+	var tree: ResourceNodeData = load("res://data/resource_nodes/treepp_oak_green_young.tres")
 	_check(ca.gather_damage * tree.tool_bonus >= tree.max_hp and sa.gather_damage * tree.tool_bonus < tree.max_hp, "copper axe fells a tree in 1 hit, the stone axe needs 2")
 
 	# --- the tint reaches the model ---

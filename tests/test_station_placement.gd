@@ -84,7 +84,7 @@ func _init() -> void:
 			break
 	_check(coast != Vector2.ZERO and pl.check_at(coast, fp) == "water", "half over the shore: refused")
 	var tree: ResourceNode = load("res://scenes/world/resource_node.tscn").instantiate()
-	tree.setup(load("res://data/resource_nodes/tree.tres"), 0)
+	tree.setup(load("res://data/resource_nodes/treepp_oak_green_mature.tres"), 0)
 	tree.position = far
 	arena.add_child(tree)
 	_check(pl.check_at(far + Vector2(10, 0), fp) == "node", "on a tree: refused")

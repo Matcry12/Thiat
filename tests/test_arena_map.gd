@@ -21,7 +21,6 @@ func _init() -> void:
 	ok = ok and _t(seed_a != 0, "random seed rolled when map_seed = 0")
 	ok = ok and _t(m.get_node("Ground/Dirt").get_used_cells().size() == 72 * 40, "dirt layer fills the arena (%d)" % m.get_node("Ground/Dirt").get_used_cells().size())
 	ok = ok and _t(m.get_node("Ground/Grass").get_used_cells().size() > 300, "grass layer is filled")
-	ok = ok and _t(m.get_node("Ground/Border").get_child_count() > 20, "bushes along the walls")
 	var ground: Node2D = m.get_node("Ground")
 	ok = ok and _t(ground.z_index <= -2 and arena.get_node("Background").z_index < ground.z_index, "ground under shadows (z -1) and characters; Background under ground")
 	ok = ok and _t(m.z_index == 0 and m.get_node("Obstacles").z_index == 0 and arena.y_sort_enabled and m.y_sort_enabled and m.get_node("Obstacles").y_sort_enabled, "rocks Y-sort with the characters")

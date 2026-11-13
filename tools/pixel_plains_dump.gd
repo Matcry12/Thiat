@@ -40,7 +40,7 @@ func _init() -> void:
 			continue
 		var d: ResourceNodeData = m.style.resource_nodes[n]
 		var e := {"pos": [o["pos"].x, o["pos"].y], "radius": o["radius"], "id": str(d.id)}
-		if String(d.id).begins_with("tree_"):
+		if String(d.id).begins_with("treepp_"):
 			trees.append(e)
 		else:
 			rocks.append(e)

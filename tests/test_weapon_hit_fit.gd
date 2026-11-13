@@ -135,7 +135,7 @@ func _init() -> void:
 	wv.weapon = d30
 	var size0 := _shape(wv).size
 	var pos0: Vector2 = wv.get_model().get_node("Hitbox/CollisionShape2D").global_position
-	var rig: BodyRig = load("res://data/body_rigs/soft_body.tres").duplicate()
+	var rig: BodyRig = load("res://data/body_rigs/pixel_plains.tres").duplicate()
 	rig.visual_scale = 1.5
 	wv.apply_rig(rig)
 	_check(_shape(wv).size == size0 and wv.get_model().get_node("Hitbox/CollisionShape2D").global_position.distance_to(pos0) < 0.01, "visual_scale 1.5: shape + world position unchanged")

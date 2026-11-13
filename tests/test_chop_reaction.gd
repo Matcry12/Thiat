@@ -17,7 +17,7 @@ func _init() -> void:
 	var fx: HitFx = arena.get_node("HitFx")
 	var player = arena.get_node("Player")
 	var tree: ResourceNode = load("res://scenes/world/resource_node.tscn").instantiate()
-	tree.setup(load("res://data/resource_nodes/tree.tres"), 0)
+	tree.setup(load("res://data/resource_nodes/treepp_oak_green_mature.tres"), 0)
 	tree.position = player.global_position + Vector2(40, 160)
 	arena.add_child(tree)
 	await physics_frame
@@ -70,7 +70,7 @@ func _init() -> void:
 	_check(tree.data.remains_region.has_area() == (body.region_rect == tree.data.remains_region) or not tree.data.remains_region.has_area(), "stump shown after pop")
 	# freed mid-effect: no crash
 	var t2: ResourceNode = load("res://scenes/world/resource_node.tscn").instantiate()
-	t2.setup(load("res://data/resource_nodes/tree.tres"), 0)
+	t2.setup(load("res://data/resource_nodes/treepp_oak_green_mature.tres"), 0)
 	t2.position = tree.position + Vector2(80, 0)
 	arena.add_child(t2)
 	await physics_frame
@@ -96,7 +96,7 @@ func _init() -> void:
 		dark += 1 if maxf(c.r, maxf(c.g, c.b)) < fx.node_fx.crown_min_brightness else 0
 	_check(dark == 0, "rock chip colours skip the dark outline")
 	var tc: PackedColorArray = tree.get_node("Visual/Reaction").crown_colors(fx.node_fx.crown_min_brightness)
-	_check(tc.size() > 0 and tc[0].g > tc[0].r, "tree crown stays green")
+	_check(tc.size() > 0 and tc[0] != Color(0.39, 0.67, 0.25), "tree chip colours are read from the picture (not the fallback green)")
 	var rc: int = fx.layer_counts["reaction"]
 	rock.take_gather_hit(w, player)
 	await process_frame

@@ -24,7 +24,6 @@ func _placements(m: ArenaMap) -> Array:
 func _init() -> void:
 	var arena = load("res://scenes/arena.tscn").instantiate()
 	arena.get_node("ArenaMap").map_seed = 11
-	arena.get_node("ArenaMap").style.pixel_plains = null   # these tests count trees and deco: the old ground look keeps them (Pixel Plains hides both)
 	root.add_child(arena)
 	arena.get_node("Boss").passive = true
 	await process_frame
@@ -63,9 +62,9 @@ func _init() -> void:
 	_check(m.get_node("Ground/Terrain/Grounds").get_child_count() <= sr.loaded.size(), "one ground picture per loaded chunk with land (%d)" % m.get_node("Ground/Terrain/Grounds").get_child_count())
 
 	# a node near home: gather it away, walk far, come back
-	var tree := m.nearest_node(&"tree_oak_mature", m.home_point())
+	var tree := m.nearest_node(&"treepp_oak_green_mature", m.home_point())
 	_check(tree != null, "nearest_node finds a tree in the world data")
-	var other := m.nearest_node(&"tree_oak_old", m.home_point())
+	var other := m.nearest_node(&"treepp_oak_green_old", m.home_point())
 	_check(sr._pins.size() > 0, "nearest_node pins the chunk it loaded")
 	sr._pins.clear()   # the pin would keep the home chunk alive for 600 frames
 	var before := _placements(m)
@@ -141,7 +140,7 @@ func _init() -> void:
 	_check(tp2 < 0 or sr.broken[tp2] == 1, "chunk_cells slider keeps the gathered-node memory")
 	# a station cannot go over a tree whose chunk is not loaded
 	m.teleport_player("home")
-	var far_tree := m.nearest_node(&"tree_oak_old", m.layout()["boss"], false)
+	var far_tree := m.nearest_node(&"treepp_oak_green_old", m.layout()["boss"], false)
 	var fp: Vector2 = far_tree.position
 	m.teleport_player("boss")
 	await process_frame

@@ -89,18 +89,18 @@ func _init() -> void:
 	var pick: WeaponData = inv.slot_item(3).weapon
 	var fists: WeaponData = lo.unarmed
 	var spot: Vector2 = player.global_position
-	var tree := _node(arena, "res://data/resource_nodes/tree.tres", spot + Vector2(40, 0))
+	var tree := _node(arena, "res://data/resource_nodes/treepp_oak_green_young.tres", spot + Vector2(40, 0))
 	await physics_frame
 	player.get_node("WeaponVisual").set_aim_angle(0.0)
 	await _swing(wh)    # axe in hand (slot 3)
 	_check(tree.hp == tree.data.max_hp - axe.gather_damage * tree.data.tool_bonus, "axe swing on a tree takes gather_damage x tool_bonus (hp %.0f)" % tree.hp)
 	await _swing(wh)
 	_check(tree.is_broken(), "tree is down after 2 axe swings")
-	var tree2 := _node(arena, "res://data/resource_nodes/tree.tres", spot + Vector2(300, 0))
+	var tree2 := _node(arena, "res://data/resource_nodes/treepp_oak_green_mature.tres", spot + Vector2(300, 0))
 	for i in 10:
 		tree2.take_gather_hit(fists, player)
 	_check(tree2.hp == tree2.data.max_hp and not tree2.is_broken(), "bare hands do nothing to a tree (decision 0048)")
-	var tree3 := _node(arena, "res://data/resource_nodes/tree.tres", spot + Vector2(400, 0))
+	var tree3 := _node(arena, "res://data/resource_nodes/treepp_oak_green_mature.tres", spot + Vector2(400, 0))
 	tree3.take_gather_hit(pick, player)
 	_check(tree3.hp == tree3.data.max_hp - pick.gather_damage, "pickaxe on a tree: no bonus")
 	var ore := _node(arena, "res://data/resource_nodes/copper_rock.tres", spot + Vector2(500, 0))

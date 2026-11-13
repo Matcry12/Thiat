@@ -5,7 +5,7 @@ extends RefCounted
 ## foxglove, mushrooms (in tree shade), snow stumps, reeds (along water), grass tufts and ferns (more near trunks and rocks). Each pass has its own
 ## random stream (MapGen.SEED_VEG + pass). A try that fails a check is dropped, never moved. Nothing grows on water, a shore cell, a path / camp
 ## stamp or boss land; plants also keep to their biome's ground. The result is Result.deco ({set, region, pos = bottom centre in px}) drawn by ChunkDeco.
-## The sprites come from the PropSets ids `veg`, `rocks` and `stump_<model>_s<size>` (data/maps/prop_*.tres, tools/asset_viewer/make_veg_sets.py).
+## The sprites come from the PropSets ids `rocks` and `pp_flowers / pp_tufts / pp_hedges` (data/maps/prop_*.tres). The old `veg` / `stump_*` sets (Vegetation.png, old tree sheets) are retired: with no such set their passes add nothing.
 
 const FLOWER := [&"flower_0", &"flower_1", &"flower_2", &"flower_3"]   ## orange, white, blue, yellow
 const BUSH := [&"bush_green", &"bush_yellow", &"bush_orange", &"bush_red"]
@@ -32,12 +32,10 @@ var rng: RandomNumberGenerator
 
 
 static func has_sets(style: MapStyle) -> bool:
-	var v := false
-	var r := false
 	for s in style.deco:
-		v = v or s.id == &"veg"
-		r = r or s.id == &"rocks"
-	return v and r
+		if s.id == &"rocks":
+			return true
+	return false
 
 
 static func place(result: MapGen.Result, style: MapStyle, params: MapGen.Params) -> void:
@@ -158,8 +156,8 @@ func _add(set_i: int, groups: Dictionary, name: StringName, x: float, y: float) 
 	var list: PackedInt32Array = groups[name]
 	if list.is_empty():
 		return
-	# the sprite comes from the position, not from the stream: a try that fails elsewhere never shifts the draws of this biome
-	res.deco.append({"set": set_i, "region": list[absi(hash(Vector3(x, y, set_i))) % list.size()], "pos": Vector2(x, y) * cell})
+	# the sprite comes from the position, not from the stream: a try that fails elsewhere never shifts the draws of this biome; seeded by the set id, not its list index, so adding or removing a set never reshuffles the pictures
+	res.deco.append({"set": set_i, "region": list[absi(hash([x, y, sets[set_i].id])) % list.size()], "pos": Vector2(x, y) * cell})
 
 
 ## True if a trunk stands within `r` cells of (x, y).

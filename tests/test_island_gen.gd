@@ -18,6 +18,7 @@ func _params() -> MapGen.Params:
 	p.spawns = PackedVector2Array([p.player_spawn])
 	p.obstacle_count = 190
 	p.patch_count = 120
+	p.pp = load("res://data/maps/grass.tres").pixel_plains   # the live look (Pixel Plains oaks + pp_* deco; the old tree nodes are retired)
 	return p
 
 func _connected_land(res: MapGen.Result, p: MapGen.Params) -> bool:

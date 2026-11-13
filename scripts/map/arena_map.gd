@@ -1164,7 +1164,7 @@ func rebuild(new_seed: bool, relayout := false) -> void:
 		tree_counts[age] = 0
 	var is_tree := PackedByteArray()   # per node kind: 1 = an aged tree
 	for k in style.resource_nodes:
-		is_tree.append(1 if String(k.id).begins_with("tree_") else 0)
+		is_tree.append(1 if String(k.id).begins_with("tree") else 0)
 	for o in result.obstacles:
 		node_count += 1 if o["node"] >= 0 else 0
 		if o["node"] >= 0 and is_tree[o["node"]] == 1:
@@ -2052,7 +2052,7 @@ func debug_children() -> Array:
 			out.append({"name": "Biome " + bd.label, "object": bd})
 	if style and style.pixel_plains != null:
 		out.append({"name": "Pixel Plains", "object": style.pixel_plains})
-	for k in ["tree", "rock", "copper_rock", "tree_oak_sapling", "tree_oak_young", "tree_oak_small", "tree_oak_mature", "tree_oak_old", "tree_fir_sapling", "tree_fir_young", "tree_fir_small", "tree_fir_mature", "tree_fir_old"]:
+	for k in ["rock", "copper_rock", "treepp_oak_green_sapling", "treepp_oak_green_young", "treepp_oak_green_mature", "treepp_oak_green_old"]:
 		out.append({"name": "Node " + k.replace("_rock", ""), "object": load("res://data/resource_nodes/%s.tres" % k), "cat": "Items & Crafting"})
 	return out
 

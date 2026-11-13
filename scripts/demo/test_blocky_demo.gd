@@ -5,7 +5,7 @@ extends Node2D
 ## Standalone: the game's weapon scripts are only instanced, never edited.
 
 const GRASS := "res://assets/game/map/Floors_Tiles.png"
-const PLAYER_FRAMES := "res://assets/game/characters/player/3d/player_3d_frames.tres"
+const PLAYER_FRAMES := "res://data/body_rigs/pixel_plains.tres"   # the shipped body (the old 3D soft body is retired)
 const SWORD := "res://data/weapons/wooden_sword.tres"
 const WeaponVisualS := preload("res://scripts/visual/weapon_visual.gd")
 const SwingFxS := preload("res://scripts/visual/swing_fx.gd")
@@ -79,10 +79,10 @@ func _make(title: String, off: Vector2, variant: String, _with_hands: bool) -> A
 		a.sprite = s
 	else:
 		var s := AnimatedSprite2D.new()
-		s.sprite_frames = load(PLAYER_FRAMES)
+		s.sprite_frames = (load(PLAYER_FRAMES) as BodyRig).sprite_frames
 		s.scale = Vector2(2, 2)
 		s.position = Vector2(0, -19)
-		s.play(&"idle_front")
+		s.play(&"idle")
 		a.sprite = s
 	a.root.add_child(a.sprite)
 	a.wv = WeaponVisualS.new()

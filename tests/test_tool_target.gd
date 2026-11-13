@@ -10,7 +10,7 @@ func _check(ok: bool, what: String) -> void:
 
 func _node(arena: Node, at: Vector2) -> ResourceNode:
 	var n: ResourceNode = load("res://scenes/world/resource_node.tscn").instantiate()
-	n.setup(load("res://data/resource_nodes/tree.tres"), 0)
+	n.setup(load("res://data/resource_nodes/treepp_oak_green_mature.tres"), 0)
 	n.position = at
 	arena.add_child(n)
 	return n

@@ -44,7 +44,7 @@ func _init():
 	var fx: SwingFx = player.get_node("WeaponVisual/SwingFx")
 	var loadout: Loadout = player.get_node("Loadout")
 	var blocky: BodyRig = load("res://data/dev/body_rigs/blocky.tres")
-	var soft: BodyRig = load("res://data/body_rigs/soft_body.tres")
+	var soft: BodyRig = load("res://data/body_rigs/pixel_plains.tres")
 	check("player starts with the pixel plains rig", vis.rig.display_name.begins_with("pixel plains"))
 	vis.rig = blocky
 	check("blocky rig loads and shrinks the weapon picture", vis.rig == blocky and blocky.visual_scale < 1.0)

@@ -32,7 +32,7 @@ func _init() -> void:
 	player.get_node("WeaponVisual").set_aim_angle(0.0)
 	var spot: Vector2 = player.global_position + Vector2(0, 160)
 	player.global_position = spot
-	var tree := _node(arena, "res://data/resource_nodes/tree.tres", spot + Vector2(40, 0))
+	var tree := _node(arena, "res://data/resource_nodes/treepp_oak_green_mature.tres", spot + Vector2(40, 0))
 	await physics_frame
 	var fx_seen: Array[StringName] = []
 	arena.get_node("HitFx").hit_fx.connect(func(t): fx_seen.append(t))
@@ -85,7 +85,7 @@ func _init() -> void:
 	var pick := WeaponData.new()
 	pick.gather_damage = 1.0
 	pick.tool_kind = &"pickaxe"
-	var reset_tree := _node(arena, "res://data/resource_nodes/tree.tres", spot + Vector2(-300, 0))
+	var reset_tree := _node(arena, "res://data/resource_nodes/treepp_oak_green_mature.tres", spot + Vector2(-300, 0))
 	reset_tree.data = reset_tree.data.duplicate()
 	reset_tree.data.reset_delay = 0.05
 	reset_tree.take_gather_hit(hand, player)
@@ -97,7 +97,7 @@ func _init() -> void:
 	reset_tree.take_gather_hit(hand, player)
 	_check(reset_tree.hp == reset_tree.data.max_hp - 1.0, "after the delay the node restarts from full hp (hp %.0f)" % reset_tree.hp)
 	var before := get_nodes_in_group("pickup").size()
-	var hand_tree := _node(arena, "res://data/resource_nodes/tree.tres", spot + Vector2(-300, 60))
+	var hand_tree := _node(arena, "res://data/resource_nodes/treepp_oak_green_mature.tres", spot + Vector2(-300, 60))
 	hand_tree.data = hand_tree.data.duplicate()
 	hand_tree.data.max_hp = 1.0
 	hand_tree.hp = 1.0
@@ -124,8 +124,8 @@ func _init() -> void:
 	var big: ResourceNode = load("res://scenes/world/resource_node.tscn").instantiate()
 	big.setup(big_data, 0)
 	arena.add_child(big)
-	var small := _node(arena, "res://data/resource_nodes/tree.tres", spot + Vector2(400, 0))
-	_check((big.get_node("CollisionShape2D").shape as CircleShape2D).radius == 40.0 and (small.get_node("CollisionShape2D").shape as CircleShape2D).radius == 14.0, "two nodes keep their own radius")
+	var small := _node(arena, "res://data/resource_nodes/treepp_oak_green_mature.tres", spot + Vector2(400, 0))
+	_check((big.get_node("CollisionShape2D").shape as CircleShape2D).radius == 40.0 and (small.get_node("CollisionShape2D").shape as CircleShape2D).radius == 6.0, "two nodes keep their own radius")
 
 	# I3: switching mid-swing is refused (no free recovery cancel).
 	lo.select(lo.weapon_slot(0))   # back to the sword

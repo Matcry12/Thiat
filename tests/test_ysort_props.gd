@@ -1,8 +1,8 @@
 extends SceneTree
-# Tall floor props (bushes ...) are Y-sorted sprites under the obstacles root (the player can stand behind them); short ones stay in the MultiMesh.
+# Tall floor props (here the taller tufts / flowers) are Y-sorted sprites under the obstacles root (the player can stand behind them); short ones stay in the MultiMesh.
 func _init() -> void:
 	var arena = load("res://scenes/arena.tscn").instantiate()
-	arena.get_node("ArenaMap").style.pixel_plains = null   # these tests count trees and deco: the old ground look keeps them (Pixel Plains hides both)
+	arena.get_node("ArenaMap").ysort_min_px = 8   # the live island has no bush taller than 14 px (the old bush sheet is retired): lower the line so the pp tufts / flowers split into tall and short
 	root.add_child(arena)
 	arena.get_node("Boss").passive = true
 	await process_frame

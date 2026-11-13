@@ -55,7 +55,7 @@ func _init() -> void:
 
 	# --- a hit, then the breaking hit: exactly one sound, break_
 	var tree: ResourceNode = load("res://scenes/world/resource_node.tscn").instantiate()
-	tree.setup(load("res://data/resource_nodes/tree.tres"), 0)
+	tree.setup(load("res://data/resource_nodes/treepp_oak_green_mature.tres"), 0)
 	tree.position = player.global_position + Vector2(40, 160)
 	arena.add_child(tree)
 	await physics_frame

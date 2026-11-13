@@ -48,7 +48,7 @@ Big things first, small things fill around them. Each pass has its own random st
 4. Bushes, flower patches, foxglove, mushrooms, snow stumps, reeds, tufts (`scripts/map/biome_veg.gd`, drawn by `ChunkDeco`)
 
 ## 3. Art
-Tree nodes: `data/resource_nodes/tree_*.tres` (61 files). Floor props: one `PropSet` per sheet (`prop_veg`, `prop_rocks`, nine `prop_stump_*`), sprites by
+Tree nodes: `data/resource_nodes/treepp_*.tres` (the Pixel Plains oaks; the old `tree_*` nodes, `prop_veg` and `prop_stump_*` are retired to `assets/retired/data/`). Floor props: `prop_rocks` and the `prop_pp_*` sets, sprites by
 name in `PropSet.groups`. Props are on the ground layer (no collision, no y-sort with the player); within a chunk each sheet is drawn lowest-on-screen last.
 
 ## 4. Not covered yet

@@ -19,7 +19,7 @@ func _init() -> void:
 	await physics_frame
 	_check(inv.count(&"stone_axe") == 1 and inv.count(&"stone_pickaxe") == 1 and inv.count(&"wooden_sword") == 1, "start kit: sword + stone axe + stone pickaxe")
 	var tree: ResourceNode = load("res://scenes/world/resource_node.tscn").instantiate()
-	tree.setup(load("res://data/resource_nodes/tree.tres"), 0)
+	tree.setup(load("res://data/resource_nodes/treepp_oak_green_mature.tres"), 0)
 	arena.add_child(tree)
 	await physics_frame
 	for i in 5:

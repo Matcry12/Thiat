@@ -20,7 +20,7 @@ func _init() -> void:
 	player.face_mouse_hold = 0.2
 	player.aim_override = Vector2.LEFT   # the "mouse" is on the left
 	var tree: ResourceNode = load("res://scenes/world/resource_node.tscn").instantiate()
-	tree.setup(load("res://data/resource_nodes/tree.tres"), 0)
+	tree.setup(load("res://data/resource_nodes/treepp_oak_green_mature.tres"), 0)
 	tree.global_position = player.global_position + Vector2(-40, 0)
 	arena.add_child(tree)
 	await _frames(2)

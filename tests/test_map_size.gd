@@ -42,11 +42,6 @@ func _init() -> void:
 	_check(cam.limit_left == 0 and cam.limit_top == 0 and cam.limit_right == 2304 and cam.limit_bottom == 1280, "camera limits = the map")
 	_check(cam.position_smoothing_enabled, "camera smoothing on by default")
 	_check(arena.get_node("Background").size == Vector2(2304, 1280), "background covers the map")
-	_check(arena.get_node("ArenaMap/Ground/Border").get_child_count() > 40, "bush border follows the bigger edges")
-	var far_bush := false
-	for b in arena.get_node("ArenaMap/Ground/Border").get_children():
-		far_bush = far_bush or b.position.x > 2200
-	_check(far_bush, "bushes reach the new right edge")
 	# density: patches and rocks scale with the area (4 and 6 per screen -> about 15 and 23)
 	_check(m.result.patches.size() > 8, "patch count scaled with the area (%d)" % m.result.patches.size())
 

@@ -10,44 +10,9 @@ func _check(cond: bool, msg: String) -> void:
 func a_rest(res: MapGen.Result, style: MapStyle) -> Array:
 	var out := []
 	for o in res.obstacles:
-		if o["node"] < 0 or not String(style.resource_nodes[o["node"]].id).begins_with("tree_"):
+		if o["node"] < 0 or not String(style.resource_nodes[o["node"]].id).begins_with("treepp_"):
 			out.append(o)
 	return out
-
-func _has_prefix(d: Dictionary, prefix: String) -> bool:
-	for k in d:
-		if String(k).begins_with(prefix):
-			return true
-	return false
-
-
-## Deco positions of the veg set whose sprite group name begins with `prefix` (a region belongs to the group that lists it).
-func _deco_pos(r: MapGen.Result, style: MapStyle, prefix: String) -> Array:
-	var out := []
-	for d in r.deco:
-		var g := _group_of(style.deco[d["set"]], d["region"])
-		if g.begins_with(prefix):
-			out.append(d["pos"])
-	return out
-
-
-func _group_of(set: PropSet, region: int) -> String:
-	for g in set.groups:
-		if (set.groups[g] as PackedInt32Array).has(region):
-			return String(g)
-	return ""
-
-
-## biome -> group name -> count of deco sprites standing on that biome's cells.
-func _deco_by_biome(r: MapGen.Result, style: MapStyle, p: MapGen.Params) -> Dictionary:
-	var out := {}
-	for d in r.deco:
-		var b: int = r.biome[MapGen.cell_index(p, Vector2i(d["pos"] / p.cell))]
-		var g := _group_of(style.deco[d["set"]], d["region"])
-		var bd: Dictionary = out.get_or_add(b, {})
-		bd[g] = bd.get(g, 0) + 1
-	return out
-
 
 ## What stands farther than `margin` cells from every cell of `biome`: obstacles and deco as "pos,node/set,region" keys. Used to prove a slider of one biome moves nothing elsewhere.
 func _outside(res: MapGen.Result, p: MapGen.Params, biome: int, margin: int) -> Dictionary:
@@ -83,7 +48,6 @@ func _init() -> void:
 	arena.get_node("ArenaMap").map_cols = 200   # 0038 step 2: the default island is 512 x 512 now; these counts were tuned at 200 x 120
 	arena.get_node("ArenaMap").map_rows = 120
 	SmallMap.apply(arena.get_node("ArenaMap"))   # v3 sized biomes + water for the 512 island; these counts need the 200 x 120 sizes
-	arena.get_node("ArenaMap").style.pixel_plains = null   # these tests count trees and deco: the old ground look keeps them (Pixel Plains hides both)
 	root.add_child(arena)
 	arena.get_node("Boss").passive = true
 	await process_frame
@@ -102,12 +66,11 @@ func _init() -> void:
 	var aged := 0
 	var ages := {}
 	for k in by_kind:
-		if String(k).begins_with("tree_"):
+		if String(k).begins_with("treepp_"):
 			aged += by_kind[k]
-			ages[String(k).rsplit("_", true, 1)[1]] = true   # tree_oak_old / tree_oak_yellow_old: the age is the last part
+			ages[String(k).rsplit("_", true, 1)[1]] = true   # treepp_oak_green_old: the age is the last part
 	_check(aged > 100 and by_kind.get(&"rock", 0) > 30 and by_kind.get(&"copper_rock", 0) >= 3, "aged trees, rocks and copper on the island (%d trees, %d rocks, %d copper)" % [aged, by_kind.get(&"rock", 0), by_kind.get(&"copper_rock", 0)])
-	_check(ages.size() == 5, "all 5 tree ages appear %s" % [ages.keys()])
-	_check(by_kind.get(&"tree", 0) > 0 and by_area.get("tree@0", 0) == 0, "the plain `tree` kind stays on the boss land only")
+	_check(ages.size() == 4, "all 4 Pixel Plains tree ages appear %s" % [ages.keys()])
 	# 0037 / 0038: biomes. Aged trees per 100 land cells of Plains and Forest (all climate biomes of the map); trunks never closer than a cell diagonal.
 	var r: MapGen.Result = m.result
 	var p0 := m.make_params()
@@ -117,11 +80,9 @@ func _init() -> void:
 		if r.land[i] == 1:
 			cells[r.biome[i]] = cells.get(r.biome[i], 0) + 1
 	var circles: Array[Dictionary] = []
-	var seen_trees := {}   # biome -> "model_season" -> count, over several seeds (a 200 x 120 map holds only a few trees of a small biome)
 	var mix_rocks := 0
-	var mix_deco := {}     # biome -> sprite group -> count, same seeds
 	for o in r.obstacles:
-		if String(style.resource_nodes[o["node"]].id).begins_with("tree_") if o["node"] >= 0 else false:
+		if String(style.resource_nodes[o["node"]].id).begins_with("treepp_") if o["node"] >= 0 else false:
 			var ci := MapGen.cell_index(p0, Vector2i(o["pos"] / p0.cell))
 			trees[r.biome[ci]] = trees.get(r.biome[ci], 0) + 1
 			circles.append(o)
@@ -130,68 +91,23 @@ func _init() -> void:
 		for o in rm.obstacles:
 			var id := String(style.resource_nodes[o["node"]].id)
 			var ci2 := MapGen.cell_index(p0, Vector2i(o["pos"] / p0.cell))
-			if id.begins_with("tree_"):
-				var parts := id.split("_")   # tree_<model>[_<season>]_<age>
-				var tag := "%s_%s" % [parts[1], parts[2] if parts.size() == 4 else "green"]
-				var bt: Dictionary = seen_trees.get_or_add(rm.biome[ci2], {})
-				bt[tag] = bt.get(tag, 0) + 1
-			elif id == "rock" and rm.biome[ci2] == MapGen.Biome.ROCKY:
+			if id == "rock" and rm.biome[ci2] == MapGen.Biome.ROCKY:
 				mix_rocks += 1
-		var dm := _deco_by_biome(rm, style, p0)
-		for b in dm:
-			var tot: Dictionary = mix_deco.get_or_add(b, {})
-			for g in dm[b]:
-				tot[g] = tot.get(g, 0) + dm[b][g]
 	var dens := {}
 	for b in MapGen.Biome.size():
 		dens[b] = 100.0 * trees.get(b, 0) / maxi(cells.get(b, 0), 1)
 	print("  trees per 100 cells by biome: %s" % [dens])
 	_check(dens[MapGen.Biome.FOREST] > dens[MapGen.Biome.PLAINS] * 4.0, "forest biome trees per 100 cells >> plains (forest %.2f, plains %.2f)" % [dens[MapGen.Biome.FOREST], dens[MapGen.Biome.PLAINS]])
-	_check(dens[MapGen.Biome.AUTUMN] > 2.0 and dens[MapGen.Biome.TAIGA] > 2.0, "autumn and taiga have forests (%.1f, %.1f per 100 cells)" % [dens[MapGen.Biome.AUTUMN], dens[MapGen.Biome.TAIGA]])
+	_check(dens[MapGen.Biome.AUTUMN] > 2.0, "autumn has a forest (%.1f per 100 cells; the Pixel Plains pack has no taiga tree)" % dens[MapGen.Biome.AUTUMN])
 	_check(trees.get(MapGen.Biome.BEACH_SAND, 0) + trees.get(MapGen.Biome.BEACH_GRAVEL, 0) <= 3, "(almost) no tree on a beach: a trunk may lean over its cell edge (%d)" % [trees.get(MapGen.Biome.BEACH_SAND, 0) + trees.get(MapGen.Biome.BEACH_GRAVEL, 0)])
-	# 0038 step 4: each biome grows its own mix (BiomeData tree table)
-	var tg: Dictionary = seen_trees.get(MapGen.Biome.TAIGA, {})
-	_check(_has_prefix(tg, "fir_") and _has_prefix(tg, "pine_"), "taiga has fir and pine %s" % [tg])
-	var au: Dictionary = seen_trees.get(MapGen.Biome.AUTUMN, {})
-	_check(_has_prefix(au, "oak_yellow") or _has_prefix(au, "pine_yellow"), "autumn has yellow trees")
-	_check(_has_prefix(au, "oak_orange") or _has_prefix(au, "pine_orange"), "autumn has orange trees")
-	var au_green: int = au.get("oak_green", 0) + au.get("fir_green", 0)   # a forest trunk at the edge may lean over into an autumn cell, as on the beach
-	_check(_has_prefix(au, "pine_red") and au_green <= 3, "autumn has red pines and (almost) no green tree %s" % [au])
-	var sn: Dictionary = seen_trees.get(MapGen.Biome.SNOWY, {})
-	_check(_has_prefix(sn, "oak_snow") and _has_prefix(sn, "fir_teal") and (_has_prefix(sn, "oak_dead") or _has_prefix(sn, "fir_dead")), "snowy has snow oaks, teal firs and dead trees %s" % [sn])
-	var rk: Dictionary = seen_trees.get(MapGen.Biome.ROCKY, {})
-	var living := 0
-	var all_rk := 0
-	for k in rk:
-		all_rk += rk[k]
-		living += 0 if String(k).ends_with("_dead") else rk[k]
-	# a small tree's trunk can lean into the cell below its own (the test reads the biome under the trunk), so a stray living one is not a leak
-	_check(all_rk >= 4 and living <= 1, "rocky grows dead trees only (%d of %d are living: %s)" % [living, all_rk, rk])
-	var sw: Dictionary = seen_trees.get(MapGen.Biome.SWAMP, {})
-	_check(_has_prefix(sw, "oak_green") and _has_prefix(sw, "oak_dead"), "swamp has green and dead oaks %s" % [sw])
 	# 0038 step 4: the deco of each biome (what each pass drew, by sprite group)
-	var deco_by := mix_deco
-	var sw_d: Dictionary = deco_by.get(MapGen.Biome.SWAMP, {})
-	var reeds := 0
-	var reeds_wet := true
-	for pos in _deco_pos(r, style, "reed_"):   # the main map only
-		var c := Vector2i(pos / p0.cell)
-		if r.biome[MapGen.cell_index(p0, c)] != MapGen.Biome.SWAMP:
-			continue
-		reeds += 1
-		var near_water := false
-		for dy in range(-4, 5):
-			for dx in range(-4, 5):
-				near_water = near_water or not MapGen.is_land(r, p0, c + Vector2i(dx, dy))
-		reeds_wet = reeds_wet and near_water
-	_check(reeds > 4 and reeds_wet, "swamp has reeds and every one stands near water (%d)" % reeds)
-	_check(_has_prefix(sw_d, "mushroom") and _has_prefix(sw_d, "foxglove"), "swamp has mushrooms and foxglove %s" % [sw_d.keys()])
-	_check(_has_prefix(deco_by.get(MapGen.Biome.SNOWY, {}), "snow_stump"), "snowy has snow stumps")
-	_check(_has_prefix(deco_by.get(MapGen.Biome.PLAINS, {}), "flower_") and _has_prefix(deco_by.get(MapGen.Biome.PLAINS, {}), "tuft_green"), "plains has flowers and green tufts")
-	_check(_has_prefix(deco_by.get(MapGen.Biome.AUTUMN, {}), "bush_yellow") or _has_prefix(deco_by.get(MapGen.Biome.AUTUMN, {}), "bush_orange"), "autumn has yellow / orange bushes")
-	_check(_has_prefix(deco_by.get(MapGen.Biome.ROCKY, {}), "deadbush") and mix_rocks > 30, "rocky has dead shrubs and rock groups you can mine (%d rocks over 5 seeds)" % mix_rocks)
-	var taiga_d: Dictionary = deco_by.get(MapGen.Biome.TAIGA, {})
-	_check(_has_prefix(taiga_d, "fern_green"), "taiga has ferns")
+	var flowers := 0   # the live island draws only the Pixel Plains sets (pp_flowers / pp_tufts)
+	var tufts := 0
+	for d in r.deco:
+		flowers += 1 if style.deco[d["set"]].id == &"pp_flowers" else 0
+		tufts += 1 if style.deco[d["set"]].id == &"pp_tufts" else 0
+	_check(flowers > 0 and tufts > 0, "the island has Pixel Plains flowers and tufts (%d, %d)" % [flowers, tufts])
+	_check(mix_rocks > 30, "rocky biome has rock groups you can mine (%d rocks over 5 seeds)" % mix_rocks)
 	var stone := 0
 	var dirt := 0
 	for i in r.land.size():
@@ -226,7 +142,7 @@ func _init() -> void:
 	rocky_bd.set_block_signals(false)
 	var out_f := _outside(fr_b, p0, MapGen.Biome.FOREST, 9)
 	var out_r := _outside(ro_b, p0, MapGen.Biome.ROCKY, 9)
-	_check(base_f.size() > 300 and out_f == base_f and r.obstacles.size() != fr_b.obstacles.size(), "forest tree_tries -1: trees, rocks and deco farther than 9 cells from forest are identical (%d things)" % base_f.size())
+	_check(base_f.size() > 150 and out_f == base_f and r.obstacles.size() != fr_b.obstacles.size(), "forest tree_tries -1: trees, rocks and deco farther than 9 cells from forest are identical (%d things)" % base_f.size())
 	_check(base_r.size() > 300 and out_r == base_r and r.obstacles.size() != ro_b.obstacles.size(), "rocky rock_per_block x0.5: everything farther than 9 cells from rocky land is identical (%d things)" % base_r.size())
 	var forest_bd: BiomeData = style.biomes[MapGen.Biome.FOREST]
 	var rest_a := a_rest(MapGen.generate(style, p0, 11), style)
@@ -327,7 +243,7 @@ func _init() -> void:
 		for o in rb.obstacles:
 			if style.resource_nodes[o["node"]].id == &"copper_rock" and (o["pos"] as Vector2).distance_to(big.player_spawn) <= big.copper_near_home_cells * big.cell:
 				near_copper += 1
-			elif String(style.resource_nodes[o["node"]].id).begins_with("tree_") and rb.biome[MapGen.cell_index(big, Vector2i(o["pos"] / big.cell))] == MapGen.Biome.PLAINS:
+			elif String(style.resource_nodes[o["node"]].id).begins_with("treepp_") and rb.biome[MapGen.cell_index(big, Vector2i(o["pos"] / big.cell))] == MapGen.Biome.PLAINS:
 				plains_trees += 1
 		print("  seed %d: %d copper rocks within %d cells of home" % [sd, near_copper, int(big.copper_near_home_cells)])
 		copper_ok_all = copper_ok_all and near_copper > 0
