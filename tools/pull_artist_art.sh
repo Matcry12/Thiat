@@ -3,9 +3,9 @@
 # Setup + how to move art into the game: assets/source/artist_inbox/README.md
 set -euo pipefail
 
-REMOTE="artist"          # rclone remote name (rclone config)
+REMOTE="matcry"          # rclone remote name (rclone config)
 DRIVE_FOLDER="GameDev (NAT - PNH)" # her folder on Drive
-SHARED_WITH_ME=1      # 1 = folder is in "Shared with me", 0 = in My Drive
+SHARED_WITH_ME=0      # 1 = folder is in "Shared with me", 0 = in My Drive
 
 cd "$(dirname "$0")/.."
 command -v rclone >/dev/null || { echo "rclone missing: sudo apt install rclone"; exit 1; }
