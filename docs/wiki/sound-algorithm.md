@@ -1,5 +1,7 @@
 # Sound algorithm
 
+**Status:** Current
+
 How the game picks which sound to play. Status: **built** (SoundBoard, `data/sounds/*.tres`, `tests/test_sound_system.gd`). Decision record still to write.
 Built from how Minecraft and Terraria do it. Reuse it for every new node, station, item, weapon, tool, enemy.
 

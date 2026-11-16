@@ -1,5 +1,7 @@
 # Big world plan (draft, not built)
 
+**Status:** Done plan (built in decisions 0026, 0037, 0038), kept for history
+
 Goal (user): a world like Minecraft — biomes blend naturally, it feels big and worth exploring, with rivers, lakes and more.
 Research: [worldgen-biomes-water-research.md](../reference/worldgen-biomes-water-research.md),
 [worldgen-vegetation-research.md](../reference/worldgen-vegetation-research.md). Demo: `tools/asset_viewer/world_preview.py`

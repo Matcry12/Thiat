@@ -1,5 +1,7 @@
 # Ground tiles — Pixel Crawler, tagged
 
+**Status:** Outdated: tags Pixel Crawler ground sheets, but the map now uses Pixel Plains, see [../../assets/game/map/pixel_plains/README.md](../../assets/game/map/pixel_plains/README.md)
+
 All tiles are **16x16 px**. Sheets live in
 `assets/source/third_party/pixel_crawler/Environment/Tilesets/`. Pictures below are 3x, boxes are rough
 groups (a guide, not exact tile coordinates).

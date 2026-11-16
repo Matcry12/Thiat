@@ -1,5 +1,7 @@
 # 0058 - Weapon swap is free and instant, no weapon limit
 
+**Status:** Active
+
 **Date:** 2026-11-05
 **Supersedes:** the weapon parts of [0003](0003-loadout-and-swapping.md) (max 2 weapons, 0.6 s cast, 5 s cooldown),
 "The swap" in [0016](0016-weapons-are-scenes-and-swap-is-gated.md), the max-weapons, select and wheel-wait rules of [0029](0029-inventory.md).

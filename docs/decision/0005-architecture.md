@@ -1,5 +1,7 @@
 # 0005 — Prototype architecture: data-driven, composed, swappable brain
 
+**Status:** Active
+
 **Date:** 2026-09-22
 
 ## Context

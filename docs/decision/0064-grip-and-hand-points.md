@@ -1,5 +1,7 @@
 # 0064 - Grip and Hand points (draggable markers)
 
+**Status:** Active
+
 ## Context
 Weapon pictures were placed by hand against a see-through "EditorPlayer" guide, and the hand point was an unnamed number
 (`WeaponVisual.position` 0,-9, later `BodyRig.hand_offset`). Moving where a weapon is held meant moving the picture.

@@ -1,5 +1,7 @@
 # 0050 - The sword's hit area follows the swing animation
 
+**Status:** Partly superseded by [0055](0055-no-bare-hand-attack-and-move-facing.md) (side-only tool chop), [0061](0061-weapon-hit-area-from-picture.md) (hit size from picture)
+
 ## Context
 0049 made the sword picture move on curves (grip path, wrist lag, alternate side, `aim_bias_deg`, `screen_offset`) but kept the hit area on the old
 fixed-pivot 120 deg wedge. The player saw one thing and was hit-tested against another: a dummy the blade passed through could be missed, one far from the blade could be hit.

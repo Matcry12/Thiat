@@ -1,5 +1,7 @@
 # How to change the numbers yourself
 
+**Status:** Current
+
 Two ways. Start with **Way 1** — it is faster and you see the result immediately.
 
 ---

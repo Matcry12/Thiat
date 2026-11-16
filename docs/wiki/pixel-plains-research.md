@@ -1,5 +1,7 @@
 # Pixel Plains — research notes
 
+**Status:** Current
+
 Pack by SnowHex (credit required, no redistribution). Findings from the free tiles and two store GIFs.
 
 ## Ground tiles (16 px)

@@ -1,5 +1,7 @@
 # 0035 — Dirt needs a reason
 
+**Status:** Active
+
 Changes the random forest dirt patches of [0033](0033-map-visuals.md). Map art stays Pixel Crawler only ([0034](0034-map-art-pixel-crawler-only.md)).
 
 ## Context

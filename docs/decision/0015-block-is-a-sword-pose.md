@@ -1,5 +1,7 @@
 # 0015 — Blocking is shown by a sword pose; the shield becomes a weapon later
 
+**Status:** Active
+
 **Date:** 2026-09-28
 **Revises:** the *visual* of [0013](0013-parry-and-block-on-one-key.md) and
 [0014](0014-shield-is-a-bar-that-breaks.md). The mechanics are untouched: tap F to parry, hold F to

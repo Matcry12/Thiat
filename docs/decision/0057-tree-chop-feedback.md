@@ -1,5 +1,7 @@
 # 0057 - Tree chop feedback (sway, debris, pop, real wood sounds)
 
+**Status:** Active
+
 ## Context
 Chopping a tree gave almost no feedback: a 3 px slide, a white flash, 5 sparks and the sword sound. The user compared variants in a demo video (`tools/demo/chop_fx/`) and picked A1 + D2 + B2 + C2, no flash, natural sound.
 

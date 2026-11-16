@@ -1,5 +1,7 @@
 # 0067 - Day / night cycle
 
+**Status:** Active
+
 ## Context
 v1 adds survival (hunger, building, night monsters). All of them need a time of day. Order agreed: day/night first.
 

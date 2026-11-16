@@ -1,5 +1,7 @@
 # 0033 - Map visuals: baked ground, real shore, paths (looks only)
 
+**Status:** Partly superseded by [0034](0034-map-art-pixel-crawler-only.md) (grass_sv map style), [0035](0035-dirt-needs-a-reason.md) (random dirt patches), [0069](0069-ground-tile-set.md) (ground baker, edges, foam / water)
+
 ## Context
 The island (0026) looked flat: square cell borders, big square dirt blocks, flat water, orange trees in the
 green forest. The pack has no shore tiles and no tiles for blobs, only bumpy "hole" frames for rectangles.

@@ -1,5 +1,7 @@
 # 0042 — Death drops instead of the death bag (W6)
 
+**Status:** Partly superseded by [0058](0058-free-weapon-swap-no-weapon-limit.md) (no weapon limit, 3rd weapon rule gone)
+
 Supersedes the bag part of [0039](0039-death-respawn.md). Everything else in 0039 stands (respawn at home, boss reset, deaths counter, no end screen).
 
 ## Context

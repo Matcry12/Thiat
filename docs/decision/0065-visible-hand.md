@@ -1,5 +1,7 @@
 # 0065 - The player has a visible hand
 
+**Status:** Active
+
 Supersedes the "no hands" part of [0048](0048-no-hands-held-item-icon.md). `HeldItemVisual` and bare hands gathering nothing stay.
 
 ## Context

@@ -1,5 +1,7 @@
 # 0040 — Game frame: title, pause, settings (W8)
 
+**Status:** Partly superseded by [0043](0043-ui-island-workshop.md) (placeholder look)
+
 Implements [v1-design §9](../wiki/v1-design.md) (save / load is W9, win screen is W7).
 
 ## Context

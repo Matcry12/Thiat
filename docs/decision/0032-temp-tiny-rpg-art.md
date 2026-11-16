@@ -1,5 +1,7 @@
 # 0032 - Temporary art: Tiny RPG Soldier (player) and Orc (boss)
 
+**Status:** Superseded by [0054](0054-remove-tiny-rpg-art.md)
+
 **Date:** 2026-10-16 - **Builds on** [0028](0028-3d-rendered-characters.md) (BodyRig) and [0005](0005-architecture.md).
 
 ## Context

@@ -1,5 +1,7 @@
 # 0048 - No hands, held item icon, bare hands gather nothing
 
+**Status:** Partly superseded by [0065](0065-visible-hand.md) (no hands)
+
 ## Context
 The player drew two round placeholder hands (`HandsVisual`) with relax / sway / guard / bow-draw poses. They looked wrong
 next to the pixel body and held nothing for materials or placeables. Fists could also fell trees, so the axe felt optional.

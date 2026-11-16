@@ -1,5 +1,7 @@
 # BossFight — Design Pillars
 
+**Status:** Current
+
 *Design only. What v0 actually builds is [prototype-v0.md](prototype-v0.md);
 implementation patterns are in [docs/reference/godot/](../reference/godot/).*
 

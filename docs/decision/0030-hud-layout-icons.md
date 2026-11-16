@@ -1,5 +1,7 @@
 # 0030 — HUD layout and icons instead of words
 
+**Status:** Partly superseded by [0043](0043-ui-island-workshop.md) (no-words HUD rule)
+
 **Date:** 2026-10-09 · Supersedes the placement in [0024](0024-hud-top-right.md).
 
 ## Context

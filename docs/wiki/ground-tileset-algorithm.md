@@ -1,5 +1,7 @@
 # Ground tile-set algorithm
 
+**Status:** Done plan (built in decision 0069, ground tile set), kept for history
+
 How every ground pixel on screen comes from a picture you can redraw. Today the borders, the beach foam and the water are drawn in code
 (`PixelPlainsBaker._compose`, `terrain_anim.gdshader`, `terrain_water_flat.gdshader`), so those pixels are in no file. Decisions: [0046](../decision/0046-ground-levels-and-borders.md),
 [0047](../decision/0047-ground-all-flat.md). Code: `scripts/map/pixel_plains_baker.gd`. Rule: CLAUDE.md 5 (build for replacement).

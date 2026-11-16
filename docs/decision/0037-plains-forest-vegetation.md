@@ -1,6 +1,8 @@
 # 0037 — Plains + Forest biomes, Minecraft-style vegetation placement
 
-Builds on [0026](0026-island-map.md) (island areas), [0034](0034-map-art-pixel-crawler-only.md) (Pixel Crawler only),
+**Status:** Active
+
+Builds on [0026](0026-island-generator.md) (island areas), [0034](0034-map-art-pixel-crawler-only.md) (Pixel Crawler only),
 [0035](0035-dirt-needs-a-reason.md). Rules: [vegetation-rules.md](../wiki/vegetation-rules.md). Research:
 [worldgen-vegetation-research.md](../reference/worldgen-vegetation-research.md).
 

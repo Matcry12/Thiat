@@ -1,5 +1,7 @@
 # Credits
 
+**Status:** Current
+
 There is no credits screen in the game yet. When one exists, show these lines in it.
 
 | Art | Author | License | Where it is used |

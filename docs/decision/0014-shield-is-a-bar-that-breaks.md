@@ -1,5 +1,7 @@
 # 0014 — The shield is a bar that breaks, and damage is a shared pattern
 
+**Status:** Partly superseded by [0015](0015-block-is-a-sword-pose.md) (block visual is a sword pose)
+
 **Date:** 2026-09-28
 **Revises:** [0013](0013-parry-and-block-on-one-key.md) — block was "30% chip damage". It is now a
 depleting bar. Tap-to-parry / hold-to-block and the directional arc are unchanged.

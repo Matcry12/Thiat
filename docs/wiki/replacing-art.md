@@ -1,5 +1,7 @@
 # Replacing art — the 3 steps
 
+**Status:** Outdated: swaps a single Body Texture on the player Visual node, but bodies now use BodyRig frames, the player rig is `data/body_rigs/pixel_plains.tres`
+
 Everything you see in the game is a **picture file** (PNG). Nothing is drawn by code.
 So changing art = changing a file. No programming.
 

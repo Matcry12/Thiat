@@ -1,5 +1,7 @@
 # 0028 - Characters: 3D-rendered body, 2D hands and weapons
 
+**Status:** Partly superseded by [0054](0054-remove-tiny-rpg-art.md) (player body is Pixel Plains 2D frames)
+
 ## Context
 The user can draw, but not hundreds of frames. A character in 8 directions × many animations is about
 400 drawings, and every redesign starts over. No budget for paid AI art (PixelLab, Gemini).

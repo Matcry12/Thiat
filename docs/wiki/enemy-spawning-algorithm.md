@@ -1,5 +1,7 @@
 # Enemy spawning algorithm
 
+**Status:** Current
+
 How enemies appear in the world. Decision: [0053](../decision/0053-natural-enemy-spawning.md). Code: `scripts/enemies/enemy_spawner.gd`.
 Built from how Minecraft and Terraria do it, not guessed. Reuse it for every new enemy (W10 guards, new biomes).
 

@@ -1,5 +1,7 @@
 # 0036 — Gathering follows Minecraft logic (on top of HP)
 
+**Status:** Active
+
 Builds on W2 gathering (HP per node, `gather_damage` per swing, `required_power`, `preferred_tool` + `tool_bonus`).
 
 ## Context

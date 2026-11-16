@@ -1,5 +1,7 @@
 # 0020 — A snapping swing sweeps the arc in one frame
 
+**Status:** Active
+
 **Date:** 2026-10-01
 
 Amends [0011](0011-hitbox-lives-on-the-weapon.md).

@@ -1,7 +1,8 @@
 # Prototype v0 — Combat Scratch Build
 
-**Status (2026-09-23):** docs + research complete. Godot 4.7 on PATH, git initialised, nothing built.
-Next: slice 1 (move, aim, sword arc, one dummy, F1 overlay) — *does swinging feel good?*
+**Status:** Done plan (v0 slices built, see v1-design), kept for history
+
+**Header (updated 2026-11-16):** the v0 slices are built. The v1 slice log (W1..W9) is in [v1-design.md](v1-design.md) §13. The rest of this page is the original v0 plan.
 
 **Goal:** one room, one player, one boss, combat that feels good. Nothing else.
 

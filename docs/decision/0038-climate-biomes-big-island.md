@@ -1,5 +1,7 @@
 # 0038 — Climate biomes on a 512x512 island, swimmable water
 
+**Status:** Active
+
 Extends [0037](0037-plains-forest-vegetation.md). Plan + sources: [world-gen-plan.md](../wiki/world-gen-plan.md),
 [worldgen-biomes-water-research.md](../reference/worldgen-biomes-water-research.md). Demo: `tools/asset_viewer/world_preview.py`.
 

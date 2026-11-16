@@ -1,5 +1,7 @@
 # 0031 - Crafting: instant recipes, placed stations, a timed furnace
 
+**Status:** Partly superseded by [0045](0045-ui-port-craft-book.md) (crafting window UI), [0043](0043-ui-island-workshop.md) (look)
+
 **Date:** 2026-10-10 - **Slice:** W4 - **Supersedes** the "copper ore -> copper bar (instant, Terraria-style)" line in [v1-design](../wiki/v1-design.md) section 5 and the "Minecraft-style timed smelting" line in section 10.
 
 ## Context

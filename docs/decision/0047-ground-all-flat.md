@@ -1,5 +1,7 @@
 # 0047 — Ground is all flat (supersedes the level part of 0046)
 
+**Status:** Partly superseded by [0069](0069-ground-tile-set.md) (level exports and steps deleted, only all_flat left)
+
 ## Context
 0046 gave every cell a level: different levels = step border (outline + shadow), same level = flat border.
 On the real map (seed 11) the steps looked chaotic: dark outlines and shadows everywhere, edges that read as glitches.

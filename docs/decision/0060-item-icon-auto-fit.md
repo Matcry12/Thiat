@@ -1,5 +1,7 @@
 # 0060 Item icons are centred automatically
 
+**Status:** Active
+
 ## Context
 Item PNGs were drawn whole (transparent margins too) into the slot box, so a sword drawn off-centre in its file sat off-centre in the slot. Every new PNG would need hand tuning.
 

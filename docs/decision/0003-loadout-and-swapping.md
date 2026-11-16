@@ -1,6 +1,6 @@
 # 0003 — Loadout, hotbar and weapon swapping
 
-> **Weapon parts superseded by [0058](0058-free-weapon-swap-no-weapon-limit.md):** no weapon limit, weapon swap is instant. Armor, potion and bag rules still stand.
+**Status:** Partly superseded by [0058](0058-free-weapon-swap-no-weapon-limit.md) (weapon limit, swap cost)
 
 **Date:** 2026-09-22
 

@@ -1,5 +1,7 @@
 # 0054 - Remove the Tiny RPG art
 
+**Status:** Active
+
 **Date:** 2026-11-02 - **Supersedes** [0032](0032-temp-tiny-rpg-art.md).
 
 ## Context

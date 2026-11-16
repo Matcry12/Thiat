@@ -1,5 +1,7 @@
 # 0012 — Weapon behaviours: a few motions, many weapons
 
+**Status:** Active
+
 **Date:** 2026-09-24
 
 ## Context

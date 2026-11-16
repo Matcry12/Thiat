@@ -1,5 +1,7 @@
 # 0046 — Ground levels: step vs flat borders, made from the pack's edge shapes
 
+**Status:** Superseded by [0047](0047-ground-all-flat.md) (ground levels and step borders), [0069](0069-ground-tile-set.md) (borders, bank, foam)
+
 ## Context
 Pixel Plains has edge pieces for only two pairs (light grass on dirt, dark on light grass). New grounds (sand, snow, water)
 were first made by recolouring dirt, which put every one of them BELOW grass: snow looked like holes cut in the grass, and

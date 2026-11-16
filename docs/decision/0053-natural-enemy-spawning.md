@@ -1,5 +1,7 @@
 # 0053 — Natural enemy spawning: biome tables, slime spots, chance per second
 
+**Status:** Active
+
 Supersedes the spawn part of [0052](0052-enemies-slime.md) (fixed timer, flat biome list). The enemy setup itself stands.
 
 ## Context

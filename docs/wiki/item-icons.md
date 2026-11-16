@@ -1,5 +1,7 @@
 # Item icons (temporary art + template)
 
+**Status:** Current
+
 Status (2026-10-25): user "acceptable". These are the **temporary** bag icons in the game now, and the
 **template** for training an AI icon model later.
 

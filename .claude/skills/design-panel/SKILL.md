@@ -35,5 +35,5 @@ Keep each member's full text out of the reply; quote a line only when it decides
 
 ## 4. After the user decides
 - Write a decision record in `docs/decision/NNNN-<slug>.md` if it changes how the game works.
-- Ideas the user parks go to `docs/wiki/ideas.md`.
+- Ideas the user parks go to `docs/wiki/backlog.md`.
 - Then plan the slice (`build-slice` skill).

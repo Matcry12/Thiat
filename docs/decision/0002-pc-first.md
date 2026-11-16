@@ -1,5 +1,7 @@
 # 0002 — PC first, mobile deferred
 
+**Status:** Active
+
 **Date:** 2026-09-22
 
 ## Context

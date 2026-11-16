@@ -1,5 +1,7 @@
 # 0023 — Hit feel: effects listen, global hit-stop
 
+**Status:** Active
+
 ## Context
 Hits make almost no impact on screen (the boss flashes for 0.05 s; nothing when the player is hit). The user asked for
 research before building. Research: [hit-feel-research.md](../reference/game-feel/hit-feel-research.md),

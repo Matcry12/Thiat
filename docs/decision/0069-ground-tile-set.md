@@ -1,5 +1,7 @@
 # 0069 - Ground tile set: every border, foam and water pixel is in a picture
 
+**Status:** Active
+
 ## Context
 Borders between grounds, the beach foam and the water were drawn by code (`PixelPlainsBaker._compose`, two shaders, ~30 colour / number exports). Those pixels were in no file, so an artist could not redraw them (CLAUDE.md rule 5). Plan and sources: `docs/wiki/ground-tileset-algorithm.md`.
 

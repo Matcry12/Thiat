@@ -1,5 +1,7 @@
 # W1 Big Island Implementation Plan
 
+**Status:** Done plan (built as slice W1 / W2, see [v1-design.md §13](../../wiki/v1-design.md)), kept for history
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Grow the arena generator into one big seeded island: water edge, three areas (forest near home,

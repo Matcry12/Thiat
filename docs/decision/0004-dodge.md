@@ -1,5 +1,7 @@
 # 0004 — Dodge is baseline, cooldown-gated
 
+**Status:** Active
+
 **Date:** 2026-09-22
 
 ## Context

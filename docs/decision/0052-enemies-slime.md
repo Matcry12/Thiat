@@ -1,8 +1,10 @@
 # 0052 — World enemies: one enemy setup, slimes first (W5)
 
+**Status:** Partly superseded by [0053](0053-natural-enemy-spawning.md) (spawn timer and biome list)
+
 ## Context
 The island has nothing to fight; walking has no risk and no reward. W7 (summon item, healing potion) needs gel.
-[v1-design §6](../wiki/v1-design.md) and [survival-ideas §2](../wiki/survival-ideas.md) proposed the rules.
+[v1-design §6](../wiki/v1-design.md) and [survival ideas (now backlog)](../wiki/backlog.md) proposed the rules.
 
 ## Decision
 - **One enemy setup.** `Enemy` scene = CharacterBody2D + Health + Hurtbox + contact Hitbox + Knockback + `Visual` slot + a brain.

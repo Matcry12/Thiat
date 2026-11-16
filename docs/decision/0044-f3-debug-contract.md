@@ -1,5 +1,7 @@
 # 0044 — F3 dock + "debug" group contract (supersedes the F3 layout parts of rule 7 / prototype-v0)
 
+**Status:** Active
+
 ## Context
 The F3 panel was one 1147-line file. It held ~40 buttons in a flat wall, 100+ sections in a 340 px
 scroll list with no search, and a status wall that covered half the game. Vector2/Color could not be

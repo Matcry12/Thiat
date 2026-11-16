@@ -1,5 +1,7 @@
 # 3D character pipeline (player body)
 
+**Status:** Outdated: the player now uses `data/body_rigs/pixel_plains.tres` (Pixel Plains 2D frames, 0054); 3D frames retired, blocky rig is dev-only (`data/dev/`)
+
 > **Round 7 update:** the shipped body is now the chunky **blocky 18 px** one (`assets/dev/characters/player/blocky/`, `data/dev/body_rigs/blocky.tres`). The older sections below describe the soft 3D body, which is still loadable (see "Swap characters").
 
 The player's BODY is a 3D model built in code, rendered to small pixel sheets. Hands and weapon stay 2D

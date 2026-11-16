@@ -1,5 +1,7 @@
 # BossFight v1 — design
 
+**Status:** Current
+
 *Agreed with the user 2026-10-05 (brainstorm, 8 questions). Decision: [0025](../decision/0025-v1-open-world.md).
 v0 (the combat scratch build) is [prototype-v0.md](prototype-v0.md). All numbers are starting values — tune in F3.*
 

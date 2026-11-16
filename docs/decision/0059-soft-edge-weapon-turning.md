@@ -1,5 +1,7 @@
 # 0059 - Weapon pictures turn with soft edges
 
+**Status:** Active
+
 ## Context
 Weapon pictures turn to any aim angle. With nearest sampling at 2 screen pixels per art pixel, the edges turned into saw teeth and the drawing seemed to change at each angle. The user compared turning methods on their own sword (`tools/art_tests/weapon_look/methods.png`). They do not want to redraw, shrink or edit their art. Short redraws, fixed poses and a closer camera were all shown and refused.
 

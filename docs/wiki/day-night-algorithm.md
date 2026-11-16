@@ -1,6 +1,8 @@
 # Day / night algorithm
 
-How time of day works. Decision: [0067](../decision/0067-day-night-cycle.md). Code (planned): `scripts/world/day_clock.gd` (the clock), `scripts/world/day_tint.gd` (the screen colour), `scripts/world/light_source.gd` (one light).
+**Status:** Current
+
+How time of day works. Decision: [0067](../decision/0067-day-night-cycle.md). Code: `scripts/world/day_clock.gd` (the clock), `scripts/world/day_tint.gd` (the screen colour), `scripts/world/light_source.gd` (one light).
 Built from how Minecraft, Terraria and Don't Starve do it, not guessed.
 
 ## Sources

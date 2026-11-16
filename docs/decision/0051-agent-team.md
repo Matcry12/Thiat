@@ -1,5 +1,7 @@
 # 0051 - Our own agent team: design panel, parallel builders, judge
 
+**Status:** Active
+
 ## Context
 We looked at Claude-Code-Game-Studios (MIT, 49 agents, 72 skills). Its agents fit a big studio
 (GDD for every system, sprints, director sign-offs) and its skills need its own scripts and config,

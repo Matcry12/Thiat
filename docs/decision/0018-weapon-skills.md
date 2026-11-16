@@ -1,5 +1,7 @@
 # 0018 — Weapon skills (the E key)
 
+**Status:** Active
+
 ## Context
 Slice 3b asks: does each weapon's E skill give a clear reason to swap to it?
 Sword and bow each need one skill. More weapons (and their skills) come later.

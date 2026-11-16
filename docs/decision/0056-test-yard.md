@@ -1,5 +1,7 @@
 # 0056 - Test yard (dev-only test map)
 
+**Status:** Active
+
 ## Context
 Testing one feature (e.g. tree chop effects) meant generating and walking the 512x512 island to find the right tree, rock or station.
 

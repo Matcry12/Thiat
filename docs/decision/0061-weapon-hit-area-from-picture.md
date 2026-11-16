@@ -1,5 +1,7 @@
 # 0061 - Weapon hit area from the picture
 
+**Status:** Active
+
 ## Context
 Each melee model scene had a hand-typed `RectangleShape2D` (wooden sword 56 x 9.56, sword1 50 x 9.56) and a hand-set `Tip` marker. A longer or new sword picture did not change what the sword hits (0011, 0028, 0050).
 

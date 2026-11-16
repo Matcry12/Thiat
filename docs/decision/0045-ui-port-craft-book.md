@@ -1,5 +1,7 @@
 # 0045 — Island Workshop UI in the game; crafting book with a Craft button (supersedes the UI part of 0031)
 
+**Status:** Active
+
 ## Context
 The Island Workshop style (0043) existed only as a web mockup. It was ported to Godot: our pixel
 fonts, baked PNG parts, title / pause / settings, HUD, bag + crafting book, tooltip and the F3 dock.

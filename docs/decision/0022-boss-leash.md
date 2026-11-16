@@ -1,5 +1,7 @@
 # 0022 — Boss aggro and leash (replaces the enrage rule)
 
+**Status:** Active
+
 ## Context
 [0019](0019-boss-v0.md) had an enrage rule: the player stays outside the `FightZone` for more than
 3 s and the boss charges at 2x speed until they come back. The map is now 2x the screen

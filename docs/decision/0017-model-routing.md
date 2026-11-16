@@ -1,5 +1,7 @@
 # 0017 — Which model does which job
 
+**Status:** Active
+
 ## Context
 
 Opus 5.5 and Sonnet 5.5 arrived. We started a lab evaluation (16 runs: build, judge, debug,

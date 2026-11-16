@@ -1,5 +1,7 @@
 # 0063 - Asset folders by role
 
+**Status:** Active
+
 ## Context
 `assets/` had 10 top folders mixed by topic. Nothing said which files ship, which are for demos, which are downloaded packs and which nobody uses. `serene_village` was imported by Godot although no code used it. About 30 unused files sat beside used ones. Some code (`PixelArt`) held a path to F3-only art.
 

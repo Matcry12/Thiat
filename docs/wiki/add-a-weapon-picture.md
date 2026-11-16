@@ -1,5 +1,7 @@
 # Add a weapon picture
 
+**Status:** Current
+
 ## Fast way (one command)
 
 ```

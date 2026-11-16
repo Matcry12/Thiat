@@ -1,5 +1,7 @@
 # 0027 - Gathering with bare hands (W2)
 
+**Status:** Active
+
 ## Context
 v1 needs trees, rocks and copper you gather ([0025](0025-v1-open-world.md)). The player has no tool yet
 (tools come in W3/W4), but W2 must already be playable: punch a tree, pick up wood.

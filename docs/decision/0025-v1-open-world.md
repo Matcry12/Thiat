@@ -1,6 +1,6 @@
 # 0025 — v1 is an open-world prepare-then-fight game
 
-**Status:** accepted (2026-10-05)
+**Status:** Active
 
 ## Context
 

@@ -1,5 +1,7 @@
 # Learning Godot to build with AI (not blind coding)
 
+**Status:** Personal notes, not project rules
+
 **Who this is for:** you, new to Godot, building BossFight together with an AI.
 **Goal:** you do not need to *write* every line. You need to **read** what the AI wrote,
 **judge** if the idea is right, and **test** it. This file tells you what to learn for that,

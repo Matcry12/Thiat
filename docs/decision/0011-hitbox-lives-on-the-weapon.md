@@ -1,5 +1,7 @@
 # 0011 — The hit area lives on the weapon, not in numbers
 
+**Status:** Partly superseded by [0020](0020-snap-swing-sweeps-the-arc.md) (snapping swing sweeps arc), [0061](0061-weapon-hit-area-from-picture.md) (hit size from picture)
+
 **Date:** 2026-09-24
 
 ## Context

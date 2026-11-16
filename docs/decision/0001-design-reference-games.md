@@ -1,5 +1,7 @@
 # 0001 — Reference games for combat design
 
+**Status:** Active
+
 **Date:** 2026-09-22
 
 ## Context

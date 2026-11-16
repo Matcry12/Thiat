@@ -1,5 +1,7 @@
 # 0043 — UI style "Island Workshop" (supersedes the look parts of 0024/0030, placeholder look of 0029/0031/0040)
 
+**Status:** Active
+
 ## Context
 The UI was placeholder: dark slate boxes, a smooth system font, bars without frames. It did not fit the
 Pixel Crawler map. The user tried two directions (old tome, then storybook) and rejected both. They then

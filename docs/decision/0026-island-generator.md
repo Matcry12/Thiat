@@ -1,5 +1,7 @@
 # 0026 - Island generator (W1)
 
+**Status:** Active
+
 ## Context
 v1 needs one big island (200 x 120 cells, 6400 x 3840 px) where the player walks from home to the
 boss ([0025](0025-v1-open-world.md)). The old map was a small flat field with rocks.

@@ -1,6 +1,6 @@
 # 0039 — Death and respawn (W6)
 
-> The death bag below was replaced by loose death drops in [0042](0042-death-drops.md).
+**Status:** Partly superseded by [0042](0042-death-drops.md) (death bag)
 
 Implements [v1-design §8](../wiki/v1-design.md). Replaces "player dies -> end screen + R" from v0.
 

@@ -1,5 +1,7 @@
 # 0066 - Sound comes from data: one SoundSet per thing, one SoundBoard
 
+**Status:** Active
+
 Algorithm: [sound-algorithm.md](../wiki/sound-algorithm.md) (Minecraft `SoundType`, Terraria `HitSound` / `UseSound`).
 
 ## Context

@@ -1,5 +1,7 @@
 # 0049 - Natural sword swing (grip path, wrist, afterimages, alternating side)
 
+**Status:** Partly superseded by [0050](0050-hitbox-follows-swing.md) (swing is visual only)
+
 ## Context
 The sword turned on a fixed pivot and jumped to the end of the arc in one frame, with a crescent slash drawn on top. It read
 as a clock hand, not an arm. The approved look (`tools/art_tests/swing_styles/render_natural.py`, "B + arm + wrist") moves the hand on curves,

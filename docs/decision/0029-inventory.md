@@ -1,6 +1,6 @@
 # 0029 — Inventory: slots, hotbar selection, tools
 
-> **Max 2 weapons, the swap cost and the wheel wait superseded by [0058](0058-free-weapon-swap-no-weapon-limit.md).** The rest still stands.
+**Status:** Partly superseded by [0058](0058-free-weapon-swap-no-weapon-limit.md) (weapon limit, swap, wheel), [0031](0031-crafting.md) (start kit), [0043](0043-ui-island-workshop.md) (look)
 
 **Date:** 2026-10-09 · **Slice:** W3
 

@@ -1,5 +1,7 @@
 # 0010 — Placeholder art is real sprite files, not code drawing (the template)
 
+**Status:** Active
+
 **Date:** 2026-09-23
 
 ## Context

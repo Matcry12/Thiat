@@ -1,6 +1,6 @@
-> **Superseded in part by [0030](0030-hud-layout-icons.md):** the HUD moved (hotbar top-left, health bottom-left) and shows no words.
-
 # 0024 — HUD top-right: life bar and hotbar (Terraria style)
+
+**Status:** Partly superseded by [0030](0030-hud-layout-icons.md) (HUD placement), [0043](0043-ui-island-workshop.md) (HUD look)
 
 ## Context
 The HUD was a bottom-left stack of text and a plain bar. The user asked for a Terraria-like life bar and item

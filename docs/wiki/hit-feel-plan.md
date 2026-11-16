@@ -1,5 +1,7 @@
 # Hit feel plan
 
+**Status:** Done plan (built in HitFx slices, decisions 0057 and later), kept for history
+
 *Design only. Nothing is built yet. Research and sources: [hit-feel-research.md](../reference/game-feel/hit-feel-research.md).*
 
 **Goal:** when the sword or an arrow hits, the player should *feel* it. "Good, smooth, satisfying."

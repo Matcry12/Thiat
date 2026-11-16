@@ -1,5 +1,7 @@
 # Vegetation rules (built, per biome)
 
+**Status:** Current
+
 Since 0038 step 4 every biome grows its own mix. **All numbers live in `BiomeData`** (`data/biomes/<biome>.tres`, script
 `scripts/map/biome_data.gd`); F3 shows them under `Biome <label>`, grouped `[ Trees ]` `[ Rocks ]` `[ Bushes ]` `[ Flowers ]`
 `[ Mushrooms and tufts ]` `[ Water edge and snow ]` `[ Ground mix ]`, and a slider rebuilds the map when you let go.

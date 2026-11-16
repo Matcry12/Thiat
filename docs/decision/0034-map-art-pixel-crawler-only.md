@@ -1,5 +1,7 @@
 # 0034 — Map art: Pixel Crawler only
 
+**Status:** Superseded: map art is now Pixel Plains ([0046](0046-ground-levels-and-borders.md), [0069](0069-ground-tile-set.md)); no single record covers the switch
+
 Supersedes the `grass_sv.tres` option in [0033](0033-map-visuals.md).
 
 ## Context

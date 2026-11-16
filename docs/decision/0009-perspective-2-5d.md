@@ -1,5 +1,7 @@
 # 0009 — Perspective is 2.5D top-down (Soul Knight), not flat overhead
 
+**Status:** Active
+
 **Date:** 2026-09-23
 
 ## Context
