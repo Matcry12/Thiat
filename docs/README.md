@@ -18,6 +18,7 @@ Start at the root [README.md](../README.md) and [AGENTS.md](../AGENTS.md).
 |---|---|---|
 | [3d-character-pipeline](wiki/3d-character-pipeline.md) | 3D character pipeline (player body) | Outdated: the player now uses `data/body_rigs/pixel_plains.tres` (Pixel Plains 2D frames, 0054); 3D frames retired, blocky rig is dev-only (`data/dev/`) |
 | [add-a-weapon-picture](wiki/add-a-weapon-picture.md) | Add a weapon picture | Current |
+| [artist-art-status](wiki/artist-art-status.md) | Artist art - what we have, where it goes | Current |
 | [backlog](wiki/backlog.md) | Backlog | Backlog |
 | [credits](wiki/credits.md) | Credits | Current |
 | [day-night-algorithm](wiki/day-night-algorithm.md) | Day / night algorithm | Current |
