@@ -11,6 +11,8 @@ where a rule says "another model judges", ask a different model or a person to r
 Section numbers match the old `CLAUDE.md`, so references like "CLAUDE.md §5" in code comments
 and decisions point here. `CLAUDE.md` now holds only Claude-specific setup (§1, agent routing).
 
+Before writing code, read §9 (how to write code: think first, keep it simple, change only what you must).
+
 ## 0. Hard rules that tools enforce for Claude (follow them by hand)
 
 - Never create files in the repo root. Allowed there: `README.md`, `AGENTS.md`, `CLAUDE.md`,
@@ -187,3 +189,30 @@ resolved.
 - Combat logic lives in code (state machines, hitboxes), not in scattered signal connections inside `.tscn`.
 - Boss RL: observation/action spaces get documented in `docs/wiki/rl-spaces.md` when RL work starts
   (not yet written — v0's boss is hand-scripted).
+
+## 9. How to write code
+
+From [andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md),
+adapted. These rules work if diffs get smaller, fewer rewrites happen, and questions come before
+mistakes, not after. For a trivial task, use judgment.
+
+**Think before coding.** Do not guess and do not hide confusion.
+- Say your assumptions. If unsure, ask.
+- Two ways to read the request? Show both, do not pick one silently.
+- A simpler way exists? Say so. Push back when it is right to.
+
+**Simplicity first.** The least code that solves the problem.
+- No features, abstractions or error handling nobody asked for. 200 lines that could be 50: rewrite.
+- Two project rules are NOT "extra" and always apply: every feel number is an `@export` (§7), and
+  visuals / effects sit in their own node (§5). Those are requested, not speculative.
+
+**Surgical changes.** Touch only what the task needs.
+- Do not "improve" nearby code, comments or formatting. Match the existing style.
+- Unrelated dead code or mess: mention it (or add it to [project-status.md](docs/wiki/project-status.md)), do not fix it.
+- Remove only what YOUR change made unused. Every changed line traces back to the request.
+- Clean-up work from `project-status.md` §4 is its own task, done when asked, never on the side.
+
+**Goal first, then loop until checked.** Turn the task into a check you can run.
+- "Fix the bug" -> write a test that shows it, then make it pass. "Refactor X" -> tests green before and after.
+- Several steps: write a short plan, each step with its check: `1. <step> -> check: <test / command>`.
+- Checks run through `tools/run_tests.sh` (§8). Feel cannot be checked headless: say so (§8).
