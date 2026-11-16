@@ -4,7 +4,8 @@
 set -euo pipefail
 
 REMOTE="artist"          # rclone remote name (rclone config)
-DRIVE_FOLDER="CHANGE_ME" # her folder on Drive, e.g. "BossFight Art"
+DRIVE_FOLDER="GameDev (NAT - PNH)" # her folder on Drive
+SHARED_WITH_ME=1      # 1 = folder is in "Shared with me", 0 = in My Drive
 
 cd "$(dirname "$0")/.."
 command -v rclone >/dev/null || { echo "rclone missing: sudo apt install rclone"; exit 1; }
@@ -12,7 +13,8 @@ command -v rclone >/dev/null || { echo "rclone missing: sudo apt install rclone"
 
 # copy (not sync): never deletes local files. Skip Drive-only docs (Google Docs/Sheets).
 rclone copy "$REMOTE:$DRIVE_FOLDER" assets/source/artist_inbox \
-  --drive-skip-gdocs --exclude "/README.md" --progress "$@"
+  --drive-skip-gdocs --exclude "/README.md" --progress \
+  $( [ "$SHARED_WITH_ME" = 1 ] && echo --drive-shared-with-me ) "$@"
 
 echo "New / changed since last commit:"
 git status --short assets/source/artist_inbox
