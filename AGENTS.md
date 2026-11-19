@@ -62,6 +62,7 @@ create a proper one first, then place it. **Root stays clean** — no stray file
 - `docs/decision/` — decision records, `NNNN-<slug>.md`: Context / Decision / Why / Consequences. Write one whenever a choice changes how the project is built (the decision-detector hook reminds you).
 - `docs/reference/` — external material (PDFs, playbooks, specs).
 - `assets/` — only `game/` (ships), `dev/` (F3 / demos), `source/` (packs, originals; `.gdignore`), `retired/` (unused; `.gdignore`). New art: pick by role, unused files go to `retired/`, never delete ([assets/README.md](assets/README.md), 0063, `tests/test_asset_rules.gd`).
+- Media (png / mp4 / gif) in `docs/demo/` and `tools/art_tests/` is local only, not in git (`.gitignore`). One-off scripts live in `tools/retired/` (`.gdignore`).
 
 ## 5. Build for replacement, never for the placeholder
 
@@ -127,6 +128,7 @@ a change that adds an F3 row, F1 shape or debug button updates that page in the 
 3. **Draw the new shape in F1** if it has a hitbox, range or area.
 4. **Leave a way to trigger it on demand** where that is not trivial (a key to spawn the enemy, to
    force a boss phase, to refill health).
+5. **Debug hook pattern ([0070](docs/decision/0070-debug-hook-pattern.md)):** game code only exposes state (group `debug` + `debug_*` methods, `DebugFlags.shapes_on`); it never looks up a debug node by name or path.
 
 Test mode is dev-build only and never shipped, but it is never an afterthought either: the reason
 every number in the design docs says "starting value, tune" is that the panel is how they get
@@ -144,7 +146,7 @@ resolved.
 **Read before design or code work**
 - [docs/wiki/design-pillars.md](docs/wiki/design-pillars.md) — the combat/boss/item system.
 - [docs/wiki/prototype-v0.md](docs/wiki/prototype-v0.md) — v0 scope and architecture (done plan; slice log now in [v1-design.md](docs/wiki/v1-design.md) §13).
-- [docs/decision/](docs/decision/) — 0001..0069 (0068 unused). Settled; supersede with a new record, never ignore.
+- [docs/decision/](docs/decision/) — 0001..0070 (0068 unused). Settled; supersede with a new record, never ignore.
 - [docs/reference/godot/](docs/reference/godot/) — Godot 4 combat patterns, juice recipes, RL notes.
 - [docs/reference/godot/engine-versions/](docs/reference/godot/engine-versions/) — Godot 4.4–4.7 API changes (breaking, deprecated). Check before using an API that may be newer than 4.3.
 - UI work: [docs/design/DESIGN.md](docs/design/DESIGN.md) (style "Island Workshop", decision 0043). Apply it;

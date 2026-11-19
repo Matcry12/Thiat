@@ -30,7 +30,6 @@ Size: 27,600 lines of GDScript (314 files), 124 tests, 68 decision records, 25 w
 | `scripts/fx/` | 1,300 | Hit flash, sparks, hit-stop, shake, damage numbers |
 | `scripts/world/` | 1,100 | Pickups, trees / rocks, stations, day / night, lights |
 | `scripts/enemies/` | 900 | Enemy, spawner, slime brain |
-| `scripts/` root | 2,070 | 10 loose files: `player.gd`, `boss.gd`, `arena.gd`, `hud.gd`, menus, save |
 | small ones | | `weapons/`, `boss/`, `skills/`, `items/`, `audio/`, `settings/`, `brains/`, `demo/` |
 
 ## 3. Problems, worst first
@@ -61,8 +60,8 @@ Size: 27,600 lines of GDScript (314 files), 124 tests, 68 decision records, 25 w
 
 | File | Lines | Mixed jobs | Split into |
 |---|---|---|---|
-| `scripts/map/map_gen.gd` | 2,877 | island, biomes (1,650 lines alone), deco, ground | one file per stage |
-| `scripts/map/arena_map.gd` | 2,018 | map queries, chunk building, F3 code | state, chunk build, debug part |
+| ~~`scripts/map/map_gen.gd`~~ ✅ | 401 (was 2,877) | split into 8 `map_gen_<stage>.gd` files | done (step 7a) |
+| ~~`scripts/map/arena_map.gd`~~ ✅ | 1,556 (was 1,980) | ~850 lines are the F3 `@export`s (must stay on ArenaMap); params, stats, queries, build steps moved to `arena_map_{params,stats,queries,build}.gd` (128-195 lines each) | done (step 7b) |
 | `scripts/ui/craft_window.gd` | 1,034 | layout, look, recipe logic | view + recipe logic |
 | `scripts/debug/f3/dock.gd` | 1,006 | state, pins, drawing, input | state + drawing |
 
@@ -71,10 +70,9 @@ the wrong part or adds a copy of something that already exists.
 
 ### D. Folders that do not say what is inside (MED)
 
-- 10 loose scripts in `scripts/` root (`player.gd`, `boss.gd` while `scripts/boss/` exists, ...).
+- ✅ (step 5) The 10 loose scripts in `scripts/` root moved into role folders (`player/`, `boss/`, `ui/`, `world/`, `debug/`, `enemies/`).
 - `scenes/` does not mirror `scripts/` (stations split between `scenes/stations/` and `scenes/world/`).
-- Debug code mixed into game code: `enemy_spawner.gd:63` looks up `../DebugOverlay` by name;
-  F3 code sits inside `arena_map.gd`. About 26 game scripts mention F3 / debug.
+- ✅ (step 6) Debug code pulled out of game code: one pattern, [0070](../decision/0070-debug-hook-pattern.md) (`DebugFlags`, `MapDebug`, group lookups).
 - `scripts/demo/` and `scripts/map/test_yard.gd` sit next to shipped code.
 - Same idea in two places: `scripts/brains/` vs `enemies/slime_brain.gd`; data classes spread
   over `items/`, `world/`, `weapons/`; one-file folders in `data/` (`ui`, `lights`, `smelting`, `day_night`).
@@ -106,13 +104,14 @@ Git history is 170 MB. Every clone and every worktree pays for it.
 | 1 ✅ | Root `README.md` (what, run, test, code map) + `AGENTS.md` (rules for any model, incl. hook rules in plain words) | none | small |
 | 2 ✅ | Slim `CLAUDE.md`: F3 table -> `docs/wiki/debug-keys.md`; model routing -> `.claude/` only; fix wrong facts | none | small |
 | 3 ✅ | `docs/README.md` = full index; add `Status: superseded by NNNN` to old decisions; mark done plans; merge backlogs into one | none | medium |
-| 4 | Move `docs/demo/`, big `tools/art_tests/` media out of git (Drive), delete one-off shot scripts into `tools/retired/` | low | small |
-| 5 | Move 10 root scripts into folders (`player/`, `boss/`, `ui/`, `debug/`...) | low (paths in scenes) | medium |
-| 6 | Pull debug code out of game code (one debug hook pattern) | medium | medium |
-| 7 | Split `map_gen.gd`, then `arena_map.gd` (tests must stay green, same seed = same map) | medium | large |
+| 4 ✅ | Move `docs/demo/`, big `tools/art_tests/` media out of git (Drive), delete one-off shot scripts into `tools/retired/` | low | small |
+| 5 ✅ | Move 10 root scripts into folders (`player/`, `boss/`, `ui/`, `debug/`...) | low (paths in scenes) | medium |
+| 6 ✅ | Pull debug code out of game code (one debug hook pattern) | medium | medium |
+| 7 ✅ | Split `map_gen.gd` ✅ (golden test `test_map_gen_golden.gd`), then `arena_map.gd` ✅ (golden test `test_arena_map_golden.gd`; tests green, same seed = same map) | medium | large |
 | 8 | Split `craft_window.gd`, `f3/dock.gd`; group `tests/` by system | low | medium |
 
 Done 2026-11-16: steps 1-3 (README, AGENTS.md, debug-keys page, decision status lines, wiki status lines, one `backlog.md`, decision 0041 restored - it was emptied by mistake in commit 5e5f93a).
+Done 2026-11-19: step 4 (docs/demo + art_tests media untracked, 296 files / 132 MB, still on disk; 18 one-off shot scripts moved to `tools/retired/`).
 
 Steps 1-4 change no game code. They help most, for the least risk. Do them first.
 

@@ -45,7 +45,7 @@ func _init():
 	stub.answer = "slam"
 	var slam_ok: bool = await _until(func(): return started.has("slam"), 2.0)
 
-	var src := FileAccess.get_file_as_string("res://scripts/boss.gd")
+	var src := FileAccess.get_file_as_string("res://scripts/boss/boss.gd")
 	var decoupled: bool = not src.contains("ScriptedBrain")
 	print("boss.gd names ScriptedBrain: %s" % (not decoupled))
 

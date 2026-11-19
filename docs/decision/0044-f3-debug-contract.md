@@ -19,7 +19,7 @@ The user said it felt "like flying an airplane".
   Its `@export`s appear by reflection. Slider ranges come only from `@export_range`; with no hint the row
   has a number field and scrub, no slider. The panel rescans the group each time the dock opens.
 - Only one-per-world nodes join the group. Many-instance things are listed by their owner.
-  Cross-node actions live on the arena root (`scripts/arena.gd`, category Run).
+  Cross-node actions live on the arena root (`scripts/world/arena.gd`, category Run).
 - **Persistence:** every F3 edit auto-saves to `user://tuning.cfg` (ConfigFile) with its base value.
   An override whose file value changed since is skipped as stale. Headless runs use a throw-away file.
   The footer shows the count, `Write K to .tres` (loads a fresh copy, sets only those props) and

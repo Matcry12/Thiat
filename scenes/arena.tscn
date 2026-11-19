@@ -2,8 +2,8 @@
 
 [ext_resource type="PackedScene" uid="uid://brkn6l6tyxfd0" path="res://scenes/player.tscn" id="1"]
 [ext_resource type="PackedScene" uid="uid://b2crj03ik0dka" path="res://scenes/dummy.tscn" id="2"]
-[ext_resource type="Script" uid="uid://bv2w05208846v" path="res://scripts/debug_overlay.gd" id="3"]
-[ext_resource type="Script" path="res://scripts/arena.gd" id="arena_s"]
+[ext_resource type="Script" uid="uid://bv2w05208846v" path="res://scripts/debug/debug_overlay.gd" id="3"]
+[ext_resource type="Script" path="res://scripts/world/arena.gd" id="arena_s"]
 [ext_resource type="Script" path="res://scripts/enemies/enemy_spawner.gd" id="spawner_s"]
 [ext_resource type="Resource" path="res://data/enemies/slime.tres" id="slime_d"]
 [ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="slime_cls"]
@@ -12,12 +12,12 @@
 [ext_resource type="Resource" path="res://data/enemies/ice_slime.tres" id="ice_slime_d"]
 [ext_resource type="Resource" path="res://data/enemies/rock_slime.tres" id="rock_slime_d"]
 [ext_resource type="Script" uid="uid://d1skviyhs5c7r" path="res://scripts/debug/tuning_panel.gd" id="4"]
-[ext_resource type="Script" uid="uid://bjng3ujrudrq1" path="res://scripts/hud.gd" id="5"]
+[ext_resource type="Script" uid="uid://bjng3ujrudrq1" path="res://scripts/ui/hud.gd" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/boss.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/world/home_point.tscn" id="home_pt"]
-[ext_resource type="Script" path="res://scripts/end_screen.gd" id="7"]
-[ext_resource type="Script" path="res://scripts/pause_menu.gd" id="pause_s"]
-[ext_resource type="Script" path="res://scripts/save_game.gd" id="save_s"]
+[ext_resource type="Script" path="res://scripts/ui/end_screen.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="pause_s"]
+[ext_resource type="Script" path="res://scripts/world/save_game.gd" id="save_s"]
 [ext_resource type="Script" path="res://scripts/world/day_clock.gd" id="clock_s"]
 [ext_resource type="Script" path="res://scripts/world/day_tint.gd" id="tint_s"]
 [ext_resource type="Resource" path="res://data/day_night/default.tres" id="daynight_d"]
@@ -131,7 +131,6 @@ offset_bottom = 60.0
 script = ExtResource("5")
 player_path = NodePath("../Player")
 boss_path = NodePath("../Boss")
-tuning_panel_path = NodePath("../TuningPanel")
 
 [node name="TuningPanel" type="CanvasLayer" parent="." unique_id=651466513]
 script = ExtResource("4")

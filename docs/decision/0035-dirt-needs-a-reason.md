@@ -24,7 +24,7 @@ biome at a time, from the ready pack tiles.
 
 - **Boss area = plain dirt** (`MapGen.AREA_GROUND`), pack colours, not the dark tinted "boss grass". The `boss_bright/warm/sat`
   sliders and `ground_boss.tres` no longer show on the island (remove them when the boss area gets its final look).
-- One-biome preview: `tools/map_v2_shots.gd ... --grass-only` (whole island forest, no paths, no camp; dirt shore kept).
+- One-biome preview: `tools/retired/map_v2_shots.gd ... --grass-only` (whole island forest, no paths, no camp; dirt shore kept).
 
 ## Consequences
 - Forest is plain grass outside the camp and the paths. Coast, paths, camp are unchanged for now.

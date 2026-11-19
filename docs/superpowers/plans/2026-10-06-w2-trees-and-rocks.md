@@ -50,7 +50,7 @@ what you carry. Copper rocks exist but are too hard: "clink", no damage.
 | `scripts/weapons/weapon_data.gd` | modify | `gather_damage`, `tool_power` |
 | `data/weapons/fists.tres`, `scenes/weapons/fists_model.tscn` | create | bare hands |
 | `scripts/components/loadout.gd` | modify | holster toggle |
-| `scripts/player.gd`, `scenes/player.tscn`, `project.godot` | modify | `hands` key, Inventory, Collector |
+| `scripts/player/player.gd`, `scenes/player.tscn`, `project.godot` | modify | `hands` key, Inventory, Collector |
 | `scripts/world/resource_node_data.gd` | create | node kind data |
 | `scripts/world/resource_node.gd`, `scenes/world/resource_node.tscn` | create | the node: HP, gather hit, break, drops |
 | `data/resource_nodes/tree.tres`, `rock.tres`, `copper_rock.tres` | create | 3 node kinds |
@@ -58,9 +58,9 @@ what you carry. Copper rocks exist but are too hard: "clink", no damage.
 | `scripts/components/hitbox.gd` | modify | gather branch in `_try_hit` |
 | `scripts/world/pickup.gd`, `scenes/world/pickup.tscn` | create | item on the ground |
 | `scripts/components/collector.gd` | create | magnet + pick up, on the player |
-| `scripts/ui/item_counter.gd`, `scripts/hud.gd` | create / modify | counter under the hotbar |
+| `scripts/ui/item_counter.gd`, `scripts/ui/hud.gd` | create / modify | counter under the hotbar |
 | `scripts/map/map_style.gd`, `data/maps/grass.tres`, `scripts/map/map_gen.gd`, `scripts/map/arena_map.gd` | modify | place nodes by area |
-| `scripts/debug/tuning_panel.gd`, `scripts/debug_overlay.gd` | modify | F3 / F1 |
+| `scripts/debug/tuning_panel.gd`, `scripts/debug/debug_overlay.gd` | modify | F3 / F1 |
 | `scenes/arena.tscn` | modify | new HitFx profiles |
 | tests: `test_inventory.gd`, `test_hands.gd` (extend), `test_resource_node.gd`, `test_pickup.gd`, `test_island_nodes.gd` | create / modify | |
 
@@ -197,7 +197,7 @@ git commit -m "feat(items): ItemData, Inventory, gather fields on WeaponData (W2
 
 **Files:**
 - Create: `data/weapons/fists.tres`, `scenes/weapons/fists_model.tscn`
-- Modify: `scripts/components/loadout.gd`, `scripts/player.gd`, `scenes/player.tscn`, `project.godot`, `scripts/ui/hotbar.gd`
+- Modify: `scripts/components/loadout.gd`, `scripts/player/player.gd`, `scenes/player.tscn`, `project.godot`, `scripts/ui/hotbar.gd`
 - Test: `tests/test_hands.gd` (extend, keep its existing checks)
 
 **Interfaces:**
@@ -279,7 +279,7 @@ func toggle_hands() -> bool:
 - [ ] **Step 5: Commit**
 
 ```bash
-git add data/weapons/fists.tres scenes/weapons/fists_model.tscn scripts/components/loadout.gd scripts/player.gd scenes/player.tscn project.godot scripts/ui/hotbar.gd tests/test_hands.gd
+git add data/weapons/fists.tres scenes/weapons/fists_model.tscn scripts/components/loadout.gd scripts/player/player.gd scenes/player.tscn project.godot scripts/ui/hotbar.gd tests/test_hands.gd
 git commit -m "feat(hands): bare-hands punch with an instant holster toggle on key 3 (W2)"
 ```
 
@@ -500,7 +500,7 @@ git commit -m "feat(world): resource nodes - punch trees and rocks, copper clink
 
 **Files:**
 - Create: `scripts/world/pickup.gd`, `scenes/world/pickup.tscn`, `scripts/components/collector.gd`, `scripts/ui/item_counter.gd`
-- Modify: `scripts/world/resource_node.gd` (`_drop`), `scenes/player.tscn` (add `Inventory`, `Collector`), `scripts/hud.gd` (`_build_top_right`)
+- Modify: `scripts/world/resource_node.gd` (`_drop`), `scenes/player.tscn` (add `Inventory`, `Collector`), `scripts/ui/hud.gd` (`_build_top_right`)
 - Test: `tests/test_pickup.gd`
 
 **Interfaces:**
@@ -592,7 +592,7 @@ Also add one **water-edge test** (Review Focus 4). Load the island arena (`scene
 - [ ] **Step 5: Commit**
 
 ```bash
-git add scripts/world/pickup.gd scenes/world/pickup.tscn scripts/components/collector.gd scripts/ui/item_counter.gd scripts/world/resource_node.gd scenes/player.tscn scripts/hud.gd scripts/map/arena_map.gd tests/test_pickup.gd
+git add scripts/world/pickup.gd scenes/world/pickup.tscn scripts/components/collector.gd scripts/ui/item_counter.gd scripts/world/resource_node.gd scenes/player.tscn scripts/ui/hud.gd scripts/map/arena_map.gd tests/test_pickup.gd
 git commit -m "feat(items): drops fly to the player, item counter on the HUD (W2)"
 ```
 
@@ -684,7 +684,7 @@ git commit -m "feat(map): trees, rocks and copper placed by area on the island (
 ### Task 6: F3, F1, demo video, docs
 
 **Files:**
-- Modify: `scripts/debug/tuning_panel.gd`, `scripts/debug_overlay.gd`, `tools/demo/demo_bot.gd`, `CLAUDE.md` (§7 F3 row, F1 row, debug keys table: add `3` = hands), `docs/wiki/v1-design.md` (slice log)
+- Modify: `scripts/debug/tuning_panel.gd`, `scripts/debug/debug_overlay.gd`, `tools/demo/demo_bot.gd`, `CLAUDE.md` (§7 F3 row, F1 row, debug keys table: add `3` = hands), `docs/wiki/v1-design.md` (slice log)
 - Create: `docs/decision/0027-gathering.md`, `docs/demo/w2_gather.mp4`
 
 - [ ] **Step 1: F3**

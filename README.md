@@ -36,12 +36,12 @@ Failures: `.godot/test_logs/last.txt`. How tests work: [docs/wiki/testing-algori
 | `scripts/weapons/`, `scripts/skills/` | Weapon and skill behaviour |
 | `scripts/boss/`, `scripts/brains/`, `scripts/enemies/` | Boss attacks, AI brains, slimes + spawner |
 | `scripts/visual/`, `scripts/fx/` | How things are drawn; hit effects. Game code never draws |
-| `scripts/ui/` | HUD, bag, crafting book, settings |
-| `scripts/world/` | Pickups, trees / rocks, stations, day / night, lights |
+| `scripts/ui/` | HUD, menus, end screen, bag, crafting book, settings |
+| `scripts/world/` | Arena, save game, pickups, trees / rocks, stations, day / night, lights |
 | `scripts/debug/` | F1 overlay, F3 dock (dev only) |
 | `scripts/items/`, `scripts/audio/`, `scripts/settings/` | Item data classes, sound board, player settings |
 | `scripts/demo/` | Old character demos (dev only) |
-| `scripts/*.gd` | `player.gd`, `boss.gd`, `arena.gd`, `hud.gd`, menus, save (to be moved into folders) |
+| `scripts/player/` | `player.gd` (the player root script) |
 | `data/` | All numbers and content as `.tres`: weapons, items, recipes, biomes, enemies, sounds |
 | `assets/` | Art and sound. `game/` ships, `dev/` test only, `source/` originals, `retired/` unused. Rules: [assets/README.md](assets/README.md) |
 | `tests/` | `test_<topic>.gd`, helpers in `tests/support/` |

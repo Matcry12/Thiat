@@ -26,7 +26,7 @@ signal respawned
 
 var deaths := 0
 var _left := -1.0   # < 0 = alive / not counting
-var _player: CharacterBody2D   # scripts/player.gd (no class_name)
+var _player: CharacterBody2D   # scripts/player/player.gd (no class_name)
 
 func _ready() -> void:
 	add_to_group("debug")

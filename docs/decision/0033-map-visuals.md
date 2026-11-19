@@ -16,7 +16,7 @@ green forest. The pack has no shore tiles and no tiles for blobs, only bumpy "ho
   match), rotated for the 4 half planes, and the other cases are alpha AND (one quadrant), OR (three quadrants, diagonals) of
   those. Shape and colour always come from the same pack (`edge_from_fills` only inside one pack). Serene Village's sheet is opaque,
   so its ground is keyed by green pixels (`edge_key`). Seams are tested on pixels: `tests/test_ground_seams.gd`.
-  Test picture of every pair/shape: `docs/demo/map_v2_tile_test.png` (`tools/map_v2_tile_test.gd`).
+  Test picture of every pair/shape: `docs/demo/map_v2_tile_test.png` (`tools/retired/map_v2_tile_test.gd`).
   The first version (per-cell ring tiles + corner pieces, PC shapes with SV colours) produced notches and wrong-way pieces and was removed.
   Coast = dirt layer over water; foam mask made from the piece.
 - **Smoothing** (`smooth_passes`) removes 1-cell strips, spikes and checkerboards on the visual ground only.

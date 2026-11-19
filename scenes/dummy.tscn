@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://b2crj03ik0dka"]
 
-[ext_resource type="Script" uid="uid://dvxroykgrfun" path="res://scripts/dummy.gd" id="1"]
+[ext_resource type="Script" uid="uid://dvxroykgrfun" path="res://scripts/enemies/dummy.gd" id="1"]
 [ext_resource type="Script" uid="uid://cj3m53hayxeaq" path="res://scripts/visual/sprite_actor_visual.gd" id="2"]
 [ext_resource type="Script" uid="uid://b2k3y42aktkbx" path="res://scripts/components/hurtbox.gd" id="3"]
 [ext_resource type="Script" uid="uid://cfhocpi452k6r" path="res://scripts/components/health.gd" id="4"]

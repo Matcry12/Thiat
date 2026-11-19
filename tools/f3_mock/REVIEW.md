@@ -1,7 +1,7 @@
 # F3 panel redesign - review
 
 Reviewer: fresh eyes, studio dev-tools lens. Inputs: `DESIGN.md`, `index.html`, `shots/1..9`, `f3_before.png`,
-`scripts/debug/tuning_panel.gd`, `scripts/player.gd`, `project.godot` input map.
+`scripts/debug/tuning_panel.gd`, `scripts/player/player.gd`, `project.godot` input map.
 
 Verdict: **right direction, ship after fixes.** The big moves are correct (status off the game, search first,
 one dock, footer that says what is saved). The real risks are not in the pictures: Godot input leaks

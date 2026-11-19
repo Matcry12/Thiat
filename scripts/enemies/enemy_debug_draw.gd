@@ -3,14 +3,9 @@ extends Node2D
 ## F1 shapes of one Enemy: aggro (thin), leash (faint), home, hop lane during windup. Own node, no combat code.
 
 @onready var _enemy: Enemy = get_parent() as Enemy
-var _overlay: Node
 
 func _process(_delta: float) -> void:
-	if _overlay == null:
-		for n in get_tree().get_nodes_in_group("debug"):
-			if n is CanvasLayer and n.get("dummy_path") != null:
-				_overlay = n
-	visible = _overlay != null and _overlay.enabled
+	visible = DebugFlags.shapes_on
 	if visible:
 		queue_redraw()
 

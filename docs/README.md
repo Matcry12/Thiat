@@ -117,3 +117,4 @@ Start at the root [README.md](../README.md) and [AGENTS.md](../AGENTS.md).
 | [0066](decision/0066-data-driven-sound.md) | Sound comes from data: one SoundSet per thing, one SoundBoard | Active |
 | [0067](decision/0067-day-night-cycle.md) | Day / night cycle | Active |
 | [0069](decision/0069-ground-tile-set.md) | Ground tile set: every border, foam and water pixel is in a picture | Active |
+| [0070](decision/0070-debug-hook-pattern.md) | One debug hook pattern | Current |

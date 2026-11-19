@@ -43,7 +43,7 @@ func _ready() -> void:
 	_holder.y_sort_enabled = true
 	_holder.name = "Enemies"
 	add_child(_holder)
-	_ring = Node2D.new()   # F1 shapes only; follows the DebugOverlay switch
+	_ring = Node2D.new()   # F1 shapes only; follows DebugFlags.shapes_on
 	_ring.name = "SpawnRingDebug"
 	_ring.z_index = 100
 	_ring.draw.connect(_draw_ring)
@@ -60,8 +60,7 @@ func _on_map_rebuilt() -> void:
 	residents_placed = 0
 
 func _process(delta: float) -> void:
-	var ov := get_node_or_null("../DebugOverlay")
-	_ring.visible = ov != null and ov.get("enabled") == true
+	_ring.visible = DebugFlags.shapes_on
 	if _ring.visible:
 		_ring.queue_redraw()
 	if not enabled:

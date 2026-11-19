@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://brkn6l6tyxfd0"]
 
-[ext_resource type="Script" uid="uid://irytr6tq00f5" path="res://scripts/player.gd" id="1"]
+[ext_resource type="Script" uid="uid://irytr6tq00f5" path="res://scripts/player/player.gd" id="1"]
 [ext_resource type="Script" uid="uid://cj3m53hayxeaq" path="res://scripts/visual/sprite_actor_visual.gd" id="2"]
 [ext_resource type="Script" uid="uid://b2k3y42aktkbx" path="res://scripts/components/hurtbox.gd" id="3"]
 [ext_resource type="Script" uid="uid://d0awtsvbienb8" path="res://scripts/weapons/weapon_holder.gd" id="5"]

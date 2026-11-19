@@ -24,3 +24,13 @@ logs/
 # Art test byproducts: raw recorder frames (re-made by tools/swing_video.gd), Godot imports
 tools/art_tests/**/f_*.png
 tools/art_tests/**/*.import
+
+# Media is local only (cleanup step 4). Old copies are in git history.
+docs/demo/*
+!docs/demo/README.md
+tools/art_tests/**/*.png
+tools/art_tests/**/*.gif
+tools/art_tests/**/*.mp4
+tools/art_tests/**/*.webm
+tools/art_tests/**/*.jpg
+!tools/art_tests/slash_smear/slash_f*.png

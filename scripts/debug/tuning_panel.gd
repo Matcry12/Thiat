@@ -73,6 +73,7 @@ func _enter_tree() -> void:
 
 
 func _ready() -> void:
+	add_to_group("tuning_panel")   # the HUD finds the panel (to slide away from it) by this group
 	if not _dev_enabled():
 		queue_free()
 		return

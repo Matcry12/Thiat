@@ -21,6 +21,8 @@ const REF_CELLS := 36 * 21
 
 ## Emitted at the end of every rebuild (new world data): the F3 World map panel redraws on it.
 signal rebuilt
+## The F3 biome map picture must redraw (MapDebug listens). true = make the picture again.
+signal biome_map_changed(force: bool)
 
 @export_group("Layout")
 ## Map size in cells (1 cell = tile_size * pixel_scale px = 32). 72 x 40 = 2304 x 1280 px = 2x the screen.
@@ -700,11 +702,11 @@ signal rebuilt
 @export var biome_map_on := false:
 	set(v):
 		biome_map_on = v
-		_apply_biome_map()
+		biome_map_changed.emit(false)
 @export_range(0.0, 1.0, 0.005, "or_greater", "or_less") var biome_map_alpha := 0.55:
 	set(v):
 		biome_map_alpha = v
-		_apply_biome_map()
+		biome_map_changed.emit(false)
 
 ## Light / dark patches on the ground: strength, and size (noise frequency per cell, lower = bigger).
 @export var shade_variation := 0.1:
@@ -866,8 +868,7 @@ var _water_body: StaticBody2D
 var _dirt: TileMapLayer
 var _grass: TileMapLayer
 var _terrain: TerrainVisual
-var _biome_overlay: Sprite2D   ## the F3 biome map layer, one pixel per cell
-var _biome_overlay_for: MapGen.Result   ## the result its picture shows
+var _debug: MapDebug   ## the F3 side (biome picture, F3 rows); see scripts/debug/map_debug.gd
 var _deco: Node2D
 var _obstacles: Node2D
 var _border: Node2D
@@ -908,17 +909,9 @@ func _ready() -> void:
 	_terrain = TerrainVisual.new()
 	$Ground.add_child(_terrain)
 	$Ground.move_child(_terrain, _grass.get_index() + 1)
-	_biome_overlay = Sprite2D.new()   # a slot for the F3 biome map: a see-through picture over everything, never part of the ground
-	_biome_overlay.name = "BiomeOverlay"
-	_biome_overlay.centered = false
-	_biome_overlay.z_index = 60
-	_biome_overlay.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	_biome_overlay.visible = false
-	var overlay_layer := CanvasLayer.new()   # own canvas that follows the camera: the night tint does not darken the F3 biome picture
-	overlay_layer.layer = 1
-	overlay_layer.follow_viewport_enabled = true
-	add_child(overlay_layer)
-	overlay_layer.add_child(_biome_overlay)
+	_debug = MapDebug.new()
+	_debug.name = "MapDebug"
+	add_child(_debug)
 	_water_body = StaticBody2D.new()
 	_water_body.name = "Water"
 	_water_body.collision_mask = 0
@@ -972,72 +965,34 @@ func mark_broken(idx: int) -> void:
 		_streamer.mark_broken(idx)
 
 func status_text() -> String:
-	if result == null:
-		return "n/a"
-	var player := get_node_or_null(player_path) as Node2D
-	var here: Vector2 = player.global_position if player else Vector2.ZERO
-	var ai := area_at(here) if player else -1
-	var shares: Array[String] = []
-	for b in result.biomes.size():
-		if not biome_pct.is_empty() and biome_pct[b] > 0:
-			shares.append("%s %d" % [result.biomes[b].label, biome_pct[b]])
-	return "zoom: %.2f (target %.2f)\nseed: %d  size: %dx%d cells (%dx%d px)\ndirt patches: %d  rocks: %d  deco: %d  bushes: %d\narea %s  land %d%%  nodes %d (stone %d, copper %d)  dirt cells %d\nbiome %s  temperature %.2f  humidity %.2f  roughness %.2f  f %.2f\nground: %s\nwater: %s\nbiome %% of land: %s\ntrees by age: %s\ntrees by colour: %s\ndeco by kind: %s\nbuild %d ms (world data %d ms, first chunks %d ms)\n%s" % [
-		_camera.zoom.x if _camera else 1.0, camera_zoom, current_seed, map_cols, map_rows, map_size().x, map_size().y,
-		result.patches.size(), result.obstacles.size(), result.deco.size(), result.border.size(),
-		["forest", "rocky", "boss"][ai] if ai >= 0 else "water", land_pct, node_count, stone_count, copper_count, result.dirt_cells.size(),
-		_biome_name(here), _climate_here(result.temp, here), _climate_here(result.humid, here), _climate_here(result.rough, here), _climate_here(result.f, here),
-		_ground_text(here), water_text, ", ".join(shares),
-		" ".join(MapGen.AGES.map(func(a): return "%s %d" % [a, tree_counts.get(a, 0)])), _counts_text(tree_colours), _counts_text(deco_counts), build_ms, gen_ms, bake_ms, _streamer.status_text() if _streamer else ""]
+	return ArenaMapStats.status_text(self)
 
 
 var _pp_shares: Array[int] = []
 var _pp_shares_of: MapGen.Result
 
 func _ground_text(here_pos: Vector2) -> String:
-	if style == null or style.pixel_plains == null:
-		return "old tinted tiles"
-	if _pp_shares_of != result:   # counted once per map
-		_pp_shares = PixelPlainsBaker.shares(result, style.pixel_plains)
-		_pp_shares_of = result
-	var hi := _cell_i(here_pos)
-	var cell_text := "" if hi < 0 else "\n  here: " + PixelPlainsBaker.report(result, style.pixel_plains, hi % result.cols, hi / result.cols)
-	var shown := ""
-	if hi >= 0:   # which plants the pack art draws in the biome under the player (PixelPlainsGround.show_*)
-		var bi: int = result.biome[hi]
-		shown = "\n  plants here (biome %d): %s" % [bi, " ".join(["trees", "flowers", "tufts", "hedges", "other"].map(func(k): return "%s %s" % [k, "on" if style.pixel_plains.shows(StringName(k), bi) else "hidden"]))]
-	return "pixel plains, no tint (land: dirt %d%% light %d%% dark %d%% sand %d%% snow %d%%, before the dark-near-dirt rule)  all trees hidden %s  all plants hidden %s%s%s" % [_pp_shares[0], _pp_shares[1], _pp_shares[2], _pp_shares[3], _pp_shares[4], style.pixel_plains.hide_trees, style.pixel_plains.hide_veg, shown, cell_text] + "\n" + BiomeArt.get_default().status_text()
+	return ArenaMapStats._ground_text(self, here_pos)
 
 
 func _cell_i(pos: Vector2) -> int:   ## index into result.land / f / biome, -1 off the grid
-	var c := Vector2i((pos / cell_px()).floor())
-	return -1 if c.x < 0 or c.y < 0 or c.x >= result.cols or c.y >= result.rows else c.y * result.cols + c.x
+	return ArenaMapQueries._cell_i(self, pos)
 
 
-## MapGen.Biome under a world position, -1 off the grid / no biome map (flat test map).
 func biome_id_at(pos: Vector2) -> int:
-	var i := _cell_i(pos)
-	return -1 if i < 0 or result.biome.is_empty() else result.biome[i]
+	return ArenaMapQueries.biome_id_at(self, pos)
 
 
 func _biome_name(pos: Vector2) -> String:
-	var i := _cell_i(pos)
-	if i >= 0 and not result.shallow.is_empty() and result.shallow[i] == 1:
-		return ["", "river", "lake", "coast shallows"][result.fresh[i] if result.fresh[i] != 0 else 3]
-	if i < 0 or result.biome.is_empty() or result.land[i] == 0:
-		return "n/a"
-	return result.biomes[result.biome[i]].label
+	return ArenaMapStats._biome_name(self, pos)
 
 
 func _counts_text(counts: Dictionary) -> String:
-	var parts: Array[String] = []
-	for k in counts:
-		parts.append("%s %d" % [k, counts[k]])
-	return " ".join(parts) if not parts.is_empty() else "none"
+	return ArenaMapStats._counts_text(self, counts)
 
 
 func _climate_here(values: PackedFloat32Array, pos: Vector2) -> float:
-	var i := _cell_i(pos)
-	return values[i] if i >= 0 and not values.is_empty() else 0.0
+	return ArenaMapStats._climate_here(self, values, pos)
 
 
 ## F3 Save asks this instead of reading the export: map_seed 0 means "random", but a saved file
@@ -1130,72 +1085,7 @@ func rebuild(new_seed: bool, relayout := false) -> void:
 	result = MapGen.generate(style, make_params(), current_seed)
 	_show_generating(false)
 	gen_ms = Time.get_ticks_msec() - tg
-	var counts: Array[int] = []
-	counts.resize(MapGen.Biome.size())
-	var land := 0
-	var land_a := result.land
-	var biome_a := result.biome
-	var has_biome := not biome_a.is_empty()
-	for i in land_a.size():
-		if land_a[i] == 1:
-			land += 1
-			if has_biome:
-				counts[biome_a[i]] += 1
-	water_text = "none"
-	if not result.shallow.is_empty():
-		var river := 0
-		var lake := 0
-		var shallow := 0
-		for i in land_a.size():
-			shallow += result.shallow[i]
-			river += int(result.fresh[i] == 1)
-			lake += int(result.fresh[i] == 2)
-		water_text = "river %d  lake %d  shallow %d cells (walkable); deep ocean blocks" % [river, lake, shallow]
-	land_pct = 100 * land / maxi(land_a.size(), 1)
-	node_count = 0
-	stone_count = 0
-	copper_count = 0
-	tree_counts.clear()
-	tree_colours.clear()
-	deco_counts.clear()
-	for age in MapGen.AGES:
-		tree_counts[age] = 0
-	var is_tree := PackedByteArray()   # per node kind: 1 = an aged tree
-	for k in style.resource_nodes:
-		is_tree.append(1 if String(k.id).begins_with("tree") else 0)
-	for o in result.obstacles:
-		node_count += 1 if o["node"] >= 0 else 0
-		if o["node"] >= 0:
-			var nid: StringName = style.resource_nodes[o["node"]].id
-			stone_count += int(nid == &"rock")
-			copper_count += int(nid == &"copper_rock")
-		if o["node"] >= 0 and is_tree[o["node"]] == 1:
-			var parts := String(style.resource_nodes[o["node"]].id).split("_")   # tree_oak_old / tree_oak_yellow_old: the age is the last part
-			tree_counts[StringName(parts[parts.size() - 1])] += 1
-			var colour: String = parts[2] if parts.size() == 4 else "green"
-			tree_colours[colour] = tree_colours.get(colour, 0) + 1
-	var family: Array[Dictionary] = []   # per deco set: region index -> kind (flower_0 -> flower, tuft_green -> tuft, snow_stump -> stump)
-	for set in style.deco:
-		var fam := {}
-		for g in set.groups:
-			var name := String(g)
-			for r in set.groups[g]:
-				fam[r] = "stump" if name.ends_with("_stump") else (name if name in ["deadbush", "mushroom", "foxglove"] else name.rsplit("_", true, 1)[0])
-		family.append(fam)
-	for d in result.deco:
-		var kind: String = family[d["set"]].get(d["region"], "other")
-		deco_counts[kind] = deco_counts.get(kind, 0) + 1
-	biome_pct.clear()
-	biome_pct.resize(MapGen.Biome.size())
-	var given := 0
-	var order: Array[int] = []   # largest remainder: the shares sum to 100
-	for b in counts.size():
-		biome_pct[b] = 100 * counts[b] / maxi(land, 1)
-		given += biome_pct[b]
-		order.append(b)
-	order.sort_custom(func(x: int, y: int) -> bool: return (100 * counts[x]) % maxi(land, 1) > (100 * counts[y]) % maxi(land, 1))
-	for k in range(mini(100 - given, order.size()) if land > 0 else 0):
-		biome_pct[order[k]] += 1
+	ArenaMapStats.compute(self)
 	_build()
 	_warm_walk_grid(make_params())
 	_fit_dummy()
@@ -1246,22 +1136,8 @@ func _changed_ground() -> void:
 	_rebuild_deferred.call_deferred()
 
 
-## Placed things (stations) must not stand on a tree or rock of a chunk that is not loaded: asks the world data.
 func placement_blocked(rect: Rect2) -> bool:
-	if result == null:
-		return false
-	var b0 := Vector2i(rect.position / result.obstacle_bucket) - Vector2i.ONE
-	var b1 := Vector2i(rect.end / result.obstacle_bucket) + Vector2i.ONE
-	for by in range(b0.y, b1.y + 1):
-		for bx in range(b0.x, b1.x + 1):
-			for o: Dictionary in result.obstacle_grid.get(Vector2i(bx, by), []):
-				var c: Vector2 = o["pos"]
-				if _streamer.is_loaded(_streamer.chunk_id_at(c)):
-					continue   # a loaded chunk: its live nodes are checked by the caller (and a gathered one no longer counts)
-				var q := Vector2(clampf(c.x, rect.position.x, rect.end.x), clampf(c.y, rect.position.y, rect.end.y))
-				if q.distance_to(c) <= o["radius"]:
-					return true
-	return false
+	return ArenaMapQueries.placement_blocked(self, rect)
 
 
 func rebuild_ground() -> void:
@@ -1298,235 +1174,39 @@ func _apply_pending_now() -> void:
 
 
 func make_params() -> MapGen.Params:
-	var p := MapGen.Params.new()
-	var cell := cell_px()
-	var scale := float(map_cols * map_rows) / REF_CELLS
-	p.cell = cell
-	p.world = map_size()
-	p.cols = map_cols
-	p.rows = map_rows
-	p.patch_count = roundi(patch_count * scale)
-	p.patch_min_size = patch_min_size
-	p.patch_max_size = patch_max_size
-	p.noise_frequency = noise_frequency
-	p.patch_noise_threshold = patch_noise_threshold
-	p.deco_density = deco_density
-	p.deco_min_spacing = deco_min_spacing
-	p.obstacle_count = roundi(obstacle_count * scale)
-	p.obstacle_min_spacing = obstacle_min_spacing
-	p.spawn_clear_radius = spawn_clear_radius
-	p.border_density = border_density
-	p.dark_grass_chance = dark_grass_chance
-	p.agent_radius = agent_radius
-	p.island_on = island_on
-	p.cont_period = cont_period
-	p.cont_octaves = cont_octaves
-	p.cont_gain = cont_gain
-	p.cont_radial = cont_radial
-	p.cont_edge_cells = cont_edge_cells
-	p.land_share = land_share
-	p.neck_cells = neck_cells
-	p.neck_boost = neck_boost
-	p.water_on = water_on
-	p.river_period = river_period
-	p.river_octaves = river_octaves
-	p.river_w_inland = river_w_inland
-	p.river_w_sea = river_w_sea
-	p.river_grow_dist = river_grow_dist
-	p.river_rough_max = river_rough_max
-	p.river_min_cells = river_min_cells
-	p.river_inland_min = river_inland_min
-	p.lake_humid_min = lake_humid_min
-	p.lake_inland_min = lake_inland_min
-	p.lake_rough_max = lake_rough_max
-	p.lake_min_cells = lake_min_cells
-	p.water_min_cells = water_min_cells
-	p.river_big_n = river_big_n
-	p.river_big_w_inland = river_big_w_inland
-	p.river_big_w_sea = river_big_w_sea
-	p.river_big_reach = river_big_reach
-	p.lake_big_n = lake_big_n
-	p.lake_big_r_min = lake_big_r_min
-	p.lake_big_r_max = lake_big_r_max
-	p.lake_big_on_river = lake_big_on_river
-	p.lake_pond_n = lake_pond_n
-	p.lake_pond_r_min = lake_pond_r_min
-	p.lake_pond_r_max = lake_pond_r_max
-	p.lake_pond_on_river = lake_pond_on_river
-	p.lake_pond_wet_min = lake_pond_wet_min
-	p.lake_pond_wet_period = lake_pond_wet_period
-	p.lake_pond_stretch_min = lake_pond_stretch_min
-	p.lake_pond_stretch_max = lake_pond_stretch_max
-	p.lake_pond_blobs_min = lake_pond_blobs_min
-	p.lake_pond_blobs_max = lake_pond_blobs_max
-	p.lake_warp = lake_warp
-	p.lake_shape_period = lake_shape_period
-	p.lake_gap = lake_gap
-	p.shore_cells = shore_cells
-	p.shallow_min = shallow_min
-	p.shallow_max = shallow_max
-	p.coast_cells = coast_cells
-	p.home_clear_cells = home_clear_cells
-	p.corridor_half = corridor_half
-	p.climate_temp_period = climate_temp_period
-	p.climate_humid_period = climate_humid_period
-	p.climate_rough_period = climate_rough_period
-	p.climate_warp_period = climate_warp_period
-	p.climate_warp_amp = climate_warp_amp
-	p.climate_octaves = climate_octaves
-	p.climate_w_temp = climate_w_temp
-	p.climate_w_humid = climate_w_humid
-	p.climate_w_rough = climate_w_rough
-	p.forest_margin = forest_margin
-	p.climate_warp_octaves = climate_warp_octaves
-	p.beach_noise_period = beach_noise_period
-	p.beach_noise_octaves = beach_noise_octaves
-	p.biome_smooth_half = biome_smooth_half
-	p.boss_land_cells = boss_land_cells
-	p.biome_smooth_passes = biome_smooth_passes
-	p.biome_min_blob = biome_min_blob
-	p.beach_min = beach_min
-	p.beach_max = beach_max
-	p.cold_beach_t = cold_beach_t
-	p.home_calm_cells = home_calm_cells
-	p.home_calm_fade = home_calm_fade
-	p.calm_temp = calm_temp
-	p.calm_humid = calm_humid
-	p.calm_rough = calm_rough
-	p.legacy_tiles = map_cols * map_rows <= legacy_tiles_max_cells
-	p.band_lo = band_lo
-	p.band_hi = band_hi
-	p.fir_group_radius = fir_group_radius
-	p.pp = style.pixel_plains
-	p.trees_on = trees_on and not (p.pp != null and p.pp.hide_trees)
-	p.veg_on = veg_on and not (p.pp != null and p.pp.hide_veg)
-	p.tree_fade_lo = tree_fade_lo
-	p.tree_fade_hi = tree_fade_hi
-	p.veg_density_period = veg_density_period
-	p.rock_group_radius = rock_group_radius
-	p.copper_near_home_cells = copper_near_home_cells
-	p.age_core = age_core
-	p.age_mid = age_mid
-	p.core_old = core_old
-	p.mid_small = mid_small
-	p.edge_young = edge_young
-	p.edge_sapling = edge_sapling
-	p.clearing_per_cells = clearing_per_cells
-	p.clearing_r_min = clearing_r_min
-	p.clearing_r_max = clearing_r_max
-	p.tree_home_clear = tree_home_clear
-	p.tree_jitter = tree_jitter
-	p.smooth_passes = smooth_passes
-	p.border_jitter = border_jitter
-	p.min_island_cells = min_island_cells
-	p.beach_cells = beach_cells
-	p.path_on = path_on
-	p.path_width = path_width
-	p.path_branches = path_branches
-	p.path_wobble = path_wobble
-	p.camp_radius = camp_radius
-	p.dirt_patches = dirt_patches
-	p.dirt_patch_size = dirt_patch_size
-	if yard != null:
-		p.yard = true
-		p.yard_nodes = yard.node_list(_player_spawn)
-		p.water_on = false
-		p.veg_on = false
-		p.legacy_tiles = false
-	p.zone = _zone
-	p.spawns = _spawns
-	p.player_spawn = _player_spawn
-	return p
+	return ArenaMapParams.make_params(self)
 
 
-## MapGen.Area at a world position, or -1 on water / off the map.
 func area_at(pos: Vector2) -> int:
-	if result == null:
-		return -1
-	var c := Vector2i((pos / cell_px()).floor())
-	if c.x < 0 or c.y < 0 or c.x >= result.cols or c.y >= result.rows:   # the size the result was built with
-		return -1
-	var i := c.y * result.cols + c.x
-	return -1 if result.land[i] == 0 else result.area[i]
+	return ArenaMapQueries.area_at(self, pos)
 
 
-## True when every cell `rect` (px) overlaps is dry land (a station box over a thin river is refused).
 func rect_on_land(rect: Rect2) -> bool:
-	if result == null:
-		return true
-	var c0 := Vector2i((rect.position / cell_px()).floor())
-	var c1 := Vector2i((rect.end / cell_px()).floor())
-	for cy in range(c0.y, c1.y + 1):
-		for cx in range(c0.x, c1.x + 1):
-			if cx < 0 or cy < 0 or cx >= result.cols or cy >= result.rows or result.land[cy * result.cols + cx] == 0:
-				return false
-	return true
+	return ArenaMapQueries.rect_on_land(self, rect)
 
 
-## MapGen.WaterKind at a world position: NONE on dry land, SHALLOW in a river / lake / coast shallows (walkable), OCEAN beyond (blocks).
-## Follows the drawn ground: the shore's sand is drawn a few pixels into its water cells, and a point on that sand is dry.
 func water_kind_at(pos: Vector2) -> int:
-	if result == null or result.shallow.is_empty():
-		return MapGen.WaterKind.NONE
-	var c := Vector2i((pos / cell_px()).floor())
-	if c.x < 0 or c.y < 0 or c.x >= result.cols or c.y >= result.rows:
-		return MapGen.WaterKind.OCEAN
-	var i := c.y * result.cols + c.x
-	if result.land[i] == 1:
-		return MapGen.WaterKind.NONE
-	if style != null and style.pixel_plains != null and not result.ground.is_empty() \
-			and PixelPlainsBaker.drawn_land_at(result, style.pixel_plains, Vector2i((pos / float(style.pixel_scale)).floor())):
-		return MapGen.WaterKind.NONE
-	return MapGen.WaterKind.SHALLOW if result.shallow[i] == 1 else MapGen.WaterKind.OCEAN
+	return ArenaMapQueries.water_kind_at(self, pos)
 
 
-## True in the boss's land (area BOSS) or inside the fight zone: no placing stations there.
 func in_boss_area(pos: Vector2) -> bool:
-	return _zone.has_point(pos) or area_at(pos) == MapGen.Area.BOSS
+	return ArenaMapQueries.in_boss_area(self, pos)
 
 
-## True on a cell of the land bridge carved to reach the boss (only when the island needed one).
 func in_corridor(pos: Vector2) -> bool:
-	return result != null and result.bridge.has(Vector2i((pos / cell_px()).floor()))
+	return ArenaMapQueries.in_corridor(self, pos)
 
 
-## True if `rect` touches any bridge cell (a rect can straddle a bridge without a corner inside it).
 func in_corridor_rect(rect: Rect2) -> bool:
-	if result == null or result.bridge.is_empty():
-		return false
-	var c0 := Vector2i((rect.position / cell_px()).floor())
-	var c1 := Vector2i((rect.end / cell_px()).floor())
-	for y in range(c0.y, c1.y + 1):
-		for x in range(c0.x, c1.x + 1):
-			if result.bridge.has(Vector2i(x, y)):
-				return true
-	return false
+	return ArenaMapQueries.in_corridor_rect(self, rect)
 
 
-## Would solid boxes at `rects` (px) cut the walk from home to the boss zone? Reuses MapGen's walk grid and
-## flood. The base grid is built once per island (cached); one check is one flood (`last_walk_check_ms`).
-## False when there was no walk to protect to begin with.
 func blocks_boss_path(rects: Array[Rect2]) -> bool:
-	if result == null or yard != null:
-		return false
-	var p := make_params()
-	_warm_walk_grid(p)
-	if not _walk_base_ok:
-		return false
-	var t0 := Time.get_ticks_usec()
-	var ok := MapGen.blockers_keep_local_walk(p, _walk_grid, rects, _zone.get_center()) or MapGen.goal_reachable_with(p, _walk_grid, rects, _zone.get_center())
-	last_walk_check_ms = (Time.get_ticks_usec() - t0) / 1000.0
-	return not ok
+	return ArenaMapQueries.blocks_boss_path(self, rects)
 
 
-## The base walk grid of this island (kept from generate, only the rocks are cleared) and whether home reaches the boss at all. Built right after
-## generate, so the first station placement is one flood, not a 0.4 s grid build.
 func _warm_walk_grid(p: MapGen.Params) -> void:
-	if _walk_for == result or result == null or yard != null:   # the yard has no boss path to protect
-		return
-	_walk_for = result
-	_walk_grid = MapGen.walk_grid(p, result.obstacles, result.walk_land, result.walk_base)
-	_walk_base_ok = MapGen.goal_reachable_with(p, _walk_grid, [] as Array[Rect2], _zone.get_center())
+	ArenaMapQueries._warm_walk_grid(self, p)
 
 
 func home_point() -> Vector2:
@@ -1580,29 +1260,8 @@ func load_chunks_around(pos: Vector2, radius := 1) -> void:
 		_streamer.build_around(pos, radius)
 
 
-## The live ResourceNode of kind `id` (or, with `prefix`, any kind whose id starts with it: "tree" = every tree) nearest to `to` that has
-## not been gathered, found in the WORLD DATA (so it works for a node whose chunk is not loaded) and loaded on demand. Null if there is none.
 func nearest_node(id: StringName, to: Vector2, prefix := false) -> ResourceNode:
-	if result == null:
-		return null
-	var best := -1
-	var best_d := INF
-	for i in result.obstacles.size():
-		var o := result.obstacles[i]
-		if o["node"] < 0 or _streamer.broken[i] == 1:
-			continue
-		var kind_id := style.resource_nodes[o["node"]].id
-		if kind_id != id and not (prefix and String(kind_id).begins_with(String(id))):
-			continue
-		var d: float = to.distance_squared_to(o["pos"])
-		if d < best_d:
-			best_d = d
-			best = i
-	if best < 0:
-		return null
-	_streamer.build_around(result.obstacles[best]["pos"], 0)
-	_streamer.pin(_streamer.chunk_id_at(result.obstacles[best]["pos"]))
-	return _streamer.node_of(best) as ResourceNode
+	return ArenaMapQueries.nearest_node(self, id, to, prefix)
 
 
 ## chunk_cells / load_radius / unload_margin changed: index again (reindex) and let the streamer re-plan.
@@ -1631,52 +1290,16 @@ func teleport_player(to: Variant) -> void:
 		_camera.reset_smoothing()
 
 
-## Nearest spot to `target` (rings of 16 px, up to 480 px out) where a walker stands on land, clear of every rock.
 func _free_spot(target: Vector2) -> Vector2:
-	if result == null:
-		return target
-	for ring in 31:
-		for k in maxi(ring * 8, 1):
-			var a := TAU * k / maxi(ring * 8, 1)
-			var pos := target + Vector2.from_angle(a) * ring * 16.0
-			if _walker_fits(pos):
-				return pos
-	return target
+	return ArenaMapQueries._free_spot(self, target)
 
 
 func _walker_fits(pos: Vector2) -> bool:
-	for off in [Vector2.ZERO, Vector2(agent_radius, 0), Vector2(-agent_radius, 0), Vector2(0, agent_radius), Vector2(0, -agent_radius)]:
-		var c := Vector2i(((pos + off) / cell_px()).floor())
-		if c.x < 0 or c.y < 0 or c.x >= result.cols or c.y >= result.rows or result.land[c.y * result.cols + c.x] == 0:
-			return false
-	var b := Vector2i(pos / result.obstacle_bucket)   # only the rocks in the buckets around it (bucket >= 2 x the widest rock + spacing)
-	for by in range(b.y - 1, b.y + 2):
-		for bx in range(b.x - 1, b.x + 2):
-			for o: Dictionary in result.obstacle_grid.get(Vector2i(bx, by), []):
-				if pos.distance_to(o["pos"]) <= o["radius"] + agent_radius:
-					return false
-	return true
+	return ArenaMapQueries._walker_fits(self, pos)
 
 
-## The training dummy stays where the layout puts it when a walker fits there; on some seeds that is water or a rock, so it moves to the nearest
-## spot where one does (searched in rings around the layout spot).
 func _fit_dummy() -> void:
-	var dummy := get_node_or_null(dummy_path) as Node2D
-	if dummy == null or result == null or _walker_fits(dummy.global_position):
-		return
-	var from := dummy.global_position
-	var step := cell_px() * 0.5
-	for ring in range(1, 80):
-		for k in ring * 8:
-			var a := TAU * k / (ring * 8)
-			var q := from + Vector2.from_angle(a) * ring * step
-			if _walker_fits(q):
-				dummy.global_position = q
-				if "home" in dummy:
-					dummy.home = q
-				if dummy.has_meta("spot"):
-					dummy.set_meta("spot", q)
-				return
+	ArenaMapQueries._fit_dummy(self)
 
 
 func cell_px() -> float:
@@ -1806,7 +1429,6 @@ func _apply_camera() -> void:
 # ------------------------------------------------------------------- build ---
 
 func _build() -> void:
-	_biome_overlay_for = null
 	_build_water_body()
 	_dirt.clear()
 	_grass.clear()
@@ -1817,7 +1439,7 @@ func _build() -> void:
 	else:
 		_terrain.hide_island()
 		# ponytail: the flat map has no ground art (it is a test map: only the Background colour shows)
-	_apply_biome_map()
+	biome_map_changed.emit(true)
 	_build_border()
 	# World data is ready. The visuals and nodes come per chunk (ChunkStreamer): the 3 x 3 around the player now, the rest as the player walks.
 	var t0 := Time.get_ticks_msec()
@@ -1858,42 +1480,8 @@ func make_cover_rock(o: Dictionary) -> StaticBody2D:
 	return body
 
 
-## The island ground, once per map: the water under everything and the style hooks. The ground pictures themselves are made per
-## chunk (ChunkStreamer -> GroundBaker.bake_region -> TerrainVisual.set_chunk).
 func _setup_island_terrain() -> void:
-	if style.pixel_plains != null and not style.pixel_plains.changed.is_connected(_on_pp_changed):
-		style.pixel_plains.changed.connect(_on_pp_changed)
-	for b in style.biomes:   # an edited BiomeData (F3): climate / ground / tree fields rebuild the map, look fields only re-tint
-		if not b.changed.is_connected(_changed):
-			b.changed.connect(_changed)
-			b.look_changed.connect(_on_biome_look)
-	var t := float(GroundBaker.tile_of(style))
-	var shallow_img: Image = null
-	if not result.shallow.is_empty():
-		var mask := result.shallow.duplicate()   # 255 = shallow: full precision for the linear filter
-		var at := mask.find(1)
-		while at >= 0:
-			mask[at] = 255
-			at = mask.find(1, at + 1)
-		shallow_img = Image.create_from_data(result.cols, result.rows, false, Image.FORMAT_L8, mask)
-	_terrain.begin_island(null, Vector2(result.cols + 1, result.rows + 1) * t, float(style.pixel_scale), shallow_img, t,
-		style.pixel_plains.shader_params() if style.pixel_plains != null else {})
-	_apply_terrain_look()
-
-
-## F3 biome map: shown only on an island with biomes; the picture is made once per map.
-func _apply_biome_map() -> void:
-	if _biome_overlay == null:
-		return
-	var show := biome_map_on and result != null and not result.biome.is_empty()
-	_biome_overlay.visible = show
-	if not show:
-		return
-	if _biome_overlay_for != result:
-		_biome_overlay.texture = ImageTexture.create_from_image(GroundBaker.biome_image(result))
-		_biome_overlay_for = result
-	_biome_overlay.scale = Vector2.ONE * cell_px()
-	_biome_overlay.modulate.a = biome_map_alpha
+	ArenaMapBuild._setup_island_terrain(self)
 
 
 ## The ground colour numbers for GroundBaker: a tint per Area and the patch settings.
@@ -1920,8 +1508,7 @@ func _apply_terrain_look() -> void:
 
 
 func _on_biome_look() -> void:
-	_biome_overlay_for = null
-	_apply_biome_map()
+	biome_map_changed.emit(true)
 	_retint()
 
 
@@ -1931,42 +1518,7 @@ func _on_pp_changed() -> void:   # Pixel Plains table / hide switch edited (F3):
 
 
 func _build_water_body() -> void:
-	for c in _water_body.get_children():
-		_water_body.remove_child(c)
-		c.queue_free()
-	# One rectangle per run of coast water (water touching land, 8 neighbours) in a row.
-	var cols := result.cols
-	var rows := result.rows
-	var land := result.walk_land   # walkable ground (dry + shallow): only the deep water blocks
-	var cell := cell_px()
-	# land spread by one cell sideways, then up and down (the 3 x 3 neighbourhood); coast = that, where there is no land
-	var wide := PackedByteArray()
-	wide.resize(cols * rows)
-	for y in rows:
-		for i in range(y * cols, y * cols + cols):
-			if land[i] == 1:
-				wide[i] = 1
-				if i % cols > 0:
-					wide[i - 1] = 1
-				if i % cols < cols - 1:
-					wide[i + 1] = 1
-	for y in rows:
-		var x0 := -1
-		for x in cols + 1:
-			var i := y * cols + x
-			var coast := false
-			if x < cols and land[i] == 0:
-				coast = wide[i] == 1 or (y > 0 and wide[i - cols] == 1) or (y < rows - 1 and wide[i + cols] == 1)
-			if coast and x0 < 0:
-				x0 = x
-			elif not coast and x0 >= 0:
-				var shape := RectangleShape2D.new()
-				shape.size = Vector2((x - x0) * cell, cell)
-				var cs := CollisionShape2D.new()
-				cs.shape = shape
-				cs.position = Vector2((x0 + x) * 0.5 * cell, (y + 0.5) * cell)
-				_water_body.add_child(cs)
-				x0 = -1
+	ArenaMapBuild._build_water_body(self)
 
 
 ## `pos` is the bottom-centre of the sprite.
@@ -1991,24 +1543,10 @@ func debug_category() -> String:
 	return "World"
 
 func debug_children() -> Array:
-	var out: Array = []
-	if style:
-		for bd in style.biomes:   # climate point, ground, trees, rocks, deco, tint of every biome (0038)
-			out.append({"name": "Biome " + bd.label, "object": bd})
-	if style and style.pixel_plains != null:
-		out.append({"name": "Pixel Plains", "object": style.pixel_plains})
-	for k in ["rock", "copper_rock", "treepp_oak_green_sapling", "treepp_oak_green_young", "treepp_oak_green_mature", "treepp_oak_green_old"]:
-		out.append({"name": "Node " + k.replace("_rock", ""), "object": load("res://data/resource_nodes/%s.tres" % k), "cat": "Items & Crafting"})
-	return out
+	return _debug.children()
 
 func debug_actions() -> Array:
-	return [
-		{"label": "New map", "run": new_map},
-		{"label": "Go home", "run": func(): teleport_player("home")},
-		{"label": "Go to boss", "run": func(): teleport_player("boss")},
-		{"label": "Biome map", "toggle": func(): return biome_map_on, "run": func(): biome_map_on = not biome_map_on},
-		{"label": "Generate", "arg": "int", "hint": "seed", "run": func(v): generate_seed(clampi(int(v), 1, 9999))},   # seed 1-9999
-	]
+	return _debug.actions()
 
 ## A slider that rebuilds the world (applied when the drag ENDS): every ArenaMap number that is not a look. The look / camera ones are cheap and follow the drag.
 func debug_heavy(prop: String) -> bool:
