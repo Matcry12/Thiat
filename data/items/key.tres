@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/game/ui/items/key.png" id="icon"]
+
+[resource]
+script = ExtResource("1")
+id = &"key"
+display_name = "Key"
+icon = ExtResource("icon")
+color = Color(0.56, 0.46, 0.11, 1)
+category = "material"
+max_stack = 1

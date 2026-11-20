@@ -73,7 +73,7 @@ func _init() -> void:
 			extra.append(k)
 	extra.sort()
 	print("targets: %d old, %d found; new owners: %s" % [OLD_TARGETS.size(), names.size(), extra])
-	if extra != ["DayClock", "DayNightData", "EnemySpawner", "Frame", "HeldItem","Hit station_knock_stone", "Hit station_knock_wood", "Hit station_pickup_stone", "Hit station_pickup_wood", "Hit tree_break", "Item gel", "Light campfire", "Light player glow", "Light torch", "MainHandArt", "NodeReaction", "OffHandArt", "Pixel Plains", "Run", "Save", "Swing Sword Natural", "Weapon"]:   # status-only owners that had a block but no section
+	if extra != ["DayClock", "DayNightData", "EnemySpawner", "Frame", "HeldItem","Hit station_knock_stone", "Hit station_knock_wood", "Hit station_pickup_stone", "Hit station_pickup_wood", "Hit tree_break", "Item bread", "Item cooked_pork", "Item gel", "Item healing_potion", "Item key", "Item raw_pork", "Item sausage", "Item soup", "Light campfire", "Light player glow", "Light torch", "MainHandArt", "NodeReaction", "OffHandArt", "Pixel Plains", "Run", "Save", "Swing Sword Natural", "Weapon"]:   # status-only owners that had a block but no section
 		print("FAIL: unexpected extra names ", extra)
 		ok = false
 	for l in OLD_ACTIONS:
