@@ -54,7 +54,7 @@ All sounds go through `HitFx.fire(type)` -> `HitFxProfile.sound` (`data/hit_fx/*
 | `metal_ore` | stone_hit (pitch up) | stone_break | copper rock |
 | `flesh` | hit_sword | boom | slime, dummy |
 | `boss_orc` | hit_boss | boom (+ phase) | boss |
-| `player` | player_hurt | - | player (block, parry slots) |
+| `player` | player_hurt | - | player (block, parry slots; eating: `eat` eat_chew, `drink` drink_sip, `gulp` eat_gulp) |
 | `blade`, `tool`, `bow` | - | - | weapons / tools (swing empty for now; arrow / charged keep their hit via the arrow's set) |
 
 ## Test mode
@@ -62,6 +62,7 @@ All sounds go through `HitFx.fire(type)` -> `HitFxProfile.sound` (`data/hit_fx/*
 - F3 status `[Sound]`: last event (`wood.hit`), plays, voices busy, silent events (a slot asked for but empty).
 - F3 button `Test sound` (cycles every set + slot).
 - Switch `HitFx.sound_on` moved to `SoundBoard.enabled`. Section name is `Sound`; extra slot `hit_charged` (bow set) for the charged arrow; the lunge has no weapon so it falls back to the target's `hit`.
+- Eating slots `eat` / `drink` / `gulp` (player set): `Consumer` plays `ItemData.use_sound` (`eat`, potion `drink`) every `eat_sound_every` while holding, and `gulp` when an item is used. Placeholder wavs from `tools/make_sfx.py` (procedural, own work, CC0).
 
 ## Later (not now)
 `step` (footsteps per ground), `pickup` (item into bag), `craft`, music buses. Add a slot when the event exists.

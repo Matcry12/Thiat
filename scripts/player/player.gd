@@ -89,6 +89,7 @@ func _on_died() -> void:
 	skill_slot.cancel()
 	velocity = Vector2.ZERO
 	visual.set_move_state("idle")
+	consumer.cancel()
 	held_item.set_item(null)   # the held light goes out at once, not at respawn
 
 ## Wakes up after a death (Respawner): full hp, inputs back. The caller moves the body.
@@ -113,7 +114,7 @@ func _physics_process(delta: float) -> void:
 	# A body-moving skill (the lunge) drives velocity the same way.
 	swimmer.refresh()   # in shallow water? (only the walk speed reads it)
 	if not dodge.is_dashing() and not skill_slot.moves_body():
-		velocity = input_dir * speed * guard.move_scale() * skill_slot.move_scale() * swimmer.speed_scale() * effects.speed_mult()
+		velocity = input_dir * speed * guard.move_scale() * skill_slot.move_scale() * swimmer.speed_scale() * effects.speed_mult() * consumer.move_scale()
 		move_and_slide()
 
 	var new_move_state := "run" if velocity.length() > 1.0 else "idle"
@@ -149,8 +150,9 @@ func _physics_process(delta: float) -> void:
 	visual.set_aim_angle(_body_facing.angle())
 	weapon_visual.set_aim_angle(_body_facing.angle())
 	held_item.set_item(_held_item_data())
+	held_item.set_eating(consumer.is_eating())
 	# Tinkerlands style (0055): the held weapon / tool / item shows only while facing the mouse, i.e. in use + face_mouse_hold after.
-	weapon_visual.visible = not hide_idle_held or _face_mouse_left > 0.0 or weapon_visual.dev_hold_still or held_item.keeps_shown()
+	weapon_visual.visible = not hide_idle_held or _face_mouse_left > 0.0 or weapon_visual.dev_hold_still or held_item.keeps_shown() or held_item.chest_held()
 	weapon_holder.aim_direction = aim_direction
 	skill_slot.aim_direction = aim_direction
 	guard.aim_direction = aim_direction
@@ -159,18 +161,19 @@ func _physics_process(delta: float) -> void:
 
 	if typing:
 		guard.release()
+		consumer.cancel()
 		return
+
+	# Food / potion: HOLD attack to eat (Consumer owns the timer). Never turns the body: no _action_used.
+	consumer.tick(delta, Input.is_action_pressed("attack") and guard.can_attack() and not skill_slot.is_active() \
+			and not dodge.is_dashing() and not mouse_over_ui())
 
 	var attack_in := Input.is_action_just_pressed("attack") \
 			or (hold_to_gather and _pending_slot < 0 and not dodge.is_dashing() and loadout.is_holstered() and loadout.can_attack() and not placer.is_holding() and not consumer.is_holding() and Input.is_action_pressed("attack"))
-	if attack_in and guard.can_attack() \
+	if attack_in and guard.can_attack() and not consumer.is_holding() \
 			and not skill_slot.is_active() and not mouse_over_ui():
 		# A station in the selected slot: the click puts it down instead of swinging (decision 0031).
-		if consumer.is_holding():   # food / potion: the click eats or drinks, once per press (no repeat on hold)
-			if Input.is_action_just_pressed("attack"):
-				_action_used = true
-				consumer.try_use_selected()
-		elif placer.is_holding():
+		if placer.is_holding():
 			_action_used = true
 			placer.try_place()
 		elif loadout.can_attack():   # bare hands never attack (decision 0055)
@@ -268,6 +271,9 @@ func debug_children() -> Array:
 		{"name": "WaterFx", "object": get_node_or_null("Visual/WaterFx")},
 		{"name": "BodyRig", "object": visual.get("rig")},   # per-character body / weapon fit (decision 0028)
 		{"name": "HeldItem", "object": held_item},
+		{"name": "ChestHold", "object": held_item.chest},   # pose + eating bob data (decision 0073)
+		{"name": "Eating", "object": consumer.eating},   # eating timings + crumbs data (decision 0073)
+		{"name": "EatCrumbs", "object": get_node_or_null("EatCrumbs")},
 		{"name": "MainHandArt", "object": get_node_or_null("MainHandArt")},
 		{"name": "OffHandArt", "object": get_node_or_null("OffHandArt")},
 		{"name": "GuardVisual", "object": guard_visual, "cat": "Combat"},

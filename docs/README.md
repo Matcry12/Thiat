@@ -121,3 +121,4 @@ Start at the root [README.md](../README.md) and [AGENTS.md](../AGENTS.md).
 | [0070](decision/0070-debug-hook-pattern.md) | One debug hook pattern | Current |
 | [0071](decision/0071-hunger-and-potion.md) | Hunger bar, food and the healing potion | Superseded by [0072](decision/0072-food-effects.md). |
 | [0072](decision/0072-food-effects.md) | Food gives timed effects, no hunger bar | Active. Replaces [0071](decision/0071-hunger-and-potion.md). |
+| [0073](decision/0073-eating-and-chest-hold-data.md) | Chest-hold pose and eating numbers are saved data | Active. |

@@ -1,5 +1,5 @@
 extends SceneTree
-# Food slice v2 (decision 0072): item data, stacking rules, regen total, Sick slows, refusals, potion, respawn, save, click eats.
+# Food slice v2 (decision 0072): item data, stacking rules, regen total, Sick slows, refusals, potion, respawn, save, hold eats.
 const World = preload("res://tests/support/craft_world.gd")
 var _ok := true
 
@@ -153,19 +153,100 @@ func _init() -> void:
 	sg.apply(sd)
 	_check(fx.active().is_empty(), "old save (food field, no effects) loads: no effects")
 
-	# click with food eats one, no swing
+	# hold with food: eats after eat_time, no swing, no body turn, slower walk
 	inv.remove_from_slot(0, 99)
 	inv._put(0, bread, 5)
 	lo.select_instant(0)
 	health.hp = 10.0
 	var wh: WeaponHolder = player.get_node("WeaponHolder")
 	var before := inv.count(&"bread")
+	player.aim_override = Vector2.LEFT
+	player._body_facing = Vector2.RIGHT
+	player._face_mouse_left = 0.0
 	Input.action_press("attack")
-	await _frames(3)
+	await _frames(6)
+	_check(consumer.is_eating() and consumer.eat_progress() > 0.0, "hold: eating starts")
+	_check(wh.phase == WeaponHolder.Phase.IDLE and player._face_mouse_left == 0.0 and player._body_facing.x > 0.0, "food hold: no swing, body does not turn to the mouse")
+	var board: SoundBoard = arena.get_tree().get_first_node_in_group("sound_board")
+	var n0 := board.play_count
+	await _frames(40)
+	_check(inv.count(&"bread") == before and consumer.is_eating(), "0.7 s: not eaten yet")
+	_check(board.play_count >= n0 + 2 and board.last_event == &"player.eat", "chew sounds while eating (%d plays, %s)" % [board.play_count - n0, board.last_event])
+	_check(player.get_node("EatCrumbs")._crumbs.size() > 0 and player.get_node("WeaponVisual/HeldItem").bob_y() <= 0.0, "crumbs fly while eating")
+	await _frames(70)   # ~1.9 s total
+	_check(inv.count(&"bread") == before - 1 and fx.level_of(&"regen") == 1, "hold eat_time: exactly one eaten")
+	_check(not consumer.is_eating() and consumer.status_text().contains("gap 0."), "still holding: gap, not eating (no bob / crumbs)")
+	_check(board.last_event == &"player.gulp", "finished: gulp (got %s)" % board.last_event)
+	await _frames(20)   # ~2.27 s: gap (0.5 s) over
+	_check(consumer.is_eating(), "gap over: next one started")
 	Input.action_release("attack")
 	await _frames(3)
-	_check(wh.phase == WeaponHolder.Phase.IDLE, "click with food: no swing")
-	_check(inv.count(&"bread") == before - 1 and fx.level_of(&"regen") == 1, "click eats exactly one")
+	_check(not consumer.is_eating() and inv.count(&"bread") == before - 1, "release: stops")
+
+	# potion drinks with the drink sound
+	inv._put(3, potion, 2)
+	lo.select_instant(3)
+	health.hp = 10.0
+	n0 = board.play_count
+	Input.action_press("attack")
+	await _frames(30)
+	_check(consumer.is_eating() and board.play_count > n0 and board.last_event == &"player.drink", "potion hold: drink sound (got %s)" % board.last_event)
+	Input.action_release("attack")
+	await _frames(3)
+	_check(not consumer.is_eating(), "release resets (potion)")
+	lo.select_instant(0)
+	await _frames(3)
+
+	# release early eats nothing
+	fx.clear()
+	health.hp = 10.0
+	before = inv.count(&"bread")
+	Input.action_press("attack")
+	await _frames(60)
+	Input.action_release("attack")
+	await _frames(60)
+	_check(inv.count(&"bread") == before and not consumer.is_eating() and fx.active().is_empty(), "release at 1.0 s: nothing eaten")
+
+	# switch slot cancels
+	Input.action_press("attack")
+	await _frames(30)
+	lo.select_instant(1)
+	await _frames(3)
+	_check(consumer.eat_progress() < 0.1, "slot switch cancels (progress restarts)")
+	Input.action_release("attack")
+	lo.select_instant(0)
+	await _frames(3)
+
+	# walk speed halved while eating
+	health.hp = 10.0
+	Input.action_press("move_right")
+	await _frames(10)
+	var v_walk: float = absf(player.velocity.x)
+	Input.action_press("attack")
+	await _frames(15)
+	var v_eat: float = absf(player.velocity.x)
+	Input.action_release("attack")
+	Input.action_release("move_right")
+	_check(v_walk > 0.0 and absf(v_eat / v_walk - consumer.eating.eat_move_mult) < 0.05, "eating: walk speed x eat_move_mult (%.0f vs %.0f)" % [v_eat, v_walk])
+	await _frames(3)
+
+	# refusal at start: no eating, no animation
+	health.hp = health.max_hp
+	fx.clear()
+	Input.action_press("attack")
+	await _frames(10)
+	_check(not consumer.is_eating() and consumer.last_refusal == "full", "full hp: eating does not start")
+	Input.action_release("attack")
+	await _frames(3)
+
+	# dying cancels
+	health.hp = 10.0
+	Input.action_press("attack")
+	await _frames(20)
+	player._on_died()
+	_check(not consumer.is_eating(), "death cancels")
+	Input.action_release("attack")
+	player.respawn()
 
 	print("RESULT: ", "PASS" if _ok else "FAIL")
 	quit(0 if _ok else 1)

@@ -29,6 +29,11 @@ you eat, you get an effect for a while. Food matters most before and between fig
 3. **Cooked food = Regeneration.** Heals a little every second while the timer runs. Better food = faster heal or longer time.
 4. **Raw food = Sick (debuff).** Raw pork still heals a tiny bit, but you are Sick: move 20% slower for 15 s. You eat it only when you must.
 5. **Potion = best.** Instant +50 HP, then a 30 s cooldown (kept from v1). Food can never heal this much this fast.
+5b. **Eating takes time (hold).** Hold the attack button 1.6 s (`eat_time` in `data/food/eating.tres`) on food or a potion; then one item is used.
+   Release early, switch slot, dodge or die = cancel, nothing eaten. Refused items (potion on cooldown, full hp) never start.
+   Keep holding = the next one starts after a pause `eat_gap` (same file) (0.5 s; no bob / crumbs in the gap; release resets it).
+   Sounds: a chew (`ItemData.use_sound`, `eat`; potions `drink`) every `eat_sound_every` (0.25 s) while eating, then one `gulp` when an item is used. You walk x0.5 slower while eating (`eat_move_mult`) and the body does not turn.
+   The item and both hands bob 3 px, 5 times a second; tiny crumbs in the item's colours fly off (`EatCrumbs`).
 6. **Stacking (Minecraft rule).** One effect of each kind at a time.
    - New effect is **stronger**: it replaces the old one.
    - **Same strength**: the timer becomes the longer of the two (not added).
@@ -61,6 +66,15 @@ Hungry and nothing cooked? Raw pork: +5 HP over 10 s, but Sick: slower for 15 s.
 
 Other numbers: `sick_speed_mult` 0.8, `blink_time` 3 s (icon blinks before it ends), `potion_cooldown` 30 s.
 
+## Replacing the eating art / sounds
+Everything below is data or one small node. No combat code changes.
+- **Sounds:** replace `assets/game/audio/eat_chew.wav`, `drink_sip.wav`, `eat_gulp.wav` (same file name), or point the cues `data/sounds/cues/player_eat.tres`, `player_drink.tres`, `player_gulp.tres` at new files.
+- **Timings** (`eat_time`, `eat_gap`, `eat_sound_every`, `eat_move_mult`): `data/food/eating.tres` (`EatingData`). Stretch the art to these, never the other way.
+- **Crumbs:** set `crumb_texture` in `data/food/eating.tres`. Empty = small squares in the food's colours. Or replace the `EatCrumbs` node: it only reads `Consumer.is_eating()` and the `HeldItem` position and picture. Nothing reaches into it.
+- **Pose and bob** (item in front of the chest, hands, up-down bob while eating): `data/held_item/chest_hold.tres` (`ChestHoldData`).
+- **Body "eat" animation (not built):** the body visual would read `Consumer.is_eating()` and play it. Same signal the bob and crumbs use.
+- F3 sections `ChestHold` and `Eating` show these files; "Write to .tres" keeps your tuning.
+
 ## HUD
 A row of effect icons (one per active effect, timer under it), near the HP bar. Raw-food Sick in a red frame, good effects in a normal frame.
 Designed in the web mockup first, shown to you before it is built. The food bar from v1 is removed; its place waits for mana.
@@ -71,8 +85,8 @@ Designed in the web mockup first, shown to you before it is built. The food bar 
 - **Test yard:** a stack of each food and potions (kept from v1).
 
 ## What v1 code is kept / removed
-- Kept: `Consumer` (click to eat / drink, one item used, refusals), potion + cooldown + slot sweep, test-yard food, save hook.
+- Kept: `Consumer` (hold to eat / drink, one item used, refusals), potion + cooldown + slot sweep, test-yard food, save hook.
 - Removed: `Hunger` node, food bar, starving, `food_value`.
 
 ## Later (not in this design)
-Mana bar (own page: what uses mana?), eat time + animation, cooking raw pork at the furnace, more effects (speed, damage, shield).
+Mana bar (own page: what uses mana?), cooking raw pork at the furnace, more effects (speed, damage, shield).

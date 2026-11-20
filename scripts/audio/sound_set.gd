@@ -5,7 +5,7 @@ extends Resource
 
 const DIR := "res://data/sounds"
 ## Legal slot names (`break` is a GDScript keyword, so that slot is `break_`).
-const SLOTS: Array[StringName] = [&"hit", &"break_", &"wrong_tool", &"place", &"swing", &"block", &"parry", &"phase", &"hit_charged"]
+const SLOTS: Array[StringName] = [&"hit", &"break_", &"wrong_tool", &"place", &"swing", &"block", &"parry", &"phase", &"hit_charged", &"eat", &"drink", &"gulp"]
 
 @export var id: StringName = &""
 ## Something hits this thing (node chopped, slime / boss / player hurt). On a weapon's set: its own impact (arrows).
@@ -23,6 +23,10 @@ const SLOTS: Array[StringName] = [&"hit", &"break_", &"wrong_tool", &"place", &"
 @export var phase: SoundCue
 ## A charged arrow lands (bow set).
 @export var hit_charged: SoundCue
+## Player eating: chew (repeats while holding), sip (potions), swallow (one eat finished).
+@export var eat: SoundCue
+@export var drink: SoundCue
+@export var gulp: SoundCue
 
 ## The cue in `slot`, or null when empty / unknown.
 func cue(slot: StringName) -> SoundCue:

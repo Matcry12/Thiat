@@ -12,3 +12,4 @@ color = Color(0.63, 0.74, 0.71, 1)
 category = "material"
 max_stack = 16
 heal_value = 50.0
+use_sound = &"drink"

@@ -36,6 +36,9 @@
 [ext_resource type="Resource" path="res://data/sounds/player.tres" id="snd_set"]
 [ext_resource type="Script" path="res://scripts/components/effects.gd" id="effects_s"]
 [ext_resource type="Script" path="res://scripts/components/consumer.gd" id="consumer_s"]
+[ext_resource type="Script" path="res://scripts/visual/eat_crumbs.gd" id="crumbs_s"]
+[ext_resource type="Resource" path="res://data/held_item/chest_hold.tres" id="chest_data"]
+[ext_resource type="Resource" path="res://data/food/eating.tres" id="eating_data"]
 [ext_resource type="PackedScene" path="res://scenes/world/light_source.tscn" id="night_glow"]
 
 [sub_resource type="CircleShape2D" id="BodyShape"]
@@ -102,6 +105,7 @@ script = ExtResource("21")
 
 [node name="HeldItem" type="Sprite2D" parent="WeaponVisual" unique_id=671982563]
 script = ExtResource("held_s")
+chest = ExtResource("chest_data")
 
 [node name="MainHandArt" type="Sprite2D" parent="." unique_id=1604417733]
 texture_filter = 1
@@ -180,6 +184,11 @@ script = ExtResource("effects_s")
 
 [node name="Consumer" type="Node" parent="."]
 script = ExtResource("consumer_s")
+eating = ExtResource("eating_data")
+
+[node name="EatCrumbs" type="Node2D" parent="."]
+script = ExtResource("crumbs_s")
+eating = ExtResource("eating_data")
 
 [node name="Collector" type="Node" parent="." unique_id=1229734545]
 script = ExtResource("col_s")

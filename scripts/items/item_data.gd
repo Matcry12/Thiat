@@ -32,3 +32,5 @@ func stack_limit() -> int:
 ## Heal: HP restored at once when drunk (0 = not a potion). Effects: what eating / drinking grants (Regen, Sick...), see food-algorithm.md. Consumer reads both.
 @export var heal_value := 0.0
 @export var effects: Array[EffectGrant] = []
+## SoundSet slot played every `Consumer.eat_sound_every` while eating this (&"eat" chew, &"drink" sip).
+@export var use_sound: StringName = &"eat"

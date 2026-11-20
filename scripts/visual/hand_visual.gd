@@ -30,11 +30,19 @@ class_name HandVisual
 @onready var _body: SpriteActorVisual = get_node("../Visual")
 
 var _at := "rest"
+var _s := 1.0
 
 ## Where the hand holds something this frame, or null = nothing, rest. Fists have no Grip marker: bare hands stay at rest.
 func _hold_point() -> Variant:
 	if not _weapon.visible:
 		return null
+	if _held.visible and _held.chest_held():   # both hands carry it in front of the chest; the picture follows the body bob like resting hands
+		_at = "chest"
+		var origin: Vector2 = (get_parent() as Node2D).global_position + (_body.hand_frame_offset() / _s).round() * _s
+		var left: bool = _body.is_facing_left()
+		if not off_hand:
+			_held.chest_at(origin, left)
+		return _held.chest_hand_point(origin, left, off_hand)
 	if off_hand:
 		if _held.visible:   # a held item (torch, wood) is one-handed: the free hand stays at rest
 			return null
@@ -55,6 +63,7 @@ func _process(_delta: float) -> void:
 	if not visible:
 		return
 	var s := hand_scale if hand_scale > 0.0 else (_body.rig.body_scale.x if _body.rig else 1.0)
+	_s = s
 	var hold: Variant = _hold_point()
 	var p: Vector2
 	if hold != null:

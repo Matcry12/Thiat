@@ -56,4 +56,11 @@ save("parry_chime.wav", synth(0.45, (1320, 1320), decay=5, lp=0.6, partials=(1.0
 save("block_clunk.wav", mix(synth(0.12, (120, 70), decay=6, lp=0.4), synth(0.06, (0, 0), noise=1.0, decay=8, lp=0.2, seed=6)))
 save("player_hurt.wav", synth(0.17, (340, 150), kind="square", decay=5, lp=0.22))
 save("boom.wav", mix(synth(0.55, (80, 28), decay=4), synth(0.30, (0, 0), noise=1.0, decay=5, lp=0.15, seed=7)))
+# eating (placeholders): chew = 3 short band-passed crunches, sip = bubbly low blip, gulp = low sine with a downward drop
+def crunch(dur, seed, lp):
+    n = synth(dur, (0, 0), noise=1.0, decay=7, lp=lp, seed=seed)
+    return [n[i] - (n[i - 1] if i else 0) * 0.7 for i in range(len(n))]   # high-pass-ish: crisp, not rumbly
+save("eat_chew.wav", mix(crunch(0.07, 11, 0.45), [0.0] * int(0.05 * RATE) + crunch(0.06, 12, 0.5), [0.0] * int(0.11 * RATE) + crunch(0.07, 13, 0.4)), 0.5)
+save("drink_sip.wav", mix(synth(0.09, (300, 520), decay=6, lp=0.4), synth(0.07, (0, 0), noise=1.0, decay=8, lp=0.2, seed=14)), 0.4)
+save("eat_gulp.wav", mix(synth(0.15, (230, 90), decay=5, lp=0.35), synth(0.05, (0, 0), noise=1.0, decay=9, lp=0.2, seed=15)), 0.55)
 print("wrote", sorted(p.name for p in OUT.glob("*.wav")))
