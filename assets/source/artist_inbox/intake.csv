@@ -1,0 +1,8 @@
+file,id,name,category,stack,color
+Items/Foods/Bread.png,bread,Bread,material,16,
+Items/Foods/Pork.png,raw_pork,Raw Pork,material,16,
+Items/Foods/cooked pork.png.png,cooked_pork,Cooked Pork,material,16,
+Items/Foods/soup.png,soup,Soup,material,16,
+Items/Foods/Xucxich.png,sausage,Sausage,material,16,
+Items/Potions/healingpotion.png,healing_potion,Healing Potion,material,16,
+Items/Key.png,key,Key,material,1,

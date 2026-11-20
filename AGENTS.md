@@ -155,6 +155,7 @@ resolved.
   draws it by hand as char grids in `tools/art_tests/<topic>/` ($0, Pixel Crawler style). Opus checks every
   render before the user sees it.
 - "Add this weapon / tool" from a picture (artist art arrives in `assets/source/artist_inbox/`): run `python3 tools/add_weapon.py <picture.png> <id> [--kind sword|axe|pickaxe|hoe] [--scale N] [--flip] [--hands 1|2]` (`--dry-run` first: check the handle end). Never make the files by hand, no builder or judge needed. Then `tools/run_tests.sh tests/test_item_files_complete.gd tests/test_asset_rules.gd`; the user checks it in `Test yard`, book tab `Items`.
+- "Add these plain items" (no weapon: food, potion, key...): add rows to `assets/source/artist_inbox/intake.csv`, run `python3 tools/add_items.py` (`--dry-run` first); same tests as above.
 - Map / world work: [docs/wiki/world-gen-plan.md](docs/wiki/world-gen-plan.md) and
   [docs/wiki/vegetation-rules.md](docs/wiki/vegetation-rules.md). Any new look gets a $0 preview picture first
   (`tools/asset_viewer/*.py`) that the user approves before it is built.

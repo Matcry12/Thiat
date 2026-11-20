@@ -10,11 +10,11 @@ size = Vector2(56, 9.562761)
 
 [node name="Art" type="Sprite2D" parent="." unique_id=132417756]
 texture_filter = 1
-rotation = 0.7853982
+rotation = 1.5707963
 scale = Vector2(2, 2)
 texture = ExtResource("1")
 centered = false
-offset = Vector2(-8.5, -22.5)
+offset = Vector2(-15.5, -27.5)
 
 [node name="Hitbox" type="Area2D" parent="." unique_id=478139043]
 collision_layer = 8
@@ -26,8 +26,8 @@ position = Vector2(28, 0)
 shape = SubResource("HitShape")
 
 [node name="Tip" type="Marker2D" parent="." unique_id=1733898423]
-position = Vector2(48, 0)
+position = Vector2(50, 0)
 
 [node name="MainHandGrip" type="Marker2D" parent="." unique_id=1323887435]
-position = Vector2(-6, 0)
+position = Vector2(5, 1)
 gizmo_extents = 14.0
