@@ -36,12 +36,10 @@ Dim `dim_alpha_pause`. The HUD hotbar is hidden while these are open.
   icon 16 px at slot +(3,4); key number `small` at slot +(2,2) (`pal_out` selected, else `pal_line`); stack count `small` CREAM+OUT bottom-right, inset 3.
 - Abilities (3, step 26, at art (10+26*i, 262)): `ability_frame` 22x22 (icon 16 px at +3,+3; cooldown = `pal_shadow` at `cooldown_alpha` wiping down from the top
   + 1 px CREAM edge + bold seconds), `ability_keycap` 13x11 at frame (5,17), letter bold `pal_out` (Q / E / F).
+- Effect icons (`effect_bar.gd`, right of Q/E/F, step 25 from art x 98, y +2): `effect_frame` / `effect_frame_bad` (red debuff) 20x20 with a dark well; effect symbol 12x11 at (4,4) from `assets/game/ui/effects/<id>.png`
+  (EffectData.icon); seconds `small` CREAM under it, level badge `small` `pal_goldtxt` at (17-w,13) for level > 1; last `blink_time` s the well gets a `pal_shadow` 50% flash.
 - HP bar (mock x=10, y=298, w=120): `hp_frame` (136x26, drawn at art (4,295)); fill area `rects.fill` = (15,5,114,14): `hp_trail` (damage) under `hp_fill`,
   both nine-patch, stretch to the fraction. Number `cur/max` bold CREAM+OUT at `rects.number_centre`.
-- Food bar (`food_bar.gd`, mock x=10, y=H-21, same w=120 as the HP bar): `food_frame` (136x20, rope + knots + bronze socket with the drumstick); fill area `rects.fill` = (15,4,114,12): `food_fill` (warm gloss, nine-patch, stretch to the fraction), no number.
-  Starving: `food_frame_starving` (red socket, dark drumstick) is drawn over `food_frame` with a pulsing alpha. Stacks under `hp_frame`, picture tops overlapping by 3 art px (`HUD.vitals_overlap`).
-  Baked alone with `python3 tools/ui_bake/bake_game_parts.py --only food_` (the full bake is stale since the book tabs changed in the mock).
-- Potion cooldown (`item_slot.gd`, hotbar slots holding a `heal_value > 0` item): `pal_shadow` at `Hotbar.potion_sweep_alpha` over the top share of the 18 px interior (2,2), 1 px `pal_cream` edge, seconds in the count spot.
 - Boss bar (bottom centre, only while awake): `boss_frame` (284x28 at art (146,296)); `rects.fill` = (14,10,256,12) holds `boss_fill`; `boss_mark` (3 wide) at 50%
   (`rects.mark`); `boss_plate` (nine-patch, width = name width + 26, 16 tall, bottom 1 px above the bar top, centred) with the name bold CREAM+OUT.
 

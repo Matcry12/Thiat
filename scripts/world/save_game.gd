@@ -184,7 +184,7 @@ func collect() -> Dictionary:
 			"stations": stations,
 			"pickups": drops,
 		},
-		"player": {"pos": [p.global_position.x, p.global_position.y], "hp": health.hp, "food": (p.get_node("Hunger") as Hunger).food, "selected_slot": lo.selected_slot},
+		"player": {"pos": [p.global_position.x, p.global_position.y], "hp": health.hp, "effects": (p.get_node("Effects") as Effects).to_array(), "selected_slot": lo.selected_slot},
 		"inventory": inv.to_array(),
 		"held": held,
 		"boss_defeated": boss != null and boss.mode == Boss.Mode.DEAD,
@@ -209,8 +209,7 @@ func apply(d: Dictionary) -> void:
 	m.teleport_player(pos)
 	var health := p.get_node("Health") as Health
 	health.hp = clampf(float(d["player"].get("hp", health.max_hp)), 1.0, health.max_hp)
-	var hunger := p.get_node("Hunger") as Hunger
-	hunger.set_food(float(d["player"].get("food", hunger.max_food)))   # old saves: full bar
+	(p.get_node("Effects") as Effects).from_array(d["player"].get("effects", []))   # old saves (and the old "food" field): none
 	for pk: Pickup in get_tree().get_nodes_in_group("pickup"):
 		pk.free()   # first: the cursor stack below may spill onto the ground and must survive
 	var inv := p.get_node("Inventory") as Inventory

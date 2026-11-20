@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://4sri271j8ss8"
-path="res://.godot/imported/food_frame_starving.png-e80eed7c46e75c9f84cb90efd45058ec.ctex"
+uid="uid://6ukeoh4514r8"
+path="res://.godot/imported/effect_frame_bad.png-c7cd1a2439f95acc58bcb211141cda3f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/game/ui/skin/food_frame_starving.png"
-dest_files=["res://.godot/imported/food_frame_starving.png-e80eed7c46e75c9f84cb90efd45058ec.ctex"]
+source_file="res://assets/game/ui/skin/effect_frame_bad.png"
+dest_files=["res://.godot/imported/effect_frame_bad.png-c7cd1a2439f95acc58bcb211141cda3f.ctex"]
 
 [params]
 

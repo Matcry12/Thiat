@@ -73,7 +73,7 @@ s:"....|....|.###|#...|.##.|...#|###.",t:"...|.#.|###|.#.|.#.|.#.|..#",u:".....|
 v:".....|.....|#...#|#...#|#...#|.#.#.|..#..",w:".....|.....|#...#|#...#|#.#.#|#.#.#|.#.#.",x:".....|.....|#...#|.#.#.|..#..|.#.#.|#...#",
 y:".....|.....|#...#|#...#|#...#|#...#|.####|....#|.###.",z:".....|.....|#####|...#.|..#..|.#...|#####",
 };
-const SMALL={0:"###|#.#|#.#|#.#|###",1:".#.|##.|.#.|.#.|###",2:"##.|..#|.#.|#..|###",3:"##.|..#|.##|..#|##.",4:"#.#|#.#|###|..#|..#",
+const SMALL={s:"...|.##|#..|..#|##.",I:"###|.#.|.#.|.#.|###",0:"###|#.#|#.#|#.#|###",1:".#.|##.|.#.|.#.|###",2:"##.|..#|.#.|#..|###",3:"##.|..#|.##|..#|##.",4:"#.#|#.#|###|..#|..#",
 5:"###|#..|##.|..#|##.",6:".##|#..|###|#.#|###",7:"###|..#|.#.|.#.|.#.",8:"###|#.#|###|#.#|###",9:"###|#.#|###|..#|##.",
 Q:"###|#.#|#.#|###|..#",E:"###|#..|##.|#..|###",F:"###|#..|##.|#..|#..",R:"##.|#.#|##.|#.#|#.#",M:"#.#|###|###|#.#|#.#",B:"##.|#.#|##.|#.#|##.",S:".##|#..|.#.|..#|##.",P:"##.|#.#|##.|#..|#..",C:".##|#..|#..|#..|.##"};
 const BOLD={m:".......|.......|######.|#..#..#|#..#..#|#..#..#|#..#..#", w:".......|.......|#.....#|#.....#|#..#..#|#..#..#|.##.##.", W:"#.....#|#.....#|#.....#|#..#..#|#..#..#|#..#..#|.##.##.", M:"#.....#|##...##|#..#..#|#.....#|#.....#|#.....#|#.....#"};
@@ -278,25 +278,23 @@ function hpBar(x,y,cur,max,w=120){
   sprite(sx+2,y+5,HEART);put(sx+4,y+6,HP_L);
   const kn="KKKKK|KohoK|KqoqK|KoqoK|KKKKK";sprite(x+4,y+6,kn);sprite(x+w+1,y+6,kn); // knots at both ends
 }
-const FD_L=[246,196,112], FD=[206,126,46], FD_D=[140,76,36]; // food fill: warm bread
-const DRUM="...KKKK...|..KLLGGK..|.KLLGGGGK.|.KLGGGGDK.|.KGGGGDDK.|.KPKGDDK..|KPPK.KK...|.KK.......";
-const DRUM_COLS={K:OUT,L:FD_L,G:FD,D:FD_D,P:CREAM};
-const DRUM_DEAD={K:OUT,L:LINE,G:LINE,D:OUT,P:MUTED};
-function foodBar(x,y,frac,starving=0,w=120){ // 2nd bar under HP: shorter, thinner, no number
-  const h=12;
-  framed(x+6,y-1,w,h+6,OUT,ROPE_L,1);
-  {const r=rng(hs('fd'+x+y));let sh=0,nx=x+7+20+Math.floor(r()*16);
-   for(let i=x+7;i<x+5+w;i++){if(i>=nx){sh++;nx+=20+Math.floor(r()*16);}
-     const st=a=>[ROPE_D,ROPE_H,ROPE_L][(i+a+sh)%3];put(i,y,st(0));put(i,y+1,st(1));put(i,y+h+2,st(0));put(i,y+h+3,st(1));}}
-  rbox(x+9,y+2,w-6,h,TRACK,1);
-  const fw=Math.round((w-6)*frac);
-  if(fw>0){rbox(x+9,y+2,fw,h,FD,1);rect(x+10,y+3,fw-2,1,FD_L);rect(x+11,y+4,fw-4,1,FD_L,0.45);rect(x+10,y+h-1,fw-2,2,FD_D);rect(x+10,y+h-3,fw-2,1,FD_D,0.5);}
-  const sx=x-4,sy=y+1; // socket 14x16 (same as heart)
-  rbox(sx,sy,14,16,starving?HP_D:OUT,2);rbox(sx+1,sy+1,12,14,BRZ,2);rect(sx+3,sy+1,8,1,BRZ_L);rect(sx+3,sy+14,8,1,BRZ_D);
-  rbox(sx+2,sy+2,10,12,starving?HP_D:WELL_D,1);
-  if(starving)rect(sx+2,sy+2,10,12,HP,0.35*starving);
-  const kn="KKKKK|KohoK|KqoqK|KoqoK|KKKKK";sprite(x+4,y+5,kn);sprite(x+w+1,y+5,kn);
-  sprite(sx+2,sy+4,DRUM,false,false,starving?DRUM_DEAD:DRUM_COLS); // drawn after the knot so the drumstick stays fully readable
+// effect icons (real: EffectsRow): 20 px frame, 12x11 symbol, seconds left under it; last 3 s = dimmed blink
+const GN=[110,214,104],GN_D=[52,140,66],SK=[196,232,92],SK_D=[120,160,60];
+const FX={
+  regen:{bad:0,lvl:'II',g:"..........n.|.........nnn|..........n.|.KKK.KKK...|KrRRKRRRK..|KRRRRRRRK..|KRRRRRRdK..|.KRRRRdK...|..KRRdK....|...KdK.....|....K......",c:{K:OUT,R:HP,r:HP_L,d:HP_D,n:GN}},
+  sick:{bad:1,g:"..ssssss...|.ss....ss..|ss..ss..ss.|s..s..s..s.|s..s.ss..s.|s..s.....s.|ss..sssss..|.ss.......e.|..ssssss...|...........|...........",c:{s:SK,e:SK_D}}};
+function effectFrame(x,y,bad){ // frame + dark well only (baked to effect_frame / effect_frame_bad)
+  const fill=bad?[120,44,48]:COVER_L;
+  framed(x,y,20,20,OUT,fill,2);if(bad)framed(x,y,20,20,HP,fill,2);
+  rect(x+2,y+1,16,1,bad?HP_L:[170,104,78],bad?.5:1);well(x+2,y+2,16,16);rect(x+3,y+3,14,14,bad?[58,34,34]:TRACK);
+}
+function effect(x,y,kind,secs,blink=0){
+  const f=FX[kind];
+  effectFrame(x,y,f.bad);
+  sprite(x+4,y+4,f.g,false,false,f.c);
+  if(f.lvl)smallText(x+17-smallW(f.lvl),y+13,f.lvl,GOLDTXT,OUT);
+  if(blink)rect(x+2,y+2,16,16,[26,14,20],.5);
+  const t=secs+'s';smallText(Math.round(x+10-smallW(t)/2),y+22,t,blink?MUTED:CREAM,OUT);
 }
 function bossBar(cx,y,frac,name,w=260){
   const x=Math.round(cx-w/2),h=12,nw=textW(name,{bold:true})+10+16,nx=Math.round(cx-nw/2),ny=y-14;
@@ -341,9 +339,9 @@ function dayDial(cx,cy,r=9){ // round face tinted like the sky, sun riding round
 }
 function hudLayer(withBoss=true,o={}){
   if(o.hotbar!==false){hotbar(14,14);dayDial(18,64);}
-  hpBar(10,H-43,70,100);
-  foodBar(10,H-21,state.food??0.55,state.starving||0);
-  [['dodge','Q'],['skill','E'],['guard','F']].forEach(([n,k],i)=>ability(10+i*26,H-79,n,i===1?0.55:0,k));
+  hpBar(10,H-26,70,100);
+  [['dodge','Q'],['skill','E'],['guard','F']].forEach(([n,k],i)=>ability(10+i*26,H-62,n,i===1?0.55:0,k));
+  if(o.fx)o.fx.forEach(([k,t,b],i)=>effect(98+i*25,H-60,k,t,b)); // right of Q/E/F, same row
   if(withBoss)bossBar(W/2,H-20,0.45,'Orc Warlord');
 }
 function drawTitle(){
@@ -485,7 +483,7 @@ function tooltip([x,y,lines]){
   const pc=Math.round(x+w/2);rect(pc-2,y-1,4,4,OUT);rect(pc-1,y,2,2,BRZ_L); // pinned note
   lines.forEach((l,i)=>text(x+6,y+4+i*11,l,i?PAPER:CREAM,{bold:i===0,outline:i?null:OUT}));
 }
-function drawHud(){backdrop();hudLayer(true);}
+function drawHud(){backdrop();hudLayer(true,{fx:state.fx});}
 function drawParts(){
   rect(0,0,W,H,[44,28,34]);
   panel(14,14,120,78);brackets(14,14,120,78);ctext(74,25,'Panel',CREAM,{bold:true,outline:OUT,scale:2});

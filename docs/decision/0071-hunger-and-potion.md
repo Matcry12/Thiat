@@ -1,6 +1,6 @@
 # 0071 - Hunger bar, food and the healing potion
 
-**Status:** Active
+**Status:** Superseded by [0072](0072-food-effects.md).
 
 ## Context
 The artist delivered food (bread, pork, soup, sausage) and a healing potion. They were plain materials. The user asked for a food bar and a potion that heals. Before this, hunger was "skipped by choice" (backlog) and out of v1 (v1-design §10).

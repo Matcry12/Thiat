@@ -925,52 +925,31 @@
    "center": "tile",
    "note": "Bag divider, 2 rows (RIM + PAPER_L). Tile across; at bag y=83."
   },
-  "food_frame": {
-   "file": "food_frame.png",
+  "effect_frame": {
+   "file": "effect_frame.png",
    "size": [
-    136,
+    20,
     20
    ],
    "center": "none",
-   "note": "Food bar frame: rope + knots + bronze socket with the drumstick + empty track, real size 136x20 (bar w 120 = the HP bar). Fill goes in rects.fill. Stacks under hp_frame with the pads overlapping (food image top = HP image bottom - 3).",
+   "note": "20x20 effect frame + dark well. Icon art (12x11) at (4,4); seconds left under it (small font, CREAM), level badge GOLDTXT small at frame (17-w,13). Last blink_time s: 50% SHADOW over the well.",
    "rects": {
-    "fill": [
-     15,
+    "icon": [
      4,
-     114,
-     12
-    ],
-    "drumstick": [
      4,
-     7,
-     10,
-     8
+     12,
+     11
     ]
    }
   },
-  "food_frame_starving": {
-   "file": "food_frame_starving.png",
+  "effect_frame_bad": {
+   "file": "effect_frame_bad.png",
    "size": [
-    136,
+    20,
     20
    ],
    "center": "none",
-   "note": "Same frame, socket rim + interior red, dark drumstick. Drawn over food_frame with a pulsing alpha while starving."
-  },
-  "food_fill": {
-   "file": "food_fill.png",
-   "size": [
-    114,
-    12
-   ],
-   "slice": {
-    "left": 3,
-    "top": 0,
-    "right": 3,
-    "bottom": 0
-   },
-   "center": "tile",
-   "note": "Warm bread-colour gloss ramp, stretch columns only."
+   "note": "Same, red debuff variant (border HP, fill 120,44,48, well 58,34,34)."
   }
  }
 }

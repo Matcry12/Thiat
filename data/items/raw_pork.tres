@@ -1,7 +1,22 @@
-[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="ItemData" load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
 [ext_resource type="Texture2D" path="res://assets/game/ui/items/raw_pork.png" id="icon"]
+[ext_resource type="Script" path="res://scripts/items/effect_grant.gd" id="grant_s"]
+[ext_resource type="Resource" path="res://data/effects/regen.tres" id="fx_regen"]
+[ext_resource type="Resource" path="res://data/effects/sick.tres" id="fx_sick"]
+
+[sub_resource type="Resource" id="grant_0"]
+script = ExtResource("grant_s")
+effect = ExtResource("fx_regen")
+level = 1
+duration = 10.0
+
+[sub_resource type="Resource" id="grant_1"]
+script = ExtResource("grant_s")
+effect = ExtResource("fx_sick")
+level = 1
+duration = 15.0
 
 [resource]
 script = ExtResource("1")
@@ -11,4 +26,4 @@ icon = ExtResource("icon")
 color = Color(0.77, 0.24, 0.24, 1)
 category = "material"
 max_stack = 16
-food_value = 10.0
+effects = Array[ExtResource("grant_s")]([SubResource("grant_0"), SubResource("grant_1")])

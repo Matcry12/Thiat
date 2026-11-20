@@ -1,13 +1,13 @@
 class_name Consumer
 extends Node
-## Eats food and drinks potions (food-algorithm.md rules 5-6). The attack click on a selected food / potion calls
-## `try_use_selected`. Success removes ONE item from the selected hotbar slot. Refused: food at a full bar, a potion at full hp or on cooldown.
+## Eats food and drinks potions (food-algorithm.md rules 5-8). The attack click on a selected food / potion calls
+## `try_use_selected`. Success removes ONE item from the selected hotbar slot. Refused: Regen food at full hp, a stacking no-change, a potion at full hp or on cooldown. Raw food (a debuff grant) is never refused.
 
 signal used(item: ItemData)
 
 @export var potion_cooldown := 30.0   ## s between healing potions
 
-var last_refusal := ""   ## "" / "full" / "cooldown" (F3)
+var last_refusal := ""   ## "" / "full" / "cooldown" / "no change" (F3)
 var _cooldown_left := 0.0
 
 func _physics_process(delta: float) -> void:
@@ -28,7 +28,7 @@ func _selected() -> ItemData:
 	return inv.slot_item(lo.selected_slot) if inv != null and lo != null else null
 
 static func is_consumable(it: ItemData) -> bool:
-	return it != null and (it.food_value > 0.0 or it.heal_value > 0.0)
+	return it != null and (it.heal_value > 0.0 or not it.effects.is_empty())
 
 ## The selected hotbar item is food / a potion (the click eats instead of swinging or placing).
 func is_holding() -> bool:
@@ -43,25 +43,31 @@ func try_use(item: ItemData, slot := -1) -> bool:
 	last_refusal = ""
 	if not is_consumable(item):
 		return false
-	var hunger := get_parent().get_node_or_null("Hunger") as Hunger
+	var effects := get_parent().get_node_or_null("Effects") as Effects
 	var health := get_parent().get_node_or_null("Health") as Health
-	# Refusal checks first, then apply: refused only when NO effect can apply (else a refused heal would still feed).
-	var can_eat := item.food_value > 0.0 and hunger != null and hunger.food < hunger.max_food
+	var full := health != null and health.hp >= health.max_hp
+	# Refusal checks first, then apply: the item is used when at least one part applies.
+	var grants: Array[EffectGrant] = []
+	var raw := false
+	for g in item.effects:
+		raw = raw or g.effect.is_debuff
+		if effects != null and effects.can_apply(g) and (g.effect.is_debuff or not full):
+			grants.append(g)
 	var can_heal := false
 	if item.heal_value > 0.0:
 		if _cooldown_left > 0.0:
 			last_refusal = "cooldown"
-		elif health != null and health.hp < health.max_hp:
+		elif not full:
 			can_heal = true
 		else:
 			last_refusal = "full"
-	if not can_eat and not can_heal:
-		if last_refusal == "" or item.food_value > 0.0 and item.heal_value <= 0.0:
-			last_refusal = "full"
+	if grants.is_empty() and not can_heal and not raw:
+		if last_refusal == "":
+			last_refusal = "full" if full else "no change"
 		return false
 	last_refusal = ""
-	if can_eat:
-		hunger.eat(item.food_value)
+	for g in grants:
+		effects.apply(g)
 	if can_heal:
 		health.heal(item.heal_value)
 		_cooldown_left = potion_cooldown

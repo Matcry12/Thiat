@@ -1,79 +1,78 @@
 # Food algorithm
 
-**Status:** Current (approved 2026-11-20, decision [0071](../decision/0071-hunger-and-potion.md))
+**Status:** Current (v2 approved 2026-11-20, decision [0072](../decision/0072-food-effects.md)). Replaces the hunger-bar design of [0071](../decision/0071-hunger-and-potion.md).
 
-How hunger, eating and the healing potion work. A **temporary first design**: small, so we can feel it and change it.
-Code (planned): `scripts/components/hunger.gd` (the food bar), `scripts/components/consumer.gd` (eat / drink), `scripts/ui/food_bar.gd` (HUD).
-Built from how Minecraft, Terraria and Don't Starve do it, not guessed.
+How food, raw food and the healing potion work. **No hunger bar.** Food gives effects with a timer (Minecraft style).
+The bar under HP will become the **mana bar** later (its own design page, not this one).
+Code (planned): `scripts/components/effects.gd` (the player's active effects), `scripts/components/consumer.gd` (eat / drink, kept),
+`scripts/items/effect_data.gd` (one effect as data), HUD effect icons.
+Built from how Minecraft, Terraria and Tinkerlands-like games do it, not guessed.
 
-Note: [backlog.md](backlog.md) says "hunger skipped by choice" and [v1-design.md](v1-design.md) §10 lists hunger as out of v1.
-This page changes that. When it is approved, a decision record (0071) says so and both pages are updated.
+## Why the change (v1 -> v2)
+A bar that always goes down is a chore in a 20-30 min run. Terraria and similar games use food as **preparation**:
+you eat, you get an effect for a while. Food matters most before and between fights.
 
 ## Sources
-| Rule | Minecraft | Terraria | Don't Starve |
-|---|---|---|---|
-| Food bar | 20 points (10 drumsticks) + hidden "saturation" buffer | No hunger. Food gives a "Well Fed" buff (small stat bonus, minutes long) | 150 points |
-| Drains | Through "exhaustion": running, jumping, fighting, healing | — | Steady 75 per day (8 min day): empty in ~16 min |
-| Empty bar | Lose 1 HP every 4 s. Easy: stops at 10 HP, Normal: stops at 1 HP, Hard: can kill | — | Lose ~1 HP/s, can kill |
-| Full bar | HP regenerates (that is where most healing comes from) | — | Nothing extra |
-| Eating | Hold use 1.6 s. Refused when the bar is full | Instant | Instant |
-| Food values | Raw pork 3, bread 5, stew 6, cooked pork 8. Cooked ≈ 2-3x raw | Better food = longer, stronger buff | Raw meat 25 (hurts sanity), cooked meat 25 (+1 HP). Cooking makes it safe, not bigger |
-| Healing potion | (Potion of Healing: +4 HP, instant) | Lesser 50 HP, normal 100 HP, instant. Then "Potion Sickness": no healing potion for 60 s | Healing items (salve 20 HP), no cooldown |
-| On respawn | Food bar full | — | Half |
+| Rule | Minecraft | Terraria |
+|---|---|---|
+| What food does | Fills hunger; some food adds effects (golden apple: Regeneration II + Absorption) | "Well Fed" buff (small stats), tier by food quality |
+| Raw / bad food | Raw chicken: 30% chance of "Hunger" debuff. Rotten flesh: 80%. Poisonous potato: Poison | No raw food |
+| Heal over time | Regeneration I: 1 HP / 2.5 s. Regeneration II: 1 HP / 1.2 s | Regeneration potion, Campfire, Heart Lantern: +HP/s |
+| Instant heal | Potion of Healing (instant) | Healing potion 50 / 100 HP, then Potion Sickness 60 s |
+| Same effect again | Does **not** stack. Stronger level replaces weaker. Same level: the longer time wins | Does not stack. Using it again resets the timer |
+| Show it | Icon + timer, top right; blinks in the last seconds | Icon + timer row under the hotbar |
 
 ## Our rules
-1. **One food bar, one owner.** A `Hunger` node on the player holds `food` (0..`max_food`). Nothing else changes it.
-2. **Steady drain (Don't Starve)**, not Minecraft's exhaustion: `food` goes down by `drain_per_min` every real minute of play.
-   Easy to read: "a full bar lasts 10 minutes". A 20-30 min run needs 2-3 meals.
-   It does not drain while paused, in menus, or in headless tests (like the day clock).
-3. **Empty bar = starving (Minecraft Normal).** At 0 you lose `starve_damage` HP every `starve_interval` s, but it **stops at 1 HP**.
-   Hunger alone never kills you; it makes the next hit dangerous. The HP bar's "low" pulse shows it.
-   Damage goes straight to HP, not through the shield or armor (it is not a hit: no hit flash, no knockback).
-4. **No regeneration from a full bar.** Our design says HP does not regenerate (design-pillars §2: only the shield does).
-   Food is not a healer. The potion is.
-5. **Eating.** Select food on the hotbar, press the attack click. One item is used, `food` goes up by the item's `food_value` (capped at max).
-   Instant (Terraria, Don't Starve), no eat animation in this slice. Refused when the bar is full (Minecraft): nothing is used.
-6. **Healing potion.** Same click. Heals `heal_value` HP at once (capped at max HP). Then a personal cooldown of
-   `potion_cooldown` s (Terraria's potion sickness; our design-pillars §2 already says 30 s). Refused at full HP or during the cooldown.
-   The cooldown shows on the HUD (a dark sweep over the potion's hotbar slot), as design-pillars §2 asks for every cooldown.
-7. **Allowed in boss fights.** The bag is locked in a fight, but the hotbar works. Bring food and potions in the hotbar.
-8. **Item data decides.** `ItemData` gets `food_value` and `heal_value` (0 = not food / not a potion). A new food is a new `.tres`, no code.
-   Raw pork gives less than cooked pork (Minecraft), so cooking is worth it later (cooking at the furnace is a later slice).
-9. **Respawn = full bar (Minecraft).** Death already costs you; starving again right away would be a death spiral.
-10. **Save.** `food` is saved with HP in `user://save.json` (old saves load with a full bar).
+1. **One owner.** An `Effects` node on the player holds the active effects. Each effect: id, strength, time left. Nothing else changes them.
+2. **Effects are data.** One `EffectData` per kind: `regen` (heal per second), `sick` (debuff). An item lists what it gives:
+   effect, strength, duration. A new food = a new `.tres`, no code.
+3. **Cooked food = Regeneration.** Heals a little every second while the timer runs. Better food = faster heal or longer time.
+4. **Raw food = Sick (debuff).** Raw pork still heals a tiny bit, but you are Sick: move 20% slower for 15 s. You eat it only when you must.
+5. **Potion = best.** Instant +50 HP, then a 30 s cooldown (kept from v1). Food can never heal this much this fast.
+6. **Stacking (Minecraft rule).** One effect of each kind at a time.
+   - New effect is **stronger**: it replaces the old one.
+   - **Same strength**: the timer becomes the longer of the two (not added).
+   - **Weaker** while a stronger one runs: refused, the item is **not** used (no waste).
+   - Same strength but **shorter** than the time left: nothing would change, so refused too (item not used).
+   - Strength = the Regen level (I = 0.5 HP/s, II = 1 HP/s; was 1 / 2, playtest 2026-11-20: too fast), not the food. Bread and sausage are both Regen I, so they count as the same.
+   - Example: bread Regen running (6 s left), you eat bread again: timer back to 10 s. Not 16 s. Eating 5 bread at once does not heal 5 times more.
+   - Different kinds run together: Regen + Sick at the same time is fine.
+7. **Efficiency.** Total heal per item = rate x time. Food heals slowly (good between fights), the potion heals at once (good in a fight).
+   Spamming food does not add up (rule 6), so a stack of bread is not a stack of potions.
+8. **Never at full HP:** Regen food at full HP is refused (nothing used). Raw food is never refused (it is your choice).
+9. **Boss fights:** allowed. The bag is locked, the hotbar works. Note: design-pillars §2 says HP does not regenerate; food Regen is a small, timed exception. Tune it down if fights get too easy.
+10. **Death / respawn:** all effects end. **Save:** effects are saved with their time left.
 11. **Key** stays a plain item, unused.
 
 ## Example
-You start with a full food bar (100). After 5 minutes of mining it is at 50. You eat bread (+25): 75.
-You forget to eat. 10 minutes later it is 0: every 4 s you lose 1 HP, the HP bar turns red and pulses, but you never drop below 1 HP.
-A slime hits you for 10 and you have 6 HP left. You drink the healing potion: +50 HP, then 30 s before the next one works.
+You have 40/100 HP after mining. You eat cooked pork: Regen II, 1 HP/s for 20 s, so 60 HP. You eat a second cooked pork 3 s later:
+same strength, timer back to 20 s (not 37 s). In the boss fight you drop to 20 HP: you drink the potion, +50 at once, then 30 s cooldown.
+Hungry and nothing cooked? Raw pork: +5 HP over 10 s, but Sick: slower for 15 s.
 
-## Tuning (all `@export`, F3; starting values, tune)
-| Number | Start value | Where |
-|---|---|---|
-| `max_food` | 100 | Hunger |
-| `drain_per_min` | 10 (full bar lasts 10 min) | Hunger |
-| `starve_damage` | 1 HP | Hunger |
-| `starve_interval` | 4 s | Hunger |
-| `starve_floor` | 1 HP (never kills) | Hunger |
-| `start_food` | 100 | Hunger |
-| `potion_cooldown` | 30 s | Consumer |
-| bread `food_value` | 25 | `data/items/bread.tres` |
-| raw pork | 10 | `raw_pork.tres` |
-| cooked pork | 35 | `cooked_pork.tres` |
-| sausage | 20 | `sausage.tres` |
-| soup | 40 | `soup.tres` |
-| healing potion `heal_value` | 50 HP (half of 100) | `healing_potion.tres` |
+## Tuning (all `@export` / item data, F3; starting values, tune)
+| Item | Effect | Rate | Time | Total |
+|---|---|---|---|---|
+| Raw pork | Regen I + Sick (-20% speed) | 0.5 HP/s | 10 s (Sick 15 s) | 5 HP |
+| Bread | Regen I | 0.5 HP/s | 20 s | 10 HP |
+| Sausage | Regen I | 0.5 HP/s | 30 s | 15 HP |
+| Cooked pork | Regen II | 1 HP/s | 20 s | 20 HP |
+| Soup | Regen II | 1 HP/s | 30 s | 30 HP |
+| Healing potion | instant | — | — | 50 HP, then 30 s cooldown |
 
-## Test mode
-- **F3:** Hunger row: `food`, `drain_per_min`, starving yes/no, time to next starve tick. Consumer row: potion cooldown left, last refusal ("full", "cooldown").
-- **F3 buttons:** "Hunger empty" (food = 0, starving starts) and "Hunger full".
-- **Test yard:** a stack of each food and potions on the ground.
-- [debug-keys.md](debug-keys.md) gets the new rows and buttons.
+Other numbers: `sick_speed_mult` 0.8, `blink_time` 3 s (icon blinks before it ends), `potion_cooldown` 30 s.
 
 ## HUD
-A food bar under the HP bar, bottom left, same Island Workshop style (rope frame), orange-brown fill, a drumstick/bread icon instead of the heart.
-Designed in the web mockup (`tools/ui_mock/`) first and shown to you as a picture before it is built.
+A row of effect icons (one per active effect, timer under it), near the HP bar. Raw-food Sick in a red frame, good effects in a normal frame.
+Designed in the web mockup first, shown to you before it is built. The food bar from v1 is removed; its place waits for mana.
 
-## Later (not in this slice)
-Eat time + animation, cooking raw pork at the furnace, Terraria-style "Well Fed" buff from good food, food that heals a little (Don't Starve), faster drain while running.
+## Test mode
+- **F3:** Effects row: each active effect, strength, time left. Consumer row: potion cooldown, last refusal.
+- **F3 buttons:** "Give Regen", "Give Sick", "Clear effects".
+- **Test yard:** a stack of each food and potions (kept from v1).
+
+## What v1 code is kept / removed
+- Kept: `Consumer` (click to eat / drink, one item used, refusals), potion + cooldown + slot sweep, test-yard food, save hook.
+- Removed: `Hunger` node, food bar, starving, `food_value`.
+
+## Later (not in this design)
+Mana bar (own page: what uses mana?), eat time + animation, cooking raw pork at the furnace, more effects (speed, damage, shield).

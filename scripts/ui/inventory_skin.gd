@@ -414,6 +414,14 @@ extends Resource
 	set(v):
 		ability_keycap_tex = v
 		emit_changed()
+@export var effect_frame_tex: Texture2D:
+	set(v):
+		effect_frame_tex = v
+		emit_changed()
+@export var effect_frame_bad_tex: Texture2D:   ## the red debuff variant
+	set(v):
+		effect_frame_bad_tex = v
+		emit_changed()
 @export var hp_frame_tex: Texture2D:
 	set(v):
 		hp_frame_tex = v
@@ -425,18 +433,6 @@ extends Resource
 @export var hp_trail_tex: Texture2D:
 	set(v):
 		hp_trail_tex = v
-		emit_changed()
-@export var food_frame_tex: Texture2D:
-	set(v):
-		food_frame_tex = v
-		emit_changed()
-@export var food_frame_starving_tex: Texture2D:
-	set(v):
-		food_frame_starving_tex = v
-		emit_changed()
-@export var food_fill_tex: Texture2D:
-	set(v):
-		food_fill_tex = v
 		emit_changed()
 @export var boss_frame_tex: Texture2D:
 	set(v):

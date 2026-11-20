@@ -99,9 +99,9 @@ Slow motion (0.25x)
 - `CraftWindow` Text group `items_title`, `items_note`; F3 `ItemPicker` status (items, pages, tab, last taken).
 - Not a debug key
 
-## Food (0071)
-- F3 sections `Hunger` (`max_food`, `start_food`, `drain_per_min`, `starve_damage`, `starve_interval`, `starve_floor`, `frozen`) and `Consumer` (`potion_cooldown`), both under Character.
-- Status: `Hunger` = food, drain, STARVING / ok, next starve tick; `Consumer` = potion cooldown left, last refusal ("full" / "cooldown").
-- Buttons (Hunger): `Hunger empty` (starving starts), `Hunger full`.
+## Food and effects (0072)
+- F3 sections `Effects` (under Character; no exports, numbers live in `data/effects/*.tres` and item grants) and `Consumer` (`potion_cooldown`).
+- Status: `Effects` = each effect, level, time left, current speed multiplier; `Consumer` = potion cooldown left, last refusal ("full" / "cooldown" / "no change").
+- HUD effect icons: F3 section `EffectBar` (`lead_art`, `top_art`, `pitch_art`, `blink_time`, `blink_hz`, `blink_alpha`); icons sit right of Q/E/F; pictures `assets/game/ui/effects/<id>.png` (set as `icon` in the effect .tres), frames `effect_frame` / `effect_frame_bad` in the skin; hover tooltip "Regeneration II - 8 s".
+- Buttons (Effects): `Give Regen` (II, 10 s), `Give Sick` (15 s), `Clear effects`.
 - Test yard: a stack of each food and healing potions lies in a row south of home (`TestYard` exports `food_ids`, `food_stack`, `food_spacing`, `food_row_offset`).
-- Hunger is frozen in headless tests (like DayClock); a test sets `frozen = false`.

@@ -24,7 +24,7 @@ extends CharacterBody2D
 @onready var loadout: Loadout = $Loadout
 @onready var skill_slot: SkillSlot = $SkillSlot
 @onready var placer: Placer = $Placer
-@onready var hunger: Hunger = $Hunger
+@onready var effects: Effects = $Effects
 @onready var consumer: Consumer = $Consumer
 @onready var swimmer: Swimmer = $Swimmer   # shallow water slows walking (0038 step 3)
 
@@ -81,6 +81,7 @@ func _on_died() -> void:
 	if dead:
 		return
 	dead = true
+	effects.clear()
 	_pending_slot = -1
 	weapon_holder.cancel()
 	guard.release()
@@ -94,7 +95,7 @@ func _on_died() -> void:
 func respawn() -> void:
 	dead = false
 	health.revive()
-	hunger.refill()   # death already cost enough: no starving again at once (food-algorithm rule 9)
+	effects.clear()
 	guard.reset()
 	_face_mouse_left = 0.0
 	velocity = Vector2.ZERO
@@ -112,7 +113,7 @@ func _physics_process(delta: float) -> void:
 	# A body-moving skill (the lunge) drives velocity the same way.
 	swimmer.refresh()   # in shallow water? (only the walk speed reads it)
 	if not dodge.is_dashing() and not skill_slot.moves_body():
-		velocity = input_dir * speed * guard.move_scale() * skill_slot.move_scale() * swimmer.speed_scale()
+		velocity = input_dir * speed * guard.move_scale() * skill_slot.move_scale() * swimmer.speed_scale() * effects.speed_mult()
 		move_and_slide()
 
 	var new_move_state := "run" if velocity.length() > 1.0 else "idle"

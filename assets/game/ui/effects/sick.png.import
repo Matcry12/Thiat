@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://14rc2t3ris33"
-path="res://.godot/imported/food_frame.png-f38cd3561a2a819203e6da2e62242005.ctex"
+uid="uid://ccsamxkqfay4y"
+path="res://.godot/imported/sick.png-84523df34baf632e1f1e4a4ff955c4b5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/game/ui/skin/food_frame.png"
-dest_files=["res://.godot/imported/food_frame.png-f38cd3561a2a819203e6da2e62242005.ctex"]
+source_file="res://assets/game/ui/effects/sick.png"
+dest_files=["res://.godot/imported/sick.png-84523df34baf632e1f1e4a4ff955c4b5.ctex"]
 
 [params]
 

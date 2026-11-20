@@ -29,6 +29,6 @@ func stack_limit() -> int:
 ## Held in the hand: its own picture (an upright torch) instead of the inventory icon. Null = the icon. `held_grip` is then in this picture's pixels.
 @export var held_icon: Texture2D
 
-## Food: how much the food bar fills when eaten (0 = not food). Heal: HP restored when drunk (0 = not a potion). Consumer reads both.
-@export var food_value := 0.0
+## Heal: HP restored at once when drunk (0 = not a potion). Effects: what eating / drinking grants (Regen, Sick...), see food-algorithm.md. Consumer reads both.
 @export var heal_value := 0.0
+@export var effects: Array[EffectGrant] = []

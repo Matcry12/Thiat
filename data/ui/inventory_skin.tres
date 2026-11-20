@@ -37,12 +37,11 @@
 [ext_resource type="Texture2D" path="res://assets/game/ui/skin/slot_sel.png" id="g_slot_sel"]
 [ext_resource type="Texture2D" path="res://assets/game/ui/skin/ability_frame.png" id="g_ability_frame"]
 [ext_resource type="Texture2D" path="res://assets/game/ui/skin/ability_keycap.png" id="g_ability_keycap"]
+[ext_resource type="Texture2D" path="res://assets/game/ui/skin/effect_frame.png" id="g_effect_frame"]
+[ext_resource type="Texture2D" path="res://assets/game/ui/skin/effect_frame_bad.png" id="g_effect_frame_bad"]
 [ext_resource type="Texture2D" path="res://assets/game/ui/skin/hp_frame.png" id="g_hp_frame"]
 [ext_resource type="Texture2D" path="res://assets/game/ui/skin/hp_fill.png" id="g_hp_fill"]
 [ext_resource type="Texture2D" path="res://assets/game/ui/skin/hp_trail.png" id="g_hp_trail"]
-[ext_resource type="Texture2D" path="res://assets/game/ui/skin/food_frame.png" id="g_food_frame"]
-[ext_resource type="Texture2D" path="res://assets/game/ui/skin/food_frame_starving.png" id="g_food_frame_starving"]
-[ext_resource type="Texture2D" path="res://assets/game/ui/skin/food_fill.png" id="g_food_fill"]
 [ext_resource type="Texture2D" path="res://assets/game/ui/skin/boss_frame.png" id="g_boss_frame"]
 [ext_resource type="Texture2D" path="res://assets/game/ui/skin/boss_fill.png" id="g_boss_fill"]
 [ext_resource type="Texture2D" path="res://assets/game/ui/skin/boss_mark.png" id="g_boss_mark"]
@@ -100,12 +99,11 @@ slot_pick_tex = ExtResource("g_slot_pick")
 slot_sel_tex = ExtResource("g_slot_sel")
 ability_frame_tex = ExtResource("g_ability_frame")
 ability_keycap_tex = ExtResource("g_ability_keycap")
+effect_frame_tex = ExtResource("g_effect_frame")
+effect_frame_bad_tex = ExtResource("g_effect_frame_bad")
 hp_frame_tex = ExtResource("g_hp_frame")
 hp_fill_tex = ExtResource("g_hp_fill")
 hp_trail_tex = ExtResource("g_hp_trail")
-food_frame_tex = ExtResource("g_food_frame")
-food_frame_starving_tex = ExtResource("g_food_frame_starving")
-food_fill_tex = ExtResource("g_food_fill")
 boss_frame_tex = ExtResource("g_boss_frame")
 boss_fill_tex = ExtResource("g_boss_fill")
 boss_mark_tex = ExtResource("g_boss_mark")

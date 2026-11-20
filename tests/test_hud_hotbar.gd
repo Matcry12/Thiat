@@ -95,7 +95,7 @@ func _init():
 	var vh: float = screen.get_visible_rect().size.y
 	var hbr := hb.get_global_rect()
 	check("hotbar sits in the top-left corner", hbr.position.x == hud.margin_x and hbr.position.y == hud.margin_y)
-	check("food bar sits in the bottom-left corner, the life bar right above it", is_equal_approx(hud.food_bar().get_global_rect().end.y, vh - hud.margin_y) and bar.get_global_rect().position.x == hud.margin_x and bar.get_global_rect().end.y <= hud.food_bar().get_global_rect().position.y + hud.vitals_overlap * 2.0 + 1.0)
+	check("health bar sits in the bottom-left corner", is_equal_approx(bar.get_global_rect().end.y, vh - hud.margin_y) and bar.get_global_rect().position.x == hud.margin_x)
 	check("ability icons sit above the health bar", hud.abilities().get_global_rect().end.y <= bar.get_global_rect().position.y)
 	check("three ability slots", hud.abilities().slots().size() == 3)
 	check("health bar and hotbar do not overlap", not hbr.intersects(bar.get_global_rect()))

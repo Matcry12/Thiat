@@ -34,7 +34,7 @@
 [ext_resource type="Script" uid="uid://661k0pygu5hh" path="res://scripts/components/swimmer.gd" id="swimmer_script"]
 [ext_resource type="Script" uid="uid://dhsyd41tvs3t5" path="res://scripts/visual/water_fx.gd" id="water_fx_script"]
 [ext_resource type="Resource" path="res://data/sounds/player.tres" id="snd_set"]
-[ext_resource type="Script" path="res://scripts/components/hunger.gd" id="hunger_s"]
+[ext_resource type="Script" path="res://scripts/components/effects.gd" id="effects_s"]
 [ext_resource type="Script" path="res://scripts/components/consumer.gd" id="consumer_s"]
 [ext_resource type="PackedScene" path="res://scenes/world/light_source.tscn" id="night_glow"]
 
@@ -175,8 +175,8 @@ script = ExtResource("crafter_s")
 [node name="Placer" type="Node" parent="." unique_id=531166586]
 script = ExtResource("placer_s")
 
-[node name="Hunger" type="Node" parent="."]
-script = ExtResource("hunger_s")
+[node name="Effects" type="Node" parent="."]
+script = ExtResource("effects_s")
 
 [node name="Consumer" type="Node" parent="."]
 script = ExtResource("consumer_s")

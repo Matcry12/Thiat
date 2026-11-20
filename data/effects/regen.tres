@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="EffectData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/effect_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/game/ui/effects/regen.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = &"regen"
+display_name = "Regeneration"
+icon = ExtResource("2")
+is_debuff = false
+hp_per_level_per_s = 0.5

@@ -2,7 +2,7 @@ extends SceneTree
 ## Full-screen HUD screenshots of the real arena (decision 0030):
 ##   xvfb-run -a godot --rendering-driver opengl3 --resolution 1152x648 --script tools/hud_shots.gd -- <out_dir>
 ## Saves hud_layout.png (boss asleep: no boss bar), hud_bag_open.png, hud_tooltip.png,
-## hud_starving.png (food 0, potion cooldown running in hud_layout), hud_f3_open.png, hud_boss_phase2.png (boss awake, phase 2, bottom centre), hud_boss_phase2_f3.png.
+## hud_effects.png / hud_effects_blink.png (Regen II + Sick), hud_f3_open.png, hud_boss_phase2.png (boss awake, phase 2, bottom centre), hud_boss_phase2_f3.png.
 var _out := ""
 
 func _init() -> void:
@@ -22,19 +22,26 @@ func _init() -> void:
 	inv._insert(load("res://data/items/healing_potion.tres"), 12, [4])
 	inv.add(load("res://data/items/stone.tres"), 12)
 	inv.add(load("res://data/items/copper_ore.tres"), 3)
-	var hunger: Hunger = player.get_node("Hunger")
 	var consumer: Consumer = player.get_node("Consumer")
 	await _frames(10)
 	hp.hp = hp.max_hp * 0.7
-	hunger.set_food(hunger.max_food * 0.55)
 	consumer._cooldown_left = consumer.potion_cooldown * 0.4   # potion sweep: 12 s left
 	await _frames(40)
 	await _shot("hud_layout")
-	hunger.set_food(0.0)
-	await _frames(20)
-	await _shot("hud_starving")
-	hunger.set_food(hunger.max_food * 0.55)
 	consumer._cooldown_left = 0.0
+	var fx: Effects = player.get_node("Effects")
+	fx.apply(_grant("regen", 2, 8.0))
+	fx.apply(_grant("sick", 1, 12.0))
+	await _frames(10)
+	await _shot("hud_effects")
+	fx.clear()
+	fx.apply(_grant("regen", 2, 2.0))
+	fx.apply(_grant("sick", 1, 2.0))
+	hud.effect_bar().blink_hz = 0.0001   # freeze the flicker on its dark half
+	await _frames(10)
+	await _shot("hud_effects_blink")
+	fx.clear()
+	hp.hp = hp.max_hp * 0.7
 	hud.bag().toggle()
 	await _frames(10)
 	await _shot("hud_bag_open")
@@ -59,6 +66,13 @@ func _init() -> void:
 	await _frames(10)
 	await _shot("hud_boss_phase2_f3")
 	quit()
+
+func _grant(id: String, level: int, secs: float) -> EffectGrant:
+	var g := EffectGrant.new()
+	g.effect = load("res://data/effects/%s.tres" % id) as EffectData
+	g.level = level
+	g.duration = secs
+	return g
 
 func _frames(n: int) -> void:
 	await create_timer(n / 60.0).timeout
