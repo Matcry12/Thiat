@@ -10,6 +10,7 @@
 <script type="text/plain" id="parts">
 // ================= parts code (same scope as the mock engine) =================
 let hits=[],hover=null,mouseDown=false;
+const state={potionCd:0,food:0,starving:0}; // the mock's hotbar() / hudLayer() read it (potion cooldown, food bar)
 window.NOTEXT=true;
 function mk(w,h,fn){const c=document.createElement('canvas');c.width=w;c.height=h;const p=ctx;ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;try{fn()}finally{ctx=p}return c}
 const PARTS=[];
@@ -86,6 +87,14 @@ P('ability_keycap',mk(13,11,()=>framed(0,0,13,11,OUT,PAPER_L,1)),null,null,'none
  P('hp_fill',flatH(mk(hw-6,hh,()=>glossBar(0,0,hw-6,hh,1,NEUT)),3,3),[3,0,3,0],null,'tile',{note:'Neutral grey gloss ramp (light top rows, body, shade rows): TINT with modulate (red, low-HP pulse). Stretch columns only.'});
  const fw=hw-6;
  P('hp_trail',flatH(mk(fw,hh,()=>glossBar(0,0,fw,hh,1,[[255,214,196],[255,176,150],[214,122,104]])),3,3),[3,0,3,0],null,'tile',{note:'"Hit just taken" trail under the fill.'});}
+// ---- Food bar (mock foodBar at x=10, w=120: same length as the HP bar, track 12 tall, drumstick in the socket) ----
+{const fx=10,fy=H-21,fw_=120,fh=12,x0=fx-6,y0=fy-2;
+ window.BARFRAME=true;
+ P('food_frame',real(x0,y0,fw_+16,20,()=>foodBar(fx,fy,0,0,fw_),0,0,0,0),null,null,'none',{rects:{fill:[fx+9-x0,fy+2-y0,fw_-6,fh],drumstick:[fx-2-x0,fy+5-y0,10,8]},note:'Food bar frame: rope + knots + bronze socket with the drumstick + empty track, real size 136x20 (bar w 120 = the HP bar). Fill goes in rects.fill. Stacks under hp_frame with the pads overlapping (food image top = HP image bottom - 3).'});
+ P('food_frame_starving',real(x0,y0,fw_+16,20,()=>foodBar(fx,fy,0,1,fw_),0,0,0,0),null,null,'none',{note:'Same frame, socket rim + interior red, dark drumstick. Drawn over food_frame with a pulsing alpha while starving.'});
+ window.BARFRAME=false;
+ P('food_fill',flatH(mk(fw_-6,fh,()=>glossBar(0,0,fw_-6,fh,1,[FD_L,FD,FD_D])),3,3),[3,0,3,0],null,'tile',{note:'Warm bread-colour gloss ramp, stretch columns only.'});}
+if(location.search.includes('only=food'))throw new Error('bake-stop'); // ponytail: partial bake (`bake_game_parts.py --only food_`); the book tabs below no longer match the mock
 // ---- Boss bar (mock bossBar cx=W/2, y=H-20, w=260) ----
 {const bw=260,bh=12,cx=W/2,by_=H-20,bx_=Math.round(cx-bw/2),x0=bx_-12,y0=by_-8;
  window.BARFRAME=true;

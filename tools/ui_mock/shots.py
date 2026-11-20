@@ -12,6 +12,8 @@ URL = "http://127.0.0.1:8765/tools/ui_mock/index.html" + (sys.argv[2] if len(sys
 SHOTS = [
     ("title", "go('title'); hover='play'; draw();"),
     ("hud", "go('hud');"),
+    ("hud_food", "go('hud');"),
+    ("hud_starving", "state.food=0; state.starving=1; state.potionCd=0; go('hud'); state.food=undefined; state.starving=0; state.potionCd=undefined;"),
     ("pause", "go('pause'); hover='res'; draw();"),
     ("settings", "go('settings'); hover='vol'; state.full=true; draw();"),
     ("book", "go('book'); hover='b0'; state.tip=[300,190,['Wood','Material  x37']]; draw();"),

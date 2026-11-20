@@ -20,9 +20,11 @@ var framed := false
 @export var pad_top := 11
 @export var panel_w := 223
 @export var panel_h := 44
+@export_range(0.0, 1.0) var potion_sweep_alpha := 0.6   ## SHADOW strength of the potion cooldown sweep on a slot
 @export var panel_pad := 8                   ## transparent pad around the panel box inside hotbar_panel.png
 
 var _loadout: Loadout
+var _consumer: Consumer
 var _inv: Inventory
 var interactive := false   ## set by the bag panel while it is open
 var _slots: Array[ItemSlot] = []
@@ -89,6 +91,8 @@ func _process(_delta: float) -> void:
 			_pad.custom_minimum_size = bs.size
 		queue_redraw()
 	var owner_node := _loadout.get_parent()
+	if _consumer == null:
+		_consumer = owner_node.get_node_or_null("Consumer") as Consumer
 	var pending: int = owner_node.pending_slot() if owner_node.has_method("pending_slot") else -1
 	var shown := pending if pending >= 0 else _loadout.selected_slot
 	for i in _slots.size():
@@ -98,7 +102,16 @@ func _process(_delta: float) -> void:
 		s.set_item(_inv.slot_item(i), _inv.slot_count(i))
 		s.mouse_filter = Control.MOUSE_FILTER_STOP if interactive else Control.MOUSE_FILTER_IGNORE
 		s.selected = i == shown
+		s.cooldown_alpha = potion_sweep_alpha
+		s.cooldown_frac = potion_sweep(s.item, _consumer)
+		s.cooldown_secs = _consumer.cooldown_left() if s.cooldown_frac > 0.0 else 0.0
 		s.refresh()
+
+## Share of the potion cooldown still to run (1 = just drunk, 0 = ready) for a slot holding `it`; 0 for anything that does not heal.
+static func potion_sweep(it: ItemData, c: Consumer) -> float:
+	if it == null or c == null or it.heal_value <= 0.0:
+		return 0.0
+	return clampf(c.cooldown_left() / maxf(c.potion_cooldown, 0.001), 0.0, 1.0)
 
 func _gap(sk: InventorySkin) -> int:
 	if gap_override >= 0:

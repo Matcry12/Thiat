@@ -278,6 +278,26 @@ function hpBar(x,y,cur,max,w=120){
   sprite(sx+2,y+5,HEART);put(sx+4,y+6,HP_L);
   const kn="KKKKK|KohoK|KqoqK|KoqoK|KKKKK";sprite(x+4,y+6,kn);sprite(x+w+1,y+6,kn); // knots at both ends
 }
+const FD_L=[246,196,112], FD=[206,126,46], FD_D=[140,76,36]; // food fill: warm bread
+const DRUM="...KKKK...|..KLLGGK..|.KLLGGGGK.|.KLGGGGDK.|.KGGGGDDK.|.KPKGDDK..|KPPK.KK...|.KK.......";
+const DRUM_COLS={K:OUT,L:FD_L,G:FD,D:FD_D,P:CREAM};
+const DRUM_DEAD={K:OUT,L:LINE,G:LINE,D:OUT,P:MUTED};
+function foodBar(x,y,frac,starving=0,w=120){ // 2nd bar under HP: shorter, thinner, no number
+  const h=12;
+  framed(x+6,y-1,w,h+6,OUT,ROPE_L,1);
+  {const r=rng(hs('fd'+x+y));let sh=0,nx=x+7+20+Math.floor(r()*16);
+   for(let i=x+7;i<x+5+w;i++){if(i>=nx){sh++;nx+=20+Math.floor(r()*16);}
+     const st=a=>[ROPE_D,ROPE_H,ROPE_L][(i+a+sh)%3];put(i,y,st(0));put(i,y+1,st(1));put(i,y+h+2,st(0));put(i,y+h+3,st(1));}}
+  rbox(x+9,y+2,w-6,h,TRACK,1);
+  const fw=Math.round((w-6)*frac);
+  if(fw>0){rbox(x+9,y+2,fw,h,FD,1);rect(x+10,y+3,fw-2,1,FD_L);rect(x+11,y+4,fw-4,1,FD_L,0.45);rect(x+10,y+h-1,fw-2,2,FD_D);rect(x+10,y+h-3,fw-2,1,FD_D,0.5);}
+  const sx=x-4,sy=y+1; // socket 14x16 (same as heart)
+  rbox(sx,sy,14,16,starving?HP_D:OUT,2);rbox(sx+1,sy+1,12,14,BRZ,2);rect(sx+3,sy+1,8,1,BRZ_L);rect(sx+3,sy+14,8,1,BRZ_D);
+  rbox(sx+2,sy+2,10,12,starving?HP_D:WELL_D,1);
+  if(starving)rect(sx+2,sy+2,10,12,HP,0.35*starving);
+  const kn="KKKKK|KohoK|KqoqK|KoqoK|KKKKK";sprite(x+4,y+5,kn);sprite(x+w+1,y+5,kn);
+  sprite(sx+2,sy+4,DRUM,false,false,starving?DRUM_DEAD:DRUM_COLS); // drawn after the knot so the drumstick stays fully readable
+}
 function bossBar(cx,y,frac,name,w=260){
   const x=Math.round(cx-w/2),h=12,nw=textW(name,{bold:true})+10+16,nx=Math.round(cx-nw/2),ny=y-14;
   organicBox(x-1,y-1,w+2,h+6,hs('boss'+x),{B:1,Bb:0,sB:0,noise:false,chip:false,rad:[1,1,1,1],base:BRZ_D,lt:BRZ_D,dk:BRZ_D});
@@ -308,16 +328,22 @@ const bg=new Image();bg.src='bg.png';
 function backdrop(){if(bg.naturalWidth)ctx.drawImage(bg,0,0,W,H);}
 function shade(a){rect(0,0,W,H,[26,14,20],a);}
 const state={screen:'title',vol:1.0,shake:0.5,full:false,rec:0,items:false,qty:1,drag:null,tip:null};
-const HOT=['wooden_sword','axe','pickaxe','wood'];
+const HOT=['wooden_sword','axe','pickaxe','wood','healing_potion'];
 function hotbar(x,y){
   panel(x-8,y-11,9*23+16,44);brackets(x-8,y-11,9*23+16,44);
-  for(let i=0;i<9;i++){const sx=x+i*23;slot(sx,y,22,i===0?'pick':'');if(HOT[i])icon(sx+3,y+4,HOT[i]);keyNum(sx,y,i+1,i===0);}
+  for(let i=0;i<9;i++){const sx=x+i*23;slot(sx,y,22,i===0?'pick':'');if(HOT[i])HOT[i]==='healing_potion'?icon(sx-5,y-5,HOT[i]):icon(sx+3,y+4,HOT[i]);
+    if(HOT[i]==='healing_potion'){const cd=state.potionCd??0.4;if(cd>0){const ch=Math.round(18*cd);rect(sx+2,y+2,18,ch,SHADOW,0.6);rect(sx+2,y+2+ch,18,1,CREAM);const t=String(Math.ceil(30*cd));smallText(sx+19-smallW(t),y+14,t,CREAM,OUT);}}keyNum(sx,y,i+1,i===0);}
   count(x+3*23,y,22,37);
 }
+function dayDial(cx,cy,r=9){ // round face tinted like the sky, sun riding round it (real: DayDial, 40 px = 20 canvas px)
+  const disc=(x,y,rr,c)=>{for(let j=-rr;j<=rr;j++)for(let i=-rr;i<=rr;i++)if(i*i+j*j<=rr*rr+rr*.6)put(x+i,y+j,c);};
+  disc(cx,cy,r,OUT);disc(cx,cy,r-1,[214,220,232]);disc(cx-5,cy-2,3,OUT);disc(cx-5,cy-2,2,[246,200,76]);
+}
 function hudLayer(withBoss=true,o={}){
-  if(o.hotbar!==false)hotbar(14,14);
-  hpBar(10,H-26,70,100);
-  [['dodge','Q'],['skill','E'],['guard','F']].forEach(([n,k],i)=>ability(10+i*26,H-62,n,i===1?0.55:0,k));
+  if(o.hotbar!==false){hotbar(14,14);dayDial(18,64);}
+  hpBar(10,H-43,70,100);
+  foodBar(10,H-21,state.food??0.55,state.starving||0);
+  [['dodge','Q'],['skill','E'],['guard','F']].forEach(([n,k],i)=>ability(10+i*26,H-79,n,i===1?0.55:0,k));
   if(withBoss)bossBar(W/2,H-20,0.45,'Orc Warlord');
 }
 function drawTitle(){
@@ -500,6 +526,7 @@ let left=names.length+1;const done=()=>{if(--left<=0)draw();};
 // ?icons=<dir> tries that folder first (art tests), then the placeholder icons
 const ICON_DIR=new URLSearchParams(location.search).get('icons');
 names.forEach(n=>{const im=new Image(),ph=`../../assets/game/ui/placeholder/${n}.png`;im.onload=done;im.onerror=()=>{if(ICON_DIR&&im.src.indexOf(ph.slice(5))<0)im.src=ph;else if(im.src.indexOf('/source/')<0)im.src=ph.replace('/game/','/source/');else done();};im.src=ICON_DIR?`${ICON_DIR}/${n}.png`:ph;ICONS[n]=im;});
+{const p=new Image();p.onload=draw;p.src='../../assets/game/ui/items/healing_potion.png';ICONS.healing_potion=p;}
 bg.onload=done;bg.onerror=done;
 draw();
 </script>

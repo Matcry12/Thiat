@@ -17,6 +17,10 @@ extends Node
 @export_range(60.0, 600.0, 1.0, "or_greater") var station_row_offset := 260.0   ## px below home
 @export var slime_offset := Vector2(-260.0, 40.0)
 @export var station_items: Array[ItemData] = []   ## placed in a row; empty = workbench, furnace, anvil
+@export var food_ids: Array[StringName] = [&"bread", &"raw_pork", &"cooked_pork", &"sausage", &"soup", &"healing_potion"]   ## a stack of each lies in a row (food test)
+@export var food_stack := 8
+@export var food_spacing := 48.0
+@export var food_row_offset := Vector2(0, 90)   ## from home
 @export var give_kit := true   ## sword, bow, axe, pickaxe at the start (Inventory.give_dev_kit)
 
 var map: ArenaMap
@@ -86,6 +90,10 @@ func _populate() -> void:
 		st.set_meta(&"yard", true)
 		get_parent().add_child(st)
 		st.global_position = origin + Vector2((i - (items.size() - 1) * 0.5) * station_spacing, station_row_offset)
+	for k in food_ids.size():
+		var at := origin + food_row_offset + Vector2((k - (food_ids.size() - 1) * 0.5) * food_spacing, 0.0)
+		var pk := Pickup.spawn(get_parent(), load("res://data/items/%s.tres" % food_ids[k]) as ItemData, food_stack, at, at)
+		pk.set_meta(&"yard", true)
 	if is_instance_valid(_slime):
 		_slime.queue_free()
 	_slime = null
@@ -93,6 +101,9 @@ func _populate() -> void:
 		_slime = _spawner.spawn(_spawner.enemy_types[0], origin + slime_offset)
 
 func _free_stations() -> void:
+	for pk: Pickup in get_tree().get_nodes_in_group("pickup"):
+		if pk.has_meta(&"yard"):
+			pk.queue_free()
 	for st: Station in get_tree().get_nodes_in_group("station"):
 		if st.has_meta(&"yard"):   # only the yard's own: stations the player placed stay
 			st.remove_from_group("station")

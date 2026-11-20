@@ -25,6 +25,7 @@ Start at the root [README.md](../README.md) and [AGENTS.md](../AGENTS.md).
 | [debug-keys](wiki/debug-keys.md) | Debug keys and test mode (F1 / F2 / F3) | Current |
 | [design-pillars](wiki/design-pillars.md) | BossFight — Design Pillars | Current |
 | [enemy-spawning-algorithm](wiki/enemy-spawning-algorithm.md) | Enemy spawning algorithm | Current |
+| [food-algorithm](wiki/food-algorithm.md) | Food algorithm | Current (approved 2026-11-20, decision [0071](wiki/../decision/0071-hunger-and-potion.md)) |
 | [ground-tiles](wiki/ground-tiles.md) | Ground tiles — Pixel Crawler, tagged | Outdated: tags Pixel Crawler ground sheets, but the map now uses Pixel Plains, see [../../assets/game/map/pixel_plains/README.md](wiki/../../assets/game/map/pixel_plains/README.md) |
 | [ground-tileset-algorithm](wiki/ground-tileset-algorithm.md) | Ground tile-set algorithm | Done plan (built in decision 0069, ground tile set), kept for history |
 | [hit-feel-plan](wiki/hit-feel-plan.md) | Hit feel plan | Done plan (built in HitFx slices, decisions 0057 and later), kept for history |
@@ -118,3 +119,4 @@ Start at the root [README.md](../README.md) and [AGENTS.md](../AGENTS.md).
 | [0067](decision/0067-day-night-cycle.md) | Day / night cycle | Active |
 | [0069](decision/0069-ground-tile-set.md) | Ground tile set: every border, foam and water pixel is in a picture | Active |
 | [0070](decision/0070-debug-hook-pattern.md) | One debug hook pattern | Current |
+| [0071](decision/0071-hunger-and-potion.md) | Hunger bar, food and the healing potion | Active |

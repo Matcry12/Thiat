@@ -47,6 +47,21 @@ func _physics_process(delta: float) -> void:
 	if _time_since_hit >= shield_regen_delay:
 		shield = minf(shield_max, shield + shield_regen_rate * delta)
 
+## Restores up to `amount` hp (capped at max_hp, never revives the dead). Returns what was really healed.
+func heal(amount: float) -> float:
+	if hp <= 0.0:
+		return 0.0
+	var healed := clampf(amount, 0.0, max_hp - hp)
+	hp += healed
+	return healed
+
+## Starving: straight to hp, past armor / shield / guard. Not a hit: no damaged / hit_taken (no flash, no knockback), never below `floor`.
+## Returns hp lost.
+func lose_hp(amount: float, floor_hp: float) -> float:
+	var lost := clampf(amount, 0.0, maxf(hp - floor_hp, 0.0))
+	hp -= lost
+	return lost
+
 ## Single damage entry point (rule: no direct hp -= anywhere else).
 ## `source`/`parryable` feed an optional sibling Guard (slice 3): a parry
 ## negates the hit entirely, a block chips it, both duck-type a `stagger()`

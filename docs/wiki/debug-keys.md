@@ -98,3 +98,10 @@ Slow motion (0.25x)
 - Item picker: the book (`Tab` / `I`) gets a 4th side tab `Items` with every item in `data/items` (a new `.tres` shows up by itself), 24 icons a page, `<` `>` when there are more; left click = full stack, right click = 1, into the inventory (no room = drops at the player).
 - `CraftWindow` Text group `items_title`, `items_note`; F3 `ItemPicker` status (items, pages, tab, last taken).
 - Not a debug key
+
+## Food (0071)
+- F3 sections `Hunger` (`max_food`, `start_food`, `drain_per_min`, `starve_damage`, `starve_interval`, `starve_floor`, `frozen`) and `Consumer` (`potion_cooldown`), both under Character.
+- Status: `Hunger` = food, drain, STARVING / ok, next starve tick; `Consumer` = potion cooldown left, last refusal ("full" / "cooldown").
+- Buttons (Hunger): `Hunger empty` (starving starts), `Hunger full`.
+- Test yard: a stack of each food and healing potions lies in a row south of home (`TestYard` exports `food_ids`, `food_stack`, `food_spacing`, `food_row_offset`).
+- Hunger is frozen in headless tests (like DayClock); a test sets `frozen = false`.

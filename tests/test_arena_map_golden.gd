@@ -35,10 +35,10 @@ func _init() -> void:
 	got["spots"] = hash(var_to_bytes([m.blocks_boss_path(rects), pl.global_position, near.global_position if near else null, m.layout()]))
 	var nodes := []
 	for n in get_nodes_in_group("resource_node"):
-		nodes.append([(n as Node2D).global_position, String(n.name)])
+		nodes.append((n as Node2D).global_position)   # not n.name: auto names (@StaticBody2D@N) shift when any other node is added
 	nodes.sort()
 	got["chunks"] = hash(var_to_bytes([nodes, get_nodes_in_group("map_obstacle").size(), m.get_node("Ground/Terrain/Grounds").get_child_count()]))
-	var pins := {"params": 1819046139, "stats": 3318182244, "queries": 671949035, "spots": 4147318138, "chunks": 2817986983}
+	var pins := {"params": 1819046139, "stats": 3318182244, "queries": 671949035, "spots": 4147318138, "chunks": 2169524897}
 	var ok := true
 	for k in got:
 		print("golden %s = %d" % [k, got[k]])

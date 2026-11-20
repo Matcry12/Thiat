@@ -924,6 +924,53 @@
    },
    "center": "tile",
    "note": "Bag divider, 2 rows (RIM + PAPER_L). Tile across; at bag y=83."
+  },
+  "food_frame": {
+   "file": "food_frame.png",
+   "size": [
+    136,
+    20
+   ],
+   "center": "none",
+   "note": "Food bar frame: rope + knots + bronze socket with the drumstick + empty track, real size 136x20 (bar w 120 = the HP bar). Fill goes in rects.fill. Stacks under hp_frame with the pads overlapping (food image top = HP image bottom - 3).",
+   "rects": {
+    "fill": [
+     15,
+     4,
+     114,
+     12
+    ],
+    "drumstick": [
+     4,
+     7,
+     10,
+     8
+    ]
+   }
+  },
+  "food_frame_starving": {
+   "file": "food_frame_starving.png",
+   "size": [
+    136,
+    20
+   ],
+   "center": "none",
+   "note": "Same frame, socket rim + interior red, dark drumstick. Drawn over food_frame with a pulsing alpha while starving."
+  },
+  "food_fill": {
+   "file": "food_fill.png",
+   "size": [
+    114,
+    12
+   ],
+   "slice": {
+    "left": 3,
+    "top": 0,
+    "right": 3,
+    "bottom": 0
+   },
+   "center": "tile",
+   "note": "Warm bread-colour gloss ramp, stretch columns only."
   }
  }
 }

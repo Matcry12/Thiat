@@ -2,7 +2,7 @@ extends SceneTree
 ## Full-screen HUD screenshots of the real arena (decision 0030):
 ##   xvfb-run -a godot --rendering-driver opengl3 --resolution 1152x648 --script tools/hud_shots.gd -- <out_dir>
 ## Saves hud_layout.png (boss asleep: no boss bar), hud_bag_open.png, hud_tooltip.png,
-## hud_f3_open.png, hud_boss_phase2.png (boss awake, phase 2, bottom centre), hud_boss_phase2_f3.png.
+## hud_starving.png (food 0, potion cooldown running in hud_layout), hud_f3_open.png, hud_boss_phase2.png (boss awake, phase 2, bottom centre), hud_boss_phase2_f3.png.
 var _out := ""
 
 func _init() -> void:
@@ -18,13 +18,23 @@ func _init() -> void:
 	var inv: Inventory = player.get_node("Inventory")
 	var hud: HUD = arena.get_node("HUD")
 	hp.immortal = true
-	inv.add(load("res://data/items/wood.tres"), 37)
+	inv._insert(load("res://data/items/wood.tres"), 37, [3])   # hotbar slots 4 / 5, like the mock
+	inv._insert(load("res://data/items/healing_potion.tres"), 12, [4])
 	inv.add(load("res://data/items/stone.tres"), 12)
 	inv.add(load("res://data/items/copper_ore.tres"), 3)
+	var hunger: Hunger = player.get_node("Hunger")
+	var consumer: Consumer = player.get_node("Consumer")
 	await _frames(10)
 	hp.hp = hp.max_hp * 0.7
+	hunger.set_food(hunger.max_food * 0.55)
+	consumer._cooldown_left = consumer.potion_cooldown * 0.4   # potion sweep: 12 s left
 	await _frames(40)
 	await _shot("hud_layout")
+	hunger.set_food(0.0)
+	await _frames(20)
+	await _shot("hud_starving")
+	hunger.set_food(hunger.max_food * 0.55)
+	consumer._cooldown_left = 0.0
 	hud.bag().toggle()
 	await _frames(10)
 	await _shot("hud_bag_open")

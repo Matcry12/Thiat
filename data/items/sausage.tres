@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/game/ui/items/sausage.png" id="icon"]
+
+[resource]
+script = ExtResource("1")
+id = &"sausage"
+display_name = "Sausage"
+icon = ExtResource("icon")
+color = Color(0.65, 0.09, 0.08, 1)
+category = "material"
+max_stack = 16
+food_value = 20.0

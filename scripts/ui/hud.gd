@@ -14,6 +14,7 @@ class_name HUD
 @export var margin_y := 12
 @export var block_gap := 8            ## between stacked blocks
 @export var boss_left_gap := 2        ## boss bar to the health bar (the mock has them touching)
+@export var vitals_overlap := 3       ## art px the food bar's picture tucks under the life bar's (food_frame.png note in slices.json)
 @export var f3_gap := 8               ## clear space kept around the HUD when F3 is open
 @export var ui_layer := 10            ## above the F3 layer, so draw order never depends on tree order
 
@@ -21,6 +22,8 @@ var _health: Health
 var _loadout: Loadout
 
 var _health_bar: HealthBar
+var _food_bar: FoodBar
+var _vitals: VBoxContainer   ## life bar + food bar, stacked with their transparent pads overlapping
 var _hotbar: Hotbar
 var _bag: BagPanel
 var _win: CraftWindow
@@ -54,6 +57,9 @@ func _ready() -> void:
 
 func health_bar() -> HealthBar:
 	return _health_bar
+
+func food_bar() -> FoodBar:
+	return _food_bar
 
 func hotbar() -> Hotbar:
 	return _hotbar
@@ -98,6 +104,8 @@ func _process(_delta: float) -> void:
 	_bottom_left.offset_left = margin_x
 	_bottom_left.offset_bottom = -margin_y
 	_bottom_left.add_theme_constant_override("separation", block_gap)
+	if _vitals and _skin:
+		_vitals.add_theme_constant_override("separation", -vitals_overlap * _skin.art_scale)
 	if _boss:
 		_place_boss_bar()
 
@@ -218,11 +226,21 @@ func _build_ui(player: Node) -> void:
 	_abilities.bind(player.get_node("Dodge"), player.get_node_or_null("SkillSlot"), _loadout, player.get_node_or_null("Guard"))
 	for s in _abilities.slots():
 		_tooltip.watch(s, s.tip_text)
+	_vitals = VBoxContainer.new()
+	_vitals.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bottom_left.add_child(_vitals)
 	_health_bar = HealthBar.new()
 	_health_bar.skin = skin
-	_bottom_left.add_child(_health_bar)
+	_vitals.add_child(_health_bar)
 	_health_bar.bind(_health)
 	_tooltip.watch(_health_bar, _health_bar.tip_text)
+	var hunger := player.get_node_or_null("Hunger") as Hunger
+	if hunger:
+		_food_bar = FoodBar.new()
+		_food_bar.skin = skin
+		_vitals.add_child(_food_bar)
+		_food_bar.bind(hunger)
+		_tooltip.watch(_food_bar, _food_bar.tip_text)
 	if _boss:
 		_build_boss_bar()
 
@@ -243,7 +261,7 @@ func debug_category() -> String:
 	return "HUD"
 
 func debug_children() -> Array:
-	var out: Array = [{"name": "HealthBar", "object": health_bar()}, {"name": "Hotbar", "object": hotbar()}]
+	var out: Array = [{"name": "HealthBar", "object": health_bar()}, {"name": "FoodBar", "object": food_bar()}, {"name": "Hotbar", "object": hotbar()}]
 	if bag():
 		out.append({"name": "BagPanel", "object": bag()})
 		out.append({"name": "InventorySkin", "object": bag().get_skin()})

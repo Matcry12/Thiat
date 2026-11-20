@@ -59,7 +59,8 @@ func _init() -> void:
 	_check(win.hotbar().get_global_rect().position.y > bag.get_global_rect().end.y - 1.0 and bag.get_global_rect().position.y > win.marker().get_global_rect().end.y, "top = crafting area, then the bag, then the hotbar row (bottom)")
 	_check(win.hotbar().slots().size() == Inventory.HOTBAR and bag.cells().size() == 27, "bag 3 x 9 + hotbar 1 x 9")
 	_check(not hud.hotbar().visible, "the HUD hotbar hides while the window is open (it would show the same slots twice)")
-	var clear := not fr.intersects(hud.health_bar().get_global_rect())
+	var shown := fr.grow(-12.0)   # frame_rect holds the picture's transparent pad; the bars stack (life + food) reaches up to meet it
+	var clear := not shown.intersects(hud.health_bar().get_global_rect()) and not shown.intersects(hud.food_bar().get_global_rect())
 	for a in hud.abilities().slots():
 		clear = clear and not fr.intersects(a.get_global_rect())
 	_check(clear, "the window is clear of the ability icons and the health bar")

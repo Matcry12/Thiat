@@ -45,6 +45,10 @@ var station_locked := false   ## padlock at the slot corner (recipe that needs a
 var grey_icon := false        ## icon drawn grey (recipe you lack the items for)
 var icon_modulate := Color.WHITE   ## tints the icon only (a recipe you cannot make), not the frame
 var bare := false             ## no frame picture (an icon on the page)
+var cooldown_frac := 0.0      ## 0..1 left of a use cooldown (potion): a dark sweep over the top of the slot interior, shrinking downward
+var cooldown_alpha := 0.6     ## SHADOW strength of the sweep (the Hotbar owns the @export)
+var cooldown_secs := 0.0      ## seconds left; shown (rounded up) in the count spot while cooling
+var _cooldown: Control
 var _padlock: TextureRect
 var _frame_src: Texture2D
 var _frame_scale := 0
@@ -66,6 +70,13 @@ func _ready() -> void:
 	_padlock.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_padlock.stretch_mode = TextureRect.STRETCH_KEEP
 	add_child(_padlock)
+	_cooldown = Control.new()
+	_cooldown.name = "Cooldown"
+	_cooldown.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_cooldown.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_cooldown.draw.connect(_draw_cooldown)
+	add_child(_cooldown)
+	move_child(_cooldown, $Count.get_index())   # under the count / key text
 	gui_input.connect(_on_gui_input)
 	mouse_entered.connect(func(): hovered = true; refresh())
 	mouse_exited.connect(func(): hovered = false; refresh())
@@ -248,10 +259,24 @@ func refresh() -> void:
 		$Icon.modulate = icon_modulate
 		_set_count_color(count_tint if count_tint.a > 0.0 else skin.pal_cream)
 	$Count.text = count_text if count_text != "" else (str(count) if count > 1 else "")
+	if cooldown_frac > 0.0 and cooldown_secs > 0.0:
+		$Count.text = str(ceili(cooldown_secs))
+	_cooldown.visible = cooldown_frac > 0.0 and art
+	_cooldown.queue_redraw()
 	if not art:
 		_set_count_color(count_tint if count_tint.a > 0.0 else skin.count_color)
 	$KeyLabel.text = key_text
 	$LockOverlay.visible = locked
+
+## Potion cooldown: SHADOW over the top `cooldown_frac` of the 18 px slot interior + a 1 px cream edge (same look as AbilityBar).
+func _draw_cooldown() -> void:
+	if skin == null or cooldown_frac <= 0.0:
+		return
+	var S := _slot_px / 22.0   # screen px per art px (the slot is 22 art px)
+	var inner := Rect2(Vector2(2, 2) * S, Vector2(18, 18) * S)
+	var h := roundf(inner.size.y * cooldown_frac / S) * S
+	_cooldown.draw_rect(Rect2(inner.position, Vector2(inner.size.x, h)), Color(skin.pal_shadow, cooldown_alpha))
+	_cooldown.draw_rect(Rect2(inner.position + Vector2(0, h), Vector2(inner.size.x, S)), skin.pal_cream)
 
 ## Picture + rectangle of $Icon. An item icon is cropped to its visible pixels and centred in the box, at the scale
 ## its whole file would have. Anything else fills the box as it is.

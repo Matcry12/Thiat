@@ -24,6 +24,8 @@ extends CharacterBody2D
 @onready var loadout: Loadout = $Loadout
 @onready var skill_slot: SkillSlot = $SkillSlot
 @onready var placer: Placer = $Placer
+@onready var hunger: Hunger = $Hunger
+@onready var consumer: Consumer = $Consumer
 @onready var swimmer: Swimmer = $Swimmer   # shallow water slows walking (0038 step 3)
 
 var aim_direction := Vector2.RIGHT
@@ -92,6 +94,7 @@ func _on_died() -> void:
 func respawn() -> void:
 	dead = false
 	health.revive()
+	hunger.refill()   # death already cost enough: no starving again at once (food-algorithm rule 9)
 	guard.reset()
 	_face_mouse_left = 0.0
 	velocity = Vector2.ZERO
@@ -158,11 +161,15 @@ func _physics_process(delta: float) -> void:
 		return
 
 	var attack_in := Input.is_action_just_pressed("attack") \
-			or (hold_to_gather and _pending_slot < 0 and not dodge.is_dashing() and loadout.is_holstered() and loadout.can_attack() and not placer.is_holding() and Input.is_action_pressed("attack"))
+			or (hold_to_gather and _pending_slot < 0 and not dodge.is_dashing() and loadout.is_holstered() and loadout.can_attack() and not placer.is_holding() and not consumer.is_holding() and Input.is_action_pressed("attack"))
 	if attack_in and guard.can_attack() \
 			and not skill_slot.is_active() and not mouse_over_ui():
 		# A station in the selected slot: the click puts it down instead of swinging (decision 0031).
-		if placer.is_holding():
+		if consumer.is_holding():   # food / potion: the click eats or drinks, once per press (no repeat on hold)
+			if Input.is_action_just_pressed("attack"):
+				_action_used = true
+				consumer.try_use_selected()
+		elif placer.is_holding():
 			_action_used = true
 			placer.try_place()
 		elif loadout.can_attack():   # bare hands never attack (decision 0055)

@@ -27,7 +27,7 @@ Not promises. Each item has its old source in brackets. Built things are at the 
 - Armor: defense gear, needs the flat-defense damage rule first (planned v2). (from survival-ideas)
 - Cold in snow: slow health loss unless you wear warm gear. (from survival-ideas)
 - Fishing for food: pack has no fishing art. (from survival-ideas)
-- Skipped by choice: hunger / thirst, farming (chores in a 20-30 min run). (from survival-ideas)
+- Skipped by choice: thirst, farming (chores in a 20-30 min run). Hunger came back as a first design: [0071](../decision/0071-hunger-and-potion.md). (from survival-ideas)
 
 ## Enemy ideas
 - Tougher enemies in rocky and snow biomes; danger grows with distance from home. (from survival-ideas)

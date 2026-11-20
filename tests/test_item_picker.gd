@@ -154,7 +154,7 @@ func _init() -> void:
 	var held0 = inv.held_item
 	_check(not win.craft_selected(false) and not win.craft_selected(true) and inv.held_item == held0, "Craft cannot craft from the Items tab (a recipe IS chosen)")
 	_check(win.items_tab() in win.tab_slots(), "Items tab has a hover name (in tab_slots)")
-	_check(p.status_text().contains("pages 1") and p.status_text().contains("tab items"), "F3 line: pages + tab (%s)" % p.status_text().replace("\n", " "))
+	_check(p.status_text().contains("pages ") and p.status_text().contains("tab items"), "F3 line: pages + tab (%s)" % p.status_text().replace("\n", " "))
 	# hover name: both lines, no ingredients
 	var c0: ItemSlot = win.catalog_slots()[0]
 	_check(c0.tip_text() == p.items[0].display_name and c0.tip_sub() == p.items[0].category.capitalize(), "icon hover: name + kind (%s / %s)" % [c0.tip_text(), c0.tip_sub()])
